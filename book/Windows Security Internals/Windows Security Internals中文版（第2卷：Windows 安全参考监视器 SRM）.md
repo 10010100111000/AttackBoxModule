@@ -1,7 +1,5 @@
 ---
-
-summary: 《Windows Security Internals》（Windows安全内部原理）第2卷：Windows安全参考监视器（SRM）。全面深入剖析 Windows 访问控制核心引擎 SRM 的运行机制。核心内容包含：1. 安全访问令牌（Security Access Token）机制，详述主令牌与模拟令牌、伪令牌句柄、令牌组属性（Mandatory/EnabledByDefault）、特权管理（Privilege）、受限令牌与 Lowbox AppContainer 沙箱令牌、用户账户控制（UAC）拆分令牌与提升机制；2. 安全描述符（Security Descriptor）与 SDDL 语法，解析二进制结构、SID 格式、自主访问控制列表（DACL）、系统审计控制列表（SACL）以及各类访问控制项（ACE）结构；3. 安全描述符的读取与分配继承算法；4. 访问检查（Access Check）完整算法流程重构，剖析企业中央访问策略（CAP）与动态声明（Claims）；5. 遍历检查（Bypass Traverse Checking）、句柄复制与沙箱隔离等衍生安全场景；6. 安全审计（Security Auditing）与安全事件日志监控。是挖掘 Windows 本地权限提升（LPE）与沙箱逃逸漏洞的权威指南。
-
+summary: 《Windows Security Internals》第2卷：Windows安全参考监视器（SRM）。深入剖析 Windows 访问控制核心引擎 SRM 的运行机制。核心内容包含：1. 安全访问令牌（Access Token）机制，详述主令牌与模拟令牌、伪令牌句柄、令牌组属性、特权管理（Privilege）、受限令牌与 AppContainer 沙箱令牌、UAC 拆分令牌与提升机制；2. 安全描述符（Security Descriptor）与 SDDL 语法，解析二进制结构、SID 格式、DACL/SACL 及各类 ACE 结构；3. 安全描述符的分配与继承算法；4. 访问检查（Access Check）完整流程，剖析企业中央访问策略（CAP）与动态声明；5. 遍历检查与沙箱隔离等衍生安全场景；6. 安全审计与事件日志监控。挖掘 Windows 本地提权（LPE）与沙箱逃逸的权威指南。
 ---
 
 ## 4. 安全访问令牌

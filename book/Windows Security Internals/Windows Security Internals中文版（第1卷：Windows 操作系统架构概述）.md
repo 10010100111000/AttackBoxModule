@@ -1,8 +1,6 @@
-\---
-
-summary: 《Windows Security Internals》（Windows安全内部原理）第1卷：Windows操作系统架构概述。由资深安全专家 James Forshaw 编著，系统剖析 Windows 底层体系结构与安全基石。涵盖：1. 基于 NtObjectManager 模块构建专业 PowerShell 安全测试环境；2. Windows 内核架构与执行体模块剖析，深度详解对象管理器（Object Manager）、句柄表、命名空间（OMNS）、系统调用（System Call）分发机制、进程与线程管理、内存管理、代码完整性以及高级本地过程调用（ALPC）；3. 用户模式应用程序与 Win32 子系统机制，涵盖 Native API 与 Win32 API 映射、DLL 加载器、DOS 设备路径、注册表底层交互、进程创建全流程以及关键系统进程（smss/csrss/lsass/services/svchost）安全防护模型。专为逆向工程、安全研究与底层开发人员提供的系统级攻防参考手册。
-
-\---
+---
+summary: 《Windows Security Internals》第1卷：Windows操作系统架构概述。由资深安全专家 James Forshaw 编著，系统剖析底层体系结构与安全基石。涵盖：1. 基于 NtObjectManager 模块构建 PowerShell 安全测试环境；2. 内核架构与执行体模块剖析，详述对象管理器（Object Manager）、命名空间（OMNS）、系统调用分发、进程线程管理、代码完整性及 ALPC 机制；3. 用户模式与 Win32 子系统机制，涵盖 Native API 映射、DLL 加载器、DOS 设备路径、注册表底层交互、进程创建全流程以及关键系统进程（smss/csrss/lsass/services/svchost）安全防护模型。逆向工程与底层开发必备攻防指南。
+---
 
 本书内容编排
 

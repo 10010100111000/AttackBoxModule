@@ -1,5 +1,5 @@
 ---
-summary: 《Windows Security Internals》（Windows安全内部原理）第3卷：本地安全机构（LSA）与身份验证体系。深入讲解 Windows 身份验证协议与域安全攻防底层机理。核心模块包括：1. LSA 架构与安全支持提供程序接口（SSPI/SSP），详析 SAM 与 SECURITY 数据库、LSA Secrets 与凭据存储；2. Active Directory 域安全架构，涵盖 LDAP 目录对象、架构 Schema、AD 安全描述符与访问检查、组策略（GPO）底层控制；3. 交互式登录（Interactive Authentication），剖析 Winlogon、凭据提供程序（Credential Provider）与 LsaLogonUser 内部执行流程；4. 网络身份验证与 NTLM 协议，深度拆解 NTLM 挑战/响应、NetNTLM 哈希与 NTLM 中继攻击（NTLM Relay）；5. Kerberos 认证协议全流程，详解 TGT/TGS 票据交互、PAC 特权属性证书与签名校验、跨域信任认证、Kerberos 委派（Constrained/Unconstrained/RBCD）与用户到用户（U2U）认证；6. 协商认证（SPNEGO）、远程凭据保护（Remote Credential Guard）、受限管理模式与认证审计；附录附带完整测试域网络搭建指南与 SDDL SID 别名全量映射表。红蓝对抗与内网渗透领域核心技术宝典。
+summary: 《Windows Security Internals》第3卷：本地安全机构（LSA）与身份验证体系。深入讲解 Windows 身份验证协议与域安全攻防底层机理。核心内容包括：1. LSA 架构与 SSPI/SSP 接口，详析 SAM/SECURITY 数据库与 LSA Secrets 凭据存储；2. Active Directory 域安全架构，涵盖 LDAP 对象、架构 Schema、AD 安全描述符与组策略（GPO）；3. 交互式登录体系，剖析 Winlogon、凭据提供程序与 LsaLogonUser 执行流程；4. 网络身份验证与 NTLM 协议，拆解 NTLM 挑战/响应、NetNTLM 与 NTLM Relay 攻击；5. Kerberos 认证协议全流程，详解 TGT/TGS 票据、PAC 签名校验、跨域信任、Kerberos 委派与 U2U 认证；6. 协商认证（SPNEGO）、远程凭据保护与认证审计；附带测试域搭建指南与 SDDL SID 别名映射。内网渗透与红蓝对抗技术宝典。
 ---
 
 ## 10. Windows 身份验证
