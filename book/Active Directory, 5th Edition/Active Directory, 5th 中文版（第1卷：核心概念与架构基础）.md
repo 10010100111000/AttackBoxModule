@@ -2,7 +2,7 @@
 summary: Active Directory（第5版·第1卷），系统阐述Active Directory基础概念、对象存储机制、系统管理工具、命名上下文与应用程序分区、Schema架构体系、站点拓扑与复制原理，以及目录高级搜索技术。
 ---
 
-# Active Directory, 5th Edition（第1卷：核心概念与架构基础）
+
 
 ## 第 1 章 简要介绍
 
@@ -504,9 +504,7 @@ w32tm /resync /rediscover /nowait
 | Windows Server 2008 R2      | 4                       | Windows Server 2008 R2Windows Server 2012                  |
 | Windows Server 2012         | 5                       | Windows Server 2012                                        |
 
-> **注意**：
-
-有关升级 Active Directory 的更多信息，请参阅第 19 章。
+> **注意**：有关升级 Active Directory 的更多信息，请参阅第 19 章。
 
 ##### Windows 2000 域模式
 
@@ -598,9 +596,7 @@ Active Directory 支持三种组作用域( Group Scope )：*域本地( Domain Lo
 - 通用组可以转换为域全局组，前提是组中的所有成员均为该组原先所在域中的用户。
 - 通用组可以转换为域本地组。
 
-> **注意**：
-
-将通讯组转换为安全组的好处显而易见：你可以将该组用于 Windows 安全目的。而将安全组转换为通讯组的好处通常不那么明显。这种转换最有用的一点是，你可以安全地禁用一个安全组，以验证它是否被用于 Windows 安全用途。
+> **注意**：将通讯组转换为安全组的好处显而易见：你可以将该组用于 Windows 安全目的。而将安全组转换为通讯组的好处通常不那么明显。这种转换最有用的一点是，你可以安全地禁用一个安全组，以验证它是否被用于 Windows 安全用途。
 
 以前，如果你不知道某个组是否被用于 Windows 安全用途，你只能删除它，并期望不会出问题。如果真出了问题，你就得设法恢复该组，或者想办法使用一个新组。现在，你只需将该组转换为通讯组；如果出了问题，只需再将组改回安全组，就能恢复原有的功能。
 
@@ -1321,9 +1317,7 @@ Windows 8 和 Windows Server 2012 客户端支持从存储在活动目录中的�
 
 与域命名上下文和配置命名上下文不同，架构命名上下文不维护容器或组织单位的层次结构。相反，它是一个包含 `classSchema`、`attributeSchema` 和 `subSchema` 对象的单一容器。`classSchema` 对象定义了不同类型的类及其关联属性。`attributeSchema` 对象定义了作为 `classSchema` 定义一部分使用的所有属性。此外还有一个 `subSchema` 实例，表示 [LDAPv3 RFC](http://www.ietf.org/rfc/rfc2254.txt) 中定义的抽象架构。
 
-> **注意**：
-
-第 5 章和第 17 章将更深入地讨论架构。
+> **注意**：第 5 章和第 17 章将更深入地讨论架构。
 
 ### 4.4. 应用程序分区( Application Partitions )
 
@@ -1395,15 +1389,11 @@ Windows 8 和 Windows Server 2012 客户端支持从存储在活动目录中的�
 
 尽管应用程序分区( Application Partition )使管理员能够更好地控制应用程序数据的复制方式，但数据清理问题依然存在。也就是说，向 Active Directory 添加数据的应用程序，在数据不再需要时，并不总能妥善地将其清除。正因如此，创建动态数据的能力也作为 Windows Server 2003 Active Directory 的一项特性被引入。动态对象( Dynamic Object )是指具有生存时间( Time-to-Live ,TTL)值的对象，该值决定了它们在 Active Directory 自动删除之前能够存续多久。动态对象的生命周期通常相当短暂（即数天或更短）。动态对象的一个示例用法是电子商务网站需要临时存储用户会话信息。由于用户配置文件信息很可能就存放在目录中，因此将通常生命周期较短的基于会话的信息存储在同一存储中可能颇具优势。为动态对象设置的默认 TTL 为 1 天，但可以配置为短至 15 分钟。
 
-> **注意**：
-
-默认 TTL 和最小 TTL 可通过修改 `CN=``Directory``Service,``CN=WindowsNT,``CN=Services,``CN=Configuration,``DC=...` 对象的 `ms-DS-``Other-``Settings` 属性中的 `Dynamic``Object``Default``TTL``Seconds` 和 `Dynamic``Object``MinTTL``Seconds` 值来更改。
+> **注意**：默认 TTL 和最小 TTL 可通过修改 `CN=``Directory``Service,``CN=WindowsNT,``CN=Services,``CN=Configuration,``DC=...` 对象的 `ms-DS-``Other-``Settings` 属性中的 `Dynamic``Object``Default``TTL``Seconds` 和 `Dynamic``Object``MinTTL``Seconds` 值来更改。
 
 要创建动态对象，只需在创建对象时将 `dynamicObject` 添加到 `objectClass` 属性中即可。出于安全考虑，Microsoft 特意禁用了将其添加到现有对象的功能。这就是为什么你无法将现有静态对象转换为动态对象。还可以在创建时设置 `entryTTL` 属性，将 TTL 设置为除一天默认值之外的其他值。要防止动态对象被自动删除，可以通过将对象的 `entryTTL` 属性重置为新的 TTL 值（以秒为单位指定的时间）来“刷新”该对象。
 
-> **警告**：
-
-动态对象在被删除时不会像普通对象那样被标记为墓碑，它们只是从目录中被移除。由于 TTL 机制允许它们同时从所有域控制器( Domain Controller ,DC )中立即移除，因此无需墓碑。有关墓碑的更多信息，请参阅第 5 章中的在墓碑中保留属性一节。
+> **警告**：动态对象在被删除时不会像普通对象那样被标记为墓碑，它们只是从目录中被移除。由于 TTL 机制允许它们同时从所有域控制器( Domain Controller ,DC )中立即移除，因此无需墓碑。有关墓碑的更多信息，请参阅第 5 章中的在墓碑中保留属性一节。
 
 ### 4.5. 小结
 
@@ -1446,9 +1436,7 @@ adfind -schema -s base objectVersion
 
 schema容器位于活动目录( Active Directory ,AD)中的配置容器( Configuration container )下。例如，在 *contoso.com* 林( Forest )中，schema容器的可分辨名称( Distinguished Name ,DN)为 `cn=schema,cn=Configuration,dc=contoso,dc=com`。您可以通过将 ADSI Edit 或 LDP 等 AD 查看器指向该容器，直接查看其内容。您还可以使用 Active Directory schema MMC 管理单元，该管理单元将类和属性拆分到单独的容器中，以便于查看（实际上，所有schema对象都直接存储在schema容器中）。
 
-> **注意**：
-
-默认情况下，Active Directory schema( Schema ) MMC 管理单元并未完全启用。若要在域控制器( Domain Controller ,DC )上启用schema管理单元，必须首先注册其依赖的 DLL。为此，请运行以下命令：*regsvr32 schmmgmt.dll*。
+> **注意**：默认情况下，Active Directory schema( Schema ) MMC 管理单元并未完全启用。若要在域控制器( Domain Controller ,DC )上启用schema管理单元，必须首先注册其依赖的 DLL。为此，请运行以下命令：*regsvr32 schmmgmt.dll*。
 
 schema本身由两种类型的 Active Directory 对象组成：类( Class )和属性( Attribute )。在 Active Directory 中，它们分别称为 `classSchema` (Class-Schema) 和 `attributeSchema` (Attribute-Schema) 对象。同一名称的两种不同形式源于以下事实：类的 `cn` (Common-Name) 属性包含类的带连字符的易读名称，而类的 `lDAPDisplayName` (LDAP-Display-Name) 属性包含使用 LDAP 或 ADSI 查询 Active Directory 时所用的串联字符串格式。在schema中，每个对象的 `lDAPDisplayName` 属性通常通过以下方式生成：将 Common-Name 中每个单词的首字母大写，然后移除连字符并将所有单词串联在一起。最后，将第一个字母改为小写。[1] 这样会生成像 `user` 这样的简单名称，以及更特殊的 `sAMAccountName` 和 `lDAPDisplayName`。从现在起，我们将使用更常见的 LDAP 显示名称格式。
 
@@ -1479,9 +1467,7 @@ OID 表示法对每个分支和对象使用整数，如下面的对象 OID 示�
 
 这唯一引用了分支 1.3.6.1.4.1.3385.12 中的对象 497。分支 1.3.6.1.4.1.3385.12 包含在 OID 为 1.3.6.1.4.1.3385 的分支中，依此类推。
 
-> **注意**：
-
-对象标识符( Object Identifier ,OID)编号中的每个分支也都对应一个名称。这意味着，例如点分表示法 1.3.6.1.4.1 等价于 *iso.org.dod.internet.private.enterprise*。由于这些名称对使用 Active Directory 的我们并无实际意义，本书不涉及它们。
+> **注意**：对象标识符( Object Identifier ,OID)编号中的每个分支也都对应一个名称。这意味着，例如点分表示法 1.3.6.1.4.1 等价于 *iso.org.dod.internet.private.enterprise*。由于这些名称对使用 Active Directory 的我们并无实际意义，本书不涉及它们。
 
 这种表示法沿用至今，并用于 Active Directory schema( Schema )。如果要创建schema对象，需要为你的组织获取一个唯一的 OID 分支。将其用作根，随后即可根据组织需要，在根下创建更多分支和叶节点。
 
@@ -1495,9 +1481,7 @@ OID 表示法对每个分支和对象使用整数，如下面的对象 OID 示�
 
 在文件顶部可以看到,互联网号码分配机构( Internet Assigned Numbers Authority ,IANA)所使用的根节点为 1.3.6.1.4.1。继续向下浏览该列表,你会发现微软被分配到了这棵目录树中该部分的 311 分支,因此微软的对象标识符( Object Identifier ,OID)命名空间为 1.3.6.1.4.1.311。列表中每个编号旁边还附有联系人的电子邮件地址,因此你可以在该文件中搜索贵组织中已分配到编号的任何成员。凡是已经拥有 X.500 目录,或已开发简单网络管理协议( Simple Network Management Protocol ,SNMP)管理信息库( Management Information Base ,MIB)的大型组织,很可能都已获得了一个 OID。
 
-> **注意**：
-
-除了企业编号( Enterprise Number )之外,还可以购买特定国家/地区的对象标识符( Object Identifier ,OID)。组织的企业编号注册情况与该组织是否已获得可供使用的基于国家/地区的 OID 命名空间( OID namespace )无关。如果在企业编号列表中看不到该公司,不要被误导;该组织仍可能拥有一个编号。
+> **注意**：除了企业编号( Enterprise Number )之外,还可以购买特定国家/地区的对象标识符( Object Identifier ,OID)。组织的企业编号注册情况与该组织是否已获得可供使用的基于国家/地区的 OID 命名空间( OID namespace )无关。如果在企业编号列表中看不到该公司,不要被误导;该组织仍可能拥有一个编号。
 
 例如,Microsoft 已获得企业编号 1.3.6.1.4.1.311,但其所有新的schema类( schema class )都使用以美国分配的 OID 命名空间 1.2.840.113556 作为根。1.2.840 部分专门分配给美国。换句话说,Microsoft 已获得两个可供使用的 OID 命名空间,但选择只使用美国分配的那个命名空间。
 
@@ -1507,9 +1491,7 @@ Microsoft 过去曾根据请求向客户发放唯一的 OID 命名空间;但现�
 
 一旦组织拥有 OID 命名空间,它就可以按所需方式在根下添加唯一的分支和叶节点。例如,可以决定根下不设任何分支,直接为根下的每个新对象分配从 1 开始的递增整数。或者,可以决定创建一系列从 1 开始的编号分支,每个分支对应某一组类或属性。因此,第三个分支下的第五个对象的 OID 将以 3.5 结尾。图 5-1 展示了一个组织决定如何构造其 OID 命名空间的示例场景。
 
-> **警告**：
-
-Active Directory schema中，OID 命名空间任意部分的取值范围均为 1 至 268,435,455，即从 2⁰ 到 2²⁸ – 1。
+> **警告**：Active Directory schema中，OID 命名空间任意部分的取值范围均为 1 至 268,435,455，即从 2⁰ 到 2²⁸ – 1。
 
 这一限制曾给澳大利亚一些公司的schema扩展带来麻烦。澳大利亚的 OID 为 1.2.36，根据澳大利亚标准文件 MP-75，各公司可以使用其澳大利亚公司编号( Australian Company Number ,ACN )（不含前导零）来构造自己的 OID，无需另行申请。但遗憾的是，ACN 是九位数字，因此很容易超出上述限制。
 
@@ -1557,9 +1539,7 @@ OID 编号方式与继承没有任何关系。以某种方式为一组对象编�
 
 `userPrincipalName`（UPN）属性用于用户对象（ User Object ）,以提供一种在整个林（ Forest ）内唯一标识每个用户的方法。如果用户愿意,还可以使用 UPN 登录到林内任意域中的工作站。事实上,UPN 属性可接受符合 RFC 2822（电子邮件）格式的有效地址,因此 *europe.contoso.com* 域中用户 *tpood* 的 UPN 可以是 *tpood@contoso.com* 或 *tpood@europe.contoso.com*,甚至可以是 *tpood@logon.local*。实际上,林内可以使用任何 UPN 后缀,例如 *@contoso.com*。唯一的要求是用户的 UPN 值在林内所有用户中必须唯一。
 
-> **注意**：
-
-Active Directory 在设置用户主体名称( User Principal Name ,UPN)时并不强制其唯一性。如果同一林( Forest )中的两个不同用户被分配了相同的 UPN，则两者都将无法使用该 UPN 登录。检测到重复 UPN 时，域控制器( Domain Controller ,DC)将记录一条来源为密钥分发中心( Key Distribution Center ,KDC)、事件 ID 为 11 的事件。许多大型组织会实施脚本或其他工具，定期扫描其目录以检查重复的 UPN。
+> **注意**：Active Directory 在设置用户主体名称( User Principal Name ,UPN)时并不强制其唯一性。如果同一林( Forest )中的两个不同用户被分配了相同的 UPN，则两者都将无法使用该 UPN 登录。检测到重复 UPN 时，域控制器( Domain Controller ,DC)将记录一条来源为密钥分发中心( Key Distribution Center ,KDC)、事件 ID 为 11 的事件。许多大型组织会实施脚本或其他工具，定期扫描其目录以检查重复的 UPN。
 
 若要剖析该属性，我们需要查明已为其设置哪些值。表 5-2 显示了为 `userPrincipalName` `attributeSchema` 实例设置的属性值的一个子集。
 
@@ -1832,9 +1812,7 @@ Windows Server 2003 Service Pack 1 为 `searchFlags` 属性定义了一个新位
 
 这项新功能在 Active Directory 社区中受到热烈欢迎，直到管理员开始意识到，Microsoft 有意限制了该功能的适用范围，不允许将类别 1 属性( Category 1 Attribute )设置为机密。类别 1 属性是默认 AD schema( Schema )中定义的许多属性，而该属性列表中包含许多你可能希望设为机密的属性，例如电话号码、地址、员工 ID 等。其意图似乎只是为 AD 管理员提供一种方法，以便更好地保护他们通过schema扩展( Schema Extension )添加到目录中的自定义属性。对于坚持使用默认schema的公司来说，这一限制极大地降低了此功能的实用性。
 
-> **警告**：
-
-严禁修改 `searchFlags` 以在 Category 1 属性上启用机密性。如果尝试更改这些属性之一的 `searchFlags` 以设置机密标志，将收到错误消息。
+> **警告**：严禁修改 `searchFlags` 以在 Category 1 属性上启用机密性。如果尝试更改这些属性之一的 `searchFlags` 以设置机密标志，将收到错误消息。
 
 所有活动目录轻型目录服务( Active Directory Lightweight Directory Services ,AD LDS) 基本schema对象上的默认安全描述符配置为没有显式访问控制项( Access Control Entries ,ACEs)。结果是，在对象实例化时，对象上几乎没有显式的读取属性( Read Property ) 授予权限，这意味着您可以更轻松地使用继承的拒绝权限来保护属性，而无需依赖机密属性功能。
 
@@ -1895,9 +1873,7 @@ RODC 的设计理念是:默认情况下,运行 RODC 的服务器被视为已遭�
 
 你可以应用侧栏控制属性更改审核中所示的过程,以控制属性是否包含在筛选属性集中。应切换位 `0x200`,而不是位 `0x100`。
 
-> **警告**：
-
-不能将 `schemaFlagsEx` 属性中定义为关键属性的特性包含在筛选属性集中。
+> **警告**：不能将 `schemaFlagsEx` 属性中定义为关键属性的特性包含在筛选属性集中。
 
 #### 属性集与 attributeSecurityGUID
 
@@ -1933,9 +1909,7 @@ AD 将在 `61,440` 和 `65,520` 之间分配下一个可用的 MAPI ID。
 
 图 5-5. 详细信息模板编辑器
 
-> **注意**：
-
-如果尝试创建新属性并显式指定保留范围 `61,440` 到 `65,520` 内的 MAPI ID，则 AD 将返回“Will not perform”错误。
+> **注意**：如果尝试创建新属性并显式指定保留范围 `61,440` 到 `65,520` 内的 MAPI ID，则 AD 将返回“Will not perform”错误。
 
 ### 5.4. 类( classSchema 对象)
 
@@ -1965,9 +1939,7 @@ schema类( Schema Class )定义为 `classSchema` 类的实例。`classSchema` �
 
 X.500 规范指出，辅助类不能从结构类继承，而抽象类只能从另一个抽象类继承。
 
-> **注意**：
-
-为符合 X.500 标准，`objectClassCategory` 实际上有四种类型。虽然 1993 年的 X.500 规范要求将对象归类为结构类( structural )、抽象类( abstract )或辅助类( auxiliary )之一，但 1993 年之前使用 1988 版规范定义的对象不必遵循这些类别。此类对象没有对应的 1993 类别，因此在schema( Schema )中定义为具有一种称为 *88-Class* 的特殊类别。
+> **注意**：为符合 X.500 标准，`objectClassCategory` 实际上有四种类型。虽然 1993 年的 X.500 规范要求将对象归类为结构类( structural )、抽象类( abstract )或辅助类( auxiliary )之一，但 1993 年之前使用 1988 版规范定义的对象不必遵循这些类别。此类对象没有对应的 1993 类别，因此在schema( Schema )中定义为具有一种称为 *88-Class* 的特殊类别。
 
 我们来看一下用于在 Active Directory 中创建用户和计算机账户的 `user` 类和 `computer` 类。`computer` 类和 `user` 类都是结构类，这意味着你可以直接在 Active Directory 中实例化这些类的对象。`computer` 类继承自 `user` 类，因此在某种意义上，`computer` 类是一种特殊类型的用户。`user` 类继承自 `organizationalPerson` 这一 Type-88 类。这意味着 `computer` 类对象可用的全部属性不仅包括在 `computer` 和 `user` 类自身上专门定义的属性，还包括从 `organizationalPerson` 类继承的所有属性。`organizationalPerson` 类是 `person` 抽象类的子类，而 `person` 抽象类又是抽象 `top` 类的子类。回想一下，`top` 之上没有类；它是根类。此关系概述见图 5-7。
 
@@ -2042,9 +2014,7 @@ Microsoft 需要在 Active Directory 中定义的 `user` 类，不能仅仅是 X
 
 创建新用户时所需的属性并未列在 `mustContain` 属性中。这是因为 `objectSID`、`sAMAccountName` 及其他属性是从构成该类的其他类继承而来的。`mustContain` 属性可以直接在 `auxiliaryClass` 或 `systemAuxiliaryClass` 中定义，也可以在其继承树中更高层的类上定义。例如，`sAMAccountName` 和 `objectSID` 都定义在 `securityPrincipal` 类上。
 
-> **警告**：
-
-不要将类必须包含的属性与在对象实例化时必须显式设置的属性混为一谈。遗憾的是,无法通过编程方式有效确定在创建类的实例时需要在对象上设置哪些属性。对象必须包含的某些属性由系统拥有,只能由系统设置;其他属性是可选的,并将自动填充;最后,某些属性实际上需要由对象创建者指定。更令人困惑的是,操作系统( Operating System ,OS)或活动目录轻型目录服务( Active Directory Lightweight Directory Services ,AD LDS)的不同版本会改变这些要求。
+> **警告**：不要将类必须包含的属性与在对象实例化时必须显式设置的属性混为一谈。遗憾的是,无法通过编程方式有效确定在创建类的实例时需要在对象上设置哪些属性。对象必须包含的某些属性由系统拥有,只能由系统设置;其他属性是可选的,并将自动填充;最后,某些属性实际上需要由对象创建者指定。更令人困惑的是,操作系统( Operating System ,OS)或活动目录轻型目录服务( Active Directory Lightweight Directory Services ,AD LDS)的不同版本会改变这些要求。
 
 同样的原则也适用于 `mayContain` 属性。类可能包含的完整属性集,只有在沿树向上递归并标识出所有继承类上的全部继承 `mayContain` 属性时,才能获得。
 
@@ -2081,9 +2051,7 @@ Microsoft 需要在 Active Directory 中定义的 `user` 类，不能仅仅是 X
 
 这里我们关注的第三个也是最后一个屏幕是 `user` 类的“属性”选项卡( Attributes tab )，如图 5-10 所示。其中显示了 `user` 类的 `mustContain`、`systemMustContain`、`mayContain` 和 `systemMayContain` 属性。
 
-> **注意**：
-
-您还可以通过浏览 Active Directory 架构 MMC 管理单元左侧树中的类( class )，来查看附加到该类的属性( attribute )。该类的所有属性都将列在右侧的主窗格中。
+> **注意**：您还可以通过浏览 Active Directory 架构 MMC 管理单元左侧树中的类( class )，来查看附加到该类的属性( attribute )。该类的所有属性都将列在右侧的主窗格中。
 
 #### 动态链接辅助类( Dynamically Linked Auxiliary Classes )
 
@@ -2093,17 +2061,13 @@ Microsoft 需要在 Active Directory 中定义的 `user` 类，不能仅仅是 X
 
 图 5-10. 用户类架构条目属性设置
 
-> **注意**：
-
-动态链接辅助类( auxiliary class )要求林( forest )运行在 Windows Server 2003 林功能级别( forest functional level )或更高版本。
+> **注意**：动态链接辅助类( auxiliary class )要求林( forest )运行在 Windows Server 2003 林功能级别( forest functional level )或更高版本。
 
 要将辅助类动态链接到对象，只需修改对象的 `objectClass` 属性，使其包含辅助类的名称。任何辅助类都可以使用，前提是同时设置辅助类中包含的所有 `mustContain` 和 `systemMustContain` 属性。您还可以移除动态链接的辅助类：清除为该辅助类定义的属性设置的任何值，然后从对象的 `objectClass` 属性中移除辅助类名称。
 
 现在让我们说明为什么动态链接辅助类是一个好主意。假设我们有一个林，其中包含多个域( domain )，每个域代表公司内的一个部门。每个部门管理自己的用户对象。其中一个名为 Toasters 的部门想要向其用户对象分配附加属性。这些新属性仅适用于 Toasters 部门内的员工。在 Windows 2000 中，实现此目的的唯一方法是在架构( schema )中创建新属性，创建新的辅助类，并将新属性包含在辅助类中。此时，可以将新的辅助类添加到用户 `classSchema` 对象的 `auxiliaryClass` 属性中。然后，林中包含的每个用户对象都将可以使用新属性。如果每个部门都想做类似的事情，您可以看到林内所有用户对象上的属性数量可能会迅速且不必要地增长。在 Windows Server 2003 中，您仍将在架构中创建新属性和辅助类，但不会修改用户对象的 `auxiliaryClass` 属性。相反，每个部门会将其辅助类动态链接到*其*用户对象。这提供了比 Windows 2000 下更简洁、更高效的实现。
 
-> **警告**：
-
-当您将辅助类动态链接到对象时，该辅助类会列在对象的 `objectClass` 属性中。当辅助类以静态方式链接时，该辅助类不会列在 `objectClass` 属性中。这可能会导致一些问题，对于需要确定对象上可用属性的应用程序，如果它们仅查看对象类( object class )的架构定义或对象本身的 `objectClass` 属性，就会出现问题。
+> **警告**：当您将辅助类动态链接到对象时，该辅助类会列在对象的 `objectClass` 属性中。当辅助类以静态方式链接时，该辅助类不会列在 `objectClass` 属性中。这可能会导致一些问题，对于需要确定对象上可用属性的应用程序，如果它们仅查看对象类( object class )的架构定义或对象本身的 `objectClass` 属性，就会出现问题。
 
 ### 5.5. 小结
 
@@ -2135,17 +2099,13 @@ Microsoft 提供 Active Directory 站点和服务 MMC 管理单元( *dssite.msc*
 
 除了站点和服务管理单元，*repadmin* 命令行工具也是一个极其有用的工具，应当熟悉。Windows Server 2012 还新增了许多用于管理复制的 PowerShell cmdlet。若要查看所有复制 cmdlet，请在 Windows PowerShell 中运行 *Get-Command \*-adrep**。
 
-> **注意**：
-
-如果要在 Windows 2000 或 Windows Server 2003 上查找 *repadmin*，可以在 Microsoft 提供的 Windows 支持工具( Windows Support Tools )下载中找到它。
+> **注意**：如果要在 Windows 2000 或 Windows Server 2003 上查找 *repadmin*，可以在 Microsoft 提供的 Windows 支持工具( Windows Support Tools )下载中找到它。
 
 #### 子网
 
 子网( Subnet )是网络 IP 空间的一部分。子网由其 IP 网络地址和以位数测量的子网掩码( Subnet Mask )来描述。例如，子网掩码 255.255.255.0 是 24 位子网掩码。如果 10.5.20.0 网络使用 24 位掩码，则子网对象表示为 10.5.20.0/24。Active Directory 中的子网对象是环境中子网的逻辑表示；它们可以反映（但不必一定反映）实际的物理子网定义。例如，某建筑物可能有两个 24 位子网：10.5.20.0 和 10.5.21.0；就 Active Directory 而言，可将它们包含在单个 AD 子网 10.5.20.0/23 中，该子网指定 23 位子网掩码。
 
-> **注意**：
-
-这些示例都表示 IP 版本 4( IPv4 )子网( Subnet )。Windows Server 2008 引入了对 IP 版本 6( IPv6 )子网以及 Active Directory 中域控制器( Domain Controller ,DC)的支持。子网划分的相同概念仍然适用；不过，其地址和子网要大得多。IPv4 使用 32 位寻址，而 IPv6 使用 128 位寻址。
+> **注意**：这些示例都表示 IP 版本 4( IPv4 )子网( Subnet )。Windows Server 2008 引入了对 IP 版本 6( IPv6 )子网以及 Active Directory 中域控制器( Domain Controller ,DC)的支持。子网划分的相同概念仍然适用；不过，其地址和子网要大得多。IPv4 使用 32 位寻址，而 IPv6 使用 128 位寻址。
 
 必须在目录中定义子网信息，因为唯一可用于确定网络中相对位置的依据就是计算机的 IP 地址。而子网又与站点( Site )关联。如果没有这些定义，计算机就无法有效确定应尝试使用哪些分布式资源。默认情况下，Active Directory 中未定义任何子网。有关在 Active Directory 中定义子网的详细信息，请参阅后面的侧栏。
 
@@ -2255,9 +2215,7 @@ desired maximum size in bytes.
 
 在前面的示例中，两台计算机 PC06 和 PC03 从 IP 地址（192.168.4.111 和 113）连接，而这些 IP 地址在 Active Directory 中没有对应子网。日志条目的格式为 `Date Time Domain: NO_CLIENT_SITE: Machine-Name IP-Address`。
 
-> **注意**：
-
-前面的日志片段中的 IP 地址可能是 IPv4 或 IPv6 地址。
+> **注意**：前面的日志片段中的 IP 地址可能是 IPv4 或 IPv6 地址。
 
 如果已部署 IPv6，并且客户端同时拥有 IPv4 和 IPv6 地址(即双栈)，则必须确保 AD 中包含 IPv4 和 IPv6 子网的子网映射。如果客户端只配置了其中一种，则会定期看到以下事件：
 
@@ -2302,9 +2260,7 @@ HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services
 
 此外，*netlogon.log* 文件中还会出现包含 `PARTIAL_CLIENT_SITE_MAPPING`(而非 `NO_CLIENT_SITE`)字样的条目。该条目会告知您与活动目录( Active Directory )中子网匹配的 IPv4 或 IPv6 地址，以及未匹配的另一类地址。也就是说，如果客户端通过 IPv6 地址建立连接，但该客户端的 IPv4 地址与活动目录中的某个子网匹配，则日志会提示未映射的 IPv6 地址。
 
-> **注意**：
-
-请访问[此网站](http://bit.ly/XsQzpt)，获取可用于排查子网映射问题的示例脚本。
+> **注意**：请访问[此网站](http://bit.ly/XsQzpt)，获取可用于排查子网映射问题的示例脚本。
 
 #### 站点
 
@@ -2316,9 +2272,7 @@ Active Directory *站点*( Site )通常定义为连接良好的 AD 子网( Subne
 
 可以为单个物理位置定义多个站点。这样可以更好地隔离哪些资源用于哪些请求者。例如,在大公司中,一种常见做法是专门构建一个独立的站点,用于容纳 Microsoft Exchange 2000 和 2003 服务器,以及用于响应 Exchange 和 Outlook 查询的全局编录( Global Catalog ,GC )。这样,管理员无需将首选的 GC 设置硬编码到 Exchange 中,就能轻松控制使用哪些 GC。你可以根据需要将子网( Subnet )划分得尽可能小,甚至可以小到单个 IP 地址(32 位子网),以便将服务器放入正确的站点。
 
-> **警告**：
-
-自 Exchange 2007 起，由于 Exchange 邮件路由行为发生了变化，将 Exchange 服务器置于单独站点已不再是推荐的最佳实践。如果你要在环境中部署 Exchange，则需要与 Exchange 管理员密切协作，确保支持 Exchange 的站点中有足够的全局编录( Global Catalog )容量。
+> **警告**：自 Exchange 2007 起，由于 Exchange 邮件路由行为发生了变化，将 Exchange 服务器置于单独站点已不再是推荐的最佳实践。如果你要在环境中部署 Exchange，则需要与 Exchange 管理员密切协作，确保支持 Exchange 的站点中有足够的全局编录( Global Catalog )容量。
 
 ##### 管理站点
 
@@ -2400,9 +2354,7 @@ Active Directory 会根据站点链接拓扑结构,自动为没有域控制器�
 
 在活动目录站点和服务( Active Directory Sites and Services )MMC 管理单元中,创建站点链路的位置不太容易找到:该选项隐藏在*Sites\Inter-Site Transports\IP*下,如图 6-8所示。
 
-> **注意**：
-
-如果使用 SMTP 复制并且需要创建 SMTP 站点链接( Site Link )，则需要在图 6-8所示的 *SMTP* 文件夹内创建站点链接。
+> **注意**：如果使用 SMTP 复制并且需要创建 SMTP 站点链接( Site Link )，则需要在图 6-8所示的 *SMTP* 文件夹内创建站点链接。
 
 ![Managing IP site links with AD Sites and Services](./image/6.%20Site%20Topology%20and%20Active%20Directory%20Replication/httpatomoreillycomsourceoreillyimages1663376.webp)
 
@@ -2485,9 +2437,7 @@ New-ADReplicationSiteLink -Name "Chicago-Paris" -Description "Paris-Chicago" `
 
 *复制元数据( Replication Metadata )*是管控复制过程的数据。Active Directory 复制能够在不同域控制器( Domain Controller ,DC)上的命名上下文( Naming Context ,NC)之间传输数据，同时避免陷入无限复制循环或丢失任何数据。为了实现这一过程，每个 NC 都保存了大量与该特定 NC 内复制直接相关的信息。这意味着架构 NC 的复制数据存储在架构 NC 中，配置 NC 的复制数据存储在配置 NC 中，与前者相互独立，依此类推。之所以采用这种方式，是因为所有复制都是基于命名上下文的。当域控制器从另一台域控制器拉取变更时，它按命名上下文逐个串行执行。
 
-> **警告**：
-
-尽管时间不是 Active Directory 中复制的基础，但它仍然极其重要。域控制器( Domain Controller ,DC)之间用于复制的所有身份验证都基于 Kerberos，并且 Kerberos 对主机之间的最大时间偏差( time-skew )有要求。在采用默认设置的域中，如果某个域控制器与其他所有域控制器的公共时间偏差超过五分钟，则该域控制器将无法再与其他域控制器进行复制。
+> **警告**：尽管时间不是 Active Directory 中复制的基础，但它仍然极其重要。域控制器( Domain Controller ,DC)之间用于复制的所有身份验证都基于 Kerberos，并且 Kerberos 对主机之间的最大时间偏差( time-skew )有要求。在采用默认设置的域中，如果某个域控制器与其他所有域控制器的公共时间偏差超过五分钟，则该域控制器将无法再与其他域控制器进行复制。
 
 ##### 更新序列号( Update Sequence Number ,USN )与 highestCommittedUSN
 
@@ -2511,9 +2461,7 @@ New-ADReplicationSiteLink -Name "Chicago-Paris" -Description "Paris-Chicago" `
 
 如果你使用“Active Directory 用户和计算机”管理单元在 DC A 上创建五个用户，DC A 的 USN 将递增五次，每进行一次原始更新就递增一次。这些更改随后会被复制到 DC B，使 DC B 的 USN 递增五次。同样，如果 DC A 收到来自 DC B 的更改，DC A 的 USN 将递增一次。此行为在表 6-1中有所概述。
 
-> **注意**：
-
-如果某个 Active Directory 数据库事务被中止（即未能完成），则关联的 USN 值不会分配给任何对象，也不会以任何方式重用。随着更改的发生，USN 会继续递增。
+> **注意**：如果某个 Active Directory 数据库事务被中止（即未能完成），则关联的 USN 值不会分配给任何对象，也不会以任何方式重用。随着更改的发生，USN 会继续递增。
 
 
 
@@ -2534,9 +2482,7 @@ New-ADReplicationSiteLink -Name "Chicago-Paris" -Description "Paris-Chicago" `
 
 Active Directory 数据库（*ntds.dit*）也有一个 GUID。后一个 GUID 用于在复制调用中标识服务器的 Active Directory 数据库，称为*调用 ID*；它存储在域控制器的 NTDS Settings 对象的 `invocationId` 属性中。每当在该 DC 上还原 Active Directory 时，或每当 DSA GUID 更改时，调用 ID 都会更改。Windows Server 2012 DC 在检测到其虚拟机生成 ID 发生更改时，也会重置其调用 ID。有关虚拟机生成 ID（VM gen ID）更改过程的详细信息，请参阅第 9 章。
 
-> **注意**：
-
-更改 GUID 可确保网络上的其他域控制器( Domain Controller ,DC )识别出这是一个新的数据库实例,并为此在各自的表中创建新的高水位矢量( High-Watermark Vector )和最新性矢量( Up-to-Dateness Vector )条目。
+> **注意**：更改 GUID 可确保网络上的其他域控制器( Domain Controller ,DC )识别出这是一个新的数据库实例,并为此在各自的表中创建新的高水位矢量( High-Watermark Vector )和最新性矢量( Up-to-Dateness Vector )条目。
 
 这样一来,备份之后发生的更改便可复制回新还原的数据库,使其正确达到最新状态。若缺少此步骤,凡是在备份完成后源自该还原 DC 并已复制到目录其余部分的更改,在该 DC 还原后将永远不会再复制回该 DC。这是因为复制伙伴会认为该 DC 已拥有这些更改,毕竟它原本就是这些更改的源头。
 
@@ -2654,9 +2600,7 @@ Active Directory 数据库（*ntds.dit*）也有一个 GUID。后一个 GUID 用
 
 #### 复制过程中对象元数据的修改方式
 
-> **注意**：
-
-为尽量减少缩写，本节中术语 *域控制器( Domain Controller ,DC)* 和 *服务器( server )* 可互换使用。术语 *属性( property )* 和 *特性( attribute )* 在此也可互换使用。
+> **注意**：为尽量减少缩写，本节中术语 *域控制器( Domain Controller ,DC)* 和 *服务器( server )* 可互换使用。术语 *属性( property )* 和 *特性( attribute )* 在此也可互换使用。
 
 要了解复制过程中实际数据是如何修改的，请考虑一个四步示例：
 
@@ -2691,9 +2635,7 @@ Active Directory 数据库（*ntds.dit*）也有一个 GUID。后一个 GUID 用
 
 实际上，对于任意给定对象的每个属性，所有按属性的复制元数据( replication metadata )（属性版本号( Property Version Number )、更改时间( Time-Changed )、源 DC GUID( Originating-DC-GUID )、源 USN( Originating-USN )、属性 USN( Property-USN )）会一起编码为单个字节字符串，并作为对象的非复制属性( nonreplicated attribute ) `replPropertyMetaData` 存储。
 
-> **注意**：
-
-可使用 PowerShell、*repadmin*、*adfind*、ADSI Edit 或 LDP 查看属性元数据。有关如何查看复制元数据的示例，请参阅侧边栏查看复制元数据。
+> **注意**：可使用 PowerShell、*repadmin*、*adfind*、ADSI Edit 或 LDP 查看属性元数据。有关如何查看复制元数据的示例，请参阅侧边栏查看复制元数据。
 
 
 
@@ -2786,15 +2728,11 @@ Version, AttributeName | ft
 
 此步骤与步骤 2 类似。当 DC A 在复制期间收到密码更新时，它会为该更改事务分配 USN 1333。
 
-> **注意**：
-
-请记住，更新发生在属性级别而非对象级别，因此仅发送密码，而不发送整个用户对象。
+> **注意**：请记住，更新发生在属性级别而非对象级别，因此仅发送密码，而不发送整个用户对象。
 
 在事务 1333 期间，用户的 `uSNChanged` 属性被修改为与服务器 A 的事务 USN 相对应。
 
-> **注意**：
-
-如果你在实际的域控制器上重现此分步演练，你会注意到两处差异。
+> **注意**：如果你在实际的域控制器上重现此分步演练，你会注意到两处差异。
 
 第一处差异是，在从 DC A 复制到 DC B 之后，`cn` 属性实际上会显示始发写入来自 DC B。这是一个影响任何给定对象的 RDN 属性的后端实现细节，也是此类差异唯一出现的情况。
 
@@ -2836,9 +2774,7 @@ Version, AttributeName | ft
 
 指定最大对象更新数和属性值数对于限制网络带宽消耗非常重要。如果某台服务器自上一个复制周期以来产生了大量更新,则限制单个复制数据包( Replication Packet )中复制出的对象数量,意味着不会因在一个巨型数据包中复制这些对象而过度占用网络带宽。相反,复制会在整个复制周期内分解为更小的数据包。一旦某个命名上下文的复制周期已启动,它就会复制所有更改,无论需要多少个数据包或花费多长时间,除非域控制器( Domain Controller ,DC )之间的连接彻底失败。
 
-> **警告**：
-
-上一段中关于复制计划行为的表述看似微妙，实则至关重要。计划仅定义复制可以*开始*的时间。一旦复制周期开始，它就不会停止，直至完成（或连接中断）。即使计划时间已过，情况依然如此。
+> **警告**：上一段中关于复制计划行为的表述看似微妙，实则至关重要。计划仅定义复制可以*开始*的时间。一旦复制周期开始，它就不会停止，直至完成（或连接中断）。即使计划时间已过，情况依然如此。
 
 此步骤如图 6-13所示，图中表明：虽然复制的发起发生在服务器 A 上名为 xxxx 的命名上下文（ NC ）（其中 xxxx 可表示架构 NC、配置 NC、应用程序分区或任何域 NC），但实际复制稍后将从服务器 B 到服务器 A 进行。
 
@@ -2880,9 +2816,7 @@ Version, AttributeName | ft
    - 如果需要发送更改,则将更新条目添加到输出缓冲区。服务器 B 将 Last-Object-USN-Changed 设置为当前对象的 `uSNChanged` 属性值,并继续枚举下一个对象。
    - 如果不需要发送更改,服务器 B 将 Last-Object-USN-Changed 设置为当前对象的 `uSNChanged` 值,并继续枚举下一个对象。
 
-> **注意**：
-
-枚举过程中，如果达到所请求的对象更新条目或值的限制，枚举将提前终止，并将名为 `More-Data` 的标志设置为 `True`。如果枚举完成时未触及任一限制，则 `More-Data` 设置为 `False`。
+> **注意**：枚举过程中，如果达到所请求的对象更新条目或值的限制，枚举将提前终止，并将名为 `More-Data` 的标志设置为 `True`。如果枚举完成时未触及任一限制，则 `More-Data` 设置为 `False`。
 
 ##### 步骤 3：伙伴服务器向发起服务器发送更新
 
@@ -2932,9 +2866,7 @@ Version, AttributeName | ft
 - 最新性矢量用于传播抑制( Propagation Dampening ),对更新进行筛选,使伙伴只传输发起方服务器尚未见到的更新。
 - 每个对象上的 `uSNChanged` 属性用于确定哪些对象可能需要作为更新发送给发起方服务器。
 
-> **注意**：
-
-如果需要，您可以使用 Active Directory 站点和服务管理单元强制手动复制域控制器( Domain Controller ,DC) 上的特定命名上下文( Naming Context ,NC)。浏览到要通过其进行复制的连接对象，右键单击该对象，然后选择“立即复制”。也可以使用 *repadmin* 实用工具从命令行执行此操作。
+> **注意**：如果需要，您可以使用 Active Directory 站点和服务管理单元强制手动复制域控制器( Domain Controller ,DC) 上的特定命名上下文( Naming Context ,NC)。浏览到要通过其进行复制的连接对象，右键单击该对象，然后选择“立即复制”。也可以使用 *repadmin* 实用工具从命令行执行此操作。
 
 使用 Windows PowerShell，您可以使用 *Sync-ADObject* cmdlet 强制复制特定对象。不过，没有可一次性同步整个分区的 cmdlet。
 
@@ -2956,9 +2888,7 @@ Version, AttributeName | ft
 2. 如果属性版本号相等，服务器会检查两个属性的时间戳( timestamp )。更改时间较晚的属性将在冲突中胜出。
 3. 如果属性时间戳相等，则检查来自两台发起服务器( originating server )的全局唯一标识符( Globally Unique Identifier ,GUID )。由于 GUID 必须唯一，这两个值必然彼此不同，因此服务器会将 GUID 按数学比较更高的发起服务器所做的属性更改判定为冲突的胜出者。
 
-> **注意**：
-
-Active Directory 的所有复制元数据时间戳均以协调世界时( Universal Time Coordinated ,UTC)存储，它更常被称为格林尼治标准时间( Greenwich Mean Time ,GMT)或祖鲁时间。
+> **注意**：Active Directory 的所有复制元数据时间戳均以协调世界时( Universal Time Coordinated ,UTC)存储，它更常被称为格林尼治标准时间( Greenwich Mean Time ,GMT)或祖鲁时间。
 
 ##### 因移动对象或在现已删除的父级下创建对象而导致的冲突
 
@@ -2986,9 +2916,7 @@ cn=LostAndFoundConfig,cn=Configuration,dc=mycorp,dc=com
 
 但在这种情况下，冲突解决中落败的对象并不会丢失或被删除；而是会将冲突属性修改为一个已知的唯一值。这样一来，在解决过程结束时，两个对象都会存在，其中一个对象的冲突名称会改为唯一值。该唯一名称采用以下格式：*<ObjectName><LineFeed>CNF:<ObjectGUID>*。
 
-> **警告**：
-
-此逻辑仅用于对象的相对可分辨名称( Relative Distinguished Name ,RDN)命名值（通常是 `cn` 属性）。它不用于清理其他通常要求唯一的值，例如代表用户用户名或计算机名的 `sAMAccountName` 属性。有关如何处理重复 `sAMAccountName` 值的详细信息，请参阅即将出现的侧栏 Active Directory 如何处理重复的帐户值。
+> **警告**：此逻辑仅用于对象的相对可分辨名称( Relative Distinguished Name ,RDN)命名值（通常是 `cn` 属性）。它不用于清理其他通常要求唯一的值，例如代表用户用户名或计算机名的 `sAMAccountName` 属性。有关如何处理重复 `sAMAccountName` 值的详细信息，请参阅即将出现的侧栏 Active Directory 如何处理重复的帐户值。
 
 在以下示例中，一台名为 *PC04* 的计算机因冲突而被重命名。这很可能发生在管理员在将该计算机加入域时遇到错误，然后随后再次尝试之后。在随后的尝试中，管理员在复制发生之前连接到了另一台域控制器( Domain Controller ,DC)：
 
@@ -3023,9 +2951,7 @@ Active Directory 如何处理重复的帐户值
 
 当在服务器上进行更改后，该服务器在复制更改之前宕机，可能会出现其他问题。如果该服务器始终未重新启动以复制更改，则这些更改显然会丢失。
 
-> **注意**：
-
-另一种情况是，如果该服务器很久之后才重新上线，并尝试将这些更改复制回 Active Directory，那么发生冲突解决的可能性就会大得多（如果该服务器上所做的许多更改，后来在其他服务器上以更近的时间点已对 Active Directory 做了相同更改，则该服务器会在冲突中失败）。这不是什么问题，但属于您需要了解的情况。
+> **注意**：另一种情况是，如果该服务器很久之后才重新上线，并尝试将这些更改复制回 Active Directory，那么发生冲突解决的可能性就会大得多（如果该服务器上所做的许多更改，后来在其他服务器上以更近的时间点已对 Active Directory 做了相同更改，则该服务器会在冲突中失败）。这不是什么问题，但属于您需要了解的情况。
 
 ### 6.3. 常见复制问题
 
@@ -3051,9 +2977,7 @@ Value Type: REG_DWORD
 Value: 1
 ```
 
-> **注意**：
-
-可以使用 *repadmin* 在林的每台域控制器( Domain Controller ,DC )上启用严格复制一致性。为此，请运行以下命令：*repadmin /regkey \* +strict*。
+> **注意**：可以使用 *repadmin* 在林的每台域控制器( Domain Controller ,DC )上启用严格复制一致性。为此，请运行以下命令：*repadmin /regkey \* +strict*。
 
 若要清理域控制器上的残留对象( Lingering Object )，最简便的方法是先降级该域控制器，然后再将其重新提升。如果无法这样做，可以利用 *repadmin* 中的残留对象清理功能。此时需要选择一台域控制器作为权威源，Active Directory 将检查你正在清理的域控制器上的每个对象是否也存在于你的“权威源”DC 上。
 
@@ -3180,15 +3104,11 @@ Active Directory 将其数据库存储在每个域控制器( Domain Controller ,
 
 图 7-1. 数据表
 
-> **注意**：
-
-你可能会认为，如果对象在架构( schema )中未定义某个属性，却仍为该属性列存储空值，就会带来存储开销。幸运的是，活动目录( Active Directory ,AD) 使用的数据库引擎——可扩展存储引擎( Extensible Storage Engine ,ESE)——非常擅长存储空值，因此以这种方式存储数据并不会产生额外开销。
+> **注意**：你可能会认为，如果对象在架构( schema )中未定义某个属性，却仍为该属性列存储空值，就会带来存储开销。幸运的是，活动目录( Active Directory ,AD) 使用的数据库引擎——可扩展存储引擎( Extensible Storage Engine ,ESE)——非常擅长存储空值，因此以这种方式存储数据并不会产生额外开销。
 
 除了在 AD 中常见的标识符（例如安全主体( security principal )的 SID 或目录中每个对象的 `objectGUID`）之外，数据表还会为表中的每一行使用一个特殊的唯一标识符。该标识符称为*可分辨名称标记( distinguished name tag ,DNT)*，如图 7-1的第一列所示。创建新对象时，会分配下一个可用的 DNT。对象的 DNT 不会被复制，因此同一对象很可能在每个域控制器( Domain Controller ,DC)上具有不同的 DNT。此外，对象被删除后，DNT 不会被重用。
 
-> **注意**：
-
-给定数据库中，活动目录( Active Directory ,AD)最多可包含 2,147,483,393（2^31 – 255）个可分辨名称标记( Distinguished Name Tag ,DNT)。因此，如果某个域控制器( Domain Controller ,DC)在其生命周期内已累计存储了这么多对象，那么该 DC 上可能无法再创建新对象。
+> **注意**：给定数据库中，活动目录( Active Directory ,AD)最多可包含 2,147,483,393（2^31 – 255）个可分辨名称标记( Distinguished Name Tag ,DNT)。因此，如果某个域控制器( Domain Controller ,DC)在其生命周期内已累计存储了这么多对象，那么该 DC 上可能无法再创建新对象。
 
 除 DNT 列之外，图 7-1 中还显示了若干引用。父 DNT( Parent DNT ,PDNT) 列存储的是父 DNT。它是指向数据库中该对象直接父行的指针。在目录中移动对象时，其 PDNT 列项会更新，以匹配对象的新父级。命名上下文 DNT( Naming Context DNT ,NCDNT) 列包含与对象所在的命名上下文( Naming Context ,NC)匹配的命名上下文头( naming context head )的 DNT。NCDNT 列有助于说明应用程序分区( application partition )只是逻辑分区。你会看到，在图 7-1 中，配置( Configuration )和架构( Schema )命名上下文与域( Domain )命名上下文存储在一起。这些 NC 中对象的 NCDNT 项仅指向相关对象的 DNT。
 
@@ -3208,9 +3128,7 @@ Active Directory 将其数据库存储在每个域控制器( Domain Controller ,
 
 图 7-2. 链接表
 
-> **注意**：
-
-严格来说,LinkBase 列中的值并不是直接指向该属性的正向链接 ID 值。我们在图中简化了这一细节,因为它与本文的讨论无关。
+> **注意**：严格来说,LinkBase 列中的值并不是直接指向该属性的正向链接 ID 值。我们在图中简化了这一细节,因为它与本文的讨论无关。
 
 图 7-3 中链接表的图示使内容解释起来更为容易。在本例中,我们可以看到所显示的行正在跟踪 Domain Admins 组中的一个成员身份。具体来说,用户 Brian Desmond(DNT 9601)是 Domain Admins(DNT 5615)的成员。LinkBase 列告诉我们,对应属性的链接 ID 为 2。
 
@@ -3247,9 +3165,7 @@ Active Directory( AD )数据库通常使用轻型目录访问协议( Lightweight
 
 当你搜索已锁定的账户时，可能就会用到表 7-1中所示的大于或等于运算符。你可以构造诸如 `(pwdLastSet>=1)` 之类的筛选器，以查找至少设置过一次密码的对象。否定或非运算符可用于查找一组不匹配给定条件的对象。例如，如果要查找所有不在会计部门中的对象，可以搜索 `(!(department=Accounting))`。
 
-> **注意**：
-
-使用 `!` 运算符时，活动目录( Active Directory )需要扫描整个数据库以查找符合筛选条件的对象，即使所搜索的属性(如 `department` )已建立索引也不例外。在开发查询时，应考虑这一限制，以确保获得最佳性能。
+> **注意**：使用 `!` 运算符时，活动目录( Active Directory )需要扫描整个数据库以查找符合筛选条件的对象，即使所搜索的属性(如 `department` )已建立索引也不例外。在开发查询时，应考虑这一限制，以确保获得最佳性能。
 
 除了表 7-1中列出的运算符外，您还可以使用 `*` 字符来查找具有特定属性值的任何对象。例如，筛选器 `(description=*)` 将返回目录中所有为 `description` 属性设置了值的对象。相反，筛选器 `(!(description=*))` 将返回任何未为 `description` 属性填充值的对象。
 
@@ -3512,9 +3428,7 @@ adfind -f "(&(objectClass=computer)(pwdLastSet<={{LOCAL:2012/10/01-12:00:00}}))"
 
 
 
-> **注意**：
-
-通过在该筛选器中指定 OID `1.2.840.113556.1.4.804`，即可使用 OR 运算符。
+> **注意**：通过在该筛选器中指定 OID `1.2.840.113556.1.4.804`，即可使用 OR 运算符。
 
 如果使用 AdFind，可以通过 *-bit* 参数大幅简化这些搜索。更具体地说，可以执行以下命令查找所有已禁用的用户：
 
@@ -3580,9 +3494,7 @@ AdFind 中的 `INCHAIN` 快捷方式只是代替了实际的匹配规则 OID：`
 
 如果你是域管理员( Domain Administrator )，或者在目标域控制器( Domain Controller ,DC)上拥有调试特权，则可使用 `stats` LDAP 控件。访问 `stats` 控件的最佳方式是使用 AdFind 并结合 *-stats+* 开关。
 
-> **注意**：
-
-请确保在提升权限的命令提示符下运行 AdFind，以便使用 `stats` 控制。
+> **注意**：请确保在提升权限的命令提示符下运行 AdFind，以便使用 `stats` 控制。
 
 `stats` 控制将在输出中提供多个数据点，包括用于处理搜索的索引、必须单独扫描的记录数（与返回的记录数相比），以及计时信息。请考虑以下针对运行 Windows XP 的计算机进行搜索的输出：
 

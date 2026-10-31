@@ -2,8 +2,6 @@
 summary: Active Directory（第5版·第5卷），全面介绍活动目录轻型目录服务（AD LDS）的应用与部署，以及活动目录联合身份验证服务（AD FS）的企业级单点登录、声明式身份与外部信任体系构建。
 ---
 
-# Active Directory, 5th Edition（第5卷：AD LDS 与 AD FS）
-
 ## 第 20 章 活动目录轻型目录服务
 
 在微软发布 Windows 2000 Active Directory 后不久，开发人员和管理员便开始寻求一种独立的 Microsoft LDAP 服务，该服务应类似于 Active Directory，但无需承担其额外开销（例如 DNS 和 FRS 要求、组策略( Group Policy )，以及 Kerberos 和旧版 SAM 互操作性等其他域组件）——基本上，就是一种轻量级、易于设置、可随意使用并在需要时轻松拆除的服务。虽然使用 Active Directory 也能实现这一目的，但往往需要额外的清理和配置工作，而且与 LDAP 功能无关的组件可能会受到干扰，导致整个系统出现故障。
@@ -203,9 +201,7 @@ AD LDS 可以在 Active Directory 中发布 `serviceConnectionPoint` (服务连�
 
 Active Directory 提供全局编录，使你可以轻松查询整个林( Forest )层次结构中的对象。你向特殊端口发送标准 LDAP 查询，即可访问林中所有对象的属性子集。单个查询就允许你搜索配置容器( Configuration container )、架构( Schema )以及林中的每个默认域分区( default domain partition )。活动目录轻型目录服务( Active Directory Lightweight Directory Services ,AD LDS)有多个分区，但没有匹配的全局编录功能。幸运的是，Windows LDAP 服务器接受一种特殊的 LDAP 控件设置，允许你使用单个查询扫描 AD LDS 实例的所有分区（或分区子集，如 `DC=com`）。遗憾的是，此功能仅适用于基于 LDAP API 的应用程序，不适用于 Active Directory 服务接口( Active Directory Service Interfaces ,ADSI )脚本和程序。
 
-> **注意**：
-
-我们刚刚描述了 `LDAP_SERVER_SEARCH_OPTIONS_OID` LDAP 服务器控件。此控件与 `SERVER_SEARCH_FLAG_PHANTOM_ROOT` 标志结合，可启用特殊的全实例搜索功能。该控件也适用于 Active Directory，但由于全局编录功能，通常并不需要。有关详细信息，请参阅[此链接](http://bit.ly/16YMTm3)。
+> **注意**：我们刚刚描述了 `LDAP_SERVER_SEARCH_OPTIONS_OID` LDAP 服务器控件。此控件与 `SERVER_SEARCH_FLAG_PHANTOM_ROOT` 标志结合，可启用特殊的全实例搜索功能。该控件也适用于 Active Directory，但由于全局编录功能，通常并不需要。有关详细信息，请参阅[此链接](http://bit.ly/16YMTm3)。
 
 有一种选项可能适用于 ADSI 以及任何未实现适当 LDAP 控件的第三方应用程序。它涉及自行实现 GC 功能：设置另一个顶级应用程序分区( application partition )，并从其他应用程序分区同步特定对象和属性。然后，向需要查询整个实例的应用程序和用户授予只读访问权限，并向同步应用程序授予完全控制权限。如果你只是想基于几个公共属性（如 `sAMAccountName`）快速查找对象的 DN，此选项可能适合你。
 
@@ -353,9 +349,7 @@ AD LDS 安装分为两个主要部分：安装基础组件和安装新实例。�
 
 图 20-1. 启动 AD LDS 设置向导
 
-> **注意**：
-
-你也可以运行 *%windir%\ADAM\ADAMinstall.exe* 来启动此向导。
+> **注意**：你也可以运行 *%windir%\ADAM\ADAMinstall.exe* 来启动此向导。
 
 这将启动一个标准的 Windows 安装向导。第一个重要对话框（参见图 20-2）会询问你是要安装活动目录轻型目录服务( Active Directory Lightweight Directory Services ,AD LDS )的唯一实例，还是要创建现有实例的副本。副本将在安装 AD LDS 副本一节中介绍；目前，请选择“唯一实例”（默认选项）。当你安装唯一实例时，你创建的实例不与任何其他 AD LDS 实例关联，并且具有全新的 AD LDS 架构和所有默认配置设置。你将无法将此实例配置为与当前存在的任何其他实例进行复制，不过你可以创建另一个新实例并将其安装为此实例的副本。
 
@@ -520,9 +514,7 @@ Microsoft 已将 AD LDS 设计为默认以 *Network Service* 帐户运行。这�
 
 AD LDS 还有一些我们尚未提及的额外安装选项。您可以执行无人值守安装,也可以从介质安装应用程序。使用 *ADAMinstall.exe* 从命令行启动安装过程时,可以指定这些选项。键入 **`ADAMinstall /?`** 或参阅 AD LDS 帮助文件以了解更多信息。
 
-> **注意**：
-
-配置完副本后，你常会注意到：该副本会立即与你在此前"加入配置集"( Joining a Configuration Set )对话框中指定的实例建立复制连接（图 20-12），但其他副本均未与新副本建立复制连接。这完全正常；新副本的信息传遍整个配置集、并构建出已纳入该新副本的相应复制拓扑，都需要一些时间。
+> **注意**：配置完副本后，你常会注意到：该副本会立即与你在此前"加入配置集"( Joining a Configuration Set )对话框中指定的实例建立复制连接（图 20-12），但其他副本均未与新副本建立复制连接。这完全正常；新副本的信息传遍整个配置集、并构建出已纳入该新副本的相应复制拓扑，都需要一些时间。
 
 若要加快这一过程，可以使用 *repadmin.exe* 命令行工具来生成这些连接。具体而言，要使用 */AddRepsTo* 开关。键入 *repadmin /experthelp* 即可获得该开关的帮助信息。*repadmin* 是判断复制状况是否健康、并修复所遇问题的最实用工具之一。这一点对活动目录轻型目录服务( Active Directory Lightweight Directory Services ,AD LDS )和活动目录( Active Directory ,AD )同样适用。
 
@@ -555,9 +547,7 @@ Set-ADObject -Identity `
 
 
 
-> **注意**：
-
-只有当所有 AD LDS 服务器都运行 Windows Server 2008 R2 或更高版本后，才能提升配置集的功能级别。
+> **注意**：只有当所有 AD LDS 服务器都运行 Windows Server 2008 R2 或更高版本后，才能提升配置集的功能级别。
 
 最后，即可为配置集启用活动目录回收站：
 
@@ -572,9 +562,7 @@ Enable-ADOptionalFeature 'Recycle Bin Feature' -Scope ForestOrConfigurationSet
 
 
 
-> **警告**：
-
-回收站一经启用便无法禁用。启用回收站还会导致无法回退配置集的功能级别。请务必先测试那些利用 DirSync 控制和/或搜索已删除对象的应用程序。
+> **警告**：回收站一经启用便无法禁用。启用回收站还会导致无法回退配置集的功能级别。请务必先测试那些利用 DirSync 控制和/或搜索已删除对象的应用程序。
 
 ### 20.5. 工具
 
@@ -613,9 +601,7 @@ ADAM Install 是通过选择“Active Directory 轻型目录服务安装向导�
 
 1. 启动 AD 架构 MMC 管理单元。
 
-   > **注意**：
-
-   AD 架构 MMC 管理单元默认已安装但未注册。首次在服务器上使用前，需从提升权限的命令提示符中运行 `regsvr32 schmmgmt.dll`。注册 DLL 后，可通过开始→运行→输入 `mmc`，然后选择文件→添加/删除管理单元，并添加 Active Directory 架构来创建包含该管理单元的 MMC 控制台。
+   > **注意**：AD 架构 MMC 管理单元默认已安装但未注册。首次在服务器上使用前，需从提升权限的命令提示符中运行 `regsvr32 schmmgmt.dll`。注册 DLL 后，可通过开始→运行→输入 `mmc`，然后选择文件→添加/删除管理单元，并添加 Active Directory 架构来创建包含该管理单元的 MMC 控制台。
 
 2. 在左侧根节点 Active Directory 架构上右键单击，选择“更改 Active Directory 域控制器”。
 
@@ -689,9 +675,7 @@ LDP 是一款图形用户界面( Graphical User Interface ,GUI)工具,用于浏�
 
 
 
-> **注意**：
-
-无法将现有的 `classSchema` 对象配置为具有其中任一辅助类;必须在 AD LDS 架构中最初定义该类时指定这些类。此限制是由于无法向现有的类定义添加强制属性。
+> **注意**：无法将现有的 `classSchema` 对象配置为具有其中任一辅助类;必须在 AD LDS 架构中最初定义该类时指定这些类。此限制是由于无法向现有的类定义添加强制属性。
 
 ### 20.7. 使用 AD LDS
 
@@ -699,9 +683,7 @@ LDP 是一款图形用户界面( Graphical User Interface ,GUI)工具,用于浏�
 
 
 
-> **注意**：
-
-如果您更喜欢使用命令行工具而不是基于 GUI 的工具，请将您的 Web 浏览器指向 [http://www.joeware.net](http://www.joeware.net/) 并下载 *admod* 和 *adfind* 免费实用程序。这些命令行工具专门针对 Active Directory 和 AD LDS 进行了优化，并具有若干内置功能，可利用通过活动目录服务接口( Active Directory Service Interfaces ,ADSI) 无法获得的特殊功能。
+> **注意**：如果您更喜欢使用命令行工具而不是基于 GUI 的工具，请将您的 Web 浏览器指向 [http://www.joeware.net](http://www.joeware.net/) 并下载 *admod* 和 *adfind* 免费实用程序。这些命令行工具专门针对 Active Directory 和 AD LDS 进行了优化，并具有若干内置功能，可利用通过活动目录服务接口( Active Directory Service Interfaces ,ADSI) 无法获得的特殊功能。
 
 #### 创建应用程序分区
 
@@ -757,9 +739,7 @@ instanceType: 5
 
 
 
-> **注意**：
-
-您也可以使用 *ntdsutil.exe* 创建应用程序分区。
+> **注意**：您也可以使用 *ntdsutil.exe* 创建应用程序分区。
 
 
 
@@ -861,17 +841,13 @@ userPassword: SecureInitialPassword1!
 
 
 
-> **警告**：
-
-默认情况下，使用 *ldifde.exe* 在 Active Directory 中创建已启用的用户需要 128 位 SSL 连接，并且需要对引号内 Unicode 版本的密码进行 Base64 编码。有关详细信息，请参阅 http://support.microsoft.com/kb/263991。
+> **警告**：默认情况下，使用 *ldifde.exe* 在 Active Directory 中创建已启用的用户需要 128 位 SSL 连接，并且需要对引号内 Unicode 版本的密码进行 Base64 编码。有关详细信息，请参阅 http://support.microsoft.com/kb/263991。
 
 对于 AD LDS，Microsoft 启用了 `userPassword` 属性，使其可作为 `unicodePwd` 的写入别名，并移除了 `unicodePwd` 所需的特殊格式要求。这样一来，您的 LDIF 文件便可以指定明文密码；不过，除非您已通过 *dsmgmt* 放宽了密码操作对安全连接的要求，否则仍然存在 SSL 要求。
 
 
 
-> **注意**：
-
-Windows Server 2003 及更高版本的域控制器( Domain Controller ,DC)也能够使用 `userPassword` 属性代替 `unicodePwd`；但您必须通过 `dsheuristics` [属性](http://bit.ly/13ydHe0)启用该功能。
+> **注意**：Windows Server 2003 及更高版本的域控制器( Domain Controller ,DC)也能够使用 `userPassword` 属性代替 `unicodePwd`；但您必须通过 `dsheuristics` [属性](http://bit.ly/13ydHe0)启用该功能。
 
 在 AD LDS 和 AD 中，`userPassword` 属性只能用于设置操作；如果您需要更改密码，则必须使用 `unicodePwd`，如 http://support.microsoft.com/kb/263991 所述。
 
@@ -1190,9 +1166,7 @@ changetype: delete
 
 
 
-> **注意**：
-
-您也可以使用 *ntdsutil.exe* 删除应用程序分区。
+> **注意**：您也可以使用 *ntdsutil.exe* 删除应用程序分区。
 
 #### 控制对对象和属性的访问
 
@@ -1285,9 +1259,7 @@ AD LDS 是一款极为出色的产品，无疑将在企业环境中为微软及�
 
 3. 用户的浏览器访问 Fabrikam Federation 服务。
 
-   > **注意**：
-
-   Fabrikam Federation 服务可以是 ADFS 环境，也可以是市面上众多其他联合产品中的任意一种。
+   > **注意**：Fabrikam Federation 服务可以是 ADFS 环境，也可以是市面上众多其他联合产品中的任意一种。
 
 4. Fabrikam Federation 服务查找 Coho Vineyard IdP 的 URL，并向用户的浏览器发出 HTTP 重定向。
 
@@ -1305,9 +1277,7 @@ AD LDS 是一款极为出色的产品，无疑将在企业环境中为微软及�
 
 第一点是步骤 2。为什么 Fabrikam Payroll 网站将用户重定向到 Fabrikam 联合身份验证服务,而不是直接重定向到 Coho Vineyard 的 ADFS 服务?答案在于为联合身份构建应用程序的语义。Figure 21-2 中涉及两个信任关系( Trust Relationship )。就网站或一般应用程序而言,应用程序只能信任一个联合身份验证服务。但联合身份验证服务却可以信任许多其他身份提供程序( Identity Provider ,IdP )。由于众多客户都在使用 Fabrikam Payroll 网站,该网站与 Fabrikam 的联合身份验证服务建立了信任,而 Fabrikam 的联合身份验证服务又转而信任每个客户(Coho Vineyard 等)。
 
-> **注意**：
-
-在某些情况下，网站或应用程序本身也充当联合身份验证服务( Federation Service )。在这种情况下，信任关系将直接存在于客户的 Active Directory 联合身份验证服务( Active Directory Federation Services ,AD FS )服务器与信赖方( Relying Party ,RP )网站之间。这减少了几次跳转，也稍微简单一些，但在功能上是相同的。
+> **注意**：在某些情况下，网站或应用程序本身也充当联合身份验证服务( Federation Service )。在这种情况下，信任关系将直接存在于客户的 Active Directory 联合身份验证服务( Active Directory Federation Services ,AD FS )服务器与信赖方( Relying Party ,RP )网站之间。这减少了几次跳转，也稍微简单一些，但在功能上是相同的。
 
 了解这一点后，可能就更容易理解为什么我们需要与 Fabrikam 联合身份验证服务进行两次往返。在第 6 步中，用户会收到一个由 Coho Vineyard 的 AD FS 服务器签名的令牌( Token )。由于 Coho Vineyard 与 Fabrikam Payroll 之间的信任关系建立在联合身份验证服务之间，用户必须将该已签名令牌再出示给 Fabrikam 的联合身份验证服务(第 7 步)。然后，Fabrikam 的联合身份验证服务将验证该令牌；如果一切检查无误，它将颁发一个使用 Fabrikam 证书签名的*新*令牌(第 8 步)。由于 Fabrikam Payroll 应用程序只信任 Fabrikam 的联合身份验证服务，如果该令牌由 Coho Vineyard 的 AD FS 服务器签名，网站将无法验证它。
 
@@ -1387,17 +1357,13 @@ SAML 项目是 SAML 特有的协议功能，而非 WS 联合身份验证( WS-Fed
 
 此拓扑结构完全适用于需要与一个或多个合作伙伴和应用程序建立联合身份验证、但不需要服务器级别冗余的组织。ADFS 的体系结构使得日后扩展此拓扑结构以支持多台联合服务器和联合服务器代理变得相对容易。
 
-> **注意**：
-
-你也可以选择将配置数据库部署在独立的 SQL 服务器上,但除非确有 SAML 工件解析( SAML Artifact Resolution )或令牌重放检测( Token Replay Detection )方面的需求,否则通常没有必要这样做。
+> **注意**：你也可以选择将配置数据库部署在独立的 SQL 服务器上,但除非确有 SAML 工件解析( SAML Artifact Resolution )或令牌重放检测( Token Replay Detection )方面的需求,否则通常没有必要这样做。
 
 ##### 负载均衡的 ADFS 服务器
 
 只要想为 ADFS 实现任何形式的冗余,就必须引入负载均衡。这往往需要你与网络团队的同事紧密协作,才能完成部署。就负载均衡配置而言,ADFS 的配置相当简单:只需为 TCP 端口 80 和 443 配置第 4 层负载均衡即可。除非在基本需求之外还有特殊要求,否则无需服务器关联性( Server Affinity )或 SSL 卸载。不过,你需要在负载均衡器上配置适当的服务器运行状况监视。
 
-> **注意**：
-
-尽管可以使用 Windows 自带的 Windows 网络负载均衡( Network Load Balancing ,NLB )服务来替代硬件负载均衡器,但我们强烈建议你改用硬件负载均衡器。
+> **注意**：尽管可以使用 Windows 自带的 Windows 网络负载均衡( Network Load Balancing ,NLB )服务来替代硬件负载均衡器,但我们强烈建议你改用硬件负载均衡器。
 
 图 21-4 展示了引入负载均衡器后的标准拓扑。在此示例中,我们有一对经过负载均衡的联合服务器代理( Federation Server Proxy ),这些代理连接到一组各自独立进行负载均衡的联合服务器( Federation Server )。这里我们选择继续使用 Windows 内部数据库( Windows Internal Database ,WID )存储配置。不过,如果你的部署规模较大,或者需要 SAML 工件解析、令牌重放检测这类功能,也可以按需将数据库部署在 SQL Server 集群上。随着需求增长,你可以轻松地在负载均衡器后面添加更多联合服务器和联合服务器代理。
 
@@ -1409,9 +1375,7 @@ SAML 项目是 SAML 特有的协议功能，而非 WS 联合身份验证( WS-Fed
 
 图 21-4. 使用 WID 的负载均衡拓扑
 
-> **注意**：
-
-尽管图中显示的是独立的负载均衡器( Load Balancer ),但根据你的网络拓扑结构,你可能只需在一个负载均衡器上配置两个虚拟 IP( Virtual IP ,VIP)即可。请与你的网络团队协作,确定最佳架构。
+> **注意**：尽管图中显示的是独立的负载均衡器( Load Balancer ),但根据你的网络拓扑结构,你可能只需在一个负载均衡器上配置两个虚拟 IP( Virtual IP ,VIP)即可。请与你的网络团队协作,确定最佳架构。
 
 ##### 地理冗余的 ADFS 服务器
 
@@ -1439,9 +1403,7 @@ SAML 项目是 SAML 特有的协议功能，而非 WS 联合身份验证( WS-Fed
 
 - *sts.cohovines.com*
 
-  > **注意**：
-
-  STS 代表安全令牌服务( Security Token Service )。STS 是身份提供程序( Identity Provider ,IdP )的另一种称呼，联合身份验证领域中的某些产品会使用该术语。
+  > **注意**：STS 代表安全令牌服务( Security Token Service )。STS 是身份提供程序( Identity Provider ,IdP )的另一种称呼，联合身份验证领域中的某些产品会使用该术语。
 
 - *fs.cohovines.com*
 
@@ -1457,9 +1419,7 @@ SAML 项目是 SAML 特有的协议功能，而非 WS 联合身份验证( WS-Fed
 
 ADFS 部署的第一步是部署联合服务器。如果运行的是 Windows Server 2008 R2，则需要先[下载并安装 ADFS](http://bit.ly/10j6tEp)。
 
-> **警告**：
-
-Windows Server 2008 R2 附带的 Active Directory 联合身份验证服务( Active Directory Federation Services ,ADFS) 版本为 ADFS 1.0。ADFS 1.0 与 ADFS 2.0 显著不同，因此请务必确保部署的是最新版本。
+> **警告**：Windows Server 2008 R2 附带的 Active Directory 联合身份验证服务( Active Directory Federation Services ,ADFS) 版本为 ADFS 1.0。ADFS 1.0 与 ADFS 2.0 显著不同，因此请务必确保部署的是最新版本。
 
 如果运行的是 Windows Server 2012，则 ADFS 2.1 作为可选服务器角色开箱即用。ADFS 2.0 与 ADFS 2.1 的唯一区别在于，后者支持将嵌入 Kerberos 票据中的动态访问控制( Dynamic Access Control ,DAC) 声明作为 ADFS 声明发送。无论运行哪个 ADFS 版本，本章中的说明均适用。
 
@@ -1505,9 +1465,7 @@ ADFS 配置向导权限
 
 图 21-8. 密钥共享容器
 
-> **注意**：
-
-如果要使用 SQL Server 数据库而非 WID 作为配置数据库,则需要使用命令行工具来配置 ADFS。该工具名为 *fsconfig.exe*,位于 *%windir%\ADFS* 中。
+> **注意**：如果要使用 SQL Server 数据库而非 WID 作为配置数据库,则需要使用命令行工具来配置 ADFS。该工具名为 *fsconfig.exe*,位于 *%windir%\ADFS* 中。
 
 首先会询问你是要部署新的联合身份验证服务,还是加入现有服务器场,如图 21-9所示。请选择"Create a new Federation Service"选项。
 
@@ -1521,9 +1479,7 @@ ADFS 配置向导权限
 
 接下来,你将可以选择创建新的联合服务器场或安装独立服务器,如图 21-10所示。即使你不打算添加其他联合身份验证服务器,我们也建议选择创建单服务器场。
 
-> **警告**：
-
-独立服务器( Standalone Server )无法在后续阶段过渡为联合服务器场( Federation Server Farm )。
+> **警告**：独立服务器( Standalone Server )无法在后续阶段过渡为联合服务器场( Federation Server Farm )。
 
 
 ![Create a standalone server or server farm](./image/21.%20Active%20Directory%20Federation%20Services/httpatomoreillycomsourceoreillyimages1663591.webp)
@@ -1559,9 +1515,7 @@ ADFS 要在服务器场环境中运行,还需要一个服务账户( Service Acco
 
 在"常规"选项卡上,可以为服务配置显示名称。在"组织"选项卡上,可以发布 ADFS 支持团队的联系信息,这些信息将列在 ADFS 服务器的联合身份验证元数据中。联合身份验证元数据( Federation Metadata )用于自动配置各方之间大部分信任关系。最后,在"事件"选项卡上,可以调整服务的日志记录和审核设置。
 
-> **警告**：
-
-初始配置期间，必须设置“常规”选项卡上的“联合身份验证服务名称”和“联合身份验证服务标识符”值。部署 ADFS 后再更改这些值，可能会破坏你与其他各方之间的信任关系！
+> **警告**：初始配置期间，必须设置“常规”选项卡上的“联合身份验证服务名称”和“联合身份验证服务标识符”值。部署 ADFS 后再更改这些值，可能会破坏你与其他各方之间的信任关系！
 
 开始配置联合身份验证之前，应处理好的第二个配置项是令牌签名与令牌加密证书的问题。正如本章前面所述，ADFS 颁发的每个令牌都使用 ADFS 令牌签名证书进行签名。你信任的组织会在本地保留一份 ADFS 服务器公钥的副本，以便验证从你的 ADFS 环境接收的每个令牌。
 
@@ -1601,9 +1555,7 @@ ADFS 要在服务器场环境中运行,还需要一个服务账户( Service Acco
 
 在该文件的底部，输入联合服务器或负载均衡器 VIP 的 IP 地址，按 Tab 键，然后在新行输入联合身份验证服务名称（例如 *sts.cohovines.com*），如 图 21-17 所示。
 
-> **警告**：
-
-将 IP 地址与主机名分开时，必须使用制表符，这一点非常重要！
+> **警告**：将 IP 地址与主机名分开时，必须使用制表符，这一点非常重要！
 
 
 
@@ -1797,9 +1749,7 @@ Figure 21-21 展示了"配置 URL"屏幕。在此处,你需要指定 ADFS 在颁
 - 国家/地区( Country )
 - 全职员工( FullTimeEmployee )
 
-> **注意**：
-
-除非你已自定义过 Active Directory 联合身份验证服务( Active Directory Federation Services ,ADFS )的实现，否则需要完成侧栏创建声明描述( Creating Claim Descriptions )中的步骤，将 Display Name、City、Country 和 FullTimeEmployee 声明添加到 ADFS。
+> **注意**：除非你已自定义过 Active Directory 联合身份验证服务( Active Directory Federation Services ,ADFS )的实现，否则需要完成侧栏创建声明描述( Creating Claim Descriptions )中的步骤，将 Display Name、City、Country 和 FullTimeEmployee 声明添加到 ADFS。
 
 
 
@@ -1893,9 +1843,7 @@ AD FS 内置了多种事件日志以及一个称为关联标识符( *correlation
 
 如果 Admin 事件日志中的数据不够充分，您需要为 AD FS 启用跟踪日志( Trace Log )。为此，请依次点击“查看”→“显示分析和调试日志”。浏览至 *Applications and Services Logs\AD FS Tracing\Debug*，然后右键单击 Debug 日志并点击“启用日志”。重现您的错误并刷新视图。图 21-36显示了一个有用的事件，确认了图 21-35中的诊断结论。完成后，请务必右键单击 Debug 日志并点击“禁用日志”。
 
-> **注意**：
-
-您需要重复相同的步骤，以将 Correlation Id 列添加到此日志的显示中。
+> **注意**：您需要重复相同的步骤，以将 Correlation Id 列添加到此日志的显示中。
 
 
 
@@ -1923,9 +1871,7 @@ AD FS 内置了多种事件日志以及一个称为关联标识符( *correlation
 
 图 21-37. 在 Fiddler 中配置证书信任
 
-> **注意**：
-
-如果要在 Active Directory 联合身份验证服务( Active Directory Federation Services ,ADFS )服务器上使用 Windows 集成身份验证( Windows Integrated Authentication )，则必须先禁用扩展保护( Extended Protection )，然后才能使用 Fiddler。有关如何操作，请参阅侧栏配置扩展保护。
+> **注意**：如果要在 Active Directory 联合身份验证服务( Active Directory Federation Services ,ADFS )服务器上使用 Windows 集成身份验证( Windows Integrated Authentication )，则必须先禁用扩展保护( Extended Protection )，然后才能使用 Fiddler。有关如何操作，请参阅侧栏配置扩展保护。
 
 完成这些步骤后，请浏览到联合应用程序( Federated Application )并登录。你将看到 Fiddler 中发生的每个步骤，如图 21-38 所示。
 
@@ -1939,23 +1885,17 @@ AD FS 内置了多种事件日志以及一个称为关联标识符( *correlation
 
 2. 应用程序将用户重定向到该应用程序中配置的 ADFS 服务器。
 
-   > **注意**：
-
-   状态代码 301 和 302（Result 列）是 HTTP 重定向。
+   > **注意**：状态代码 301 和 302（Result 列）是 HTTP 重定向。
 
 3. ADFS 服务器再执行一次重定向，指向该应用程序正确的身份验证 URL。
 
 4. 系统会提示用户使用 Windows 集成身份验证向 ADFS 服务器进行身份验证。图 21-39 显示了 Fiddler 中正在使用的 Auth 检查器，可用于排查身份验证问题。
 
-   > **注意**：
-
-   状态代码 401 通知浏览器用户必须向应用程序进行身份验证。
+   > **注意**：状态代码 401 通知浏览器用户必须向应用程序进行身份验证。
 
 5. 用户成功通过 ADFS 服务器的身份验证。图 21-40 显示了 Federation 检查器对发送到应用程序的 WS-Federation 令牌的解码结果。
 
-   > **注意**：
-
-   状态代码 200 表示 HTTP 请求已成功完成。
+   > **注意**：状态代码 200 表示 HTTP 请求已成功完成。
 
 6. ADFS 服务器根据图 21-21 中在信赖方信任( Relying Party Trust )中配置的 URL，将用户重定向回应用程序。
 

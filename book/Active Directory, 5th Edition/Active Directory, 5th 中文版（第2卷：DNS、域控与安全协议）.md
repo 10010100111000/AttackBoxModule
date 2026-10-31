@@ -2,7 +2,7 @@
 summary: Active Directory（第5版·第2卷），全面剖析Active Directory与DNS集成解析、域控制器架构（可写DC与只读RODC及虚拟化影响），以及Kerberos身份验证、安全协议与托管服务账户。
 ---
 
-# Active Directory, 5th Edition（第2卷：DNS、域控与安全协议）
+
 
 ## 第8章 Active Directory 与 DNS
 
@@ -10,9 +10,7 @@ summary: Active Directory（第5版·第2卷），全面剖析Active Directory�
 
 好消息是，借助 Active Directory，对 WINS 的依赖已被消除；但潜在的坏消息是，Active Directory 对 DNS 基础设施有许多依赖。之所以说"潜在的"，是因为这取决于你的 DNS 环境的灵活性。通常情况下，组织内管理 DNS 和管理 Active Directory 的团队是不同的，由于政治地盘之争或技术冲突，让这两个团队就实施方案达成一致可能很困难。
 
-> **警告**：
-
-尽管 Active Directory 不需要 WINS，或者更准确地说，不需要 NetBIOS 名称解析，但其他系统和技术可能需要它。许多管理员急于尝试从其环境中移除 WINS，但一般来说，维护 WINS 基础设施的管理成本远远小于执行 WINS 移除项目所涉及的成本。
+> **警告**：尽管 Active Directory 不需要 WINS，或者更准确地说，不需要 NetBIOS 名称解析，但其他系统和技术可能需要它。许多管理员急于尝试从其环境中移除 WINS，但一般来说，维护 WINS 基础设施的管理成本远远小于执行 WINS 移除项目所涉及的成本。
 
 本章的目的是让你充分理解 Active Directory 如何使用 DNS，并介绍在组织内设置 DNS 的一些选项。我们会简要涉及一些 DNS 基础知识，但不会深入讨论如何配置和管理 Windows DNS 服务器。有关这些主题的更多信息，我们强烈推荐 Matt Larson、Cricket Liu 和 Robbie Allen 合著的[*DNS on Windows 2003*](http://oreil.ly/DNS_WinServer_2003)(O'Reilly)。
 
@@ -105,11 +103,7 @@ Active Directory 充分利用 DDNS 来减轻维护其所需资源记录的负担
 
 Microsoft 在 Active Directory 中使用访问控制列表( Access Control List ,ACL )来提供安全的动态更新。Active Directory 集成( Active Directory-Integrated )区域( zone )（本章后文将介绍）将其 DNS 数据存储在 Active Directory 中。随后，你可以在 Active Directory 中针对与 DNS 相关的对象设置 ACL，以授予或拒绝安全主体( security principals )添加和/或更新记录的权限。默认情况下，林( forest )中经过身份验证的计算机可以在区域中创建新条目，但只有创建该条目的计算机才允许修改与该条目关联的数据。
 
-> **注意**：
-
-可在 http://www.ietf.org/rfc/rfc2136.txt 找到 RFC 2136。
-
-
+> **注意**：可在 http://www.ietf.org/rfc/rfc2136.txt 找到 RFC 2136。
 
 #### 全局名称区域( Global Names Zones )
 
@@ -126,9 +120,7 @@ Windows Server 2008 引入了称为 *全局名称区域* 的新 DNS 服务器功
 - 你能否管理全局名称的静态注册？*不*支持在全局名称区域中动态注册记录，因此你需要手动或通过脚本管理这些注册。
 - 你是否需要全局名称区域提供的功能？此功能可能会增加管理开销，因此在投入时间部署它之前，应考虑你是否会从中受益。
 
-> **警告**：
-
-尽管 Windows Server 2008 不支持全局名称区域中记录动态注册，但当客户端在其他区域中注册新记录时，它确实会检查唯一性。如果客户端尝试为全局名称区域中已定义的主机名注册新记录，此注册将失败。
+> **警告**：尽管 Windows Server 2008 不支持全局名称区域中记录动态注册，但当客户端在其他区域中注册新记录时，它确实会检查唯一性。如果客户端尝试为全局名称区域中已定义的主机名注册新记录，此注册将失败。
 
 部署全局名称区域需分三步进行：
 
@@ -136,21 +128,16 @@ Windows Server 2008 引入了称为 *全局名称区域* 的新 DNS 服务器功
 
 2. 对将要承载 *GlobalNames* 区域的每一台 DNS 服务器启用全局名称区域支持：
 
-   
-
-   
 ```
    dnscmd ServerName /config /EnableGlobalNamesSupport 1
-   ```
+```
 
 
 3. 配置 *GlobalNames* 区域的复制。建议此步骤使用 *ForestDnsZones* 应用程序分区。
 
 
 
-> **注意**：
-
-若您拥有多个林，并希望维护一个统一的 *GlobalNames* 区域，您需要在其他林中的 *_msdcs*.**`<其他林>`** 区域内配置一个 SRV 记录。此 SRV 记录名为 *_globalnames*，应指向实际承载 *GlobalNames* 区域服务器的 FQDN。
+> **注意**：若您拥有多个林，并希望维护一个统一的 *GlobalNames* 区域，您需要在其他林中的 *_msdcs*.**`<其他林>`** 区域内配置一个 SRV 记录。此 SRV 记录名为 *_globalnames*，应指向实际承载 *GlobalNames* 区域服务器的 FQDN。
 
 为了其他林中的 DNS 服务器能够识别 `_globalnames` SRV 记录，您需要在其上执行第 2 步操作。
 
@@ -162,11 +149,7 @@ DNS 面临的挑战之一是基础协议中缺乏验证响应真实性和准确�
 
 DNSSEC 所解决的问题是：如果 ISP 的 DNS 服务器缓存被攻击者投毒会发生什么。如果缓存被投毒，返回的 IP 地址可能并非实际 IP 地址。对于 DNS，客户端无法对返回响应的有效性获得一定程度的保证。DNSSEC 为 DNS 提供了扩展，以确保 DNS 响应的真实性。
 
-
-
-> **注意**：
-
-如需深入了解 DNSSEC 相关资源，请访问 [http://www.dnssec.net](http://www.dnssec.net/)。
+> **注意**：如需深入了解 DNSSEC 相关资源，请访问 [http://www.dnssec.net](http://www.dnssec.net/)。
 
 #### DNSSEC 的工作原理是什么？
 
@@ -208,9 +191,7 @@ DNSKEY 记录存储两种公钥：密钥签名密钥( Key Signing Key ,KSK )和�
 1. 为了验证响应的真实性，缓存 DNS 服务器请求 *whitehouse.gov* 区域的密钥签名密钥( Key Signing Key ,KSK)。
 2. 接下来，通过比较 ZSK 的哈希与 ZSK 的 RRSIG 记录，验证 *whitehouse.gov* ZSK。
 
-> **注意**：
-
-与之前不同，区域签名密钥( Zone Signing Key ,ZSK )的 RRSIG 由区域的密钥签名密钥加密。
+> **注意**：与之前不同，区域签名密钥( Zone Signing Key ,ZSK )的 RRSIG 由区域的密钥签名密钥加密。
 
 要完全验证响应，我们需要沿着信任链逐级验证。信任链存在于图 8-1中 DNS 解析过程的逆向路径上：
 
@@ -351,9 +332,7 @@ RRSIG 记录不会存储在 Active Directory 中，因为这会带来大量额�
 
 最后,您需要决定是否将区域的信任锚点( Trust Anchor )发布到 Active Directory,如图 8-7 所示。一旦发布信任锚点,所有 DNS 服务器都将开始验证该区域的响应。默认情况下,信任锚点分发处于禁用状态。
 
-> **警告**：
-
-除非您对所完成的配置以及环境中客户端和其他 DNS 服务器的配置有充分信心，否则在部署信任锚点之前，建议先在一组有限的 DNS 服务器和客户端上进行测试。
+> **警告**：除非您对所完成的配置以及环境中客户端和其他 DNS 服务器的配置有充分信心，否则在部署信任锚点之前，建议先在一组有限的 DNS 服务器和客户端上进行测试。
 
 
 
@@ -400,9 +379,7 @@ RRSIG 记录不会存储在 Active Directory 中，因为这会带来大量额�
 
 要支持高效的 DC 定位器进程，主要需要满足两件事：在 Active Directory 中正确定义站点拓扑( Site Topology )，以及 DNS 中存在所有必要的 Active Directory 相关资源记录。在下一节中，我们将介绍 Active Directory 中使用的资源记录( Resource Record )的用途。
 
-> **注意**：
-
-有关 DC 定位器进程工作原理的更详细说明，包括该过程中查询的具体资源记录，请参阅 Microsoft 知识库( Microsoft Knowledge Base ,KB)文章 247811“How Domain Controllers Are Located in Windows”和 Microsoft 知识库文章 314861“How Domain Controllers Are Located in Windows XP”，网址为 [http://support.microsoft.com](http://support.microsoft.com/)。
+> **注意**：有关 DC 定位器进程工作原理的更详细说明，包括该过程中查询的具体资源记录，请参阅 Microsoft 知识库( Microsoft Knowledge Base ,KB)文章 247811“How Domain Controllers Are Located in Windows”和 Microsoft 知识库文章 314861“How Domain Controllers Are Located in Windows XP”，网址为 [http://support.microsoft.com](http://support.microsoft.com/)。
 
 ### 8.4. Active Directory 使用的资源记录
 
@@ -453,8 +430,6 @@ moose.mycorp.com.
 尽管看起来可能很复杂,但其实不然。让我们逐一解析这些记录的实际含义,为便于理解,将记录分成几个部分。首先,第一条记录用于域本身:
 
 
-
-
 ```
 mycorp.com. 600 IN A 10.1.1.1
 ```
@@ -465,8 +440,6 @@ mycorp.com. 600 IN A 10.1.1.1
 接下来是以下记录:
 
 
-
-
 ```
 ec4caf62-31b2-4773-bcce-7b1e31c04d25._msdcs.mycorp.com. 600 IN CNAME
  moose.mycorp.com.
@@ -475,17 +448,13 @@ ec4caf62-31b2-4773-bcce-7b1e31c04d25._msdcs.mycorp.com. 600 IN CNAME
 
 这是一条别名或规范名称( Canonical Name ,CNAME )记录。它位于 *_msdcs* 子域下,该子域用于域控制器之间的相互通信。该记录由服务器的 DSA GUID 组成,是服务器本身的别名。当 DC 知道某台服务器的 DSA GUID 并希望确定其 IP 地址时,就会使用此记录。
 
-> **注意**：
-
-别名记录( Canonical Name Record ,CNAME)是其他记录的别名。一个 CNAME 可以指向另一个 A 记录( Address Record )，甚至另一个 CNAME。使用 CNAME 的好处在于，当您需要用多个名称指向同一台主机时。
+> **注意**：别名记录( Canonical Name Record ,CNAME)是其他记录的别名。一个 CNAME 可以指向另一个 A 记录( Address Record )，甚至另一个 CNAME。使用 CNAME 的好处在于，当您需要用多个名称指向同一台主机时。
 
 例如，如果您的 Web 服务器可通过 *www.mycorp.com* 访问，并且您还从该 Web 服务器提供 FTP 服务，那么这两个服务的 IP 地址将始终相同。您可以只创建一个 A 记录( *www* )和一个指向 *www* 的 CNAME( *ftp* )，而不是创建两个 A 记录( *www* 和 *ftp* )。
 
 这样做的好处是，如果服务器的 IP 地址发生变化，您只需在一个位置进行更新。
 
 接下来，我们有以下 A 记录：
-
-
 
 
 ```
@@ -497,13 +466,9 @@ gc._msdcs.mycorp.com. 600 IN A 10.1.1.1
 
 其余的资源记录( Resource Record )均为 SRV 记录( Service Record ,SRV)类型。SRV 记录类型定义于 RFC 2782“A DNS RR for Specifying the Location of Services (DNS SRV)”。完整文本可在 http://tools.ietf.org/html/rfc2782 找到。简而言之，SRV 记录允许您指定网络上用于特定协议的一台或多台服务器。这些记录还允许您为各个协议重新映射端口号，或设置服务器的优先级，从而确定某些服务器的使用顺序。
 
-> **注意**：
-
-即便修改了 Active Directory 特定 SRV 记录的端口号，Windows 也不会遵循这些新端口号。
+> **注意**：即便修改了 Active Directory 特定 SRV 记录的端口号，Windows 也不会遵循这些新端口号。
 
 接下来展示一些更多全局编录特定的记录：
-
-
 
 
 ```
@@ -522,8 +487,6 @@ moose.mycorp.com.
 接下来的几个 SRV 记录用于 Kerberos 身份验证（端口 88）以及 *kpasswd* 进程（端口 464），该进程允许用户通过 Kerberos 更改密码：
 
 
-
-
 ```
 _kerberos._tcp.dc._msdcs.mycorp.com. 600 IN SRV 0 100 88 moose.mycorp.com.
 _kerberos._tcp.Default-First-Site-Name._sites.dc._msdcs.mycorp.com. 600 IN SRV 0
@@ -539,15 +502,11 @@ _kpasswd._udp.mycorp.com. 600 IN SRV 0 100 464 moose.mycorp.com.
 ```
 
 
-
-
 站点覆盖
 
 你可以在 Active Directory 站点拓扑中创建不包含域控制器的站点。根据站点链接定义，具有最佳连接的域控制器将为此类站点进行“覆盖”。此功能称为*自动站点覆盖*。
 
 当某个域控制器为某个站点执行覆盖时，它会添加特定于站点的 SRV 记录，将其通告为可以处理该站点中客户端查询的域控制器。要查看特定域控制器正在覆盖的站点列表，请运行以下 *nltest* 命令，将 *`dc01`* 替换为要确定其覆盖范围的域控制器名称：
-
-
 
 
 ```
@@ -560,8 +519,6 @@ c:\> nltest /dsgetsitecov /server:dc01
 正如全局编录 SRV 记录一样，域控制器所覆盖的任何其他站点可能会有更多特定于站点的 Kerberos 记录。
 
 其余 SRV 记录用于表示特定域和站点的域控制器：
-
-
 
 
 ```
@@ -653,9 +610,7 @@ AD 资源记录的初始填充可能非常繁琐，具体取决于你管理资�
 
 委派 AD DNS 区域的初始设置很简单。父区域( parent zone )上需要存在名称服务器( Name Server ,NS )记录以及任何必要的粘连记录( glue record )——例如，指向你要委派到的服务器的 A 记录——并指向将成为这些区域权威服务器的服务器。其余配置必须在将要支持 AD DNS 区域的服务器上完成。如果这些服务器是一台或多台运行 Active Directory 集成 DNS 的域控制器，则只需添加 DNS 服务(较新版本的 Windows 允许你在 DC 提升过程中执行此步骤)。
 
-> **注意**：
-
-尽管完全可以在域控制器( Domain Controller ,DC )之外的基于 Windows 的 DNS 服务器上运行支持 Active Directory 的 DNS 区域,但考虑到只有将 Windows DNS 运行在域控制器上才能获得增强功能,这样做恐怕没有太大意义。
+> **注意**：尽管完全可以在域控制器( Domain Controller ,DC )之外的基于 Windows 的 DNS 服务器上运行支持 Active Directory 的 DNS 区域,但考虑到只有将 Windows DNS 运行在域控制器上才能获得增强功能,这样做恐怕没有太大意义。
 
 ##### 支持与维护
 
@@ -672,8 +627,6 @@ AD DNS 区域的日常支持与维护工作量极小,尤其是在使用 AD 集�
 ### 8.6. 活动目录集成 DNS( Active Directory-Integrated DNS )
 
 如果您决定将 AD DNS 区域托管在域控制器( Domain Controller ,DC)上,就应该使用 AD 集成区域。本节将介绍使用 AD 集成 DNS 相较于标准主要区域的一些优势。
-
-
 
 条件转发( Conditional Forwarding )
 
@@ -717,13 +670,7 @@ Active Directory 和 Windows DNS Server 还提供另一种选择：将 DNS 数�
 
 尽管与 AD 集成的 DNS 具有诸多优势，但一个潜在的缺点是 DNS 数据在 Active Directory 中的复制方式。在 Windows 2000 中，AD 集成区域存储在域的 System 容器中。这意味着该域中的每个域控制器( Domain Controller ,DC )都会复制该区域数据，无论该域控制器是否为 DNS 服务器。对于不是 DNS 服务器的域控制器而言，复制这些数据没有任何益处。幸运的是，在较新版本的 Windows 中有一个更好的替代方案：使用应用程序分区( Application Partition )，如下一节所述。
 
-
-
-> **注意**：
-
-如果您最初是在 Windows 2000 下创建 AD 集成 DNS 区域的，它们可能仍通过域中的 System 容器进行复制。
-
-
+> **注意**：如果您最初是在 Windows 2000 下创建 AD 集成 DNS 区域的，它们可能仍通过域中的 System 容器进行复制。
 
 #### 后台区域加载
 
@@ -731,9 +678,7 @@ Windows Server 2008 中新增的一项功能是 DNS 区域的后台加载。在 
 
 
 
-> **注意**：
-
-此后台加载行为仅适用于存储在 Active Directory 中的区域。存储在文件系统上的区域仍会在服务可用于处理请求之前按顺序加载。
+> **注意**：此后台加载行为仅适用于存储在 Active Directory 中的区域。存储在文件系统上的区域仍会在服务可用于处理请求之前按顺序加载。
 
 ### 8.7. 使用应用程序分区实现 DNS
 
@@ -782,9 +727,7 @@ Windows Server 2008 中新增的一项功能是 DNS 区域的后台加载。在 
 
 1. 为特定 DNS 区域启用清理，并定义该区域的刷新间隔。
 
-   > **注意**：
-
-   如果在 DNS MMC 中右键单击 DNS 服务器节点，会看到一个名为“为所有区域设置老化/清理”的选项，它允许你针对该 DNS 服务器上承载的所有 DNS 区域一次性配置这两个值。
+   > **注意**：如果在 DNS MMC 中右键单击 DNS 服务器节点，会看到一个名为“为所有区域设置老化/清理”的选项，它允许你针对该 DNS 服务器上承载的所有 DNS 区域一次性配置这两个值。
 
 2. 在至少一台承载该区域的 DNS 服务器上启用清理，并定义清理进程的运行频率。
 
@@ -1012,13 +955,9 @@ Install-ADDSDomainController `
 -SafeModeAdministratorPassword ((Get-Credential).Password)
 ```
 
-> **注意**：
-
-在此示例中，系统会提示你输入目录服务还原模式( Directory Services Restore Mode ,DSRM )密码。若要将密码嵌入脚本中，请将 *(Get-Credential).Password* 替换为 *ConvertTo-SecureString -AsPlainText -Force -String “password”*。
+> **注意**：在此示例中，系统会提示你输入目录服务还原模式( Directory Services Restore Mode ,DSRM )密码。若要将密码嵌入脚本中，请将 *(Get-Credential).Password* 替换为 *ConvertTo-SecureString -AsPlainText -Force -String “password”*。
 
 若需使用 PowerShell 降级域控制器( Domain Controller ,DC )，可使用 *Uninstall-ADDSDomainController* cmdlet，如下示例所示：
-
-
 
 
 ```
@@ -1118,9 +1057,7 @@ Active Directory 在许多位置包含当前时间。这些位置包括复制元
 
 随着虚拟化技术日益普及，显然 Active Directory 不能在常见虚拟化场景中面临重大挑战。为了支持虚拟化，Windows Server 2012 域控制器( Domain Controller ,DC)支持*虚拟机生成标识符( virtual machine generation identifier ,VM Gen ID)*的概念。VM Gen ID 是虚拟机状态的唯一标识符，由底层虚拟化主机平台投射到虚拟机中。
 
-> **注意**：
-
-在撰写本文时，只有 Microsoft 的 Hyper-V 平台支持虚拟机生成 ID( Virtual Machine Generation ID ,VM Gen ID )，但我们预计随着时间的推移，这会扩展到其他主流虚拟化主机平台( virtualization host platform )。
+> **注意**：在撰写本文时，只有 Microsoft 的 Hyper-V 平台支持虚拟机生成 ID( Virtual Machine Generation ID ,VM Gen ID )，但我们预计随着时间的推移，这会扩展到其他主流虚拟化主机平台( virtualization host platform )。
 
 VM Gen ID 的目标是检测域控制器( Domain Controller ,DC )可能在时间上被还原的情况，例如通过应用快照或复制 VHD 文件。一般来说，VM Gen ID 更新时机的底层原理与时间间隔何时会重演有关。如果将 Active Directory 的 USN 视为逻辑时钟( logical clock )——一个始终向前递增的数字——那么在虚拟化层面上，任何可能导致来宾的 USN 向后回退的情况都需要更新 VM Gen ID。每当 Active Directory 检测到 VM Gen ID 已回滚时，AD 将报告以下事件：
 
@@ -1159,13 +1096,9 @@ Active Directory 将当前 VM Gen ID 保存在内存中(以及 AD 数据库中�
 
 克隆配置文件包含将应用于克隆的唯一标识元素，例如计算机名、IP 地址和其他网络信息。配置文件中未提供的任何信息都将在克隆首次启动期间动态生成。例如，如果未指定 IP 信息，将使用 DHCP。如果未指定计算机名，将动态生成一个名称。
 
-> **注意**：
-
-动态生成的计算机名格式为源域控制器( Domain Controller ,DC)名称的前八个字符,后跟 *–CL####*。最后四位数字的范围为 0001 至 9999。在克隆授权期间,PDC 仿真器将选取一个可用编号来唯一命名克隆。
+> **注意**：动态生成的计算机名格式为源域控制器( Domain Controller ,DC)名称的前八个字符,后跟 *–CL####*。最后四位数字的范围为 0001 至 9999。在克隆授权期间,PDC 仿真器将选取一个可用编号来唯一命名克隆。
 
 如果提供像这样的空白配置文件,那么 AD 将在启动时动态生成所有必要参数:
-
-
 
 
 ```
@@ -1194,9 +1127,7 @@ Active Directory 将当前 VM Gen ID 保存在内存中(以及 AD 数据库中�
 | `Static`              | 如果要指定静态 IP 地址或 DNS 服务器信息,则必须包含此开关。 |
 | `Offline`             | 包含此开关可在创建克隆配置文件之前跳过验证检查。 |
 
-> **注意**：
-
-在域控制器( Domain Controller ,DC)克隆配置文件中，无法指定静态 IPv6 地址。
+> **注意**：在域控制器( Domain Controller ,DC)克隆配置文件中，无法指定静态 IPv6 地址。
 
 可以将 DC 克隆配置文件(*DCCloneConfig.xml*)放置在三个位置。选择哪个位置取决于您对克隆功能的使用方式以及部署策略。这些位置按顺序依次为：
 
@@ -1208,9 +1139,7 @@ Active Directory 将当前 VM Gen ID 保存在内存中(以及 AD 数据库中�
 
 
 
-> **注意**：
-
-您也可以在 Windows 资源管理器中手动装载和卸载 VHD 文件。选择该 VHD 文件，然后在“光盘映像工具”上下文功能区选项卡上单击“装载”，如图 9-14所示。完成后，选择已装载的驱动器，然后在功能区上单击“弹出”。
+> **注意**：您也可以在 Windows 资源管理器中手动装载和卸载 VHD 文件。选择该 VHD 文件，然后在“光盘映像工具”上下文功能区选项卡上单击“装载”，如图 9-14所示。完成后，选择已装载的驱动器，然后在功能区上单击“弹出”。
 
 
 
@@ -1222,9 +1151,7 @@ Active Directory 将当前 VM Gen ID 保存在内存中(以及 AD 数据库中�
 
 除了 *DCCloneConfig.xml* 文件之外，Microsoft 还添加了另一项重要防护措施——克隆允许列表( Cloning Allow List )。Microsoft 识别出的实施克隆的风险之一是，要克隆的 DC 上的应用程序或服务(例如备份代理或防病毒软件)可能不支持克隆。为缓解此问题，您必须在 *CustomDCCloneAllowList.xml* 文件中指定这些应用程序和服务，从而明确告知 Active Directory：可以克隆安装了 Windows 基本功能之外的应用程序和服务的 DC。
 
-> **注意**：
-
-你可能想知道克隆对 Windows 本身有何影响。克隆域控制器(Domain Controller,DC)时,在首次启动期间,它会运行 *sysprep* 进程的精简版本(该进程在克隆传统服务器或工作站时用于移除源 DC 特有的标识信息)。
+> **注意**：你可能想知道克隆对 Windows 本身有何影响。克隆域控制器(Domain Controller,DC)时,在首次启动期间,它会运行 *sysprep* 进程的精简版本(该进程在克隆传统服务器或工作站时用于移除源 DC 特有的标识信息)。
 
 你可以通过查看 *%windir%\system32* 中的 *DefaultDCCloneAllowList.xml* 文件,找到所运行的 *sysprep* 提供程序列表以及默认允许的应用程序和服务列表。
 
@@ -1232,9 +1159,7 @@ Active Directory 将当前 VM Gen ID 保存在内存中(以及 AD 数据库中�
 
 
 
-> **注意**：
-
-虽然可以手动编辑 *DCCloneConfig.xml* 和 *CustomDCCloneAllowList.xml* 文件,但你必须格外小心,不要使 XML 失效。如果 XML 失效,克隆过程将失败。
+> **注意**：虽然可以手动编辑 *DCCloneConfig.xml* 和 *CustomDCCloneAllowList.xml* 文件,但你必须格外小心,不要使 XML 失效。如果 XML 失效,克隆过程将失败。
 
 最后一步是,你必须将源 DC 的计算机帐户添加到 Active Directory 中的可克隆域控制器组。这将授予源 DC 克隆自身的权限。
 
@@ -1244,9 +1169,7 @@ Active Directory 将当前 VM Gen ID 保存在内存中(以及 AD 数据库中�
 
 在启动期间,Active Directory 将首先检查 VM Gen ID 是否已更改。如果 VM Gen ID 已更改,则 Active Directory 便知道发生了某些情况。根据 *DCCloneConfig.xml* 文件是否存在,Active Directory 便知道需要开始克隆过程。
 
-> **注意**：
-
-如果 Active Directory 发现虚拟机生成 ID( Virtual Machine Generation ID ,VM Gen ID)不存在，但存在 *DCCloneConfig.xml* 文件，则域控制器( Domain Controller ,DC)将重命名 *DCCloneConfig.xml* 文件，并重启进入目录服务还原模式( DS Restore Mode )。这样可确保不会将未运行在支持 VM Gen ID 的虚拟化主机平台上的克隆引入网络。
+> **注意**：如果 Active Directory 发现虚拟机生成 ID( Virtual Machine Generation ID ,VM Gen ID)不存在，但存在 *DCCloneConfig.xml* 文件，则域控制器( Domain Controller ,DC)将重命名 *DCCloneConfig.xml* 文件，并重启进入目录服务还原模式( DS Restore Mode )。这样可确保不会将未运行在支持 VM Gen ID 的虚拟化主机平台上的克隆引入网络。
 
 首先，Active Directory 完成虚拟化安全还原( Virtualization Safe Restore )一节中描述的所有步骤。接着，克隆过程开始。Active Directory 执行以下步骤来完成克隆过程：
 
@@ -1284,21 +1207,15 @@ Active Directory 将当前 VM Gen ID 保存在内存中(以及 AD 数据库中�
 
 3. 将 *COHO-SFO-ADC01* 添加到可克隆域控制器（ Cloneable Domain Controllers ）组。您可以通过运行以下命令使用 PowerShell 完成此操作：
 
-   
-
-   
 ```
    Add-ADGroupMember "Cloneable Domain Controllers" -Members COHO-SFO-ADC01$
-   ```
+```
 
 
 4. 关闭 *COHO-SFO-ADC01* 并复制该虚拟机，为 *COHO-PAR-ADC01* 创建虚拟机。
 
 5. 为 *COHO-PAR-ADC01* 创建克隆配置文件。您可以在任何安装了 Active Directory RSAT 工具的计算机上，通过运行以下 PowerShell 命令来完成此操作：
 
-   
-
-   
 ```
    New-ADDCCloneConfigFile -CloneComputerName COHO-PAR-ADC01 `
    -SiteName Paris `
@@ -1309,20 +1226,17 @@ Active Directory 将当前 VM Gen ID 保存在内存中(以及 AD 数据库中�
    -Static `
    -Offline `
    -Path .\
-   ```
+```
 
 
 6. 挂载虚拟硬盘文件，并将新的 *DCCloneConfig.xml* 文件复制到已挂载虚拟硬盘中的 *%windir%\ntds* 目录下。要使用 Hyper-V 完成此操作，请按照以下步骤执行：
 
-   
-
-   
 ```
    Mount-VHD -Path `
     'E:\Hyper-V\Virtual Machines\COHO-PAR-ADC01\COHO-PAR-ADC01.vhdx'
    Dismount-VHD -Path `
     'E:\Hyper-V\Virtual Machines\COHO-PAR-ADC01\COHO-PAR-ADC01.vhdx'
-   ```
+```
 
 
 7. 启动 *COHO-PAR-ADC01*。如果您观察启动过程，将会看到克隆过程正在执行，类似于图 9-15 和图 9-16 所示。
@@ -1330,13 +1244,9 @@ Active Directory 将当前 VM Gen ID 保存在内存中(以及 AD 数据库中�
 启动过程完成后，您将获得一个功能完备的克隆域控制器，可随时响应客户端请求。
 
 
-
-
 ![Abbreviated sysprep during domain controller cloning](./image/9.%20Domain%20Controllers/httpatomoreillycomsourceoreillyimages1663420.webp)
 
 图 9-15. 域控制器克隆期间的精简 sysprep
-
-
 
 
 ![Domain controller cloning in progress](./image/9.%20Domain%20Controllers/httpatomoreillycomsourceoreillyimages1663421.webp)
@@ -1382,11 +1292,7 @@ Windows Server 2008 引入的最重要的 Active Directory 功能之一是只读
 
 除了这些 Active Directory 要求之外，你还应考虑向客户端部署 RODC 兼容性包( RODC Compatibility Pack )。该程序包可通过 Microsoft 知识库文章 [944043](http://bit.ly/16fQxa1) 下载(该文章中也对其进行了说明)。你可能会遇到 Windows XP 和 Windows Server 2003 客户端及域控制器中的许多兼容性问题和缺陷，而此程序包可解决其中许多问题。在本章中，我们会在适当时提到可能需要此程序包的情形。
 
-
-
-> **注意**：
-
-在本章中，我们会经常提到 RODC 可以请求复制特定对象的情形。此功能称为*单对象复制*( Replicatesingleobject ,RSO )。单对象复制操作通过修改 `RootDSE` LDAP 条目的 `replicateSingleObject` 操作属性来启动。有关此属性的详细信息，请参阅[此站点](http://bit.ly/WUdAEp)。
+> **注意**：在本章中，我们会经常提到 RODC 可以请求复制特定对象的情形。此功能称为*单对象复制*( Replicatesingleobject ,RSO )。单对象复制操作通过修改 `RootDSE` LDAP 条目的 `replicateSingleObject` 操作属性来启动。有关此属性的详细信息，请参阅[此站点](http://bit.ly/WUdAEp)。
 
 #### 密码复制策略
 
@@ -1484,9 +1390,7 @@ Windows Server 2008 引入的最重要的 Active Directory 功能之一是只读
 
 执行此任务所用的 Active Directory 用户和计算机( Active Directory Users and Computers ,ADUC)用户界面，可通过从 Domain Controllers 组织单位( Organizational Unit ,OU)中删除该 RODC 的计算机账户来访问。如果尝试删除该计算机账户，系统会显示图 9-23所示的对话框。在此对话框中，你可以选择重置用户、计算机或两者的密码。虽然该对话框默认只重置用户密码，但请记住，计算机是一种特殊类型的用户账户，它们也有密码。攻击者可以使用计算机的账户和密码向你的域进行身份验证。
 
-> **警告**：
-
-务必留意图 9-23中的警告。不重置密码会带来安全风险,因此我们不建议您为了方便而选择不重置密码。不过,我们建议您停下来思考一下,重置站点中所有已缓存用户密码会带来什么影响。这将导致无法登录的用户拨打服务台电话,而对于服务账户,则会导致服务无法启动。
+> **警告**：务必留意图 9-23中的警告。不重置密码会带来安全风险,因此我们不建议您为了方便而选择不重置密码。不过,我们建议您停下来思考一下,重置站点中所有已缓存用户密码会带来什么影响。这将导致无法登录的用户拨打服务台电话,而对于服务账户,则会导致服务无法启动。
 
 重置计算机密码后,这些计算机将无法通过域身份验证。您需要亲自前往每台工作站,或者如果您能够集中获取每台计算机的本地管理员凭据,则可以使用 *netdom* 或 *nltest* 等工具编写脚本解决方案。
 
@@ -1552,9 +1456,7 @@ Windows Server 2008 引入的最重要的 Active Directory 功能之一是只读
 
 7. *RWDC01* 将验证密码复制策略( Password Replication Policy )是否允许 *RODC01* 缓存 *PC01* 的密码，并将密码复制到 *RODC01*。*RWDC01* 还会更新 *RODC01* 的已揭示列表( revealed list )(`msDS-RevealedList`)，以便将 *PC01* 包含在内。
 
-> **注意**：
-
-在查看步骤 7 时，您可能会想：为什么 *RWDC01* 要检查密码复制策略( Password Replication Policy ,PRP)，而不是假定 *RODC01* 既然请求了密码就可以缓存它？原因在于，我们必须假定 *RODC01* 已遭入侵，并且作为该事件的一部分，*RODC01* 上的密码复制策略本地副本可能已被修改，其他账户可能被偷偷添加到 PRP 允许列表中。
+> **注意**：在查看步骤 7 时，您可能会想：为什么 *RWDC01* 要检查密码复制策略( Password Replication Policy ,PRP)，而不是假定 *RODC01* 既然请求了密码就可以缓存它？原因在于，我们必须假定 *RODC01* 已遭入侵，并且作为该事件的一部分，*RODC01* 上的密码复制策略本地副本可能已被修改，其他账户可能被偷偷添加到 PRP 允许列表中。
 
 现在让我们来看用户 *Brian* 登录其计算机的过程。我们当然假定前七个步骤已成功完成。以下是 Brian 尝试登录其计算机时所采取的步骤：
 
@@ -1576,9 +1478,7 @@ Windows Server 2008 引入的最重要的 Active Directory 功能之一是只读
 
 4. *RODC01* 接收到有效的 *KRB_TGS_REP*。*RODC01* 并不将 *KRB_TGS_REP* 转发给 *PC01*,而是向 *PC01* 发送一个错误。
 
-   > **注意**：
-
-   *RODC01* 发送给 *PC01* 的特定 Kerberos 错误会告知 *PC01*,用户 *Brian* 的票据授予票据( Ticket-Granting Ticket ,TGT )已过期。
+   > **注意**：*RODC01* 发送给 *PC01* 的特定 Kerberos 错误会告知 *PC01*,用户 *Brian* 的票据授予票据( Ticket-Granting Ticket ,TGT )已过期。
 
 5. *PC01* 为用户 *Brian* 准备新的 *KRB_AS_REQ*,并将其发送给 *RODC01*。
 
@@ -1588,9 +1488,7 @@ Windows Server 2008 引入的最重要的 Active Directory 功能之一是只读
 
 8. *RODC01* 能够解密 *KRB_TGS_REQ* 中的 TGT,并构造一个 *KRB_TGS_REP*,其中包含允许用户 *Brian* 使用 *PC01* 的服务票据。
 
-> **注意**：
-
-你可能想知道，如果读写域控制器( Read-Write Domain Controller ,RWDC)收到由只读域控制器( Read-Only Domain Controller ,RODC)加密的票证授予票证( Ticket Granting Ticket ,TGT)，会发生什么。每个 RODC 的 *krbtgt* 账户都会复制到域中的所有 RWDC，因此 RWDC 可以解密由 RODC 加密的 Kerberos 票证。TGT 的头部包含未加密的信息，使 RWDC 能够确定解密消息时应使用哪个 RODC 的 *krbtgt* 账户。
+> **注意**：你可能想知道，如果读写域控制器( Read-Write Domain Controller ,RWDC)收到由只读域控制器( Read-Only Domain Controller ,RODC)加密的票证授予票证( Ticket Granting Ticket ,TGT)，会发生什么。每个 RODC 的 *krbtgt* 账户都会复制到域中的所有 RWDC，因此 RWDC 可以解密由 RODC 加密的 Kerberos 票证。TGT 的头部包含未加密的信息，使 RWDC 能够确定解密消息时应使用哪个 RODC 的 *krbtgt* 账户。
 
 完成这些步骤后，用户 *Brian* 就能够使用 *PC01*。在用户 *Brian* 后续登录 *PC01* 的过程中，获取服务票证( Service Ticket ,TGS)的步骤要简单得多：
 
@@ -1599,17 +1497,13 @@ Windows Server 2008 引入的最重要的 Active Directory 功能之一是只读
 
 审阅这些示例后，你可能已经开始注意到在 RODC 上同时缓存用户密码和计算机密码的重要性。用户身份验证要成功，RODC 必须同时拥有用户和计算机的密码。如果其中任一密码不存在，RODC 就需要通过广域网( Wide Area Network ,WAN)与可写域控制器( Writable Domain Controller )通信。如果 WAN 不可用，用户登录将失败。
 
-> **警告**：
-
-只读域控制器( RODC )联系的可写域控制器( writable domain controller ,DC)必须运行 Windows Server 2008 或更高版本。如果只有 Windows Server 2003 域控制器可用,则登录请求将失败。
+> **警告**：只读域控制器( RODC )联系的可写域控制器( writable domain controller ,DC)必须运行 Windows Server 2008 或更高版本。如果只有 Windows Server 2003 域控制器可用,则登录请求将失败。
 
 ##### 填充密码缓存
 
 由于经只读域控制器（Read-Only Domain Controller，RODC）处理的登录能否成功，完全取决于广域网（Wide Area Network，WAN）——更准确地说,是取决于是否有 Windows Server 2008 或更新版本的可写域控制器——是否可用,因此你可能需要预先填充 RODC 的密码缓存。你可以使用图 9-21中所示的"预填充密码"按钮来预先填充密码缓存。单击此按钮后,你可以在 Active Directory 中搜索用户和计算机。选择了要预先填充缓存的用户和计算机之后,系统会显示一个类似于图 9-25的确认对话框。
 
 如果出现任何错误,系统会显示一个类似于图 9-26的对话框,向你提示这些错误。所有密码成功预先填充的安全主体( Principal )都会出现在图 9-21所示的列表中。
-
-
 
 使用 repadmin 管理缓存密码
 
@@ -1649,15 +1543,11 @@ Windows Server 2008 及更新版本附带的 *repadmin* 工具包含多个开关
 
 在运行 Windows XP 或更早版本(以及运行 Windows Server 2003 或更早版本的服务器操作系统)的客户端上,客户端将直接联系可写域控制器,而 RODC 对此密码更改一无所知。当下次 RODC 与可写域控制器进行复制时,它会擦除该用户密码的本地副本。前面讨论的用户身份验证过程可确保,当用户下次尝试登录时,若条件允许,RODC 将再次缓存该用户的密码。
 
-> **注意**：
-
-如果已加载先决条件中讨论的只读域控制器( Read-Only Domain Controller ,RODC)修补程序包( hotfix package )，客户端将联系 RODC 更改其密码，RODC 会将该请求链到可写域控制器( writable domain controller ,RWDC)。不过，仍不会请求立即复制该密码。
+> **注意**：如果已加载先决条件中讨论的只读域控制器( Read-Only Domain Controller ,RODC)修补程序包( hotfix package )，客户端将联系 RODC 更改其密码，RODC 会将该请求链到可写域控制器( writable domain controller ,RWDC)。不过，仍不会请求立即复制该密码。
 
 如果用户帐户密码更改请求是通过 LDAP 发出的（例如针对 Outlook Web Access 更改密码网页），则更改将直接在可写域控制器上进行。RODC 将不会知晓该密码更改，并且下一次 RODC 与可写域控制器进行复制时，它将删除该用户密码的本地副本。前面讨论的用户身份验证过程将确保下一次用户尝试登录时，如果允许，RODC 将再次缓存该用户的密码。
 
-> **注意**：
-
-当 RODC 删除其密码的本地副本时，旧密码仍物理存储在活动目录( Active Directory ,AD)数据库中。但是，用户的复制元数据( replication metadata )会更新，使得在查询时，数据库报告该密码字段为 null。
+> **注意**：当 RODC 删除其密码的本地副本时，旧密码仍物理存储在活动目录( Active Directory ,AD)数据库中。但是，用户的复制元数据( replication metadata )会更新，使得在查询时，数据库报告该密码字段为 null。
 
 ##### 计算机帐户密码更改
 
@@ -1667,29 +1557,19 @@ Windows Server 2008 及更新版本附带的 *repadmin* 工具包含多个开关
 
 `lastLogonTimeStampAttribute` 有时会违背我们在本章中一直介绍的常理。如果用户或计算机的密码缓存在 RODC 上，并且 RODC 确定有必要更新 `lastLogonTimeStampAttribute` 属性，则该 RODC 将在本地向该用户或计算机的 `lastLogonTimeStampAttribute` 写入新时间戳( timestamp )。同时，RODC 会将 `lastLogonTimeStampAttribute` 更新转发到可写域控制器。由于转发的 `lastLogonTimeStampAttribute` 稍新，因此通过常规复制，RODC 中该用户或计算机的 `lastLogonTimeStampAttribute` 值将被覆盖为稍晚的值。
 
-> **注意**：
-
-如果广域网( Wide Area Network ,WAN )不可用，或者只读域控制器( Read-Only Domain Controller ,RODC )无法联系可写的 Windows Server 2008 域控制器( Domain Controller ,DC )，则不会转发 `lastLogonTimeStampAttribute` 更新。
-
-
+> **注意**：如果广域网( Wide Area Network ,WAN )不可用，或者只读域控制器( Read-Only Domain Controller ,RODC )无法联系可写的 Windows Server 2008 域控制器( Domain Controller ,DC )，则不会转发 `lastLogonTimeStampAttribute` 更新。
 
 ##### 上次登录统计信息
 
 如果已按第 16 章所述启用了上次登录统计信息跟踪，RODC 将在本地写入对这些属性的更新。但是，与 `lastLogonTimeStampAttribute` 不同，RODC 将 *不会* 将这些更新转发到可写域控制器。
 
-
-
 ##### 登录成功/失败信息
 
 当 RODC 成功处理登录时，它将在本地为用户或计算机写入 `last``Logon`、`logonCount` 和 `badPwdCount` 属性的新值。与可写域控制器一样，这些属性更改永远不会复制或链式转发到可写域控制器。如果 RODC 处理登录失败，它将更新 `badPwdTime` 和 `badPwdCount` 属性。同样，这些更改永远不会通过复制或链式转发离开 RODC。
 
-
-
 ##### NetLogon 安全通道更新
 
 存储在 Active Directory 中的计算机账户的某些属性（例如计算机名称、`dNSHostName` 和操作系统信息）通过计算机的 NetLogon 安全通道提供给域控制器。当 RODC 收到这些更新时，它会将它们链式转发到可写域控制器。RODC 将发起对计算机对象立即复制的请求，如果允许缓存该计算机的密码，则该请求将成功。
-
-
 
 ##### 复制连接对象
 
@@ -1703,23 +1583,15 @@ RODC 上的知识一致性检查器( Knowledge Consistency Checker ,KCC )将在�
 
 为了保持RODC本地DNS区域版本的更新，RODC会将从其在SOA记录中选择的主服务器复制客户端记录的请求排队。这种复制请求的排队是基于尽力而为的原则，意味着如果失败，RODC不会再次尝试为该DNS记录排队复制请求。相反，RODC将在下一个正常复制周期中接收该更新。
 
-> **注意**：
-
-如果所涉记录的复制队列中已存在相应条目，则只读域控制器( Read-Only Domain Controller ,RODC )不会再次排队发出复制请求。
+> **注意**：如果所涉记录的复制队列中已存在相应条目，则只读域控制器( Read-Only Domain Controller ,RODC )不会再次排队发出复制请求。
 
 默认情况下，RODC 每五分钟处理一次复制队列，并尝试从队列中复制最多 100 个条目。对于队列中的每个条目，RODC 将验证该条目是否已存在至少 30 秒，否则将跳过该条目，并在下一个周期中尝试复制。默认情况下，当队列深度达到 300 个条目时，将不再加入新条目，直至队列深度降到 300 个条目以下。
 
-> **警告**：
-
-`DsPollingInterval` 注册表设置除控制 DNS 复制队列处理的频率之外，还控制若干其他活动。这些活动主要包括查询 Active Directory 以获取 DNS 服务器上托管的 AD 集成 DNS 区域的更改。因此，修改此频率时应格外谨慎。
+> **警告**：`DsPollingInterval` 注册表设置除控制 DNS 复制队列处理的频率之外，还控制若干其他活动。这些活动主要包括查询 Active Directory 以获取 DNS 服务器上托管的 AD 集成 DNS 区域的更改。因此，修改此频率时应格外谨慎。
 
 可使用五个注册表设置来控制 RODC DNS 服务复制动态更新 DNS 记录的尝试。所有这些注册表设置均位于 `HKLM\System\CurrentControlSet\Services\DNS\Parameters` 下。表 9-3详细说明了可配置的每个注册表设置。
 
-> **注意**：
-
-表 9-3 中的所有注册表设置均为 `REG_DWORD` 值。
-
-
+> **注意**：表 9-3 中的所有注册表设置均为 `REG_DWORD` 值。
 
 表 9-3. 只读 DNS 注册表设置
 
@@ -1731,15 +1603,11 @@ RODC 上的知识一致性检查器( Knowledge Consistency Checker ,KCC )将在�
 | `MaximumRodcRsoAttemptsPerCycle` | 指定只读域控制器( Read-Only Domain Controller ,RODC )在队列的任意一次处理过程中尝试复制的最大记录数。 | 条目   | `100`   | `1`    | `1000000` |
 | `DsRemoteReplicationDelay`       | 指示 RODC 在为某条 DNS 记录排队复制请求与处理该请求之间等待的最小秒数。 | 秒     | `30`    | `5`    | `3600`    |
 
-> **警告**：
-
-`MaximumRodcRsoAttemptsPerCycle` 设置的主要用途是限制针对可写域控制器( Writable Domain Controller )发动拒绝服务( Denial-of-Service ,DoS)攻击的可能性，此类攻击会通过一次性向该域控制器发送过多复制请求来对其进行洪泛。如果增大此值，请务必测量其对域控制器负载的影响。
+> **警告**：`MaximumRodcRsoAttemptsPerCycle` 设置的主要用途是限制针对可写域控制器( Writable Domain Controller )发动拒绝服务( Denial-of-Service ,DoS)攻击的可能性，此类攻击会通过一次性向该域控制器发送过多复制请求来对其进行洪泛。如果增大此值，请务必测量其对域控制器负载的影响。
 
 在达到最大队列长度(默认 300 个条目)时，只读域控制器( Read-Only Domain Controller ,RODC)将在 DNS 服务器事件日志中记录一个事件(事件 ID 4400，消息为“*DNS 服务器正经历高 SOA 查询负载。这可能由大量执行更新的本地客户端计算机引起。与 SOA 查询对应的 DNS 记录的单对象复制( Single Object Replication )正受到限制。这可能会延迟对此 RODC DNS 服务器的更新复制，但计划复制( Scheduled Replication )不会受到影响*。”)，以指示此情况已发生；在队列得到处理且其深度降低之前，不会再将更多复制请求加入队列。如果频繁遇到此情况，您可能需要通过修改 `MaximumRodcRsoQueueLength` 注册表设置来增加最大队列长度。
 
-> **注意**：
-
-该事件日志条目将每 24 小时记录一次。但是，如果重新启动 DNS 服务器服务，则在错误情况下一次出现后，将立即记录该事件。
+> **注意**：该事件日志条目将每 24 小时记录一次。但是，如果重新启动 DNS 服务器服务，则在错误情况下一次出现后，将立即记录该事件。
 
 #### W32Time 服务
 
@@ -1761,17 +1629,13 @@ RODC 上的知识一致性检查器( Knowledge Consistency Checker ,KCC )将在�
 
 当 RODC 收到来自可写域控制器的回复时，它会根据 RID 和请求时间戳在表中搜索匹配的请求。一旦 RODC 找到匹配项，就将响应转发回源 IP。
 
-> **注意**：
-
-如果 RODC 在表中找不到匹配项,则 RODC 假定该请求由其自身发起。如果请求使用 RODC 的计算机账户密码进行签名,则 RODC 会根据需要更新其本地时钟。否则,RODC 将丢弃该响应。
+> **注意**：如果 RODC 在表中找不到匹配项,则 RODC 假定该请求由其自身发起。如果请求使用 RODC 的计算机账户密码进行签名,则 RODC 会根据需要更新其本地时钟。否则,RODC 将丢弃该响应。
 
 默认情况下,RODC 链接表中的任何条目的最长生存时间最长为 4 秒,并且任何给定客户端(由客户端 IP 地址定义)在任何给定时间最多可在链接表中拥有 4 个条目。默认情况下,链接表总共最多可包含 128 个条目。如果超出上述任一上限,新请求将被直接丢弃,直到链接表有额外空间为止。
 
 每次向链接表中添加新条目时,RODC 都会检查链接表并确定是否应删除任何条目。如果已使用的条目数超过最大条目数的 75%(默认情况下为 96 个条目),RODC 将检查链接表中是否存在过期条目。任何早于最长生存时间的条目都将被删除。
 
 所有这些默认值均可通过多个注册表设置进行配置,如表 9-4所示。这些注册表设置位于 `HKLM\System\CurrentControlSet\Services\W32Time\TimeProviders\NtpServer` 下。
-
-
 
 表 9-4. 链接表配置设置
 
@@ -1782,9 +1646,7 @@ RODC 上的知识一致性检查器( Knowledge Consistency Checker ,KCC )将在�
 | `ChainMaxEntries`     | 控制链接表中的最大条目数。                                   | 条目   | `128`  | `128`               | `1024`                 |
 | `ChainMaxHostEntries` | 指定任何给定主机可在链接表中拥有的条目数。                   | 条目   | `4`    | `4`                 | `16`                   |
 
-> **警告**：
-
-控制链接表大小的目的是确保链接表不会耗尽只读域控制器( Read-Only Domain Controller ,RODC )上的内存资源。如果增加 `ChainMaxEntries` 的值,请将此警告纳入考量。
+> **警告**：控制链接表大小的目的是确保链接表不会耗尽只读域控制器( Read-Only Domain Controller ,RODC )上的内存资源。如果增加 `ChainMaxEntries` 的值,请将此警告纳入考量。
 
 如果在 RODC 上禁用密码链接行为(通过将 `ChainDisable` 设置为 `1`),则 RODC 除了能够与可写的 Windows Server 2008 及更新版本的域控制器通信外,还能够与下层域控制器(例如 Windows Server 2003)通信。如果进行此配置更改,RODC 将无法再处理客户端时间同步请求。
 
@@ -1794,9 +1656,7 @@ RODC 上的知识一致性检查器( Knowledge Consistency Checker ,KCC )将在�
 
 尝试使用 LDAP 写入 Active Directory 的应用程序将从 RODC 收到指向可写域控制器的 LDAP 引用。只要应用程序能够*追踪*该引用,写入就会成功,并且下次 RODC 复制时,该写入将反映到本地。如果 WAN 中断,引用将失败。应用程序需要能够处理这种情况。
 
-> **注意**：
-
-通过将 `RODCMode` 注册表值设置为 `1`,即可禁止只读域控制器( Read-Only Domain Controller ,RODC )发出写入引用( Write Referral )。`RODCMode` 注册表值是一个 `REG_DWORD` 类型值,位于 `HKLM\System\CurrentControlSet\Services\NTDS\Parameters`。
+> **注意**：通过将 `RODCMode` 注册表值设置为 `1`,即可禁止只读域控制器( Read-Only Domain Controller ,RODC )发出写入引用( Write Referral )。`RODCMode` 注册表值是一个 `REG_DWORD` 类型值,位于 `HKLM\System\CurrentControlSet\Services\NTDS\Parameters`。
 
 应用程序可能失败的另一种情形是:它期望写入结果能够立即在本地域控制器( Domain Controller ,DC )上读取到。只读域控制器兼容包所解决的其中一个问题,就是 Windows 打印后台处理程序( Print Spooler )服务中的一个缺陷。打印后台处理程序会通过 LDAP 将打印机发布到 Active Directory(这会触发指向可写域控制器的引用),随后立即尝试从本地域控制器读取已发布的打印机。如果该打印机不存在于本地域控制器上(本地只读域控制器正是这种情况),后台处理程序服务就会判定打印机发布失败。
 
@@ -1806,9 +1666,7 @@ RODC 上的知识一致性检查器( Knowledge Consistency Checker ,KCC )将在�
 
 通常情况下,你要做的最重要的事情就是测试环境中所有可能与只读域控制器( Read-Only Domain Controller ,RODC )通信的应用程序。你很可能会发现有些应用程序需要更新代码或从厂商处获取升级版本。有一个应用程序需要特别留意,即 Microsoft Exchange。Exchange 无法与 RODC 协同工作,因此不应将 Exchange 服务器与 RODC 共置于同一站点中。
 
-> **注意**：
-
-Microsoft 已在[此链接](http://bit.ly/16WoHAR)中汇总了一份已知可与 RODC 协同工作的应用程序列表。
+> **注意**：Microsoft 已在[此链接](http://bit.ly/16WoHAR)中汇总了一份已知可与 RODC 协同工作的应用程序列表。
 
 #### 只读域控制器( Read-Only Domain Controller ,RODC)放置注意事项
 
@@ -1822,9 +1680,7 @@ Microsoft 已在[此链接](http://bit.ly/16WoHAR)中汇总了一份已知可与
 
 为了使外围网络中的成员服务器能够成功进行动态 DNS 注册,你需要允许外围网络服务器在 TCP 和 UDP 端口 53 上联系可写域控制器。外围网络中的成员服务器进行域加入操作( Domain Join Operation )将失败,除非你在可写域控制器上预先创建计算机账户( Computer Account ),确保允许外围网络中的 RODC 缓存该计算机账户,然后用该计算机账户的密码预先填充 RODC 密码缓存。
 
-> **注意**：
-
-为了使计算机账户( Computer Account )密码的预填充成功，你需要在尝试预填充缓存之前将其设置为非标准值。为此，你可以运行 *net user* *<ComputerName>$ <Password>*，在适当的位置替换计算机名称和密码。请确保在计算机名称中包含末尾的 *$*。
+> **注意**：为了使计算机账户( Computer Account )密码的预填充成功，你需要在尝试预填充缓存之前将其设置为非标准值。为此，你可以运行 *net user* *<ComputerName>$ <Password>*，在适当的位置替换计算机名称和密码。请确保在计算机名称中包含末尾的 *$*。
 
 #### 管理员角色分离
 
@@ -1872,9 +1728,7 @@ Microsoft 已在[此链接](http://bit.ly/16WoHAR)中汇总了一份已知可与
 
 更改将立即生效，RODC01-Admins 组的成员将能够管理该 RODC，而无需担心他们会获得对域或林的管理访问权限。
 
-> **注意**：
-
-作为本地管理员( Administrators )角色成员的用户，可以修改此角色以及其他本地角色的成员。
+> **注意**：作为本地管理员( Administrators )角色成员的用户，可以修改此角色以及其他本地角色的成员。
 
 我们强烈建议你定义一个域组，使其对环境中的每个只读域控制器( Read-Only Domain Controller ,RODC )都具有本地管理员级别的访问权限。此组应仅包含在你的环境中不具备任何提升权限的帐户(即普通用户帐户)。你应使用这些帐户在 RODC 上执行所有管理功能。如果需要执行某项要求域级管理权限的管理任务，请以远程方式执行该任务，因为任何尝试以交互方式登录到 RODC 的行为(无论是在控制台还是通过终端服务)都可能导致系统被攻陷。
 
@@ -1893,8 +1747,6 @@ Microsoft 已在[此链接](http://bit.ly/16WoHAR)中汇总了一份已知可与
 其中三个问题需要特别回答。首先,可以选择性地指定一个组(或用户),将 RODC 的管理权限委派给该组或用户,如管理员角色分离一节所述。如果在提升时还不确定,可以稍后随时进行更改。接下来,可以预先配置允许在 RODC 上缓存其密码的用户组。向导会为您预先配置此列表。同样,向导会预先填充不能缓存密码的用户组列表。当然,您也可以自定义此设置。
 
 如果希望通过 PowerShell 提升 RODC,并使用表 9-5 中列出的参数,可以使用以下命令:
-
-
 
 
 ```
@@ -1921,8 +1773,6 @@ Install-ADDSDomainController `
 (ConvertTo-SecureString -AsPlainText -Force -String "password") `
 -Credential (Get-Credential)
 ```
-
-
 
 
 表 9-5. RODC PowerShell 提升参数
@@ -1952,8 +1802,6 @@ Install-ADDSDomainController `
 以下命令在 *cohovines.com* 域的 Tokyo 站点中为 *COHO-TOK-ADC01* 预创建 RODC 账户。它还将提升职责委派给 COHOVINES\COHO-TOK-ADC01 Delegated Admins 组。
 
 
-
-
 ```
 Add-ADDSReadOnlyDomainControllerAccount `
  -AllowPasswordReplicationAccountName `
@@ -1971,9 +1819,7 @@ Add-ADDSReadOnlyDomainControllerAccount `
 
 预创建 RODC 的账户后,作为 Delegated Admins 组的成员,您可以运行带有 -UseExistingAccount 开关的 *Install-ADDSDomainController* cmdlet(或服务器管理器向导)来完成 RODC 的提升。
 
-> **注意**：
-
-若要在 Windows Server 2012 之前的 Windows 版本中预暂存 RODC 帐户，应改用 Active Directory 用户和计算机。要预暂存该帐户，请在 ADUC 中右键单击 Domain Controllers OU，然后单击“预创建只读域控制器帐户”。
+> **注意**：若要在 Windows Server 2012 之前的 Windows 版本中预暂存 RODC 帐户，应改用 Active Directory 用户和计算机。要预暂存该帐户，请在 ADUC 中右键单击 Domain Controllers OU，然后单击“预创建只读域控制器帐户”。
 
 要使用预暂存的帐户，请运行以下命令：*dcpromo /UseExistingAccount:Attach*。
 
@@ -2023,9 +1869,7 @@ Kerberos 的单点登录( Single Sign-On )优势的关键在于登录过程的�
 
 图 10-1. 身份验证服务请求数据包
 
-> **注意**：
-
-如果用户使用智能卡( Smart Card )而非用户名和密码登录,则会遵循略有不同的加密流程。此时不再使用用户密码的哈希值对时间进行加密,而是使用用户的私钥(存储在智能卡上)对时间戳进行加密。域控制器( Domain Controller ,DC)使用用户的公钥(存储在活动目录( Active Directory ,AD)中)来验证请求上签名的有效性,从而对用户进行身份验证。
+> **注意**：如果用户使用智能卡( Smart Card )而非用户名和密码登录,则会遵循略有不同的加密流程。此时不再使用用户密码的哈希值对时间进行加密,而是使用用户的私钥(存储在智能卡上)对时间戳进行加密。域控制器( Domain Controller ,DC)使用用户的公钥(存储在活动目录( Active Directory ,AD)中)来验证请求上签名的有效性,从而对用户进行身份验证。
 
 一旦 DC 验证了身份验证请求,便准备好颁发票据授予票据( Ticket Granting Ticket ,TGT)。TGT 封装在 *AS_REP*(认证服务响应)数据包中,如图 10-2 所示。TGT 包含用户的访问令牌,以及一份用于此后客户端与 DC 之间通信的会话密钥副本。
 
@@ -2086,8 +1930,6 @@ SPN 存储在 Active Directory 的 `servicePrincipalName` 多值属性中。用�
 *setspn.exe* 的优势在于,你还可以在注册服务主体名称( Service Principal Name ,SPN)之前搜索是否存在重复项。例如,要在服务器 *DB01* 上注册前面讨论过的 SQL Server SPN,且 SQL Server 正以 *svc.DB01SQL* 用户帐户运行,则可执行以下命令:
 
 
-
-
 ```
 setspn -s MSSQLSvc/DB01:1433 svc.DB01SQL
 setspn -s MSSQLSvc/DB01.cohovines.com:1433 svc.DB01SQL
@@ -2096,9 +1938,7 @@ setspn -s MSSQLSvc/DB01.cohovines.com:1433 svc.DB01SQL
 
 你还可以使用 *setspn.exe* 工具注销(删除)SPN、搜索现有的 SPN 注册信息,或检查整个林( Forest )中是否存在重复的 SPN。如需了解 *setspn.exe* 的完整参数列表,请访问 http://bit.ly/WRjA0A。
 
-> **注意**：
-
-有关如何查找重复的服务主体名称( Service Principal Name ,SPN )以及出现重复项时会发生什么情况的讨论，请查看 http://bit.ly/X4KlA9。
+> **注意**：有关如何查找重复的服务主体名称( Service Principal Name ,SPN )以及出现重复项时会发生什么情况的讨论，请查看 http://bit.ly/X4KlA9。
 
 ##### 服务票证( Service Ticket )
 
@@ -2132,9 +1972,7 @@ setspn -s MSSQLSvc/DB01.cohovines.com:1433 svc.DB01SQL
 
 每个具有一个或多个使用 `HOST` 服务名称的 SPN 的帐户（例如 `HOST/SRV01.cohovines.com`）都会通过隐式匹配过程自动获得数十个额外 SPN。此过程的目的是限制重复数据量。如果不存在此隐式匹配过程，表 10-1中的 52 个条目将会在 AD 中的每一个计算机帐户( computer account )上重复出现！
 
-> **注意**：
-
-你可以通过编辑配置命名上下文( Configuration NC )中 `CN=Directory Service,CN=Windows NT,CN=Services` 对象的 `sPNMappings` 属性,自定义隐式映射的 SPN 列表。你可以为 `HOST` 服务名称添加额外的映射,也可以为其他服务名称添加隐式映射。
+> **注意**：你可以通过编辑配置命名上下文( Configuration NC )中 `CN=Directory Service,CN=Windows NT,CN=Services` 对象的 `sPNMappings` 属性,自定义隐式映射的 SPN 列表。你可以为 `HOST` 服务名称添加额外的映射,也可以为其他服务名称添加隐式映射。
 
 SPN 查找过程可能会产生以下几种结果:
 
@@ -2143,8 +1981,6 @@ SPN 查找过程可能会产生以下几种结果:
 - 未找到匹配项。返回错误。
 
 隐式映射到 `HOST` 的默认 SPN 列表见表 10-1。
-
-
 
 表 10-1. 隐式 HOST SPN 映射
 
@@ -2267,15 +2103,11 @@ KCD 的扩展是一项称为 *协议转换* ( Protocol Transition )的功能，�
 
 1. 选择图 10-9中所示的"委派"选项卡。
 
-   > **注意**：
-
-   如果在用户账户上配置委派，则仅当该用户上注册了一个或多个 SPN，或者该用户账户已配置为允许委派到某个服务时，"委派"选项卡才可见。您可以向账户添加一个临时的虚假 SPN，也可以将可委派的 SPN 直接添加到 `msDS-AllowedToDelegateTo` 属性。
+   > **注意**：如果在用户账户上配置委派，则仅当该用户上注册了一个或多个 SPN，或者该用户账户已配置为允许委派到某个服务时，"委派"选项卡才可见。您可以向账户添加一个临时的虚假 SPN，也可以将可委派的 SPN 直接添加到 `msDS-AllowedToDelegateTo` 属性。
 
 2. 选择"信任此计算机以委派给指定服务"。
 
-   > **警告**：
-
-   图 10-9中所示的"信任此计算机以委派给任何服务(仅 Kerberos)"选项称为*无约束委派( Unconstrained Delegation )*。这是 Windows 2000 中唯一受支持的选项，极其危险。如果启用此选项，前端服务可以将经过身份验证的用户模拟到网络上的任何服务！
+   > **警告**：图 10-9中所示的"信任此计算机以委派给任何服务(仅 Kerberos)"选项称为*无约束委派( Unconstrained Delegation )*。这是 Windows 2000 中唯一受支持的选项，极其危险。如果启用此选项，前端服务可以将经过身份验证的用户模拟到网络上的任何服务！
 
    未经全面的风险评估，不应使用无约束委派。
 
@@ -2354,9 +2186,7 @@ Set-ADUser svc.DB01Service -PrincipalsAllowedToDelegateToAccount COHO-CHI-WEB01$
 
 在开始使用 gMSA 之前，需要准备 Active Directory。要在其中创建 gMSA 的域中，至少需要一台 Windows Server 2012 域控制器( Domain Controller ,DC)。Windows Server 2012 DC 运行新的组密钥分发服务( Group Key Distribution Service ,GKDS)。KDS 负责计算 gMSA 密码，并将这些密码提供给已授权的客户端。
 
-> **注意**：
-
-gMSA 可以认证到任意域控制器( Domain Controller ,DC )。密码管理操作仅要求使用 Windows Server 2012 域控制器。
+> **注意**：gMSA 可以认证到任意域控制器( Domain Controller ,DC )。密码管理操作仅要求使用 Windows Server 2012 域控制器。
 
 在域中开始使用 gMSA 之前,必须为该域创建密钥分发服务( Key Distribution Service ,KDS )根密钥。可以使用 *Add-KdsRootKey* PowerShell cmdlet 完成此操作。默认情况下,仅运行 *Add-KdsRootKey* 生成的 KDS 根密钥在 10 天内不会生效。这样设计是为了让密钥在生效之前传播到所有 Windows Server 2012 域控制器。
 
@@ -2373,9 +2203,7 @@ Add-KdsRootKey -EffectiveDate $effectiveDate
 
 要使用 gMSA,客户端必须是 Windows 8 或 Windows Server 2012。gMSA 支持传统 Windows 服务、IIS 应用程序池和计划任务。很少有应用程序支持在安装过程中原生指定 gMSA,因此很可能需要使用传统服务账户安装应用程序,然后稍后通过服务 MMC 管理单元更改应用程序的身份。
 
-> **警告**：
-
-虽然此技巧对大多数应用程序都应有效，但有些应用程序可能依赖于安装期间指定的服务账户的 SID 或用户名。在这种情况下，使用服务管理单元更改服务账户会导致应用程序无法正常工作。
+> **警告**：虽然此技巧对大多数应用程序都应有效，但有些应用程序可能依赖于安装期间指定的服务账户的 SID 或用户名。在这种情况下，使用服务管理单元更改服务账户会导致应用程序无法正常工作。
 
 作为示例，我们将配置一个 Internet 信息服务( Internet Information Services ,IIS)应用程序池以使用新的组托管服务账户( Group Managed Service Account ,gMSA)。第一步是预配 gMSA。目前没有可用的图形用户界面( Graphical User Interface ,GUI)选项，因此必须通过 Windows PowerShell 完成此任务。要创建 gMSA，请运行以下命令：
 
@@ -2415,9 +2243,7 @@ New-ADServiceAccount `
 
   AD 中可检索该账户密码的对象列表。这通常是一个包含运行该服务的计算机的组，或者一个计算机对象列表。在本示例中，我们指定了该服务将在其上运行的计算机。
 
-> **注意**：
-
-如果使用组控制对组托管服务账户( Group Managed Service Account ,gMSA)的访问，则需要先重新启动组成员，然后这些成员才能开始使用 gMSA。
+> **注意**：如果使用组控制对组托管服务账户( Group Managed Service Account ,gMSA)的访问，则需要先重新启动组成员，然后这些成员才能开始使用 gMSA。
 
 除此处列出的参数外，*New-ADServiceAccount* cmdlet 还有许多其他有用的参数。可访问 http://bit.ly/ZQjFll 查看完整列表，或运行 `Get-Help New-ADServiceAccount -Detailed` 查看。
 
@@ -2434,8 +2260,6 @@ New-ADServiceAccount `
 图 10-11. IIS 应用程序池凭据配置
 
 对于服务，也应采用相同方法：指定用户名时在其后附加 *$*，并将密码字段留空。计划任务( Scheduled Task )则略为复杂，因为任务计划程序图形界面( Task Scheduler GUI )不支持 MSA。因此，需要改用命令行创建该计划任务。以下示例创建一个任务，该任务使用 *svc.BatchJob* gMSA 每天凌晨 3 点运行名为 *C:\Scripts\ScheduledBatch.bat* 的虚构批处理脚本（每条命令应位于单行）：
-
-
 
 
 ```
@@ -2457,8 +2281,6 @@ Register-ScheduledTask -TaskName "Scheduled Batch" -Action $taskAction `
 - [Register-ScheduledTask](http://bit.ly/11DMXYq)
 
 在计划任务开始生效之前,你还需要为托管服务账户( Managed Service Account ,MSA)授予"作为批处理作业登录"这一 Windows 权限。可通过组策略或服务器的本地安全策略完成此操作。要在本地服务器上完成更改,请启动本地安全策略编辑器(依次单击"开始"→"运行"→`**`secpol.msc`**`),然后浏览至*本地策略\用户权限分配*,如图 10-12所示。将 MSA 添加到"作为批处理作业登录"权限中。
-
-
 
 
 ![Local Security Policy Editor](./image/10.%20Authentication%20and%20Security%20Protocols/httpatomoreillycomsourceoreillyimages1663445.png.webp)

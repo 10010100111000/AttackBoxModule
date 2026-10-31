@@ -2,8 +2,6 @@
 summary: Active Directory（第5版·第4卷），深度讲解Active Directory安全权限体系、动态访问控制（DAC）与安全审核、Schema架构自定义扩展实施、目录备份灾难恢复与维护，以及域环境版本升级。
 ---
 
-# Active Directory, 5th Edition（第4卷：权限审核与运维维护）
-
 ## 第 16 章. Active Directory 安全:权限与审核
 
 在 Active Directory 中设置权限与为文件设置权限非常相似。尽管您可能并不在意目录中的每个用户都能读取所有用户的电话号码，但您可能需要存储更敏感的信息并限制对这些信息的访问。当然，读取并不是唯一的问题。您还需要考虑创建、修改和删除权限，而最不希望发生的事情就是心怀不满或聪明的员工找到方法删除某个组织单位中的所有用户。
@@ -80,9 +78,7 @@ summary: Active Directory（第5版·第4卷），深度讲解Active Directory�
 
 微软引入了若干 NTFS 访问控制列表( Access Control List ,ACL )中并不存在的全新“工具”。这些工具称为属性集、验证写入和扩展权限。无需将 `schemaIDGUID` 插入访问控制项( Access Control Entry ,ACE )的“对象类型”( Object Type )字段,而是可以插入属性集、验证写入或扩展权限对象的 `rightsGuid` 属性。这些对象全部存储在配置容器( Configuration container )的 cn=`extended-rights` 子容器中。
 
-> **注意**：
-
-属性集( Property Sets )、验证写入( Validated Writes )和扩展权限( Extended Rights )都存储为 `controlAccessRight` 对象。通过任何可查看对象所有属性值的实用工具（例如 LDP 或 ADSI Edit），查看该对象的 `validAccesses` 属性，即可确定它们具体属于哪种 `controlAccessRight` 类型。
+> **注意**：属性集( Property Sets )、验证写入( Validated Writes )和扩展权限( Extended Rights )都存储为 `controlAccessRight` 对象。通过任何可查看对象所有属性值的实用工具（例如 LDP 或 ADSI Edit），查看该对象的 `validAccesses` 属性，即可确定它们具体属于哪种 `controlAccessRight` 类型。
 
 *属性集* 的值为 `48`，验证写入的值为 `8`，扩展权限的值为 `256`。有关详细信息，请参阅[此网站](http://bit.ly/YEGdJg)。
 
@@ -135,9 +131,7 @@ summary: Active Directory（第5版·第4卷），深度讲解Active Directory�
 
 要移除查看这些信息的能力可能很难做到，尤其是对于那些通过显式属性集访问控制项( Access Control Entry ,ACE)授予的项。此外，所做的任何修改都需要经过全面测试，以确保不会破坏任何业务线应用程序。Microsoft Exchange 对权限锁定尤其敏感；如果取消经过身份验证的用户组对某些属性的访问权限，则可能需要将权限重新授予 Exchange 服务器。ADSI 是另一种常用工具，对默认权限的更改非常敏感。如果已移除假定的权限，你可能会发现 ADSI 调用会失败并出现难以解释的错误。
 
-> **警告**：
-
-你无法永久地将目录锁定到让域管理员( Domain Admins )无法访问的程度。该组中的任何人在任何时候都可以取得任何对象的所有权(如果他们尚未拥有该所有权)，并重写安全描述符( Security Descriptor )，以向域管理员或任何其他安全主体( Security Principal )授予访问权限。你的林( Forest )中应只有极少数的域管理员。我们通常建议总数控制在五个或更少，*即使对于规模最大的组织也是如此*。
+> **警告**：你无法永久地将目录锁定到让域管理员( Domain Admins )无法访问的程度。该组中的任何人在任何时候都可以取得任何对象的所有权(如果他们尚未拥有该所有权)，并重写安全描述符( Security Descriptor )，以向域管理员或任何其他安全主体( Security Principal )授予访问权限。你的林( Forest )中应只有极少数的域管理员。我们通常建议总数控制在五个或更少，*即使对于规模最大的组织也是如此*。
 
 一旦决定继续执行锁定，下一步就是确定如何实现。具体“如何”实施以及由此产生的工作量和影响，完全取决于所涉及的属性以及访问权限的授予方式。
 
@@ -212,9 +206,7 @@ Active Directory 管理员经常面临的一个问题是，某个对象或整个
 
 要访问任何对象的权限，请选择"Active Directory 用户和计算机"MMC 管理单元，然后右键单击该对象。从下拉菜单中选择"属性"，并在显示的属性窗口中选择"安全"选项卡。
 
-> **注意**：
-
-若要使“安全”选项卡可见,需要选择“查看”→“高级功能”。重新打开想要为其分配权限的对象的属性窗口后,即可看到“安全”选项卡。
+> **注意**：若要使“安全”选项卡可见,需要选择“查看”→“高级功能”。重新打开想要为其分配权限的对象的属性窗口后,即可看到“安全”选项卡。
 
 图 16-6所示的窗口是您接触权限设置的起点。顶部区域列出了当前所查看属性对象的全部授权组和用户的完整清单。清单下方的“权限”部分显示了所选用户或组在各项常规权限上的允许与拒绝情况。所列出的常规权限仅涵盖那些被认为最常设置的权限。每个常规权限只是一个总括性术语,其背后代表着一组复杂的、实际生效的具体权限。例如,名为“读取”的常规权限实际对应的是“读取所有属性”和“列出内容”等具体权限,稍后将会说明。
 
@@ -236,9 +228,7 @@ Active Directory 管理员经常面临的一个问题是，某个对象或整个
 
 图 16-7. 对象的高级安全设置
 
-> **注意**：
-
-权限对话框包含大量信息，且通常尺寸过小，难以舒适地查看其中的内容。这使得查看权限变得颇为费力，因为你不得不频繁调整各列宽度或在对话框中来回滚动。遗憾的是，我们无法修改这些对话框以更好地展示其包含的信息。
+> **注意**：权限对话框包含大量信息，且通常尺寸过小，难以舒适地查看其中的内容。这使得查看权限变得颇为费力，因为你不得不频繁调整各列宽度或在对话框中来回滚动。遗憾的是，我们无法修改这些对话框以更好地展示其包含的信息。
 
 现在，你有两种方式查看原子权限。你可以点击“添加”，弹出一个窗口，允许你向已设置权限的用户或组中添加新的用户或组。另一种方式是，选中一个现有的用户或组，然后点击“编辑”按钮。无论是选中用户或组，还是通过弹出窗口添加，接下来你将看到的是权限项( Permission Entry ,PE)窗口，如图16-8所示。
 
@@ -246,9 +236,7 @@ Active Directory 管理员经常面临的一个问题是，某个对象或整个
 
 图16-8. 对象的权限项
 
-> **注意**：
-
-在你完全清楚自己在权限方面要做什么之前，我们建议你先用一个测试林来试验权限设置。最不希望发生的事情，就是因为对某个内置组或用户犯了一个简单的错误，结果把自己挡在目录树之外。如果你创建两个测试用户和三个测试组，让每个用户分别属于一个独立的组，再把这两个用户都加入第三个组，就搭建起了一个测试系统的基础。
+> **注意**：在你完全清楚自己在权限方面要做什么之前，我们建议你先用一个测试林来试验权限设置。最不希望发生的事情，就是因为对某个内置组或用户犯了一个简单的错误，结果把自己挡在目录树之外。如果你创建两个测试用户和三个测试组，让每个用户分别属于一个独立的组，再把这两个用户都加入第三个组，就搭建起了一个测试系统的基础。
 
 对象名称显示在权限编辑器窗口的标题中，拥有权限的用户或组名称则醒目地显示在窗口顶部的字段里。随后，通过列中的条目为该用户或组授予允许或拒绝的权限。窗口中的条目是相对的，会随“应用于”标题下下拉列表中所选的条目而变化。从这个窗口并不能一眼看出下拉框实际上能有多长。这一点在图 16-9 中得到了很好的展示。如果你看一下滚动条，就能大致了解当前还有多少项没有显示出来。
 
@@ -485,9 +473,7 @@ Active Directory 管理员经常面临的一个问题是，某个对象或整个
 
 与权限相比,设计审核方案( Auditing Scheme )相对简单。设想一下可能需要检查 Active Directory 中正在发生的情况,然后据此进行相应设置。
 
-> **警告**：
-
-必须谨记，每一个被审核的 Active Directory 事件都会导致系统产生额外的处理开销。如果始终在根级别为任何人的每次修改启用审核，那么当这些域控制器( Domain Controller ,DC)上发生大量 Active Directory 访问时，这将是使所有 DC 变得非常缓慢的绝佳方式。
+> **警告**：必须谨记，每一个被审核的 Active Directory 事件都会导致系统产生额外的处理开销。如果始终在根级别为任何人的每次修改启用审核，那么当这些域控制器( Domain Controller ,DC)上发生大量 Active Directory 访问时，这将是使所有 DC 变得非常缓慢的绝佳方式。
 
 这一点值得反复强调。审核域命名上下文( Domain Naming Context ,NC)中任何对象的更改将在整个域范围内传播，并导致服务于该域 NC 的每个 DC 都将事件记录到安全事件日志中。审核配置 NC 或架构 NC 的更改将导致林中的所有 DC 开始将事件审核记录到其安全事件日志中。如果您希望查看发生的每一个安全事件，您必须拥有从多个 DC 检索日志的工具。毕竟，如果您有 100 个 DC 并且正在记录配置 NC 的更改，由于更改可能发生在任何 DC 上，您将需要收集并合并 100 个安全事件日志以获取完整的情况。
 
@@ -550,9 +536,7 @@ Windows Server 2008 引入了全新的活动目录( Active Directory ,AD)审核�
 | 5139     | 移动        | 当在 SACL 中设置了“创建子对象”审核时，只要将对象移动到父对象下，就会记录该事件 |
 | 5141     | 删除      | 当在 SACL 中设置了“删除自身”审核时，只要对象被删除，就会记录该事件；或者当在 SACL 中设置了“删除子对象”审核时，只要在父对象下删除对象，就会记录该事件 |
 
-> **注意**：
-
-Windows Server 2003 和 Windows 2000 中记录的目录服务访问( Directory Service Access )事件 566 仍然存在;但事件 ID 已更改为 4662。
+> **注意**：Windows Server 2003 和 Windows 2000 中记录的目录服务访问( Directory Service Access )事件 566 仍然存在;但事件 ID 已更改为 4662。
 
 启用新的审核功能需要经过三到四个步骤:
 
@@ -633,9 +617,7 @@ Active Directory 支持一系列属性,在启用这些属性后,可将用户上�
 
 与 `lastLogonTimeStamp` 属性不同，这些属性没有更新频率保护机制。如果启用此功能，请记住，这些属性每次更新后，都会在下一个复制周期中进行复制。在繁忙的域中，这些属性每天可能会有数千次更新。此外，在域中有多台域控制器的环境中，无法保证向用户显示的值（如图 16-17所示）实际上就是最准确的值，因为这些属性会像目录中的任何其他更改一样进行复制。
 
-> **警告**：
-
-如果已部署只读域控制器( Read-Only Domain Controller ,RODC),它们将在本地更新这些属性,但更改不会复制到域中的其他部分。
+> **警告**：如果已部署只读域控制器( Read-Only Domain Controller ,RODC),它们将在本地更新这些属性,但更改不会复制到域中的其他部分。
 
 本节讨论的上次交互式登录统计信息功能的实现,主要是为了符合通用标准( Common Criteria )([http://www.commoncriteriaportal.org](http://www.commoncriteriaportal.org/))。除非您有业务需求,或者您是在小型(例如单站点)域中启用此功能,否则我们不建议启用它。
 
@@ -709,9 +691,7 @@ Active Directory 保护这些对象，是为了防止被委派了这些组成员
 
 *AdminSDHolder* 进程默认每 60 分钟在 PDC 模拟器 FSMO 角色持有者上后台运行一次，并向范围内每个对象应用一个不继承权限的特殊 ACL。该 ACL 存储在域根下 `CN=AdminSDHolder,CN=System` 对象的 `ntSecurityDescriptor` 属性中。
 
-> **注意**：
-
-如果要修改 *AdminSDHolder* 进程的运行频率，可以将 `HKLM\SYSTEM\CurrentControlSet\Services\NTDS\Parameters` 中的 `AdminSDProtectFrequency` 注册表设置（`REG_DWORD`）设置为 `60` 到 `7200`（秒）之间的值。建议保留默认值 `3600` 不变。
+> **注意**：如果要修改 *AdminSDHolder* 进程的运行频率，可以将 `HKLM\SYSTEM\CurrentControlSet\Services\NTDS\Parameters` 中的 `AdminSDProtectFrequency` 注册表设置（`REG_DWORD`）设置为 `60` 到 `7200`（秒）之间的值。建议保留默认值 `3600` 不变。
 
 管理员通常在几种场景中首次遇到此过程。第一种情况是，某用户曾经是管理员，但后来这些权限被撤销。第二种常见场景出现在 Exchange 2010 及更高版本中。如果用户使用日常用户账户执行管理任务（不推荐），则当他们首次尝试为 ActiveSync 连接移动设备时，连接将失败，因为 Exchange 需要额外访问权限，才能在该用户账户下创建一个特殊对象来跟踪该移动设备。
 
@@ -726,9 +706,7 @@ Active Directory 保护这些对象，是为了防止被委派了这些组成员
 - 打印操作员( Print Operators )
 - 备份操作员( Backup Operators )
 
-> **注意**：
-
-如果某个用户是这些组之一的成员，同时也是另一个受保护组( Protected Group )的成员，则该用户将继续受 *AdminSDHolder* 保护。
+> **注意**：如果某个用户是这些组之一的成员，同时也是另一个受保护组( Protected Group )的成员，则该用户将继续受 *AdminSDHolder* 保护。
 
 若要排除这些组中的任何一组，需要按照以下步骤使用 ADSI Edit 修改 `dsHeuristics` 属性：
 
@@ -740,9 +718,7 @@ Active Directory 保护这些对象，是为了防止被委派了这些组成员
 
 4. 如果 `dsHeuristics` 属性未设置，请将其设置为 `000000000100000f`。如果该属性已设置，则继续下一步。
 
-   > **警告**：
-
-   如果已设置了值，请勿用步骤 4 中的默认值覆盖 `dsHeuristics` 属性。`dsHeuristics` 还控制着许多其他行为！
+   > **警告**：如果已设置了值，请勿用步骤 4 中的默认值覆盖 `dsHeuristics` 属性。`dsHeuristics` 还控制着许多其他行为！
 
 5. `dsHeuristics` 属性中的前四个字符分别控制着对先前列出的四个组之一的排除：
 
@@ -774,9 +750,7 @@ Windows Server 2012 中最炙手可热的新功能之一便是动态访问控制
 
 DAC 旨在通过为文件系统引入基于表达式的 ACL 结构来解决上述两个问题,该结构同时基于组成员资格和 AD 中用户对象的属性。这些属性以声明( Claim )的形式表示,并在用户通过 Windows Server 2012 域控制器( Domain Controller ,DC )进行身份验证时添加到用户的安全令牌中。
 
-> **注意**：
-
-如果用户由运行 Windows Server 2012 之前版本 Windows 的域控制器( Domain Controller ,DC)进行身份验证，则 Windows Server 2012 文件服务器可以联系该文件服务器所在站点( Site )中的 Windows Server 2012 DC，并获取包含声明数据( Claims Data )的访问令牌( Access Token )。
+> **注意**：如果用户由运行 Windows Server 2012 之前版本 Windows 的域控制器( Domain Controller ,DC)进行身份验证，则 Windows Server 2012 文件服务器可以联系该文件服务器所在站点( Site )中的 Windows Server 2012 DC，并获取包含声明数据( Claims Data )的访问令牌( Access Token )。
 
 除了用户的属性之外，Windows 8 工作站还可以通过一项称为 *复合标识*( Compound Identity )的功能参与动态访问控制( Dynamic Access Control ,DAC)。复合标识使来自用户工作站的声明可以包含在用户的令牌中，从而也包含在资源上的访问控制表达式( Access Control Expression )中。例如，借助此功能，你可以强制要求用户从公司计算机访问文件夹。
 
@@ -950,9 +924,7 @@ DAC 旨在通过为文件系统引入基于表达式的 ACL 结构来解决上�
 
 首先，我们来看看如何设计你可能希望在企业环境( Enterprise Environment )中进行的更改。
 
-> **注意**：
-
-如果您尚未阅读过，我们强烈建议您参阅第 5 章，以深入了解活动目录架构( Active Directory Schema )。本章内容依赖于该章所讨论的概念。
+> **注意**：如果您尚未阅读过，我们强烈建议您参阅第 5 章，以深入了解活动目录架构( Active Directory Schema )。本章内容依赖于该章所讨论的概念。
 
 ### 17.1. 在组织中指定负责人
 
@@ -960,9 +932,7 @@ DAC 旨在通过为文件系统引入基于表达式的 ACL 结构来解决上�
 
 相比之下，Active Directory 管理员负责为林( Forest )设计和创建架构中的适当类，并负责实现第三方应用程序所需的架构扩展。他们负责根据来自组织内部的请求实际更改架构，并确保不会创建执行相同功能的冗余对象、确保以最佳方式利用继承( Inheritance )、确保为相应对象建立索引，以及确保部分属性集( Partial Attribute Set )包含正确的属性。
 
-> **注意**：
-
-如果你正在设计将修改其他组织架构的代码，例如为某个软件产品设计代码，那么伴随该代码的文档应当明确说明到底创建了哪些类与属性以及为什么。文档还应说明，该代码需以“架构管理员”组成员的权限运行，因为在许多组织中，“架构管理员”AD 组为空。
+> **注意**：如果你正在设计将修改其他组织架构的代码，例如为某个软件产品设计代码，那么伴随该代码的文档应当明确说明到底创建了哪些类与属性以及为什么。文档还应说明，该代码需以“架构管理员”组成员的权限运行，因为在许多组织中，“架构管理员”AD 组为空。
 
 通过编程方式处理架构变更的更好方案，是向组织提供用于架构修改的 LDIF 文件。这样组织可以审查实际变更，并将其与其他架构修改合并到批量更新流程中，从而更易于测试和生产实施。一些大型组织有严格的架构变更控制流程，要求提供描述所有变更的 LDIF 格式文件。在这些组织中未能提供所需 LDIF 文件将导致更新被拒绝。
 
@@ -992,9 +962,7 @@ DAC 旨在通过为文件系统引入基于表达式的 ACL 结构来解决上�
 
 这里的关键点在于，我们选择不修改架构( Schema )，因为已经找到了一个令我们满意的空闲属性( Spare Attribute )。我们同样有可能找不到合适的属性，于是决定着手使用自己定制的属性来完成架构更改。
 
-> **警告**：
-
-这个将 `employeeID` 属性挪作他用的示例中，该属性被改用来保存的数据与 `employeeID` 这一名称所隐含的原始意图高度吻合。绝对不建议将基础架构( base schema )中包含的属性改变用途，用于与其原始意图毫不相关的目的。Active Directory 的后续版本完全有可能开始将基础架构中的某个属性用于其原始意图，或者第三方应用程序可能会做出这种假设。如果您已选择改变该属性的用途，那么您将需要从该属性中迁出数据，并更新所有依赖它的应用程序。
+> **警告**：这个将 `employeeID` 属性挪作他用的示例中，该属性被改用来保存的数据与 `employeeID` 这一名称所隐含的原始意图高度吻合。绝对不建议将基础架构( base schema )中包含的属性改变用途，用于与其原始意图毫不相关的目的。Active Directory 的后续版本完全有可能开始将基础架构中的某个属性用于其原始意图，或者第三方应用程序可能会做出这种假设。如果您已选择改变该属性的用途，那么您将需要从该属性中迁出数据，并更新所有依赖它的应用程序。
 
 如果您已将 Microsoft Exchange 安装到林( forest )中，还有一组属性可供您随意使用，满足您的任何需求。这些属性称为扩展( `extension` )或自定义属性( `custom attributes` )，名称如 `extensionAttribute1`、`extensionAttribute2` 等。操作系统通常不使用这些属性，它们被保留下来供您随意使用。Exchange Server 2013 默认会创建 50 个此类属性，因此 Active Directory 中直接内置了备用属性容量。因此，如果我们想存储用户会说的语言数量，只要愿意，就可以将该值直接存储在 `extensionAttribute1` 中。
 
@@ -1023,9 +991,7 @@ DAC 旨在通过为文件系统引入基于表达式的 ACL 结构来解决上�
 - 该更改现在或将来是否会影响其他任何人？
 - 该更改是否会影响公司内部或外部人员正在开发的任何应用程序( Application )？
 
-> **注意**：
-
-与创建有效的对象标识符( Object Identifier ,OID)命名空间时一样,请确保使用合理的名称创建类( Class )和属性( Attribute )。这些名称应具有唯一的公司前缀( Prefix ),以便于识别,并应由以连字符分隔的首字母大写单词组成。有关为名称选择前缀的详细信息,请参阅侧边栏“选择合理的命名前缀”。
+> **注意**：与创建有效的对象标识符( Object Identifier ,OID)命名空间时一样,请确保使用合理的名称创建类( Class )和属性( Attribute )。这些名称应具有唯一的公司前缀( Prefix ),以便于识别,并应由以连字符分隔的首字母大写单词组成。有关为名称选择前缀的详细信息,请参阅侧边栏“选择合理的命名前缀”。
 
 
 
@@ -1146,9 +1112,7 @@ member: cn=guest,cn=users,dc=mycorp,dc=com
 
 第一行必须是对象的 DN。第二行是 `changetype`，其取值为 `add`、`modify`、`modrdn` 或 `delete` 之一。使用 `add` 时（如本例所示），必须指定该对象的所有必需属性。对于组对象，只需要指定 `objectClass`。`cn` 属性不是必需的，因为它已在 DN 中指定。
 
-> **注意**：
-
-Windows 2000 Active Directory 还要求为新用户和组指定 `sAMAccountName` 属性。
+> **注意**：Windows 2000 Active Directory 还要求为新用户和组指定 `sAMAccountName` 属性。
 
 使用 LDIF 文件创建可移植的架构扩展非常简单。只需创建一个包含所有必要的 `classSchema` 或 `attributeSchema` 对象添加或修改的 LDIF 文件，使用任何基于 LDIF 的客户端(例如 Windows 自带的 *ldifde*)的管理员即可轻松将其导入 Active Directory。以下 LDIF 文件展示了如何创建一个属性以及一个包含该新属性的辅助类：
 
@@ -1204,9 +1168,7 @@ schemaUpdateNow: 1
 
 
 
-> **注意**：
-
-如果在 `myCorp-ITUser` 类的 `mayContain` 属性中使用 `attributeID` OID 1.2.3.4.111.1 来代替 `lDAPDisplayName myCorp-ITUserBuilding`，我们就可以跳过属性创建后的架构缓存刷新。由于在本示例中使用了 `lDAPDisplayName`，因此需要重新加载架构缓存，因为必须执行查找以检索正确的 OID。
+> **注意**：如果在 `myCorp-ITUser` 类的 `mayContain` 属性中使用 `attributeID` OID 1.2.3.4.111.1 来代替 `lDAPDisplayName myCorp-ITUserBuilding`，我们就可以跳过属性创建后的架构缓存刷新。由于在本示例中使用了 `lDAPDisplayName`，因此需要重新加载架构缓存，因为必须执行查找以检索正确的 OID。
 
 使用 LDIF 实现架构扩展有双重好处。首先，由于 LDIF 具有人类可读且语法定义良好的特点，需要实施扩展的人员可以轻松了解将要执行的操作。如果使用管理员无法查看源代码的程序，他对所做更改的可见性就会大打折扣。同样地，LDIF 文件为架构扩展提供了一种简易的文档机制。由于 LDIF 文件只是基于文本的文件，架构管理员可以将其归档到服务器上，并随时准确地查看针对某些应用程序所做更改的具体内容。
 
@@ -1259,17 +1221,13 @@ Active Directory 不允许从架构中删除对象。然而，如果您的林运
 
 要使属性成功废弃，系统会确保该属性不是任何非废弃类的强制属性或可选属性，也不是任何类的 RDN 属性(`rDNAttID`)。要使类成功废弃，系统会确保该类不是任何其他非废弃类的父类，不是任何其他非废弃类的辅助类，也不是任何其他非废弃类的可能上级。如果您后来决定再次使用该架构对象，请将 `isDefunct` 的值设置为 FALSE。执行此操作时进行的检查与最初创建相应类型的新架构对象时相同。
 
-> **注意**：
-
-若要查看 Active Directory 架构( Schema )MMC 管理单元中的失效( defunct )属性( attribute )和类( class )，必须启用这些属性和类的显示。若要显示失效的架构对象( schema object )，请单击“视图”→“失效对象”。
+> **注意**：若要查看 Active Directory 架构( Schema )MMC 管理单元中的失效( defunct )属性( attribute )和类( class )，必须启用这些属性和类的显示。若要显示失效的架构对象( schema object )，请单击“视图”→“失效对象”。
 
 当属性或类被标记为失效时，Active Directory 中存储的相应数据不会被删除。考虑到这一点，在将某个类标记为失效之前，应从目录中删除该类的所有实例。同样，在将某个属性标记为失效之前，应清除所有对象上的该属性。
 
 当架构对象失效时，尝试创建其实例会失败，就像它不存在一样。修改现有实例也是如此，无论修改的是对象上的属性还是对象本身，都会表现为它们不存在。不过，可以删除作为失效类实例的对象。搜索作为失效类实例的对象会成功，搜索包含失效属性的未失效类也会成功。所有属性，无论是否失效，都可以读取。这些都是必需的，以便管理员或应用程序作者能够清理并删除现已失效的对象实例，以及从现已失效的属性中删除所有值。
 
-> **注意**：
-
-即使某个架构对象已失效，就其 `distinguishedName`、对象标识符( Object Identifier ,OID )和 `lDAPDisplayName` 而言，它仍然存在。不能创建具有这些值的第二个架构对象，但在大多数情况下，可以更改这些值。例外情况是，对于用作 `objectClass` 的相对可分辨名称( Relative Distinguished Name ,RDN )属性，不能重用其 OID。
+> **注意**：即使某个架构对象已失效，就其 `distinguishedName`、对象标识符( Object Identifier ,OID )和 `lDAPDisplayName` 而言，它仍然存在。不能创建具有这些值的第二个架构对象，但在大多数情况下，可以更改这些值。例外情况是，对于用作 `objectClass` 的相对可分辨名称( Relative Distinguished Name ,RDN )属性，不能重用其 OID。
 
 #### 缓解架构冲突( Schema Conflict )
 
@@ -1279,9 +1237,7 @@ Active Directory 不允许从架构中删除对象。然而，如果您的林运
 
 
 
-> **注意**：
-
-Active Directory 架构 LDIF 文件的签名通过随附的编录文件( Catalog File )进行验证。*ldifde* 包含一个 *-$* 参数，用于指定验证 LDIF 文件签名时要使用的编录文件。
+> **注意**：Active Directory 架构 LDIF 文件的签名通过随附的编录文件( Catalog File )进行验证。*ldifde* 包含一个 *-$* 参数，用于指定验证 LDIF 文件签名时要使用的编录文件。
 
 由于基础 Active Directory 架构的 LDIF 文件现在已签名，因此无法在运行 *adprep* 之前直接修改这些文件来确保该过程成功。相反，你需要先将冲突的类( Class )或属性( Attribute )标记为失效( Defunct )，使用有效的 OID 重新创建它们，然后重新填充属性或重新创建对象。完成此过程后，即可成功完成 *adprep* 过程。
 
@@ -1329,9 +1285,7 @@ Active Directory 架构 LDIF 文件的签名通过随附的编录文件( Catalog
 
   这仅适用于运行证书服务的 DC。
 
-> **注意**：
-
-尽管大多数备份软件包允许你执行增量备份或差异备份，但在 Active Directory 中，你只能对系统状态执行完整备份。
+> **注意**：尽管大多数备份软件包允许你执行增量备份或差异备份，但在 Active Directory 中，你只能对系统状态执行完整备份。
 
 Windows Server 2008 及更高版本的域控制器( Domain Controller ,DC )系统状态备份除了包含前面列出的组件外，几乎还包含所有操作系统文件。因此，你会注意到 Windows Server 2008 及更高版本 DC 上系统状态备份的大小会大幅增加。
 
@@ -1365,9 +1319,7 @@ cn=Directory Services, cn=Windows NT, cn=Services, cn=Configuration, <ForestDN>
 
 在考虑保留备份副本的时长时，还有一个需要注意的问题与密码有关。默认情况下，计算机账户( Computer Account )和托管服务账户( Managed Service Account ,MSA )每 30 天更改一次密码。域控制器( Domain Controller ,DC )会接受当前密码以及前一个密码，因此，如果从超过 60 天的备份中还原计算机对象，这些计算机很可能需要重置密码。信任关系( Trust Relationship )也可能受到影响。与计算机账户一样，信任对象中也会存储当前密码和前一个密码，但与计算机账户密码不同，信任密码每 7 天更改一次。这意味着，如果从超过 14 天的备份中以授权方式还原信任对象，则可能需要重置信任。
 
-> **警告**：
-
-域控制器备份明确不支持磁盘映像。这涵盖了所有映像实例，从虚拟硬件磁盘备份到使用 Ghost 等磁盘映像软件，再到各种附加存储产品中提供的特殊映像功能。活动目录( Active Directory )是一个跨多个域控制器( Domain Controller ,DC)运行的分布式系统，每个域控制器都为其他域控制器维护状态。对分布式系统的各个部分进行映像并单独恢复，可能对整个目录的一致性造成灾难性后果。可能出现的问题包括 USN 回滚、残留对象以及 SID 回滚。
+> **警告**：域控制器备份明确不支持磁盘映像。这涵盖了所有映像实例，从虚拟硬件磁盘备份到使用 Ghost 等磁盘映像软件，再到各种附加存储产品中提供的特殊映像功能。活动目录( Active Directory )是一个跨多个域控制器( Domain Controller ,DC)运行的分布式系统，每个域控制器都为其他域控制器维护状态。对分布式系统的各个部分进行映像并单独恢复，可能对整个目录的一致性造成灾难性后果。可能出现的问题包括 USN 回滚、残留对象以及 SID 回滚。
 
 使用磁盘映像的唯一安全方式是关闭林中的所有域控制器，然后对磁盘进行映像。当需要恢复时，同样关闭所有域控制器，并将每个域控制器回滚到同一时间点。尽管这是一种安全的方式，但 Microsoft 仍不支持，且仅应在测试环境中使用。
 
@@ -1415,15 +1367,11 @@ NT 备份实用工具可用于备份系统，也可用于执行还原。我们�
 
 Windows Server 2008 引入了一个完全重构的备份和还原实用工具。如果您习惯了 NT Backup，则需要做一些调整，因为该工具已经完全重新设计，并有一些重大的新限制。为了节省篇幅，本书中我们只讨论特定于备份和还原 Active Directory 的功能。有关 Windows Server Backup (WSB) 的完整介绍，请访问[此网站](http://bit.ly/ZqhgKH)。
 
-> **注意**：
-
-Windows Server Backup 默认情况下不会安装。要使用它，必须使用服务器管理器( Server Manager )安装该功能。
+> **注意**：Windows Server Backup 默认情况下不会安装。要使用它，必须使用服务器管理器( Server Manager )安装该功能。
 
 要启动 WSB，请转到“开始” → “管理工具” → “Windows Server Backup”。该工具已转换为 MMC 管理单元，如图 18-4 所示。
 
-> **注意**：
-
-你可以直接通过“开始”→“运行”→**`wbadmin.msc`** 启动 WSB，而无需在开始菜单中查找。
+> **注意**：你可以直接通过“开始”→“运行”→**`wbadmin.msc`** 启动 WSB，而无需在开始菜单中查找。
 
 ![Windows Server Backup](./image/18.%20Backup,%20Recovery,%20and%20Maintenance/httpatomoreillycomsourceoreillyimages1663536.webp)
 
@@ -1492,9 +1440,7 @@ Active Directory 的优势之一是内置冗余(Redundancy)。当丢失单个域
 3. 提升服务器。在留出足够时间让域控制器移除操作在整个林内复制后，你可以将新服务器提升为 AD 中的域控制器。
 4. 配置任何必要的角色。如果故障服务器曾担任任何 FSMO 角色，或是全局编录服务器或 DNS 服务器，你可以配置新服务器来承担这些角色。
 
-> **注意**：
-
-一种可能的最佳实践是保留一台备用服务器，该服务器已安装操作系统和其他所需软件，可随时发货，或在所有位置现场备用。这样一来，如果你的一台域控制器( Domain Controller ,DC)发生重大故障，就可以直接使用该备用服务器，而无需为立即更换故障机器中的硬件而焦头烂额。另一种做法是，在故障影响最严重的主要站点( Primary Site )中额外配置域控制器容量，尤其是对 Exchange 而言。这种替代策略通常比在每个位置都保留备用硬件要常见得多。
+> **注意**：一种可能的最佳实践是保留一台备用服务器，该服务器已安装操作系统和其他所需软件，可随时发货，或在所有位置现场备用。这样一来，如果你的一台域控制器( Domain Controller ,DC)发生重大故障，就可以直接使用该备用服务器，而无需为立即更换故障机器中的硬件而焦头烂额。另一种做法是，在故障影响最严重的主要站点( Primary Site )中额外配置域控制器容量，尤其是对 Exchange 而言。这种替代策略通常比在每个位置都保留备用硬件要常见得多。
 
 这种方法最大的潜在缺点是还原时间。根据目录信息树( Directory Information Tree ,DIT )文件的大小，以及新 DC 与其将进行复制的服务器之间的网络连接速度，还原时间可能长达数小时甚至数天。使用媒体安装( Install from Media ,IFM)选项可以大幅缩短还原时间，该选项允许你从一个域控制器的系统状态备份( System State Backup )中提取文件，并使用这些文件快速将另一台服务器提升为域控制器。与尝试通过 WAN 复制整个 DIT 相比，压缩这些备份文件，然后通过网络将其复制到远程站点，或通过其他介质将其运送到该站点，可能会更快。有关此方法的详细信息，请参阅本章后面的 从媒体安装 一节。
 
@@ -1596,9 +1542,7 @@ No current Naming Context
 select operation target: quit
 ```
 
-> **注意**：
-
-在 Windows Server 2003 Service Pack 1 中，此过程已大大简化；但是，您需要知道配置容器中域控制器( Domain Controller ,DC )`server` 对象的 `distinguishedName`。建议您直接遵循前面的指导删除失效的域控制器，因为这样出错的可能性更小。
+> **注意**：在 Windows Server 2003 Service Pack 1 中，此过程已大大简化；但是，您需要知道配置容器中域控制器( Domain Controller ,DC )`server` 对象的 `distinguishedName`。建议您直接遵循前面的指导删除失效的域控制器，因为这样出错的可能性更小。
 
 最后一步将删除所选域控制器的元数据：
 
@@ -1700,9 +1644,7 @@ Snapshot {b1681552-114b-44b9-b547-9a1b15104907} unmounted.
 IFM media created successfully in c:\ifmmedia
 ```
 
-> **注意**：
-
-你还可以使用 Windows Server 2008 R2 及更新版本的 Windows Server Backup，通过图 18-16中所示的“备用位置”选项,从系统状态备份创建 IFM 介质。
+> **注意**：你还可以使用 Windows Server 2008 R2 及更新版本的 Windows Server Backup，通过图 18-16中所示的“备用位置”选项,从系统状态备份创建 IFM 介质。
 
 在前面的示例中,我们创建了用于提升完整可写域控制器( Domain Controller ,DC)的 IFM 介质,其中不包含 Sysvol 的内容。图 18-8 显示了 *c:\ifmmedia* 的内容。
 
@@ -1716,9 +1658,7 @@ IFM media created successfully in c:\ifmmedia
 
 
 
-> **注意**：
-
-你可以使用在 32 位域控制器上创建的 IFM 介质来提升 64 位域控制器,反之亦然。但是,你不能使用只读域控制器( Read-Only Domain Controller ,RODC)介质来提升完整域控制器。
+> **注意**：你可以使用在 32 位域控制器上创建的 IFM 介质来提升 64 位域控制器,反之亦然。但是,你不能使用只读域控制器( Read-Only Domain Controller ,RODC)介质来提升完整域控制器。
 
 创建 IFM 介质后,你可以采用最便捷的方式将其复制到新的/目标域控制器。为了使用该介质,你需要以高级模式启动 dcpromo。在向导的第一页勾选“使用高级模式安装”复选框即可进入高级模式,如图 18-9所示。你也可以运行 *dcpromo /adv*。
 
@@ -1835,9 +1775,7 @@ IFM media created successfully in c:\ifmmedia
 
 在所有这些场景中,你都可以通过部分权威还原( Partial Authoritative Restore )来撤销更改。如果整个目录损坏,则需要执行完整权威还原( Complete Authoritative Restore ),我们稍后将简要介绍。
 
-> **警告**：
-
-无法对架构命名上下文( Schema Naming Context )执行授权还原( Authoritative Restore )。若要回滚架构，必须从头开始重建整个林( Forest )，或者使用早于架构修改的一组系统状态备份( System State Backup )来重建整个林。在几乎所有环境中，此选项的可行性都很低。
+> **警告**：无法对架构命名上下文( Schema Naming Context )执行授权还原( Authoritative Restore )。若要回滚架构，必须从头开始重建整个林( Forest )，或者使用早于架构修改的一组系统状态备份( System State Backup )来重建整个林。在几乎所有环境中，此选项的可行性都很低。
 
 执行授权还原有两种选择。您可以找到一台具有所需数据的域控制器( Domain Controller ,DC )——这可能是因为更改尚未复制到该 DC——或者从备份还原数据。无论哪种情况，都需要按 非授权还原( Nonauthoritative Restore ) 一节所述，启动进入 DS 还原模式( DS Restore Mode )。同样，这是必要的，因为当 DC 处于运行状态时，Active Directory 数据库会被锁定，无法进行任何修改。进入 DS 还原模式后，如有必要，可按前文所述从备份还原。
 
@@ -1893,9 +1831,7 @@ authoritative restore: quit
 
 如您所见，*ntdsutil* 会将对象的版本号增加 100,000。这就是在数据库中将其标记为权威的方式。重新启动进入正常模式后，域控制器会与其复制伙伴( Replication Partner )进行核对，并确定 *jsmith* 用户对象的版本高于其伙伴上的版本。然后，它会将该对象复制到这些伙伴；同样，伙伴上已更新的所有其他对象也会复制到该服务器。
 
-> **注意**：
-
-如果出于某种原因，100,000 的自动增量不足以满足对象需求，你可以使用备用子命令 *restoreobject %s verinc %d*，其中 *%d* 表示版本递增的量（此数值乘以自备份以来的天数）。
+> **注意**：如果出于某种原因，100,000 的自动增量不足以满足对象需求，你可以使用备用子命令 *restoreobject %s verinc %d*，其中 *%d* 表示版本递增的量（此数值乘以自备份以来的天数）。
 
 根据 *ntdsutil* 版本的不同，你可能会看到与此处不同的结果。该实用程序在 Windows Server 2003 SP1 版本中进行了重大更改；例如，它现在会创建一个 LDF 文件，该文件将包含同一域中附加到对象的所有链接属性值，这允许恢复组成员资格和其他链接属性。
 
@@ -2051,9 +1987,7 @@ Snapshot {c8bc59c0-f20b-4bac-a12a-ab6eab737f0c} unmounted.
 
 启用 Active Directory 回收站后,已删除对象在成为墓碑之前,会先进入*已删除对象状态( Deleted Object State )*,如图 18-20 所示。对象处于已删除状态时,其所有属性以及与对象之间的所有链接都会保留。与启用回收站之前删除对象的情形类似,`isDeleted` 属性会被设置为 `TRUE`,并且对象会被移动到 Deleted Objects 容器。
 
-> **注意**：
-
-默认情况下，垃圾回收( Garbage Collection )每隔 12 小时在每个域控制器( Domain Controller ,DC)上运行。垃圾回收期间，会检查墓碑( Tombstone )，以确定其删除时间是否超过墓碑生存时间( Tombstone Lifetime )。如果超过，则删除这些记录。
+> **注意**：默认情况下，垃圾回收( Garbage Collection )每隔 12 小时在每个域控制器( Domain Controller ,DC)上运行。垃圾回收期间，会检查墓碑( Tombstone )，以确定其删除时间是否超过墓碑生存时间( Tombstone Lifetime )。如果超过，则删除这些记录。
 
 可以通过使用 *ldp* 或 *admod* 之类的工具，在给定域控制器上将 `doGarbageCollection` 操作属性( Operational Attribute )设置为 `1`，从而按需触发垃圾回收运行。例如，可使用以下 *admod* 命令在服务器 *DC01* 上运行垃圾回收：
 
@@ -2077,9 +2011,7 @@ admod -h dc01 -sc gc
 
 
 
-> **注意**：
-
-与墓碑不同，已回收对象无法重新激活。若要在对象进入已回收状态后恢复该对象，必须从备份对对象执行权威还原，而该备份是在对象仍处于已删除状态时创建的。
+> **注意**：与墓碑不同，已回收对象无法重新激活。若要在对象进入已回收状态后恢复该对象，必须从备份对对象执行权威还原，而该备份是在对象仍处于已删除状态时创建的。
 
 
 
@@ -2089,9 +2021,7 @@ Active Directory 回收站需要 Windows Server 2008 R2 林功能级别( Forest 
 
 
 
-> **警告**：
-
-启用 Active Directory 回收站后，便无法将其禁用。请确保已在测试环境中测试启用回收站的影响，包括与 Active Directory 集成的工具。通常受启用回收站影响的工具包括使用 LDAP DirSync 将 AD 中的更改与本地数据库同步的工具。
+> **警告**：启用 Active Directory 回收站后，便无法将其禁用。请确保已在测试环境中测试启用回收站的影响，包括与 Active Directory 集成的工具。通常受启用回收站影响的工具包括使用 LDAP DirSync 将 AD 中的更改与本地数据库同步的工具。
 
 Microsoft Identity Lifecycle Manager (ILM) 和某些版本的 Office365 DirSync 是受回收站影响的两个应用程序示例。
 
@@ -2124,9 +2054,7 @@ if you proceed.
 
 如果要为 *contoso.com* 林启用回收站，请将示例中的 *<Forest Root DN>* 替换为 `DC=contoso,DC=com`，并将 *<Forest DNS Name>* 替换为 `contoso.com`。
 
-> **注意**：
-
-您也可以使用 Windows Server 2012 版本的活动目录管理中心( Active Directory Administrative Center )启用活动目录回收站( Active Directory Recycle Bin )。只需右键单击林根域，然后单击"启用回收站"。
+> **注意**：您也可以使用 Windows Server 2012 版本的活动目录管理中心( Active Directory Administrative Center )启用活动目录回收站( Active Directory Recycle Bin )。只需右键单击林根域，然后单击"启用回收站"。
 
 启用回收站后，由于会为林中的每个对象更新 `isRecycled` 属性，因此环境中可能会出现一些额外的复制流量。此外，之前处于墓碑状态的对象将进入回收状态，不再支持复活。最后，启用回收站后，基础结构主机 FSMO 角色不再需要执行任何工作，因此其位置不再重要。有关 FSMO 角色的详细信息，请参阅第 2 章。
 
@@ -2216,9 +2144,7 @@ parent is either uninstantiated or deleted
 Restore-ADTree.ps1 -lastKnownRDN "People" -lastKnownParent "dc=contoso,dc=com"
 ```
 
-> **注意**：
-
-如果运行脚本时收到类似以下错误,则需要修改 PowerShell 执行策略( Execution Policy )。
+> **注意**：如果运行脚本时收到类似以下错误,则需要修改 PowerShell 执行策略( Execution Policy )。
 
 
 
@@ -2254,9 +2180,7 @@ FSMO 角色已在第 2 章中描述。这些角色在 Active Directory 中被视
 - PDC 仿真器( PDC Emulator )：Active Directory 用户和计算机
 - 基础结构主控( Infrastructure Master )：Active Directory 用户和计算机
 
-> **注意**：
-
-你可以使用命令行工具 *netdom* 通过单条命令查询给定域的所有 FSMO：
+> **注意**：你可以使用命令行工具 *netdom* 通过单条命令查询给定域的所有 FSMO：
 
 
 
@@ -2382,9 +2306,7 @@ Windows Server 2008 引入了像普通 Windows 服务一样启动和停止 Activ
 
 如果您域中只有一个域控制器，或者预计会出现无法联系另一个域控制器的情况，则必须将此注册表值设置为 `1`，否则您将无法以 DS 还原模式登录到域控制器。通常，我们建议所有部署都使用值 `1`。
 
-> **注意**：
-
-如果你尝试登录到一台目录服务( Directory Service )已停止的 Windows Server 2008 域控制器( Domain Controller ,DC)，并且在使用目录服务还原模式( Directory Services Restore Mode ,DSRM)凭据时登录失败，请确保你并未尝试登录到域。如果需要显式指定本地管理员账户，请在登录屏幕上单击“切换用户”，并指定用户名 *.\administrator*。
+> **注意**：如果你尝试登录到一台目录服务( Directory Service )已停止的 Windows Server 2008 域控制器( Domain Controller ,DC)，并且在使用目录服务还原模式( Directory Services Restore Mode ,DSRM)凭据时登录失败，请确保你并未尝试登录到域。如果需要显式指定本地管理员账户，请在登录屏幕上单击“切换用户”，并指定用户名 *.\administrator*。
 
 若要停止 Active Directory 服务，请转到“开始”→“运行”→**`services.msc`**，以打开“服务”MMC 管理单元，右键单击“Active Directory 域服务( Active Directory Domain Services ,AD DS)”，然后选择“停止”。系统将提示你同时停止依赖服务，如图 18-22所示。也可以在命令提示符下运行 *net stop ntds* 来停止 Active Directory。
 
@@ -2430,9 +2352,7 @@ bcdedit /default *`{49fa7976-5065-11dd-ae21-000c291a8e6c}`*
 
 如果域控制器( Domain Controller ,DC)的磁盘空间即将耗尽,或者自提升域控制器以来删除了大量对象,您可能需要对该目录信息树( Directory Information Tree ,DIT )文件执行脱机碎片整理。您可能见过记录到目录服务( Directory Services )事件日志中的联机碎片整理事件,其中包括事件 700(表示联机碎片整理即将开始)和事件 701(表示联机碎片整理已完成)。默认情况下,联机碎片整理进程每天运行两次,用于合并 DIT 文件内的空闲空间,但它不会回收 DIT 文件占用的任何磁盘空间。若要回收磁盘空间,必须执行脱机碎片整理。有关如何确定 DIT 中可用空闲空间量的信息,请参阅下文即将介绍的侧栏配置可用数据库空间的日志记录。
 
-> **注意**：
-
-如果将 Windows 2000 域控制器就地升级到 Windows Server 2003，*ntds.dit* 中可能会产生大量可用空间。这是因为 Windows Server 2003 的一项改进：在整个数据库中只存储一次唯一的安全描述符，而不是每次使用时都存储。部分 Active Directory 管理员在此升级后，发现其 Active Directory 数据库文件的大小缩减了多达 40%。如果希望回收磁盘上的这部分空间，需要对 *ntds.dit* 文件执行脱机碎片整理。
+> **注意**：如果将 Windows 2000 域控制器就地升级到 Windows Server 2003，*ntds.dit* 中可能会产生大量可用空间。这是因为 Windows Server 2003 的一项改进：在整个数据库中只存储一次唯一的安全描述符，而不是每次使用时都存储。部分 Active Directory 管理员在此升级后，发现其 Active Directory 数据库文件的大小缩减了多达 40%。如果希望回收磁盘上的这部分空间，需要对 *ntds.dit* 文件执行脱机碎片整理。
 
 脱机碎片整理必须在域控制器处于目录服务还原模式时进行。随后可以使用 *ntdsutil* 命令压缩（即碎片整理）*ntds.dit* 文件。此过程实际上会在备用位置创建一份 *ntds.dit* 文件的副本。然后可以用新的压缩版本覆盖现有的 DIT 文件。
 
@@ -2507,17 +2427,13 @@ Reset DSRM Administrator Password: quit
 
 
 
-> **警告**：
-
-如果目标计算机当前处于 DSRM 模式，则无法使用 *ntdsutil* 设置 DSRM 管理员密码。
+> **警告**：如果目标计算机当前处于 DSRM 模式，则无法使用 *ntdsutil* 设置 DSRM 管理员密码。
 
 Windows Server 2008 R2 引入的一项功能允许您使用 *ntdsutil* 将域账户的密码复制到域控制器上的 DSRM 密码。这样一来，在整个域中维护 DSRM 密码就轻松许多，因为您可以在每台 DC 上安排一项任务，定期复制该域账户的密码。
 
 
 
-> **注意**：
-
-此功能也以修补程序的形式提供给了 Windows Server 2008 域控制器。您可以从 MS 知识库文章 [961320](http://support.microsoft.com/kb/961320) 获取此修补程序。
+> **注意**：此功能也以修补程序的形式提供给了 Windows Server 2008 域控制器。您可以从 MS 知识库文章 [961320](http://support.microsoft.com/kb/961320) 获取此修补程序。
 
 要使用此功能，请先在 AD 中创建一个已禁用用户账户，用于保存 DSRM 密码。接着运行以下 *ntdsutil* 命令。请务必替换为您所使用账户的用户名：
 
@@ -2531,9 +2447,7 @@ Password has been synchronized successfully.
 Reset DSRM Administrator Password: quit
 ```
 
-> **注意**：
-
-如果你的林中有多个域，则需要在每个域中创建并维护一个用户账户，用于同步 DSRM 密码。
+> **注意**：如果你的林中有多个域，则需要在每个域中创建并维护一个用户账户，用于同步 DSRM 密码。
 
 定期轮换 DSRM 密码最简单的方法之一是使用组策略首选项( Group Policy Preferences )安排计划任务。为此，首先创建一个名为 DSRM Password Sync Policy 的组策略，并将其链接到域控制器组织单位( Domain Controllers OU )。编辑该组策略，导航到*计算机配置\\首选项\\计划任务*。创建一个新的计划任务，如图 18-24所示。使用以下输入填充任务属性：
 
@@ -2590,9 +2504,7 @@ Reset DSRM Administrator Password: quit
 - 我最终会使用该功能。
 - 我永远不会使用该功能，或者该功能并不重要。
 
-> **注意**：
-
-我们所说的“功能”是指新功能，而不仅仅是对 Active Directory 在以前版本的 Windows 中工作方式的修改。从这个意义上说，功能是必须显式使用或实现的内容。
+> **注意**：我们所说的“功能”是指新功能，而不仅仅是对 Active Directory 在以前版本的 Windows 中工作方式的修改。从这个意义上说，功能是必须显式使用或实现的内容。
 
 评估每个功能将有助于确定你可以从升级中获得多少好处。与新功能一样，建议你仔细查看每个差异，并将其归入以下类别：
 
@@ -2994,9 +2906,7 @@ Windows Server 2012 为 Active Directory 提供了大量新功能，并针对长
 | `4`                         | Windows Server 2008 R2      |
 | `5`                         | Windows Server 2012         |
 
-> **注意**：
-
-Windows 2000 没有功能级别( Functional Level )这一概念。取而代之的是,你可以选择 Windows 2000 混合模式(支持 Windows NT 4 域控制器( Domain Controller ,DC))或 Windows 2000 本机模式(仅支持 Windows 2000 域控制器)。这两种模式不会记录在 `msDS-Behavior-Version` 属性中。
+> **注意**：Windows 2000 没有功能级别( Functional Level )这一概念。取而代之的是,你可以选择 Windows 2000 混合模式(支持 Windows NT 4 域控制器( Domain Controller ,DC))或 Windows 2000 本机模式(仅支持 Windows 2000 域控制器)。这两种模式不会记录在 `msDS-Behavior-Version` 属性中。
 
 此外,你也可以直接查看域控制器的 *RootDSE* 来获取此信息。*RootDSE* 包含两个描述当前功能级别的属性:
 
@@ -3028,9 +2938,7 @@ Set-ADDomainMode cohovines.com -DomainMode Windows2008Domain
 
 幸运的是,现在引入第一台 Windows Server 2012 域控制器时,升级过程会自动帮你处理好一切。
 
-> **注意**：
-
-如果你希望手动执行 Windows Server 2012 准备步骤，或者在引入第一台 Windows Server 2012 域控制器( Domain Controller ,DC)之前提前执行这些步骤，*adprep* 仍然可用。
+> **注意**：如果你希望手动执行 Windows Server 2012 准备步骤，或者在引入第一台 Windows Server 2012 域控制器( Domain Controller ,DC)之前提前执行这些步骤，*adprep* 仍然可用。
 
 *adprep* 实用工具以及新的 Windows Server 2012 过程的巧妙之处之一在于，它将进度存储在 Active Directory 中。这很有用，因为这意味着它可以在执行过程中从失败中优雅地恢复。它还提供了一种快速方法来确定所有必需操作是否已完成以及 *adprep* 是否成功。将操作存储在 Active Directory 中的另一个好处是，如果你遇到问题并需要致电 Microsoft 产品支持服务( Microsoft Product Support Services ,PSS)，你可以查看此容器并列出所有已成功完成的操作。然后 PSS 将能够查找哪个操作失败。
 
