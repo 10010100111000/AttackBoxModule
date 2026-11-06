@@ -34,12 +34,6 @@ chapters:
   终端与伪终端:
     access: authenticated
     durationMinutes: 45
-  Shell环境变量和快捷键:
-    access: authenticated
-    durationMinutes: 30
-  权限和用户管理:
-    access: authenticated
-    durationMinutes: 45
 ---
 
 # 课程概述
