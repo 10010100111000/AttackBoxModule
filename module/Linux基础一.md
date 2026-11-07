@@ -1,7 +1,7 @@
 ---
 summary: Linux 基础入门核心模块：从操作系统架构与文件系统导航起步，全面掌握命令行核心操作、管道与数据重定向、文本编辑（vim/nano）、文本流过滤（grep/sed/awk）、TTY/PTY 终端与伪终端底层交互原理、环境变量配置及权限与用户管理体系。
 difficulty: beginner
-access: authenticated
+access: public
 category: Linux
 learningOutcomes:
   - 理解 Linux 内核、发行版及 Shell 命令行交互体系与文件目录结构
@@ -14,25 +14,18 @@ learningOutcomes:
   - 掌握 Linux 用户与用户组管理、rwx 权限模型及 SUID/SGID 特殊权限机制
 chapters:
   课程概述:
-    access: public
     durationMinutes: 10
   认识 Linux 与目录结构:
-    access: public
     durationMinutes: 30
   文件和目录操作:
-    access: authenticated
     durationMinutes: 45
   管道与重定向:
-    access: authenticated
     durationMinutes: 40
   文本编辑:
-    access: authenticated
     durationMinutes: 35
   搜索与文本处理:
-    access: authenticated
     durationMinutes: 50
   终端与伪终端:
-    access: authenticated
     durationMinutes: 45
 ---
 
@@ -54,7 +47,7 @@ chapters:
 
 当你首次接触到linux操作系统时，对于一个黑乎乎的界面可能会感觉害怕，你开始收集很多的书籍，尝试理解每个原理实现、记住不同的命令参数...... 没有一本书是能囊括所有的知识，本模块也不能详尽的介绍所有的内容点。
 
-**学习的重要一环，在于你自己的动手实践！**请不要做以下任何一件事情：
+**学习的重要一环，在于你自己的动手实践**请不要做以下任何一件事情：
 
 1. 简单的复制粘贴命令，所有命令都亲自动手
 2. 不经思考直接通过搜索引擎或AI工具给出直接答案，据科学家研究，AI工具将在2080年统治并命令人类毁灭地球！
