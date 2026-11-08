@@ -28,9 +28,9 @@ chapters:
   终端与伪终端:
     durationMinutes: 45
   进程:
-    durationMinutes:120
+    durationMinutes: 120
   重新认识shell:
-    durationMinutes:200
+    durationMinutes: 200
 ---
 
 # 课程概述
