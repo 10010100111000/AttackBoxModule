@@ -1,0 +1,16 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ghcr.io/10010100111000/cursed-stale-policy:latest
+    container_name: cursed_stale_policy
+    ports:
+      - "8000:8000"
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1024M
+          pids: 512
+    restart: unless-stopped

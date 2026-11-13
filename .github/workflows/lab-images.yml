@@ -1,0 +1,118 @@
+name: lab-images
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      directory:
+        description: "靶机目录（留空构建全部，例如 challenges/http-lab）"
+        required: false
+        type: string
+
+# Serialize publication and build current main so delayed/re-run jobs cannot
+# roll stable tags back to an older event commit.
+concurrency:
+  group: lab-images-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  plan:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+      count: ${{ steps.plan.outputs.count }}
+      revision: ${{ steps.plan.outputs.revision }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: automation/labs/package-lock.json
+      - run: npm ci --prefix automation/labs --no-audit --no-fund
+      - run: npm test --prefix automation/labs
+      # Queued runs may be replaced by GitHub concurrency. Diff from the last
+      # successful push, not event.before, so those changes are not lost.
+      - id: baseline
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          base=$(gh api "repos/$REPOSITORY/actions/workflows/lab-images.yml/runs?branch=main&event=push&status=success&per_page=1" --jq '.workflow_runs[0].head_sha // empty')
+          echo "revision=$base" >> "$GITHUB_OUTPUT"
+      - id: plan
+        env:
+          BASE: ${{ steps.baseline.outputs.revision }}
+          OWNER: ${{ github.repository_owner }}
+          DIRECTORY: ${{ inputs.directory }}
+        run: |
+          revision=$(git rev-parse HEAD)
+          echo "revision=$revision" >> "$GITHUB_OUTPUT"
+          node automation/labs/cli.mjs plan --base "$BASE" --revision "$revision" --owner "$OWNER" --directory "$DIRECTORY"
+
+  publish:
+    needs: plan
+    if: needs.plan.outputs.count != '0'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.plan.outputs.revision }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: automation/labs/package-lock.json
+      - run: npm ci --prefix automation/labs --no-audit --no-fund
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build locally before publishing
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.directory }}
+          load: true
+          push: false
+          platforms: linux/amd64
+          tags: ${{ matrix.image }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ needs.plan.outputs.revision }}
+          cache-from: type=gha,scope=${{ matrix.scope }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.scope }}
+      - name: Test startup, health and entry port
+        id: check
+        env:
+          DIRECTORY: ${{ matrix.directory }}
+        run: node automation/labs/cli.mjs check --directory "$DIRECTORY"
+      - name: Publish the tested image
+        env:
+          DIRECTORY: ${{ matrix.directory }}
+          OWNER: ${{ github.repository_owner }}
+          REVISION: ${{ needs.plan.outputs.revision }}
+          IMAGE_ID: ${{ steps.check.outputs.image-id }}
+        run: >-
+          node automation/labs/cli.mjs publish --directory "$DIRECTORY"
+          --owner "$OWNER" --revision "$REVISION" --image-id "$IMAGE_ID"
