@@ -1,0 +1,15 @@
+b0VIM 8.0
+root
+base
+/var/www/html/login/login.php
+print("<script>alert('Wrong Username or Password')</script>");
+}
+} else {
+header("Location: /upload.php");
+$_SESSION['user_id'] = 1;
+if (strcmp($password, $_POST['password']) == 0) {
+if (strcmp($username, $_POST['username']) == 0) {
+require('config.php');
+if (!empty($_POST['username']) && !empty($_POST['password'])) {
+session_start();
+<?php

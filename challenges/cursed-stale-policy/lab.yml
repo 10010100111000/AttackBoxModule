@@ -1,9 +1,0 @@
-name: Cursed Stale Policy
-summary: 基于 Content-Security-Policy (CSP) 策略绕过与 Bot 交互的 Web 安全挑战靶机
-note: 靶机启动后请访问分配的目标地址（端口 8000）。通过构造载荷诱导巡检 Bot 访问，外带管理员 Cookie 中的 Flag。
-image: ghcr.io/10010100111000/cursed-stale-policy:latest
-port: 8000
-limits:
-  memory: 1024
-  cpu: 1.0
-  pids: 512

@@ -1,0 +1,9 @@
+name: Base
+summary: 针对企业单页展示站点与 Linux 内部环境的综合渗透测试靶机
+note: 靶机启动后访问 HTTP 端口 80。从外部边界突破获取主机立足点并最终提权至 root。
+image: ghcr.io/10010100111000/base-lab:latest
+port: 80
+limits:
+  memory: 512
+  cpu: 1.0
+  pids: 256

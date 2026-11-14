@@ -1,0 +1,28 @@
+/* Small page-specific layer; the original OnePage and Bootstrap styles remain intact. */
+.base-login-page { min-height: 100vh; background: #f8fbfe; }
+.base-login-main { min-height: calc(100vh - 76px); padding: 145px 18px 90px; background: #f8fbfe; }
+.base-login-panel { max-width: 520px; margin: 0 auto; text-align: center; }
+.base-login-panel h1 { margin: 0 0 12px; color: #07506d; font-size: 24px; font-weight: 700; }
+.base-login-panel p { margin-bottom: 26px; color: #9aa4ad; font-size: 13px; }
+.base-login-form { width: min(100%, 360px); margin: 0 auto; }
+.base-login-form .form-control { min-height: 42px; border-color: #dce3e8; border-radius: 3px; background: rgba(255,255,255,.9); font-size: 14px; }
+.base-login-form .btn { min-width: 90px; margin-top: 14px; border-radius: 3px; background: #079bd5; border-color: #079bd5; font-size: 13px; }
+.base-login-page .navmenu a.active { color: #079bd5; }
+
+.base-upload-page { min-height: 100vh; padding: 0; background: #fff; color: #333; font-family: Arial, sans-serif; }
+.base-upload-shell { width: min(100%, 1140px); min-height: 100vh; margin: 0 auto; display: flex; flex-direction: column; }
+.base-upload-header { min-height: 58px; padding: 0 22px 0 12px; display: flex; align-items: center; justify-content: space-between; background: #079fe8; color: #fff; box-shadow: 0 3px 5px rgba(0,0,0,.18); }
+.base-upload-header > span { font-size: 16px; font-weight: 300; letter-spacing: .2px; }
+.base-upload-header .btn { min-width: 102px; color: #555; border: 0; border-radius: 3px; font-size: 10px; letter-spacing: .3px; }
+.base-upload-main { flex: 1; min-height: 400px; display: flex; align-items: center; justify-content: center; padding: 65px 20px; text-align: center; }
+.base-upload-content { width: 100%; }
+.base-upload-cloud { display: block; margin-bottom: 20px; color: #079fe8; font-size: 66px; line-height: 1; }
+.base-upload-content h1 { margin: 0 0 18px; color: #555; font-size: clamp(23px, 3vw, 29px); font-weight: 300; letter-spacing: .4px; }
+.base-upload-content h1 strong { color: #222; font-weight: 500; }
+.base-upload-button { display: inline-flex; min-width: 158px; min-height: 42px; align-items: center; justify-content: center; padding: 0 22px; border: 0; border-radius: 3px; background: #079bd5; box-shadow: 0 2px 5px rgba(0,0,0,.16); color: #fff; cursor: pointer; font-size: 10px; font-weight: 700; letter-spacing: .2px; }
+.base-upload-button:hover { background: #078cc3; }
+.base-upload-content .alert { width: min(100%, 520px); margin: 0 auto 18px; }
+.base-upload-footer { min-height: 54px; display: flex; align-items: center; justify-content: center; background: #079fe8; color: #fff; font-size: 11px; letter-spacing: .3px; }
+@media (max-width: 575px) { .base-login-main { padding-top: 100px; } .base-upload-header { padding-right: 12px; } .base-upload-main { min-height: 360px; } }
+.navmenu a.login-nav-link { padding: 8px 18px; border-radius: 4px; background: #079bd5; color: #fff; }
+.navmenu a.login-nav-link:hover { background: #078cc3; color: #fff; }

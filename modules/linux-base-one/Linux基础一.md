@@ -1,9 +1,9 @@
 ---
 summary: Linux 基础入门核心模块：从操作系统架构与文件系统导航起步，全面掌握命令行核心操作、管道与数据重定向、文本编辑（vim/nano）、文本流过滤（grep/sed/awk）、TTY/PTY 终端与伪终端底层交互原理、环境变量配置及权限与用户管理体系。
-difficulty: beginner
+level: easy
 access: public
 category: Linux
-learningOutcomes:
+goals:
   - 理解 Linux 内核、发行版及 Shell 命令行交互体系与文件目录结构
   - 熟练掌握文件与目录的增删改查、内容预览及通配符匹配操作
   - 熟练运用标准输入输出重定向与管道线组合构建高效命令管线
@@ -13,24 +13,24 @@ learningOutcomes:
   - 掌握 Shell 环境变量配置、作用域导出与命令行高频高效快捷键
   - 掌握 Linux 用户与用户组管理、rwx 权限模型及 SUID/SGID 特殊权限机制
 chapters:
-  课程概述:
-    durationMinutes: 10
-  认识 Linux 与目录结构:
-    durationMinutes: 30
-  文件和目录操作:
-    durationMinutes: 45
-  管道与重定向:
-    durationMinutes: 40
-  文本编辑:
-    durationMinutes: 35
-  搜索与文本处理:
-    durationMinutes: 50
-  终端与伪终端:
-    durationMinutes: 45
-  进程:
-    durationMinutes: 120
-  重新认识shell:
-    durationMinutes: 200
+  '1':
+    minutes: 10
+  '2':
+    minutes: 30
+  '3':
+    minutes: 45
+  '4':
+    minutes: 40
+  '5':
+    minutes: 35
+  '6':
+    minutes: 50
+  '7':
+    minutes: 45
+  '8':
+    minutes: 120
+  '9':
+    minutes: 200
 ---
 
 # 课程概述
@@ -238,8 +238,8 @@ $pwd
 ```quiz
 prompt: 使用ssh bob@<靶机ip> 命令，按照提示输入密码，查看并提交当前工作目录的完整绝对路径。
 answer: "/home/bob"
-normalization: trim
-errorHint: 使用 pwd 命令查看当前路径。
+match: trim
+hint: 使用 pwd 命令查看当前路径。
 ```
 
 # 文件和目录操作
@@ -616,15 +616,15 @@ $shopt -u dotglob    # 关闭（可选）：恢复默认行为
 prompt: |
   进入 `~/linux_lab1` 目录，找到隐藏文件并读取其内容，提交其中的 Flag。
 answer: "flag{hidden_dot_files_found}"
-normalization: trim
-errorHint: 检查 linux_lab1 目录下以 . 开头的文件。
+match: trim
+hint: 检查 linux_lab1 目录下以 . 开头的文件。
 ```
 ```quiz
 prompt: |
   有攻击者正批量扫描漏洞，分析 `~/linux_lab1/access.log` 日志，找出在短时间内产生大量 404 探测请求的攻击者 IP 地址并提交。
 answer: "20.46.43.126"
-normalization: trim
-errorHint: 检索日志中频繁出现 404 状态码的来源 IP。
+match: trim
+hint: 检索日志中频繁出现 404 状态码的来源 IP。
 ```
 
 
