@@ -42,7 +42,6 @@ async function fixture(t) {
 }
 
 test('shared author contract: defaults, limits and unsupported fields', () => {
-  assert.equal(config().entryPort, 80)
   assert.deepEqual(config().resources, {
     memoryMB: 512,
     cpus: 1,
@@ -67,14 +66,16 @@ test('shared author contract: defaults, limits and unsupported fields', () => {
 test('publish destinations belong to owner, use explicit tags and reserve sha tags', () => {
   assert.equal(
     publication(config(), 'Example', revision).shaImage,
-    `ghcr.io/example/demo:sha-${revision}`
+    `ghcr.io/example/demo:latest-sha-${revision}`
   )
   for (const image of [
     'nginx:latest',
     'ghcr.io/other/demo:latest',
     'ghcr.io/example/demo',
     `ghcr.io/example/demo@sha256:${'a'.repeat(64)}`,
-    'ghcr.io/example/demo:sha-manual'
+    'ghcr.io/example/demo:sha-manual',
+    `ghcr.io/example/demo:files-sha-${revision}`,
+    'ghcr.io/example/demo:' + 'a'.repeat(84)
   ]) {
     assert.throws(() => publication({ ...config(), image }, 'example', revision))
   }
@@ -125,6 +126,17 @@ test('planning includes deletions, renames and publisher changes; skips external
   assert.equal((await plan(third, fourth)).include.length, 1)
   await add('labs/duplicate')
   await assert.rejects(planLabs({ root, owner: 'example', revision: fourth }), /不同靶机/)
+})
+
+test('different labs share one GHCR package with distinct stable and immutable tags', async t => {
+  const { root, add, commit } = await fixture(t)
+  await add('modules/files', 'ghcr.io/example/attackbox-labs:files')
+  await add('challenges/web', 'ghcr.io/example/attackbox-labs:web')
+  const revision = await commit()
+  const plan = await planLabs({ root, owner: 'example', revision })
+  assert.equal(plan.include.length, 2)
+  const destinations = plan.include.map(lab => publication(lab, 'example', revision))
+  assert.equal(new Set(destinations.map(lab => lab.shaImage)).size, 2)
 })
 
 test('declarations reject duplicates, aliases, both filenames and symbolic files', async t => {
@@ -183,7 +195,7 @@ test('smoke test uses tested ID, resource limits and isolated network, cleans up
   const { run, calls } = fakeDocker({ health: 'healthy' })
   const imageId = await checkLab(config(), {
     run,
-    connect: async () => true,
+
     stableMs: 0
   })
   assert.equal(imageId, id)
@@ -203,23 +215,22 @@ test('smoke test uses tested ID, resource limits and isolated network, cleans up
   const pushes = calls.filter(args => args[1] === 'push')
   assert.deepEqual(
     pushes.map(args => args[2]),
-    [`ghcr.io/example/demo:sha-${revision}`, 'ghcr.io/example/demo:latest']
+    [`ghcr.io/example/demo:latest-sha-${revision}`, 'ghcr.io/example/demo:latest']
   )
 })
 
-test('unhealthy, stopped, closed port and create failures clean up without pushing', async () => {
+test('unhealthy, stopped, unready healthcheck and create failures clean up without pushing', async () => {
   for (const options of [
     { health: 'unhealthy' },
     { running: false },
     { health: 'starting' },
-    { failCreate: true },
-    {}
+    { failCreate: true }
   ]) {
     const { run, calls } = fakeDocker(options)
     await assert.rejects(
       checkLab(config(), {
         run,
-        connect: async () => false,
+
         timeoutMs: 5,
         stableMs: 0
       })
@@ -235,20 +246,20 @@ test('unhealthy, stopped, closed port and create failures clean up without pushi
 })
 
 test('abort cleans up and publish refuses a missing tested ID', async () => {
-  const { run, calls } = fakeDocker()
+  const { run: fake, calls } = fakeDocker({ health: 'starting' })
   const abort = new AbortController()
   await assert.rejects(
     checkLab(config(), {
-      run,
-      connect: async () => {
-        abort.abort()
-        return false
+      run: async args => {
+        const result = await fake(args)
+        if (args[1] === 'inspect' && args[0] === 'container') abort.abort()
+        return result
       },
       signal: abort.signal
     })
   )
   assert.equal(calls.at(-1)[1], 'rm')
-  await assert.rejects(publishLab(config(), { run, owner: 'example', revision }), /镜像 ID/)
+  await assert.rejects(publishLab(config(), { run: fake, owner: 'example', revision }), /镜像 ID/)
 })
 
 test('workflow publishes only after successful check and keeps build inputs declarative', async () => {
@@ -279,7 +290,7 @@ test('workflow publishes only after successful check and keeps build inputs decl
 })
 
 test(
-  'real Docker: builds a service, verifies startup, rejects wrong port and removes test resources',
+  'real Docker: verifies image health without port mappings and removes test resources',
   { skip: !process.env.LAB_DOCKER_TEST, timeout: 120000 },
   async t => {
     const root = await mkdtemp(path.join(tmpdir(), 'lab-real-docker-'))
@@ -298,7 +309,6 @@ test(
       limits: { memory: 128, cpu: 0.5, pids: 64 }
     })
     assert.match(await checkLab(lab, { timeoutMs: 15000 }), /^sha256:/)
-    await assert.rejects(checkLab({ ...lab, entryPort: 1 }, { timeoutMs: 1000 }), /超时/)
     assert.equal(
       await runDocker([
         'container',

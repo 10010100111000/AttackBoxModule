@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       directory:
-        description: "靶机目录（留空构建全部，例如 challenges/http-lab）"
+        description: "靶机目录（留空构建全部，例如 labs/base）"
         required: false
         type: string
 

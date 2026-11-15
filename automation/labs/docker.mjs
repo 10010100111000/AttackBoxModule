@@ -4,7 +4,6 @@ import { randomUUID } from 'node:crypto'
 import { mkdtemp, writeFile, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
-import net from 'node:net'
 import { setTimeout as delay } from 'node:timers/promises'
 import { publication } from './repository.mjs'
 
@@ -25,22 +24,9 @@ export async function runDocker(args, options = {}) {
   }
 }
 
-export function tcpReady(address, port, signal) {
-  return new Promise(resolve => {
-    const socket = net.createConnection({ host: address, port, signal })
-    const finish = value => {
-      socket.destroy()
-      resolve(value)
-    }
-    socket.setTimeout(500, () => finish(false))
-    socket.once('connect', () => finish(true))
-    socket.once('error', () => finish(false))
-  })
-}
-
 export async function checkLab(
   lab,
-  { run = runDocker, connect = tcpReady, timeoutMs = 60000, stableMs = 2000, signal } = {}
+  { run = runDocker, timeoutMs = 60000, stableMs = 2000, signal } = {}
 ) {
   if (Object.values(lab.variables).some(value => /[\r\n\0]/.test(value))) {
     throw new Error('镜像启动测试的 env 值必须为单行文本；多行文件请放入镜像')
@@ -109,16 +95,14 @@ export async function checkLab(
       }
       const health = info.state.Health?.Status
       if (health === 'unhealthy') throw new Error('容器 HEALTHCHECK 失败')
-      const ip = info.networks[network]?.IPAddress
-      const ready =
-        (!health || health === 'healthy') && ip && (await connect(ip, lab.entryPort, signal))
+      const ready = !health || health === 'healthy'
       if (ready) {
         readySince ??= Date.now()
         if (Date.now() - readySince >= stableMs) return imageId
       } else readySince = undefined
       await delay(250, undefined, { signal })
     }
-    throw new Error(`启动测试超时：入口端口 ${lab.entryPort} 或 HEALTHCHECK 未就绪`)
+    throw new Error('启动测试超时：容器或 HEALTHCHECK 未就绪')
   } catch (error) {
     failure = error
     throw error

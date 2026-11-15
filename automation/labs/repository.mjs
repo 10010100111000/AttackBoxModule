@@ -40,7 +40,7 @@ export async function loadLab(root, directory) {
   try {
     return {
       directory: path.relative(root, absolute).split(path.sep).join('/') || '.',
-      ...validateLabConfig(raw, path.basename(absolute))
+      ...validateLabConfig(raw)
     }
   } catch (error) {
     throw new Error(`${directory}: ${error.field || 'lab.yml'}: ${error.message}`)
@@ -60,13 +60,16 @@ export function publication(lab, owner, revision) {
       `${lab.directory}: image 必须为 ghcr.io/${owner.toLowerCase()}/<package>:<tag>，不能为 digest`
     )
   }
-  if (match[3].startsWith('sha-')) throw new Error(`${lab.directory}: sha- 标签保留给自动发布`)
+  if (match[3].length > 83)
+    throw new Error(`${lab.directory}: 发布 tag 最多 83 字符，需要为提交后缀保留空间`)
+  if (match[3].startsWith('sha-') || /-sha-[a-f0-9]{40}$/.test(match[3]))
+    throw new Error(`${lab.directory}: sha- 标签保留给自动发布`)
   const repository = lab.image.slice(0, lab.image.lastIndexOf(':'))
   return {
     directory: lab.directory,
     image: lab.image,
-    shaImage: `${repository}:sha-${revision}`,
-    scope: createHash('sha256').update(repository).digest('hex').slice(0, 20)
+    shaImage: `${repository}:${match[3]}-sha-${revision}`,
+    scope: createHash('sha256').update(lab.image).digest('hex').slice(0, 20)
   }
 }
 
@@ -92,7 +95,7 @@ export async function planLabs({ root, owner, revision, base, directory }) {
   const labs = await Promise.all(directories.sort().map(dir => loadLab(root, dir)))
   const entries = labs.map(lab => publication(lab, owner, revision))
   if (new Set(entries.map(entry => entry.scope)).size !== entries.length) {
-    throw new Error('不同靶机必须使用不同的镜像 package，以免互相覆盖发布标签')
+    throw new Error('不同靶机不能使用相同的完整镜像地址（package 与 tag）')
   }
   let changed
   if (base && !/^0+$/.test(base)) {

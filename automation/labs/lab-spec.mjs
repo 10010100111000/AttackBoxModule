@@ -5,7 +5,7 @@ export const DEFAULT_TARGET_RESOURCES = Object.freeze({
   pidsLimit: 256
 })
 
-const ALLOWED_LAB_KEYS = new Set(['name', 'summary', 'note', 'image', 'port', 'env', 'limits'])
+const ALLOWED_LAB_KEYS = new Set(['image', 'env', 'limits'])
 const ALLOWED_RESOURCE_KEYS = new Set(['memory', 'cpu', 'pids'])
 const IMAGE_REF_PATTERN =
   /^[A-Za-z0-9]+(?:[._-][A-Za-z0-9]+)*(?::[0-9]{2,5})?(?:\/[A-Za-z0-9]+(?:[._-][A-Za-z0-9]+)*)*(?::[A-Za-z0-9_][A-Za-z0-9._-]{0,127})?(?:@sha256:[a-f0-9]{64})?$/i
@@ -21,14 +21,6 @@ export class LabSpecError extends Error {
 
 function fail(field, message) {
   throw new LabSpecError(field, message)
-}
-
-function expectText(value, fallback, max, field) {
-  if (value === undefined) return fallback
-  if (typeof value !== 'string' || value.length > max) {
-    fail(field, `必须是文本，最多 ${max} 字符`)
-  }
-  return value
 }
 
 function validateContainerImageRef(image) {
@@ -79,7 +71,7 @@ function validateTargetResources(raw) {
   return { memoryMB, cpus, pidsLimit }
 }
 
-export function validateLabConfig(labObj, defaultName = 'target-lab') {
+export function validateLabConfig(labObj) {
   if (!labObj || typeof labObj !== 'object' || Array.isArray(labObj)) {
     fail('', 'lab.yml 必须为键值映射对象')
   }
@@ -91,26 +83,8 @@ export function validateLabConfig(labObj, defaultName = 'target-lab') {
 
   const image = validateContainerImageRef(labObj.image)
 
-  const name =
-    labObj.name === undefined
-      ? defaultName
-      : typeof labObj.name === 'string' && labObj.name.trim()
-        ? labObj.name.trim()
-        : ''
-  if (!name || name.length > 120) {
-    fail('name', '靶机名称必须为 1–120 字符的非空文本')
-  }
-
-  const rawPort = labObj.port
-  const entryPort = rawPort === undefined ? 80 : Number(rawPort)
-  if (!Number.isInteger(entryPort) || entryPort < 1 || entryPort > 65535) {
-    fail('port', 'port 必须为 1–65535 之间的整数')
-  }
-
   const resources = validateTargetResources(labObj.limits)
 
-  const summary = expectText(labObj.summary, '', 500, 'summary').trim()
-  const accessInstructions = expectText(labObj.note, '', 4000, 'note').trim()
   const rawEnv = labObj.env
   const variables = Object.create(null)
   if (rawEnv !== undefined && rawEnv !== null) {
@@ -146,13 +120,8 @@ export function validateLabConfig(labObj, defaultName = 'target-lab') {
   }
 
   return {
-    name,
-    summary,
     image,
-    entryPort,
     resources,
-    variables: orderedVariables,
-    variableKeys: Object.keys(orderedVariables),
-    accessInstructions
+    variables: orderedVariables
   }
 }
