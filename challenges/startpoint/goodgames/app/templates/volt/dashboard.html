@@ -1,0 +1,10 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+<div class="py-4">
+  <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4"><div><h1 class="h2">Dashboard</h1><p class="mb-0 text-gray-600">Welcome to the GoodGames administration panel.</p></div></div>
+  <div class="row">
+    <div class="col-12 col-xl-8 mb-4"><div class="card border-0 shadow"><div class="card-body"><h2 class="h5">Account overview</h2><p class="text-gray-600 mb-3">Manage the administrator profile and account details.</p><a class="btn btn-primary" href="/settings">Open user settings</a></div></div></div>
+    <div class="col-12 col-xl-4 mb-4"><div class="card border-0 shadow"><div class="card-body"><h2 class="h5">System status</h2><div class="d-flex align-items-center"><span class="badge bg-success me-2">Online</span><span class="text-gray-600">Web application</span></div></div></div></div>
+  </div>
+</div>
+{% endblock %}

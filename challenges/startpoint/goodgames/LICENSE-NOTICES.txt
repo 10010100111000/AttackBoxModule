@@ -1,0 +1,12 @@
+# Third-party template notices
+
+## Game Warrior
+
+The supplied Game Warrior template's Colorlib attribution and CC BY 3.0 notice are retained in the HTML footer. Original project files are preserved except for removing an unrelated PDF accidentally bundled in the `fonts` directory and adding the GoodGames login modal.
+
+## Volt Dashboard
+
+The admin UI uses the open-source AppSeed Flask/Jinja Volt starter as its upstream source for the Volt design assets and layout. The original Themesberg/AppSeed copyright and licensing notices are retained in the source CSS and upstream templates fetched during the Docker build. Review the upstream license before redistribution:
+
+- https://github.com/app-generator/jinja-volt-dashboard
+- https://themesberg.com/licensing

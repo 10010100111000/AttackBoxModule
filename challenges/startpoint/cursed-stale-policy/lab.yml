@@ -1,8 +1,4 @@
-name: Cursed Stale Policy
-summary: 在线 CSP 策略评估平台与自动化巡检审查的 Web 安全挑战靶机
-note: 靶机启动后请访问分配的目标地址（端口 8000）。对在线评估系统展开黑盒渗透测试以获取管理员 Flag。
 image: ghcr.io/10010100111000/cursed-stale-policy:latest
-port: 8000
 limits:
   memory: 1024
   cpu: 1.0

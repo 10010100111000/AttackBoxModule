@@ -1,0 +1,6 @@
+.git
+*.zip
+*.pdf
+!assets/*.pdf
+README.md
+tests/

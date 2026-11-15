@@ -1,0 +1,14 @@
+# SSH is deliberately discoverable (port 22), as in the walkthrough,
+# but no login credentials are provided.
+Port 22
+ListenAddress 0.0.0.0
+PermitRootLogin no
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+PubkeyAuthentication no
+PermitEmptyPasswords no
+UsePAM no
+X11Forwarding no
+AllowTcpForwarding no
+PrintMotd no
+PidFile /run/sshd.pid
