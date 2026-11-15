@@ -18,44 +18,89 @@ for _ in $(seq 1 60); do
     sleep 1
 done
 mariadb-admin ping --silent >/dev/null || { echo 'MariaDB failed to start' >&2; exit 1; }
+
 mariadb --protocol=socket -uroot <<SQL
 CREATE DATABASE IF NOT EXISTS \`$DB_NAME\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE USER IF NOT EXISTS '$DB_USER'@'localhost' IDENTIFIED BY '$DB_PASS';
 ALTER USER '$DB_USER'@'localhost' IDENTIFIED BY '$DB_PASS';
+CREATE USER IF NOT EXISTS '$DB_USER'@'127.0.0.1' IDENTIFIED BY '$DB_PASS';
+ALTER USER '$DB_USER'@'127.0.0.1' IDENTIFIED BY '$DB_PASS';
 GRANT ALL PRIVILEGES ON \`$DB_NAME\`.* TO '$DB_USER'@'localhost';
+GRANT ALL PRIVILEGES ON \`$DB_NAME\`.* TO '$DB_USER'@'127.0.0.1';
 FLUSH PRIVILEGES;
 SQL
 
 if [[ ! -f "$WEBROOT/configuration.php" ]]; then
-    echo 'Initializing Joomla 4.2.6 (first startup)...'
-    cd "$WEBROOT"
-    # Installer has to be run as the web server user for subsequent template edits.
-    su -s /bin/sh www-data -c "php installation/joomla.php install \
-      --site-name='Devvortex' \
-      --admin-user='Lewis' \
-      --admin-username='lewis' \
-      --admin-password='$DB_PASS' \
-      --admin-email='lewis@devvortex.htb' \
-      --db-type='mysqli' \
-      --db-host='localhost' \
-      --db-user='$DB_USER' \
-      --db-pass='$DB_PASS' \
-      --db-name='$DB_NAME' \
-      --db-prefix='sd4fg_' \
-      --db-encryption=0 \
-      --no-interaction"
-    [[ -f "$WEBROOT/configuration.php" ]] || { echo 'Joomla installation failed' >&2; exit 1; }
+    echo 'Initializing Joomla 4.2.6 database and configuration...'
+    sed "s/#__/sd4fg_/g" "$WEBROOT/installation/sql/mysql/base.sql" | mariadb --protocol=socket -uroot "$DB_NAME"
+    sed "s/#__/sd4fg_/g" "$WEBROOT/installation/sql/mysql/supports.sql" | mariadb --protocol=socket -uroot "$DB_NAME"
+    sed "s/#__/sd4fg_/g" "$WEBROOT/installation/sql/mysql/extensions.sql" | mariadb --protocol=socket -uroot "$DB_NAME"
+
+    LEWIS_HASH=$(php -r 'echo password_hash("P4ntherg0t1n5r3c0n##", PASSWORD_BCRYPT);')
+    LOGAN_HASH=$(php -r 'echo password_hash("tequieromucho", PASSWORD_BCRYPT);')
+
+    mariadb --protocol=socket -uroot "$DB_NAME" <<SQL
+INSERT INTO sd4fg_users (id, name, username, email, password, block, sendEmail, registerDate, lastvisitDate, activation, params)
+VALUES
+(1, 'Lewis', 'lewis', 'lewis@devvortex.htb', '$LEWIS_HASH', 0, 1, NOW(), '0000-00-00 00:00:00', '', '{}'),
+(2, 'Logan', 'logan', 'logan@devvortex.htb', '$LOGAN_HASH', 0, 0, NOW(), '0000-00-00 00:00:00', '', '{}');
+INSERT INTO sd4fg_user_usergroup_map (user_id, group_id) VALUES (1, 8), (2, 2);
+SQL
+
+    cat << "CONFIG" > "$WEBROOT/configuration.php"
+<?php
+class JConfig
+{
+	public $offline = false;
+	public $offline_message = 'This site is down for maintenance.<br> Please check back again soon.';
+	public $display_offline_message = 1;
+	public $offline_image = '';
+	public $sitename = 'Devvortex';
+	public $editor = 'tinymce';
+	public $captcha = 0;
+	public $list_limit = 20;
+	public $access = 1;
+	public $frontediting = 1;
+	public $dbtype = 'mysqli';
+	public $host = 'localhost';
+	public $user = 'lewis';
+	public $password = 'P4ntherg0t1n5r3c0n##';
+	public $db = 'joomla';
+	public $dbprefix = 'sd4fg_';
+	public $dbencryption = 0;
+	public $dbsslverifyservercert = false;
+	public $secret = 'k3Y9wZ1vB2c8X7m4L5p0Q6r1S2t3U4v5';
+	public $gzip = false;
+	public $error_reporting = 'default';
+	public $tmp_path = '/var/www/dev.devvortex.htb/tmp';
+	public $log_path = '/var/www/dev.devvortex.htb/administrator/logs';
+	public $live_site = '';
+	public $force_ssl = 0;
+	public $offset = 'UTC';
+	public $lifetime = 15;
+	public $session_handler = 'database';
+	public $shared_session = false;
+	public $session_metadata = true;
+	public $mailonline = true;
+	public $mailer = 'mail';
+	public $mailfrom = 'lewis@devvortex.htb';
+	public $fromname = 'Devvortex';
+	public $caching = 0;
+	public $cachetime = 15;
+	public $cache_handler = 'file';
+	public $cors = false;
+	public $cors_allow_origin = '*';
+	public $debug = false;
+	public $sef = true;
+	public $asset_id = 1;
+}
+CONFIG
+
+    rm -rf "$WEBROOT/installation"
+    chown -R www-data:www-data "$WEBROOT"
+    chmod 640 "$WEBROOT/configuration.php"
 fi
 
-# Insert the second user into the real Joomla users table. This stores a real bcrypt hash.
-HASH=$(php -r 'echo password_hash("tequieromucho", PASSWORD_BCRYPT);')
-mariadb --protocol=socket -uroot "$DB_NAME" <<SQL
-INSERT INTO sd4fg_users (name,username,email,password,block,sendEmail,registerDate,params)
-SELECT 'Logan','logan','logan@devvortex.htb','$HASH',0,0,NOW(),'{}'
-WHERE NOT EXISTS (SELECT 1 FROM sd4fg_users WHERE username='logan');
-SQL
-chown -R www-data:www-data "$WEBROOT"
-chmod 640 "$WEBROOT/configuration.php"
 ssh-keygen -A >/dev/null
 php-fpm8.1 -D
 nginx

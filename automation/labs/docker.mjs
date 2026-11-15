@@ -91,7 +91,13 @@ export async function checkLab(
         )
       )
       if (!info.state.Running || info.state.Status === 'restarting') {
-        throw new Error(`容器未持续运行（${info.state.Status}，exit ${info.state.ExitCode}）`)
+        let logs = ''
+        try {
+          logs = await run(['container', 'logs', '--tail', '50', name])
+        } catch {}
+        throw new Error(
+          `容器未持续运行（${info.state.Status}，exit ${info.state.ExitCode}）${logs ? `\n--- 容器日志 ---\n${logs}` : ''}`
+        )
       }
       const health = info.state.Health?.Status
       if (health === 'unhealthy') throw new Error('容器 HEALTHCHECK 失败')
