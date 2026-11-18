@@ -1,5 +1,0 @@
-image: ghcr.io/10010100111000/devvortex:latest
-limits:
-  memory: 1024
-  cpu: 1.0
-  pids: 512

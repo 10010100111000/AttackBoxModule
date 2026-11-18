@@ -1,9 +1,14 @@
 ---
-level: medium
 summary: 某科技公司正在开发新的技术门户与内部管理系统。你需要通过虚拟主机枚举突破外围，并利用已知 CMS 缺陷与特权程序漏洞逐步提权夺取整机最高控制权。
+level: medium
+lab: devvortex
 ---
 
-# 任务目标
+# 场景
+
+某科技公司正在开发新的技术门户与内部管理系统。你需要通过虚拟主机枚举突破外围，并利用已知 CMS 缺陷与特权程序漏洞逐步提权夺取整机最高控制权。
+
+# 任务
 
 探测目标主机开放服务与虚拟主机配置，利用 CMS 历史安全漏洞获取系统初始立足点；搜集系统内部凭据横向移动，并利用本地提权漏洞获取系统最高控制权。
 
@@ -16,6 +21,7 @@ answer: "DEVVORTEX{local_user_flag_demo}"
 match: trim
 hint: 枚举 dev.devvortex.htb 虚拟主机，审计 /api/index.php/v1/config/application 接口。
 ```
+
 ```quiz
 title: 获取最高权限 (Root Flag)
 kind: flag

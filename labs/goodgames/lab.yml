@@ -1,5 +1,0 @@
-image: ghcr.io/10010100111000/goodgames:latest
-limits:
-  memory: 512
-  cpu: 1.0
-  pids: 256
