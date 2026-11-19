@@ -3,6 +3,9 @@ name: Build and publish lab images
 on:
   push:
     branches: [main]
+    paths:
+      - "labs/**"
+      - ".github/workflows/lab-images.yml"
   workflow_dispatch:
     inputs:
       directory:

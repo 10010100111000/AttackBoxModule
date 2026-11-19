@@ -1,0 +1,129 @@
+name: Build golden image
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "金盘版本，例如 1.0.0；发布后不能重复使用"
+        required: true
+        default: "1.0.0"
+        type: string
+      publish:
+        description: "验收后发布到 GitHub Release"
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: golden-image
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    permissions:
+      contents: write
+    env:
+      VERSION: ${{ inputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check source and release version
+        env:
+          PUBLISH: ${{ inputs.publish }}
+        run: |
+          python3 -m unittest discover -s golden/tests
+          python3 -c 'import sys; sys.path.insert(0,"golden"); from artifact import validate_version; import os; validate_version(os.environ["VERSION"])'
+          if [[ "$PUBLISH" == true ]]; then
+            git ls-remote --tags origin "refs/tags/golden-v$VERSION" > "$RUNNER_TEMP/version-tag"
+            if [[ -s "$RUNNER_TEMP/version-tag" ]]; then
+              echo 'Golden version already exists; use a new version' >&2
+              exit 1
+            fi
+          fi
+
+      - name: Prepare build host
+        run: |
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/share/boost
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends btrfs-progs debootstrap zstd curl ca-certificates gnupg
+          df -h
+          python3 - <<'PY'
+          import shutil
+          if shutil.disk_usage('/').free < 24 * 1024**3:
+              raise SystemExit('At least 24 GiB free space is required')
+          PY
+          truncate -s 32G "$RUNNER_TEMP/golden.btrfs"
+          mkfs.btrfs -f "$RUNNER_TEMP/golden.btrfs"
+          sudo mkdir -p /mnt/golden
+          sudo mount -o loop,compress=zstd:3,noatime "$RUNNER_TEMP/golden.btrfs" /mnt/golden
+
+      - name: Build golden rootfs
+        run: |
+          sudo bash golden/build.sh --target /mnt/golden/base_rootfs
+          sudo bash golden/check.sh /mnt/golden/base_rootfs
+          sudo btrfs filesystem du -s /mnt/golden/base_rootfs
+
+      - name: Export versioned artifact
+        run: |
+          set -o pipefail
+          mkdir golden-dist
+          sudo btrfs send --proto 1 /mnt/golden/base_rootfs \
+            | zstd -10 -T2 \
+            | split -b 1900M -d -a 2 - golden-dist/attackbox-golden.btrfs.zst.part-
+          sudo cp /mnt/golden/base_rootfs/usr/share/attackbox/packages.tsv golden-dist/packages.tsv
+          sudo chown "$USER" golden-dist/packages.tsv
+          python3 golden/artifact.py create golden-dist --version "$VERSION" --revision "$GITHUB_SHA"
+
+      - name: Verify and receive exported parts
+        run: |
+          set -o pipefail
+          python3 golden/artifact.py verify golden-dist/attackbox-golden-manifest.json > "$RUNNER_TEMP/parts.list"
+          mapfile -t parts < "$RUNNER_TEMP/parts.list"
+          sudo mkdir /mnt/golden/received
+          cat -- "${parts[@]}" | zstd -dc | sudo btrfs receive /mnt/golden/received
+          sudo bash golden/check.sh /mnt/golden/received/base_rootfs
+          {
+            printf '### Golden %s\n\n' "$VERSION"
+            printf '构建、分卷校验、Btrfs 回读和离线 CLI 检查通过。\n\n'
+            printf '完整软件包清单随产物提供。\n'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Unmount build workspace
+        if: always()
+        run: |
+          if mountpoint -q /mnt/golden; then
+            sudo umount /mnt/golden
+          fi
+          rm -f "$RUNNER_TEMP/golden.btrfs"
+
+      - name: Save verified artifact
+        if: ${{ !inputs.publish }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: golden-v${{ inputs.version }}
+          path: golden-dist/
+          compression-level: 0
+          retention-days: 3
+          if-no-files-found: error
+
+      - name: Upload draft release
+        if: ${{ inputs.publish }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: golden-v${{ inputs.version }}
+          name: "Golden ${{ inputs.version }}"
+          target_commitish: ${{ github.sha }}
+          draft: true
+          make_latest: false
+          fail_on_unmatched_files: true
+          files: golden-dist/*
+
+      - name: Publish complete release
+        if: ${{ inputs.publish }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release edit "golden-v$VERSION" --draft=false --latest=false
