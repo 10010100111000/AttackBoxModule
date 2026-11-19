@@ -28,10 +28,10 @@ chmod 0440 /etc/sudoers.d/attackbox
 visudo -cf /etc/sudoers.d/attackbox
 
 # Use the HTB settings shipped by parrot-core-htb as system-wide defaults.
-install -D -m 0644 /usr/lib/parrot-skel/etc/dconf/db/local.d/htb-config /etc/dconf/db/local.d/20-attackbox
+install -D -m 0644 /usr/lib/parrot-skel/etc/dconf/db/local.d/htb-config /etc/dconf/db/local.d/htb-config
 install -d /etc/dconf/profile
 printf 'user-db:user\nsystem-db:local\n' > /etc/dconf/profile/user
-cat > /etc/dconf/db/local.d/99-attackbox <<'DCONF'
+cat > /etc/dconf/db/local.d/zz-attackbox <<'DCONF'
 [org/mate/marco/general]
 compositing-manager=false
 
