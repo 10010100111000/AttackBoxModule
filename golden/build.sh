@@ -41,11 +41,10 @@ debootstrap --arch=amd64 --variant=minbase --merged-usr \
   --keyring="$CACHE/parrot.gpg" echo "$TARGET" https://deb.parrot.sh/parrot \
   /usr/share/debootstrap/scripts/sid
 
-install -m 0644 "$CACHE/parrot.gpg" "$TARGET/usr/share/keyrings/attackbox-parrot.gpg"
 cat > "$TARGET/etc/apt/sources.list" <<'APT'
-deb [signed-by=/usr/share/keyrings/attackbox-parrot.gpg] https://deb.parrot.sh/parrot echo main contrib non-free non-free-firmware
-deb [signed-by=/usr/share/keyrings/attackbox-parrot.gpg] https://deb.parrot.sh/parrot echo-security main contrib non-free non-free-firmware
-deb [signed-by=/usr/share/keyrings/attackbox-parrot.gpg] https://deb.parrot.sh/parrot echo-backports main contrib non-free non-free-firmware
+deb [signed-by=/usr/share/keyrings/parrot-archive-keyring.gpg] https://deb.parrot.sh/parrot echo main contrib non-free non-free-firmware
+deb [signed-by=/usr/share/keyrings/parrot-archive-keyring.gpg] https://deb.parrot.sh/parrot echo-security main contrib non-free non-free-firmware
+deb [signed-by=/usr/share/keyrings/parrot-archive-keyring.gpg] https://deb.parrot.sh/parrot echo-backports main contrib non-free non-free-firmware
 APT
 rm -f "$TARGET/etc/resolv.conf"
 printf 'nameserver 1.1.1.1\nnameserver 8.8.8.8\n' > "$TARGET/etc/resolv.conf"

@@ -9,6 +9,10 @@ done
 printf 'wireshark-common wireshark-common/install-setuid boolean true\n' | debconf-set-selections
 apt-get update -o Acquire::Retries=3
 apt-get install -y --no-install-recommends -o Acquire::Retries=3 "${packages[@]}"
+# parrot-core supplies the canonical Deb822 repository configuration. Keep it
+# as the single source of repository settings after the bootstrap transaction.
+test -s /etc/apt/sources.list.d/parrot.sources
+rm /etc/apt/sources.list
 apt-get check
 audit="$(dpkg --audit)"
 [[ -z "$audit" ]] || { printf '%s\n' "$audit" >&2; exit 1; }
