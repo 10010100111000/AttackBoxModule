@@ -41,6 +41,11 @@ compositing-manager=false
 
 [org/mate/interface]
 enable-animations=false
+
+[org/mate/panel/general]
+default-layout='default'
+object-id-list=[]
+toplevel-id-list=[]
 DCONF
 dconf update
 printf 'en_US.UTF-8 UTF-8\nzh_CN.UTF-8 UTF-8\n' > /etc/locale.gen

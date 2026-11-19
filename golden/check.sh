@@ -15,6 +15,7 @@ for name in ['etc/machine-id', 'var/lib/dbus/machine-id']:
     assert (root / name).read_text() == '', name
 for directory in ['boot', 'usr/lib/modules', 'usr/lib/firmware']:
     assert not any((root / directory).iterdir()), directory
+assert (root / 'usr/share/mate-panel/layouts/default.layout').is_file()
 PY
 chroot "$ROOT" /usr/bin/env -i PATH=/usr/sbin:/usr/bin:/sbin:/bin /bin/bash -euc '
 for command in bash sudo nmap python3 Xtigervnc mate-session mate-panel marco caja firefox-esr dbus-run-session burpsuite caido msfconsole; do
