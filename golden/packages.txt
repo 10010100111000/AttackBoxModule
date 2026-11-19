@@ -1,6 +1,7 @@
 # AttackBox 软件清单。每行一个 APT 软件包，全部为必需项。
 # 依赖由 APT 自动解析；清单变更后重新构建金盘。
 
+# 基础系统、MATE 桌面与浏览器
 parrot-core
 parrot-core-htb
 parrot-interface-common
@@ -22,6 +23,29 @@ psmisc
 less
 man-db
 nano
+vim-tiny
+parrot-archive-keyring
+debian-mate-default-settings
+mate-panel
+mate-settings-daemon
+mate-control-center
+mate-notification-daemon
+marco
+caja
+engrampa
+mate-polkit
+dconf-cli
+libgl1-mesa-dri
+firefox-esr
+webext-foxyproxy
+tigervnc-tools
+xauth
+x11-xserver-utils
+fonts-dejavu-core
+fonts-noto-cjk
+fonts-noto-color-emoji
+
+# Web
 burpsuite
 caido
 sqlmap
@@ -51,6 +75,10 @@ weevely
 webshells
 laudanum
 webacoo
+feroxbuster
+dirsearch
+
+# 侦察与网络客户端
 nmap
 masscan
 arp-scan
@@ -90,6 +118,16 @@ tshark
 mitmproxy
 responder
 bettercap
+dnsrecon
+autorecon
+snmp
+openssl
+iputils-tracepath
+openssh-client
+lftp
+inetutils-telnet
+
+# AD、横向移动与提权
 metasploit-framework
 bloodhound
 remmina
@@ -119,6 +157,11 @@ iodine
 powercat
 nishang
 ncat-w32
+enum4linux-ng
+redis-tools
+mariadb-client
+
+# 密码分析与字典
 hydra
 john
 hashcat
@@ -140,6 +183,9 @@ statsprocessor
 sucrack
 twofi
 wordlists
+seclists
+
+# 开发环境与常用命令
 golang-go
 python3
 python3-pip
@@ -167,44 +213,9 @@ unzip
 7zip
 rar
 unrar
-parrot-archive-keyring
-debian-mate-default-settings
-mate-panel
-mate-settings-daemon
-mate-control-center
-mate-notification-daemon
-marco
-caja
-engrampa
-mate-polkit
-dconf-cli
-libgl1-mesa-dri
-firefox-esr
-webext-foxyproxy
-tigervnc-tools
-xauth
-x11-xserver-utils
-fonts-dejavu-core
-fonts-noto-cjk
-fonts-noto-color-emoji
 default-jre
-feroxbuster
-dirsearch
-dnsrecon
-enum4linux-ng
-autorecon
-snmp
-redis-tools
-mariadb-client
-seclists
-openssl
 util-linux
 coreutils
 findutils
-iputils-tracepath
-openssh-client
 build-essential
-lftp
-inetutils-telnet
 zip
-vim-tiny
