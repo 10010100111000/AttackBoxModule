@@ -103,7 +103,6 @@ enum4linux
 mimikatz
 windows-binaries
 kerberoast
-passing-the-hash
 peass
 powersploit
 linux-exploit-suggester

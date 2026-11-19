@@ -14,6 +14,9 @@ audit="$(dpkg --audit)"
 [[ -z "$audit" ]] || { printf '%s\n' "$audit" >&2; exit 1; }
 
 # Let account tools enforce UID/GID uniqueness and maintain shadow/gshadow.
+# Desktop defaults live in the system dconf database; each learner starts with
+# a fresh user database rather than a precompiled copy that overrides them.
+rm -f /etc/skel/.config/dconf/user
 groupadd --gid 1013 box
 useradd --uid 1001 --gid 1013 --create-home --shell /bin/bash box
 usermod -a -G wireshark box
