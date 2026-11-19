@@ -22,7 +22,7 @@ Burp、Caido、Metasploit、BloodHound、Remmina、Go、Node、Python、Wireshar
 
 在 **Actions → Build golden image → Run workflow** 中填写三段版本号，例如 `1.0.0`。
 
-- `publish=false`：构建、导出、SHA-256 检查和 Btrfs 回读通过后，将完整产物保存为 Actions artifact，保留三天。
+- `publish=false`：构建、导出、SHA-256 检查和 Btrfs 回读通过后，将完整产物保存为草稿 Release，供管理员下载检查。
 - `publish=true`：验收后上传到草稿 Release，全部上传成功后发布为 `golden-v1.0.0`。已发布版本使用新的版本号更新。
 
 工作流由手动操作触发。靶机镜像工作流只监听 `labs/` 及自身配置的变更。

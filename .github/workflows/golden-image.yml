@@ -9,7 +9,7 @@ on:
         default: "1.0.0"
         type: string
       publish:
-        description: "验收后发布到 GitHub Release"
+        description: "验收后公开发布；关闭则保留草稿 Release"
         required: true
         default: false
         type: boolean
@@ -32,17 +32,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Check source and release version
-        env:
-          PUBLISH: ${{ inputs.publish }}
         run: |
           python3 -m unittest discover -s golden/tests
           python3 -c 'import sys; sys.path.insert(0,"golden"); from artifact import validate_version; import os; validate_version(os.environ["VERSION"])'
-          if [[ "$PUBLISH" == true ]]; then
-            git ls-remote --tags origin "refs/tags/golden-v$VERSION" > "$RUNNER_TEMP/version-tag"
-            if [[ -s "$RUNNER_TEMP/version-tag" ]]; then
-              echo 'Golden version already exists; use a new version' >&2
-              exit 1
-            fi
+          git ls-remote --tags origin "refs/tags/golden-v$VERSION" > "$RUNNER_TEMP/version-tag"
+          if [[ -s "$RUNNER_TEMP/version-tag" ]]; then
+            echo 'Golden version already exists; use a new version' >&2
+            exit 1
           fi
 
       - name: Prepare build host
@@ -100,18 +96,7 @@ jobs:
           fi
           rm -f "$RUNNER_TEMP/golden.btrfs"
 
-      - name: Save verified artifact
-        if: ${{ !inputs.publish }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: golden-v${{ inputs.version }}
-          path: golden-dist/
-          compression-level: 0
-          retention-days: 3
-          if-no-files-found: error
-
       - name: Upload draft release
-        if: ${{ inputs.publish }}
         uses: softprops/action-gh-release@v2
         with:
           tag_name: golden-v${{ inputs.version }}
