@@ -28,8 +28,9 @@ trap cleanup EXIT
 
 # This keyring authenticates debootstrap's Release metadata and all APT packages.
 curl --fail --location --retry 3 --max-time 120 \
-  https://deb.parrot.sh/parrot/misc/parrotsec.gpg -o "$CACHE/parrot.gpg"
-printf '%s  %s\n' 8b7d58471a91e03f9e62d9f07d13304be7b84f288c1ca7d548ffaf5f27ad35f4 "$CACHE/parrot.gpg" | sha256sum -c -
+  https://deb.parrot.sh/parrot/misc/parrotsec.gpg -o "$CACHE/parrot.asc"
+printf '%s  %s\n' 8b7d58471a91e03f9e62d9f07d13304be7b84f288c1ca7d548ffaf5f27ad35f4 "$CACHE/parrot.asc" | sha256sum -c -
+gpg --homedir "$CACHE" --batch --dearmor --output "$CACHE/parrot.gpg" "$CACHE/parrot.asc"
 btrfs subvolume create "$TARGET"
 CREATED=1
 # Ubuntu's debootstrap has no echo alias. Use its standard Debian suite script
