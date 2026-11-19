@@ -119,7 +119,6 @@ mitmproxy
 responder
 bettercap
 dnsrecon
-autorecon
 snmp
 openssl
 iputils-tracepath
