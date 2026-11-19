@@ -14,7 +14,7 @@
 
 桌面按 MATE 组件安装，HTB 主题和系统默认设置来自 Parrot 软件包。清单包含 Firefox、FoxyProxy、中文字体、TigerVNC 工具、SSH 客户端、编译工具、SecLists、常用枚举和网络客户端。
 
-Burp、Caido、Metasploit、BloodHound、Remmina、Go、Node、Python、Wireshark 和 Hashcat 均包含在默认清单中。BloodHound 的 Neo4j/PostgreSQL、Metasploit 的数据库与编译依赖、Hashcat 的 CPU OpenCL 运行时会增加体积；具体安装版本与大小记录在发布产物 `packages.tsv` 中。Java 使用 OpenJDK 21 运行时。
+Burp、Caido、Metasploit、BloodHound、Remmina、Go、Node、Python、Wireshark 和 Hashcat 均包含在默认清单中。BloodHound 的 Neo4j/PostgreSQL、Metasploit 的数据库与编译依赖、Hashcat 的 CPU OpenCL 运行时会增加体积；具体安装版本与大小记录在发布产物 `packages.tsv` 中。Java 使用 `default-jre`，工具所需的特定 Java 版本由 APT 管理。theHarvester 的网页采集功能会引入 Chromium。
 
 `configure.sh` 负责账号、sudo、语言和桌面默认配置；`build.sh` 负责引导、隔离挂载、清理和锁定子卷。账号由系统工具维护，`box` 固定为 `1001:1013`。金盘内的 machine-id 为空，部署端在每个实例初始化时分配独立标识。
 
