@@ -147,7 +147,7 @@ class SourceTests(unittest.TestCase):
             subprocess.run(['dconf', 'compile', str(path / 'compiled'), str(source)], check=True)
 
     def test_shell_syntax(self):
-        for script in [*ROOT.glob('*.sh'), *ROOT.joinpath('skel').iterdir()]:
+        for script in [*ROOT.glob('*.sh'), *ROOT.joinpath('skel').iterdir(), *ROOT.joinpath('bin').iterdir()]:
             subprocess.run(['bash', '-n', str(script)], check=True)
 
 

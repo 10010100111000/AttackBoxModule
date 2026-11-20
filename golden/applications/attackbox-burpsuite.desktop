@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Burp Suite Community
+Comment=Inspect web traffic
+Exec=/usr/local/bin/burpsuite %U
+Icon=/usr/share/burpsuite/.install4j/BurpSuiteCommunity.png
+Categories=Development;Network;
+StartupWMClass=install4j-burp-StartBurp
+Terminal=false

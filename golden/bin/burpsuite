@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# The distribution wrapper discards arguments; invoke the installed launcher.
+cd /usr/share/burpsuite
+exec ./BurpSuiteCommunity --disable-auto-update "$@"

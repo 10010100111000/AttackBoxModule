@@ -53,7 +53,7 @@ chmod 0755 "$TARGET/usr/sbin/policy-rc.d"
 install -d "$TARGET/tmp/attackbox-build" "$TARGET/proc" "$TARGET/sys" "$TARGET/dev" "$TARGET/run"
 install -m 0644 "$SOURCE/packages.txt" "$SOURCE/configure.sh" "$SOURCE/desktop_defaults.py" "$SOURCE/chromium-policy.json" "$SOURCE/mate-defaults.ini" "$TARGET/tmp/attackbox-build/"
 
-cp -a "$SOURCE/skel" "$TARGET/tmp/attackbox-build/skel"
+cp -a "$SOURCE/skel" "$SOURCE/bin" "$SOURCE/applications" "$TARGET/tmp/attackbox-build/"
 
 mount_rootfs "$TARGET"
 chroot "$TARGET" /usr/bin/env -i HOME=/root PATH=/usr/sbin:/usr/bin:/sbin:/bin \

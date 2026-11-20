@@ -68,6 +68,9 @@ if [[ -d /home/box/.local ]]; then chown -R 1001:1013 /home/box/.local; fi
 printf 'attackbox\n' > /etc/hostname
 printf '127.0.0.1 localhost\n127.0.1.1 attackbox\n::1 localhost ip6-localhost\n' > /etc/hosts
 
+install -D -m 0755 "$PAYLOAD/bin/burpsuite" /usr/local/bin/burpsuite
+install -D -m 0644 "$PAYLOAD/applications/attackbox-burpsuite.desktop" /usr/share/applications/attackbox-burpsuite.desktop
+
 install -d /usr/share/attackbox
 cp "$PAYLOAD/packages.txt" /usr/share/attackbox/
 LC_ALL=C getcap -r /usr | LC_ALL=C sort > /usr/share/attackbox/file-capabilities.txt

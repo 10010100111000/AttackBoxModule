@@ -18,17 +18,21 @@ for directory in ['boot', 'usr/lib/modules', 'usr/lib/firmware']:
 assert (root / 'usr/share/mate-panel/layouts/default.layout').is_file()
 assert (root / 'home/box/.config/user-dirs.locale').read_text().strip() == 'en_US'
 assert (root / 'home/box/Public').is_dir()
+assert (root / 'usr/share/burpsuite/BurpSuiteCommunity').is_file()
+assert (root / 'usr/share/burpsuite/.install4j/BurpSuiteCommunity.png').is_file()
+assert (root / 'usr/local/bin/burpsuite').stat().st_mode & 0o111
 policy = json.loads((root / 'etc/chromium/policies/managed/attackbox.json').read_text())
 assert policy['BackgroundModeEnabled'] is False
 assert len(policy['ExtensionInstallForcelist']) == 3
 PY
-chroot "$ROOT" /usr/bin/env -i PATH=/usr/sbin:/usr/bin:/sbin:/bin /bin/bash -euc '
+chroot "$ROOT" /usr/bin/env -i PATH=/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin /bin/bash -euc '
 while IFS= read -r line || [[ -n $line ]]; do
   package="${line%%#*}"
   package="${package//[[:space:]]/}"
   [[ -n $package ]] || continue
   [[ $(dpkg-query -W -f="\${db:Status-Status}" "$package") == installed ]]
 done < /usr/share/attackbox/packages.txt
+desktop-file-validate /usr/share/applications/attackbox-burpsuite.desktop
 for command in bash sudo nmap python3 Xtigervnc vncconfig mate-session mate-panel marco caja chromium dbus-run-session burpsuite msfconsole xfreerdp3; do
   command -v "$command" >/dev/null
 done'
