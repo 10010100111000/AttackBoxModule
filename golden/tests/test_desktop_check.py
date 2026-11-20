@@ -41,6 +41,16 @@ class PanelContractTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'applet is not installed: BriskMenu'):
             check.validate_static(self.root)
 
+    def test_installed_brisk_menu_is_supported(self):
+        binary = self.root / 'usr/libexec/brisk-menu'
+        binary.write_text('fixture')
+        binary.chmod(0o755)
+        (self.root / 'usr/share/mate-panel/applets/brisk.mate-panel-applet').write_text(
+            '[Applet Factory]\nId=BriskMenuFactory\nLocation=/usr/libexec/brisk-menu\n[BriskMenu]\nName=Menu\n')
+        self.layout.write_text(self.layout.read_text().replace(
+            'ClockAppletFactory::ClockApplet', 'BriskMenuFactory::BriskMenu'))
+        check.validate_static(self.root)
+
     def test_missing_factory_binary_is_rejected(self):
         self.binary.unlink()
         with self.assertRaisesRegex(ValueError, 'missing applet implementation'):

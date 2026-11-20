@@ -28,6 +28,7 @@ vim-tiny
 parrot-archive-keyring
 debian-mate-default-settings
 mate-panel
+mate-applet-brisk-menu
 mate-settings-daemon
 mate-control-center
 mate-notification-daemon

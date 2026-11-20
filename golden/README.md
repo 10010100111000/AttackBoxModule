@@ -12,7 +12,7 @@
 
 `packages.txt` 是唯一的安装清单，每行一个 APT 软件包。全部条目都必须成功安装。APT 自动解析依赖，以 `--no-install-recommends` 安装。
 
-桌面按 MATE 组件安装，HTB 主题、壁纸和终端配色按选定配置组提取自 Parrot 软件包。面板由 `attackbox.layout` 统一定义，包含顶部启动器和底部任务栏。清单包含 Chromium、中文字体、TigerVNC、FreeRDP、SSH 客户端、编译工具、SecLists、常用枚举和网络客户端。Chromium 为默认 HTTP/HTTPS 浏览器。
+桌面按 MATE 组件安装，HTB 主题、壁纸和终端配色按选定配置组提取自 Parrot 软件包。面板由 `attackbox.layout` 统一定义，包含 BriskMenu 搜索菜单、顶部启动器和底部任务栏。`mate-applet-brisk-menu` 与布局一起维护。清单包含 Chromium、中文字体、TigerVNC、FreeRDP、SSH 客户端、编译工具、SecLists、常用枚举和网络客户端。Chromium 为默认 HTTP/HTTPS 浏览器。
 
 可选工具按管理员确认的清单安装：Burp、Wireshark、Geany、FreeRDP；ffuf、Gobuster、dirsearch、wfuzz、dirb、sqlmap、WPScan、Nikto；Nmap、Masscan、协议客户端与抓包工具；Metasploit、Impacket、NetExec、evil-winrm、SMB 枚举、Windows/PowerShell 载荷；Chisel、Proxychains、Redis/MySQL/PostgreSQL 客户端；密码分析工具与完整字典库。Python、C/C++、Java、Node/npm 和 Go 编译环境保留。
 
