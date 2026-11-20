@@ -2,6 +2,7 @@ import importlib.util
 import json
 from pathlib import Path
 import subprocess
+import shutil
 import tempfile
 import unittest
 
@@ -135,6 +136,15 @@ class SourceTests(unittest.TestCase):
             self.assertRegex(entry, r'^[a-p]{32};https://clients2\.google\.com/service/update2/crx$')
         self.assertFalse(policy['BackgroundModeEnabled'])
         self.assertEqual(policy['BrowserSignin'], 0)
+
+    @unittest.skipUnless(shutil.which('dconf'), 'dconf compiler is unavailable')
+    def test_mate_defaults_compile(self):
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp)
+            source = path / 'defaults'
+            source.mkdir()
+            shutil.copyfile(ROOT / 'mate-defaults.ini', source / 'attackbox')
+            subprocess.run(['dconf', 'compile', str(path / 'compiled'), str(source)], check=True)
 
     def test_shell_syntax(self):
         for script in [*ROOT.glob('*.sh'), *ROOT.joinpath('skel').iterdir()]:

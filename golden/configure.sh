@@ -2,7 +2,7 @@
 # Executed inside the freshly bootstrapped image by build.sh.
 set -euo pipefail
 PAYLOAD=/tmp/attackbox-build
-[[ -r "$PAYLOAD/packages.txt" && -d "$PAYLOAD/skel" && -r "$PAYLOAD/chromium-policy.json" ]] || {
+[[ -r "$PAYLOAD/packages.txt" && -d "$PAYLOAD/skel" && -r "$PAYLOAD/chromium-policy.json" && -r "$PAYLOAD/mate-defaults.ini" ]] || {
   echo 'Run this script through golden/build.sh inside the build rootfs' >&2
   exit 1
 }
@@ -45,25 +45,7 @@ visudo -cf /etc/sudoers.d/attackbox
 install -D -m 0644 /usr/lib/parrot-skel/etc/dconf/db/local.d/htb-config /etc/dconf/db/local.d/htb-config
 install -d /etc/dconf/profile
 printf 'user-db:user\nsystem-db:local\n' > /etc/dconf/profile/user
-cat > /etc/dconf/db/local.d/zz-attackbox <<'DCONF'
-[org/mate/marco/general]
-compositing-manager=false
-
-[org/mate/interface]
-enable-animations=false
-
-[org/mate/session]
-auto-save-session=false
-idle-delay=0
-
-[org/mate/caja/preferences]
-show-image-thumbnails='never'
-
-[org/mate/panel/general]
-default-layout='default'
-object-id-list=[]
-toplevel-id-list=[]
-DCONF
+install -m 0644 "$PAYLOAD/mate-defaults.ini" /etc/dconf/db/local.d/zz-attackbox
 dconf update
 printf 'en_US.UTF-8 UTF-8\nzh_CN.UTF-8 UTF-8\n' > /etc/locale.gen
 locale-gen
