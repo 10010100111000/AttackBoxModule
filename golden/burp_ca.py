@@ -154,13 +154,22 @@ def https_fixture():
             thread.join()
 
 
+def trusted_ca_context(certificate):
+    # An explicit lab trust anchor, with signature and hostname verification.
+    # create_default_context() also imports the OS roots and, on Python 3.13,
+    # enables additional strict-profile checks not required by browser trust.
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    context.load_verify_locations(cadata=ssl.DER_cert_to_PEM_cert(certificate))
+    return context
+
+
 def verify_browser(home):
     expected = PUBLIC_CA.read_bytes()
     with proxy(home) as certificate, https_fixture() as port:
         if certificate != expected:
             raise RuntimeError('Restarted Burp is not using the golden shared CA')
         # Verify a real TLS handshake and response through Burp, without -k.
-        context = ssl.create_default_context(cadata=ssl.DER_cert_to_PEM_cert(expected))
+        context = trusted_ca_context(expected)
         connection = http.client.HTTPSConnection('127.0.0.1', 8080, timeout=15, context=context)
         try:
             connection.set_tunnel('localhost', port)

@@ -3,6 +3,8 @@ import json
 from pathlib import Path
 import subprocess
 import shutil
+import ssl
+import http.client
 import tempfile
 import unittest
 import xml.etree.ElementTree as ET
@@ -136,6 +138,25 @@ class BurpProfileTests(unittest.TestCase):
             self.assertEqual(prefs.stat().st_mode & 0o777, 0o600)
             self.assertFalse((directory / 'community').exists())
             self.assertIn('<!DOCTYPE map SYSTEM', prefs.read_text())
+
+    def test_tls_context_only_trusts_selected_ca(self):
+        with tempfile.TemporaryDirectory() as temp:
+            temp = Path(temp)
+            subprocess.run(['openssl', 'req', '-x509', '-newkey', 'rsa:2048', '-nodes',
+                            '-keyout', str(temp / 'key.pem'), '-out', str(temp / 'ca.pem'),
+                            '-days', '1', '-subj', '/CN=Test CA'], check=True, capture_output=True)
+            certificate = ssl.PEM_cert_to_DER_cert((temp / 'ca.pem').read_text())
+            context = self.burp.trusted_ca_context(certificate)
+            self.assertTrue(context.check_hostname)
+            self.assertEqual(context.verify_mode, ssl.CERT_REQUIRED)
+            self.assertEqual(context.get_ca_certs(binary_form=True), [certificate])
+            with self.burp.https_fixture() as port:
+                connection = http.client.HTTPSConnection('localhost', port, timeout=5, context=context)
+                try:
+                    with self.assertRaises(ssl.SSLCertVerificationError):
+                        connection.request('GET', '/')
+                finally:
+                    connection.close()
 
     def test_missing_ca_is_rejected(self):
         with tempfile.TemporaryDirectory() as temp:

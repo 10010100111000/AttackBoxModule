@@ -78,7 +78,7 @@ runuser -u box -- /usr/bin/env HOME=/home/box LANG=en_US.UTF-8 \
   python3 "$PAYLOAD/burp_ca.py" initialize
 install -m 0644 /home/box/.local/share/attackbox/burp-ca.der /usr/share/attackbox/burp-ca.der
 # Current Chromium uses the XDG data directory for its NSS certificate database.
-install -d -m 0700 -o 1001 -g 1013 /home/box/.local/share/pki/nssdb
+install -d -m 0700 -o 1001 -g 1013 /home/box/.local/share/pki /home/box/.local/share/pki/nssdb
 runuser -u box -- certutil -N -d sql:/home/box/.local/share/pki/nssdb --empty-password
 runuser -u box -- certutil -A -d sql:/home/box/.local/share/pki/nssdb \
   -n AttackBox-Burp -t 'C,,' -i /usr/share/attackbox/burp-ca.der
