@@ -88,6 +88,27 @@ unmount_image
         self.assertNotEqual(result.returncode, 0)
 
 
+class DesktopTests(unittest.TestCase):
+    def test_directories_and_menu_overrides(self):
+        spec = importlib.util.spec_from_file_location('desktop', ROOT / 'desktop_defaults.py')
+        desktop = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(desktop)
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            home = root / 'box'
+            applications = root / 'applications'
+            applications.mkdir()
+            (applications / 'vncconfig.desktop').write_text('[Desktop Entry]\nExec=vncconfig -iconic\n')
+            (applications / 'chromium.desktop').write_text('[Desktop Entry]\nExec=chromium\n')
+            desktop.configure(home, applications)
+            desktop.configure(home, applications)
+            self.assertTrue((home / '.local/share/applications/vncconfig.desktop').exists())
+            self.assertFalse((home / '.local/share/applications/chromium.desktop').exists())
+            self.assertTrue((home / 'Public').is_dir())
+            self.assertIn('XDG_PUBLICSHARE_DIR="$HOME/Public"', (home / '.config/user-dirs.dirs').read_text())
+            self.assertEqual((home / '.config/user-dirs.locale').read_text(), 'en_US\n')
+
+
 class SourceTests(unittest.TestCase):
     def test_packages_are_unique_concrete_names(self):
         packages = [line.split('#')[0].strip() for line in (ROOT / 'packages.txt').read_text().splitlines()]
@@ -96,8 +117,27 @@ class SourceTests(unittest.TestCase):
         for name in packages:
             self.assertRegex(name, r'^[a-z0-9][a-z0-9+.-]+$')
 
+    def test_selected_toolset_and_browser(self):
+        packages = {line.split('#')[0].strip() for line in (ROOT / 'packages.txt').read_text().splitlines()}
+        self.assertTrue({'chromium', 'chromium-sandbox', 'burpsuite', 'geany', 'freerdp3-x11',
+                         'postgresql-client', 'golang-go', 'nodejs', 'npm', 'enum4linux-ng'} <= packages)
+        self.assertFalse({'firefox-esr', 'webext-foxyproxy', 'parrot-interface-common',
+                          'parrot-menu', 'parrot-updater', 'caido', 'bloodhound',
+                          'remmina', 'enum4linux', 'kerberoast'} & packages)
+
+    def test_browser_policies_install_distinct_extensions(self):
+        policy = json.loads((ROOT / 'chromium-policy.json').read_text())
+        entries = policy['ExtensionInstallForcelist']
+        ids = [entry.split(';')[0] for entry in entries]
+        self.assertEqual(len(ids), len(set(ids)))
+        self.assertEqual(len(ids), 3)
+        for entry in entries:
+            self.assertRegex(entry, r'^[a-p]{32};https://clients2\.google\.com/service/update2/crx$')
+        self.assertFalse(policy['BackgroundModeEnabled'])
+        self.assertEqual(policy['BrowserSignin'], 0)
+
     def test_shell_syntax(self):
-        for script in ROOT.glob('*.sh'):
+        for script in [*ROOT.glob('*.sh'), *ROOT.joinpath('skel').iterdir()]:
             subprocess.run(['bash', '-n', str(script)], check=True)
 
 

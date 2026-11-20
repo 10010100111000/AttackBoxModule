@@ -1,0 +1,13 @@
+{
+  "BackgroundModeEnabled": false,
+  "BrowserSignin": 0,
+  "SyncDisabled": true,
+  "MetricsReportingEnabled": false,
+  "DefaultBrowserSettingEnabled": false,
+  "PasswordManagerEnabled": false,
+  "ExtensionInstallForcelist": [
+    "gcknhkkoolaabfmlnjonogaaifnjlfnp;https://clients2.google.com/service/update2/crx",
+    "gppongmhjkpfnbhagpmjfkannfbllamg;https://clients2.google.com/service/update2/crx",
+    "hlkenndednhfkekhgcdicdfddnkalmdm;https://clients2.google.com/service/update2/crx"
+  ]
+}

@@ -51,24 +51,11 @@ printf 'nameserver 1.1.1.1\nnameserver 8.8.8.8\n' > "$TARGET/etc/resolv.conf"
 printf '#!/bin/sh\nexit 101\n' > "$TARGET/usr/sbin/policy-rc.d"
 chmod 0755 "$TARGET/usr/sbin/policy-rc.d"
 install -d "$TARGET/tmp/attackbox-build" "$TARGET/proc" "$TARGET/sys" "$TARGET/dev" "$TARGET/run"
-install -m 0644 "$SOURCE/packages.txt" "$SOURCE/configure.sh" "$TARGET/tmp/attackbox-build/"
+install -m 0644 "$SOURCE/packages.txt" "$SOURCE/configure.sh" "$SOURCE/desktop_defaults.py" "$SOURCE/chromium-policy.json" "$TARGET/tmp/attackbox-build/"
 
-mount_image -t proc proc "$TARGET/proc"
-mount_image -t sysfs -o ro,nosuid,nodev,noexec sysfs "$TARGET/sys"
-mount_image -t tmpfs -o nosuid,mode=755 tmpfs "$TARGET/dev"
-for entry in 'null 1 3' 'zero 1 5' 'full 1 7' 'random 1 8' 'urandom 1 9' 'tty 5 0'; do
-  read -r name major minor <<< "$entry"
-  mknod -m 0666 "$TARGET/dev/$name" c "$major" "$minor"
-done
-for entry in 'fd /proc/self/fd' 'stdin /proc/self/fd/0' 'stdout /proc/self/fd/1' 'stderr /proc/self/fd/2'; do
-  read -r name destination <<< "$entry"
-  ln -s "$destination" "$TARGET/dev/$name"
-done
-mkdir "$TARGET/dev/pts" "$TARGET/dev/shm"
-mount_image -t devpts -o newinstance,ptmxmode=0666,mode=620 devpts "$TARGET/dev/pts"
-ln -s pts/ptmx "$TARGET/dev/ptmx"
-mount_image -t tmpfs -o nosuid,nodev,mode=1777 tmpfs "$TARGET/dev/shm"
-mount_image -t tmpfs -o nosuid,nodev,mode=755 tmpfs "$TARGET/run"
+cp -a "$SOURCE/skel" "$TARGET/tmp/attackbox-build/skel"
+
+mount_rootfs "$TARGET"
 chroot "$TARGET" /usr/bin/env -i HOME=/root PATH=/usr/sbin:/usr/bin:/sbin:/bin \
   LANG=C.UTF-8 LC_ALL=C.UTF-8 DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC \
   /bin/bash /tmp/attackbox-build/configure.sh

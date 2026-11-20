@@ -63,6 +63,9 @@ jobs:
           sudo bash golden/check.sh /mnt/golden/base_rootfs
           sudo btrfs filesystem du -s /mnt/golden/base_rootfs
 
+      - name: Verify desktop and browser
+        run: sudo bash golden/check-desktop.sh /mnt/golden/base_rootfs
+
       - name: Export versioned artifact
         run: |
           set -o pipefail

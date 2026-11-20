@@ -1,6 +1,6 @@
 # AttackBox 金盘
 
-金盘提供 MATE 桌面、Firefox、TigerVNC，以及 Web、AD/内网学习工具。平台 Worker 从金盘创建每位学员的独立 Btrfs 快照。
+金盘提供 MATE 桌面、Chromium、TigerVNC，以及 Web、AD/内网学习工具。平台 Worker 从金盘创建每位学员的独立 Btrfs 快照。
 
 ## 构建来源
 
@@ -12,11 +12,21 @@
 
 `packages.txt` 是唯一的安装清单，每行一个 APT 软件包。全部条目都必须成功安装。APT 自动解析依赖，以 `--no-install-recommends` 安装。
 
-桌面按 MATE 组件安装，HTB 主题和终端配色来自 Parrot 软件包，面板采用 MATE 自带的基础布局。清单包含 Firefox、FoxyProxy、中文字体、TigerVNC 工具、SSH 客户端、编译工具、SecLists、常用枚举和网络客户端。
+桌面按 MATE 组件安装，HTB 主题和终端配色来自 Parrot 软件包，面板采用 MATE 自带的基础布局。清单包含 Chromium、中文字体、TigerVNC、FreeRDP、SSH 客户端、编译工具、SecLists、常用枚举和网络客户端。Chromium 为默认 HTTP/HTTPS 浏览器。
 
-Burp、Caido、Metasploit、BloodHound、Remmina、Go、Node、Python、Wireshark 和 Hashcat 均包含在默认清单中。BloodHound 的 Neo4j/PostgreSQL、Metasploit 的数据库与编译依赖、Hashcat 的 CPU OpenCL 运行时会增加体积；具体安装版本与大小记录在发布产物 `packages.tsv` 中。Java 使用 `default-jre`，工具所需的特定 Java 版本由 APT 管理。theHarvester 的网页采集功能会引入 Chromium。
+可选工具按管理员确认的清单安装：Burp、Wireshark、Geany、FreeRDP；ffuf、Gobuster、dirsearch、wfuzz、dirb、sqlmap、WPScan、Nikto；Nmap、Masscan、协议客户端与抓包工具；Metasploit、Impacket、NetExec、evil-winrm、SMB 枚举、Windows/PowerShell 载荷；Chisel、Proxychains、Redis/MySQL/PostgreSQL 客户端；密码分析工具与完整字典库。Python、C/C++、Java、Node/npm 和 Go 编译环境保留。
 
-`configure.sh` 负责账号、sudo、语言和桌面默认配置；`build.sh` 负责引导、隔离挂载、清理和锁定子卷。账号由系统工具维护，`box` 固定为 `1001:1013`。金盘内的 machine-id 为空；平台接入时需要在每个实例初始化阶段生成独立标识。
+MATE 保留窗口管理、面板、终端和文件管理器，关闭合成、动画、会话自动恢复及文件缩略图。TigerVNC 服务端和剪贴板工具用于平台 GUI；`vncconfig` 菜单入口隐藏，后台同步功能保留。
+
+软件和依赖的实际版本及大小记录在 `packages.tsv` 中。从最小系统按清单安装显式桌面组件，依赖由 APT 解析；构建完成前执行全系统升级，验收安装清单和语言环境。
+
+构建时生成并验证 `en_US.UTF-8`、`zh_CN.UTF-8`，默认使用英文界面。`skel/` 维护 Bash 的用户模板，用户目录由它和 `desktop_defaults.py` 创建，标准目录语言标记固定为 `en_US`。桌面主题来自系统 dconf，个人设置保存在各自的用户目录。
+
+`chromium-policy.json` 管理浏览器后台行为和扩展安装，默认安装 FoxyProxy、Wappalyzer、Cookie-Editor。浏览器以 `box` 用户运行，保持自身安全沙箱。可以通过 `chrome://policy` 检查策略，首次启动需要联网获取扩展。
+
+Burp 在学员打开时启动。使用外部浏览器抓包时，代理地址为 `127.0.0.1:8080`；CA 信任需要与 Burp 实际使用的证书匹配。
+
+`configure.sh` 负责账号、sudo、语言和桌面默认配置；`build.sh` 负责基础系统引导、隔离挂载、清理和锁定子卷。账号由系统工具维护，`box` 固定为 `1001:1013`。金盘内的 machine-id 为空；平台接入时需要在每个实例初始化阶段生成独立标识。
 
 ## GitHub Actions
 
@@ -36,16 +46,19 @@ Burp、Caido、Metasploit、BloodHound、Remmina、Go、Node、Python、Wireshar
 | `attackbox-golden.sha256` | 分卷校验值 |
 | `packages.tsv` | 实际安装的软件包、版本及安装大小（KiB） |
 
-软件包来自持续更新的 Parrot 仓库。manifest 记录教材仓库提交，包清单记录实际安装版本。安装端按 manifest 顺序验证并接收分卷。
+软件包来自持续更新的 Parrot 仓库。manifest 记录教材仓库提交及参考的上游构建提交，包清单记录实际安装版本。安装端按 manifest 顺序验证并接收分卷。
 
-当前工作流验证源子卷与导出后接收的子卷结构、只读属性及离线 CLI。真实 Worker 的沙箱创建、GUI、能力和释放验收属于平台接入步骤，部署前必须完成。
+工作流验证源子卷与回读子卷的结构、只读属性、locale、文件 capabilities 和安装清单，并在临时快照中运行 `check-desktop.sh`：以 `box` 用户启动 TigerVNC、MATE 和 Chromium，验证 VNC 握手、浏览器 JavaScript 及三个扩展的安装。测试在独立挂载和 PID 命名空间运行，结束后删除测试快照。
+
+真实 Worker 的权限、网络、GUI 网关和释放验收属于平台接入步骤；CI 的桌面测试用于确认金盘本身可以运行。
 
 ## 本地运行
 
-Linux amd64 构建主机需要 root、Btrfs、debootstrap、curl、GnuPG、Python 3、zstd，以及可用的挂载命名空间。
+Linux amd64 构建主机需要 root、Btrfs、debootstrap、curl、GnuPG、Python 3、zstd，以及可用的挂载命名空间。构建期间需要访问 Parrot 软件仓库。
 
 ```bash
 python3 -m unittest discover -s golden/tests
 sudo bash golden/build.sh --target /mnt/btrfs/base_rootfs
 sudo bash golden/check.sh /mnt/btrfs/base_rootfs
+sudo bash golden/check-desktop.sh /mnt/btrfs/base_rootfs
 ```

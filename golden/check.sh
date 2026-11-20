@@ -16,11 +16,29 @@ for name in ['etc/machine-id', 'var/lib/dbus/machine-id']:
 for directory in ['boot', 'usr/lib/modules', 'usr/lib/firmware']:
     assert not any((root / directory).iterdir()), directory
 assert (root / 'usr/share/mate-panel/layouts/default.layout').is_file()
+assert (root / 'home/box/.config/user-dirs.locale').read_text().strip() == 'en_US'
+assert (root / 'home/box/Public').is_dir()
+policy = json.loads((root / 'etc/chromium/policies/managed/attackbox.json').read_text())
+assert policy['BackgroundModeEnabled'] is False
+assert len(policy['ExtensionInstallForcelist']) == 3
 PY
 chroot "$ROOT" /usr/bin/env -i PATH=/usr/sbin:/usr/bin:/sbin:/bin /bin/bash -euc '
-for command in bash sudo nmap python3 Xtigervnc mate-session mate-panel marco caja firefox-esr dbus-run-session burpsuite caido msfconsole; do
+while IFS= read -r line || [[ -n $line ]]; do
+  package="${line%%#*}"
+  package="${package//[[:space:]]/}"
+  [[ -n $package ]] || continue
+  [[ $(dpkg-query -W -f="\${db:Status-Status}" "$package") == installed ]]
+done < /usr/share/attackbox/packages.txt
+for command in bash sudo nmap python3 Xtigervnc vncconfig mate-session mate-panel marco caja chromium dbus-run-session burpsuite msfconsole xfreerdp3; do
   command -v "$command" >/dev/null
 done'
+for language in en_US.UTF-8 zh_CN.UTF-8; do
+  chroot "$ROOT" /usr/bin/env -i PATH=/usr/bin:/bin LANG="$language" LC_ALL="$language" \
+    python3 -c 'import locale; locale.setlocale(locale.LC_ALL, "")'
+done
+expected_caps="$(cat "$ROOT/usr/share/attackbox/file-capabilities.txt")"
+actual_caps="$(chroot "$ROOT" /usr/bin/env LC_ALL=C /usr/sbin/getcap -r /usr | LC_ALL=C sort)"
+[[ $expected_caps == "$actual_caps" ]] || { echo 'File capabilities differ from recorded image inventory' >&2; exit 1; }
 chroot "$ROOT" /usr/bin/nmap --version
 chroot "$ROOT" /usr/bin/python3 --version
 chroot "$ROOT" /usr/sbin/visudo -cf /etc/sudoers.d/attackbox
