@@ -104,6 +104,8 @@ class DesktopTests(unittest.TestCase):
             applications.mkdir()
             (applications / 'vncconfig.desktop').write_text('[Desktop Entry]\nExec=vncconfig -iconic\n')
             (applications / 'chromium.desktop').write_text('[Desktop Entry]\nExec=chromium\n')
+            for name in ['attackbox-burpsuite.desktop', 'burpsuite.desktop']:
+                (applications / name).write_text('[Desktop Entry]\nExec=burpsuite\n')
             desktop.configure(home, applications)
             desktop.configure(home, applications)
             self.assertTrue((home / '.local/share/applications/vncconfig.desktop').exists())
@@ -112,6 +114,12 @@ class DesktopTests(unittest.TestCase):
             self.assertIn('XDG_PUBLICSHARE_DIR="$HOME/Public"', (home / '.config/user-dirs.dirs').read_text())
             self.assertEqual((home / '.config/user-dirs.locale').read_text(), 'en_US\n')
             self.assertTrue((home / 'Desktop/chromium.desktop').is_file())
+            self.assertTrue((home / 'Desktop/burpsuite.desktop').is_file())
+            self.assertFalse((home / 'Desktop/attackbox-burpsuite.desktop').exists())
+            defaults = (home / '.config/mimeapps.list').read_text()
+            self.assertIn('image/webp=eom.desktop;', defaults)
+            self.assertIn('text/plain=geany.desktop;', defaults)
+            self.assertEqual(defaults.count('text/html='), 1)
 
 
 class BurpProfileTests(unittest.TestCase):

@@ -21,6 +21,7 @@ if [[ ${1:-} == --session ]]; then
   python3 /tmp/desktop_check.py watch /var/log/attackbox-check/windows.done > /var/log/attackbox-check/windows.log 2>&1 &
   window_check=$!
   python3 /tmp/burp_ca.py verify-browser
+  python3 /tmp/desktop_smoke.py
   touch /var/log/attackbox-check/windows.done
   wait "$window_check"
   head -n 1 /var/log/attackbox-check/windows.log
@@ -50,7 +51,7 @@ if [[ ${1:-} == --inside ]]; then
   install -d -m 1777 "$ROOT/tmp/.ICE-unix" "$ROOT/tmp/.X11-unix"
   install -d -m 0700 -o 1001 -g 1013 "$ROOT/run/attackbox" "$ROOT/tmp/runtime-box" "$ROOT/var/log/attackbox-check"
   install -m 0755 "$0" "$ROOT/tmp/check-desktop.sh"
-  install -m 0644 "$SOURCE/burp_ca.py" "$SOURCE/desktop_check.py" "$ROOT/tmp/"
+  install -m 0644 "$SOURCE/burp_ca.py" "$SOURCE/desktop_check.py" "$SOURCE/desktop_defaults.py" "$SOURCE/desktop_smoke.py" "$ROOT/tmp/"
   # A private PID namespace guarantees all browser/desktop children are reaped
   # on exit, including D-Bus services that outlive their launching shell.
   chroot "$ROOT" /usr/sbin/runuser -u box -- /usr/bin/env -i \

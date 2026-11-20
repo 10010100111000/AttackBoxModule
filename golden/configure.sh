@@ -87,6 +87,7 @@ install -d /etc/dconf/profile
 printf 'user-db:user\nsystem-db:local\n' > /etc/dconf/profile/user
 install -m 0644 "$PAYLOAD/mate-defaults.ini" /etc/dconf/db/local.d/zz-attackbox
 dconf update
+python3 "$PAYLOAD/desktop_check.py" settings
 
 printf 'en_US.UTF-8 UTF-8\nzh_CN.UTF-8 UTF-8\n' > /etc/locale.gen
 locale-gen
@@ -100,21 +101,11 @@ printf 'LANG=en_US.UTF-8\n' > /etc/default/locale
 printf 'LANG=en_US.UTF-8\n' > /etc/environment
 
 install -D -m 0755 "$PAYLOAD/bin/burpsuite" /usr/local/bin/burpsuite
-install -D -m 0644 "$PAYLOAD/applications/attackbox-burpsuite.desktop" /usr/share/applications/attackbox-burpsuite.desktop
-install -D -m 0644 "$PAYLOAD/applications/attackbox-burpsuite.desktop" /usr/share/applications/burpsuite.desktop
+install -D -m 0644 "$PAYLOAD/applications/burpsuite.desktop" /usr/share/applications/burpsuite.desktop
 
 python3 "$PAYLOAD/desktop_defaults.py" /etc/skel /usr/share/applications
 python3 "$PAYLOAD/desktop_defaults.py" /home/box /usr/share/applications
 install -D -m 0644 "$PAYLOAD/chromium-policy.json" /etc/chromium/policies/managed/attackbox.json
-cat > /home/box/.config/mimeapps.list <<'MIME'
-[Default Applications]
-x-scheme-handler/http=chromium.desktop
-x-scheme-handler/https=chromium.desktop
-text/html=chromium.desktop
-MIME
-chown -R 1001:1013 /home/box/.config
-if [[ -d /home/box/.local ]]; then chown -R 1001:1013 /home/box/.local; fi
-if [[ -d /home/box/Desktop ]]; then chown -R 1001:1013 /home/box/Desktop; fi
 chown -R 1001:1013 /home/box
 
 printf 'attackbox\n' > /etc/hostname

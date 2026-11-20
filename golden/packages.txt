@@ -9,6 +9,8 @@ mate-terminal
 parrot-themes
 parrot-wallpapers
 ara-icon-theme
+gtk2-engines-murrine
+gtk2-engines-pixbuf
 tigervnc-standalone-server
 dbus-x11
 sudo
@@ -35,18 +37,27 @@ mate-notification-daemon
 marco
 caja
 engrampa
+mate-utils
+eom
+gir1.2-peas-1.0
+mate-calc
+gvfs-backends
 mate-polkit
 dconf-cli
 libgl1-mesa-dri
 chromium
 chromium-sandbox
 xdg-user-dirs
+xdg-utils
+desktop-file-utils
 tigervnc-tools
 xauth
 x11-xserver-utils
 x11-utils
 wmctrl
+xclip
 fonts-dejavu-core
+fonts-liberation
 fonts-noto-cjk
 fonts-noto-color-emoji
 

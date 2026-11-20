@@ -31,7 +31,7 @@ locked=true
 
 [Object burp-launcher]
 object-type=launcher
-launcher-location=/usr/share/applications/attackbox-burpsuite.desktop
+launcher-location=/usr/share/applications/burpsuite.desktop
 toplevel-id=top
 position=3
 locked=true

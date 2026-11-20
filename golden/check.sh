@@ -19,7 +19,7 @@ for directory in ['boot', 'usr/lib/modules', 'usr/lib/firmware']:
     assert not any((root / directory).iterdir()), directory
 assert (root / 'usr/share/mate-panel/layouts/default.layout').is_file()
 assert (root / 'usr/share/mate-panel/layouts/attackbox.layout').is_file()
-assert (root / 'usr/share/applications/attackbox-burpsuite.desktop').is_file() or (root / 'usr/share/applications/burpsuite.desktop').is_file()
+assert (root / 'usr/share/applications/burpsuite.desktop').is_file()
 assert not (root / 'usr/bin/firefox-selector').exists()
 assert not (root / 'usr/share/applications/firefox-selector.desktop').exists()
 assert not (root / 'home/box/.local/share/applications/firefox.desktop').exists()
@@ -44,10 +44,14 @@ while IFS= read -r line || [[ -n $line ]]; do
   [[ -n $package ]] || continue
   [[ $(dpkg-query -W -f="\${db:Status-Status}" "$package") == installed ]]
 done < /usr/share/attackbox/packages.txt
-desktop-file-validate /usr/share/applications/attackbox-burpsuite.desktop
-for command in bash sudo nmap python3 Xtigervnc vncconfig mate-session mate-panel marco caja chromium dbus-run-session burpsuite msfconsole xfreerdp3; do
+desktop-file-validate /usr/share/applications/burpsuite.desktop
+for command in bash sudo nmap python3 Xtigervnc vncconfig mate-session mate-panel marco caja chromium dbus-run-session burpsuite msfconsole xfreerdp3 mate-screenshot mate-search-tool mate-calc eom engrampa geany xdg-open xdg-mime gio xclip desktop-file-validate; do
   command -v "$command" >/dev/null
+done
+for backend in /usr/libexec/gvfsd-sftp /usr/libexec/gvfsd-smb; do
+  test -x "$backend"
 done'
+chroot "$ROOT" /usr/bin/python3 - settings < "$SOURCE/desktop_check.py"
 for language in en_US.UTF-8 zh_CN.UTF-8; do
   chroot "$ROOT" /usr/bin/env -i PATH=/usr/bin:/bin LANG="$language" LC_ALL="$language" \
     python3 -c 'import locale; locale.setlocale(locale.LC_ALL, "")'

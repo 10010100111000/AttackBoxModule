@@ -10,6 +10,14 @@ DIRECTORIES = {
     'PICTURES': 'Pictures', 'VIDEOS': 'Videos',
 }
 
+DEFAULT_APPLICATIONS = {
+    'chromium.desktop': ('x-scheme-handler/http', 'x-scheme-handler/https', 'text/html'),
+    'caja-folder-handler.desktop': ('inode/directory',),
+    'geany.desktop': ('text/plain',),
+    'eom.desktop': ('image/png', 'image/jpeg', 'image/webp', 'image/gif', 'image/svg+xml'),
+    'engrampa.desktop': ('application/zip', 'application/x-tar', 'application/gzip', 'application/x-7z-compressed'),
+}
+
 
 def configure(home: Path, applications: Path):
     config = home / '.config'
@@ -20,13 +28,16 @@ def configure(home: Path, applications: Path):
         f'XDG_{key}_DIR="$HOME/{value}"\n' for key, value in DIRECTORIES.items()
     ))
     (config / 'user-dirs.locale').write_text('en_US\n')
+    (config / 'mimeapps.list').write_text('[Default Applications]\n' + ''.join(
+        f'{mime}={launcher};\n'
+        for launcher, types in DEFAULT_APPLICATIONS.items() for mime in types
+    ))
 
     desktop_dir = home / 'Desktop'
     desktop_dir.mkdir(exist_ok=True)
     preferred_launchers = [
         'chromium.desktop',
         'mate-terminal.desktop',
-        'attackbox-burpsuite.desktop',
         'burpsuite.desktop',
         'caja.desktop',
         'geany.desktop',

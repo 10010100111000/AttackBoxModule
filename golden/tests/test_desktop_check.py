@@ -1,6 +1,7 @@
 import importlib.util
 from pathlib import Path
 import subprocess
+import shutil
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -74,6 +75,11 @@ class PanelContractTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'unknown panel'):
             check.validate_static(self.root)
 
+    def test_missing_theme_resource_is_rejected(self):
+        (self.defaults / 'theme').write_text("[org/mate/desktop/interface]\ngtk-theme='Missing'\n")
+        with self.assertRaisesRegex(ValueError, 'missing theme resource: Missing'):
+            check.validate_static(self.root)
+
     def test_theme_extraction_does_not_inherit_desktop_structure(self):
         source, dest = self.root / 'vendor', self.root / 'theme'
         source.write_text("[org/mate/desktop/interface]\ngtk-theme='Old'\ngtk-theme='Parrot'\n"
@@ -84,6 +90,47 @@ class PanelContractTests(unittest.TestCase):
         theme = check.read_ini(dest)
         self.assertEqual(theme.sections(), ['org/mate/desktop/interface'])
         self.assertEqual(theme['org/mate/desktop/interface']['gtk-theme'], "'Parrot'")
+
+    def test_theme_does_not_copy_session_tuning_or_obsolete_keys(self):
+        source, dest = self.root / 'vendor', self.root / 'theme'
+        source.write_text("[org/mate/marco/general]\ntheme='Parrot'\nside-by-side-tiling=true\n"
+                          "compositing-manager=true\n[org/mate/terminal/profiles/default]\n"
+                          "foreground-color='#ffffff'\nscrollback-unlimited=true\n")
+        check.write_theme(source, dest)
+        theme = check.read_ini(dest)
+        self.assertEqual(dict(theme['org/mate/marco/general']), {'theme': "'Parrot'"})
+        self.assertEqual(dict(theme['org/mate/terminal/profiles/default']), {'foreground-color': "'#ffffff'"})
+
+
+@unittest.skipUnless(shutil.which('gsettings') and shutil.which('glib-compile-schemas'), 'GLib tools unavailable')
+class SettingsContractTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        self.schemas = self.root / 'usr/share/glib-2.0/schemas'
+        self.schemas.mkdir(parents=True)
+        (self.schemas / 'test.gschema.xml').write_text(
+            '<schemalist><schema id="org.attackbox.test" path="/org/attackbox/test/">'
+            '<key name="animations" type="b"><default>true</default></key></schema></schemalist>')
+        subprocess.run(['glib-compile-schemas', str(self.schemas)], check=True)
+        self.defaults = self.root / 'etc/dconf/db/local.d'
+        self.defaults.mkdir(parents=True)
+
+    def test_valid_settings_are_accepted(self):
+        (self.defaults / 'test').write_text('[org/attackbox/test]\nanimations=false\n')
+        check.validate_settings(self.root)
+
+    def test_wrong_path_key_and_type_are_rejected(self):
+        for section, key, value, message in (
+            ('org/attackbox/wrong', 'animations', 'false', 'no installed schema'),
+            ('org/attackbox/test', 'wrong', 'false', 'No such key'),
+            ('org/attackbox/test', 'animations', "'false'", 'value'),
+        ):
+            with self.subTest(section=section, key=key, value=value):
+                (self.defaults / 'test').write_text(f'[{section}]\n{key}={value}\n')
+                with self.assertRaisesRegex(ValueError, message):
+                    check.validate_settings(self.root)
 
 
 class ErrorWindowTests(unittest.TestCase):

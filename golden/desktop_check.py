@@ -2,19 +2,21 @@
 import ast
 import configparser
 import json
+import os
 from pathlib import Path
 import re
 import subprocess
 import sys
 import time
+import xml.etree.ElementTree as ET
 
-THEME_SECTIONS = {
-    'org/gtk/settings/file-chooser',
-    'org/mate/desktop/interface',
-    'org/mate/interface',
-    'org/mate/desktop/background',
-    'org/mate/marco/general',
-    'org/mate/terminal/profiles/default',
+THEME_KEYS = {
+    'org/mate/desktop/interface': {'gtk-theme', 'icon-theme', 'gtk-color-scheme', 'gtk-decoration-layout'},
+    'org/mate/desktop/background': {'picture-filename', 'picture-options', 'color-shading-type',
+                                    'primary-color', 'secondary-color'},
+    'org/mate/marco/general': {'theme', 'button-layout', 'titlebar-uses-system-font'},
+    'org/mate/terminal/profiles/default': {'foreground-color', 'background-color', 'palette',
+                                         'bold-color', 'use-theme-colors'},
 }
 ERROR_TITLE = re.compile(r'\b(error|warning|problem|failed|failure|missing|unable|could not)\b|错误|警告|问题|失败|无法', re.I)
 
@@ -33,14 +35,45 @@ def read_ini(path, *, strict=True):
     return parser
 
 
+def validate_settings(root=Path('/')):
+    """Validate dconf keys and values against installed GSettings schemas.
+
+    dconf compile alone accepts misspelled paths and unknown keys. A memory
+    backend checks values without writing any learner preferences.
+    """
+    schemas = {}
+    schema_dir = root / 'usr/share/glib-2.0/schemas'
+    for file in schema_dir.glob('*.gschema.xml'):
+        for schema in ET.parse(file).findall('schema'):
+            if schema.get('path'):
+                schemas[schema.get('path').strip('/')] = schema.get('id')
+    schemas['org/mate/terminal/profiles/default'] = (
+        'org.mate.terminal.profile:/org/mate/terminal/profiles/default/')
+    environment = dict(os.environ, GSETTINGS_BACKEND='memory', GSETTINGS_SCHEMA_DIR=str(schema_dir))
+    for file in sorted((root / 'etc/dconf/db/local.d').iterdir()):
+        if not file.is_file() or file.name.startswith('.'):
+            continue
+        settings = read_ini(file)
+        for section in settings.sections():
+            if section not in schemas:
+                raise ValueError(f'{file.name}: no installed schema for {section}')
+            for key, value in settings[section].items():
+                result = subprocess.run(['gsettings', 'set', schemas[section], key, value],
+                                        env=environment, capture_output=True, text=True)
+                if result.returncode:
+                    raise ValueError(f'{file.name}: {section}/{key}: {result.stderr.strip()}')
+    print('Desktop settings validated against installed schemas')
+
+
 def write_theme(source, destination):
     # GLib key files permit duplicate keys; their last value wins.
     vendor = read_ini(source, strict=False)
     theme = configparser.ConfigParser(interpolation=None, delimiters=('=',))
     theme.optionxform = str
     for section in vendor.sections():
-        if section in THEME_SECTIONS:
-            theme[section] = dict(vendor[section])
+        if section in THEME_KEYS:
+            theme[section] = {key: value for key, value in vendor[section].items()
+                              if key in THEME_KEYS[section]}
     if not theme.sections():
         raise ValueError(f'No supported theme settings in {source}')
     with destination.open('w') as stream:
@@ -78,6 +111,18 @@ def validate_static(root):
                 settings.add_section(section)
             settings[section].update(defaults[section])
     layout_name = ast.literal_eval(settings['org/mate/panel/general']['default-layout'])
+    theme_files = (
+        ('org/mate/desktop/interface', 'gtk-theme', 'usr/share/themes/{}/gtk-3.0/gtk.css'),
+        ('org/mate/desktop/interface', 'icon-theme', 'usr/share/icons/{}/index.theme'),
+        ('org/mate/marco/general', 'theme', 'usr/share/themes/{}/metacity-1/metacity-theme-*.xml'),
+        ('org/mate/desktop/background', 'picture-filename', '{}'),
+    )
+    for section, key, pattern in theme_files:
+        if not settings.has_option(section, key):
+            continue
+        value = ast.literal_eval(settings[section][key])
+        if not any(path.is_file() for path in root.glob(pattern.format(value).lstrip('/'))):
+            raise ValueError(f'{section}/{key}: missing theme resource: {value}')
     if not isinstance(layout_name, str) or not re.fullmatch(r'[\w-]+', layout_name):
         raise ValueError('Invalid default panel layout name')
     layout_path = root / f'usr/share/mate-panel/layouts/{layout_name}.layout'
@@ -239,7 +284,9 @@ if __name__ == '__main__':
         write_theme(Path(sys.argv[2]), Path(sys.argv[3]))
     elif sys.argv[1:2] == ['static'] and len(sys.argv) == 3:
         validate_static(Path(sys.argv[2]))
+    elif sys.argv[1:] == ['settings']:
+        validate_settings()
     elif sys.argv[1:2] == ['watch'] and len(sys.argv) == 3:
         watch_windows(Path(sys.argv[2]))
     else:
-        raise SystemExit('Usage: desktop_check.py theme SOURCE DESTINATION | static ROOTFS | watch STOP_FILE')
+        raise SystemExit('Usage: desktop_check.py theme SOURCE DESTINATION | static ROOTFS | settings | watch STOP_FILE')
