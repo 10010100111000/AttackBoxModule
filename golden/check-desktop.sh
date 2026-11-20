@@ -18,37 +18,16 @@ if [[ ${1:-} == --session ]]; then
   [[ -S /tmp/.X11-unix/X99 && -S /run/attackbox/gui.sock ]]
   vncconfig -nowin > /var/log/attackbox-check/vncconfig.log 2>&1 &
   mate-session > /var/log/attackbox-check/mate.log 2>&1 &
-  chromium --no-first-run --no-default-browser-check \
-    --remote-debugging-address=127.0.0.1 --remote-debugging-port=0 \
-    --user-data-dir=/tmp/chromium-check file:///tmp/browser-check.html > /var/log/attackbox-check/chromium.log 2>&1 &
-  python3 - <<'PY'
-import json, pathlib, socket, time, urllib.request
-policy = json.loads(pathlib.Path('/etc/chromium/policies/managed/attackbox.json').read_text())
-extensions = [item.split(';')[0] for item in policy['ExtensionInstallForcelist']]
-profile = pathlib.Path('/tmp/chromium-check/Default/Extensions')
-last_error = ''
-for _ in range(120):
-    try:
-        # Ignore external proxy settings when inspecting the local browser.
-        client = urllib.request.build_opener(urllib.request.ProxyHandler({}))
-        port = int(pathlib.Path('/tmp/chromium-check/DevToolsActivePort').read_text().splitlines()[0])
-        with client.open(f'http://127.0.0.1:{port}/json/list', timeout=2) as response:
-            pages = json.load(response)
-        assert any(page.get('title') == 'AttackBox Chromium OK' for page in pages), 'browser page did not execute JavaScript'
-        assert all(any((profile / extension).glob('*/manifest.json')) for extension in extensions), 'extensions not installed'
-        break
-    except Exception as error:
-        last_error = str(error)
-        time.sleep(1)
-else:
-    raise SystemExit(f'Chromium acceptance failed: {last_error}')
+  python3 /tmp/burp_ca.py verify-browser
+  python3 - <<'PY_SOCKET'
+import socket
 with socket.socket(socket.AF_UNIX) as connection:
     connection.settimeout(5)
     connection.connect('/run/attackbox/gui.sock')
-    greeting = connection.recv(12)
-    assert greeting.startswith(b'RFB '), greeting
-print('Chromium JavaScript, extension installation and VNC handshake passed')
-PY
+    with connection.makefile('rb') as stream:
+        greeting = stream.read(12)
+    assert len(greeting) == 12 and greeting.startswith(b'RFB '), greeting
+PY_SOCKET
   pgrep -u box -x mate-session
   pgrep -u box -x mate-panel
   pgrep -u box -x marco
@@ -66,7 +45,7 @@ if [[ ${1:-} == --inside ]]; then
   install -d -m 1777 "$ROOT/tmp/.ICE-unix" "$ROOT/tmp/.X11-unix"
   install -d -m 0700 -o 1001 -g 1013 "$ROOT/run/attackbox" "$ROOT/tmp/runtime-box" "$ROOT/var/log/attackbox-check"
   install -m 0755 "$0" "$ROOT/tmp/check-desktop.sh"
-  printf '<!doctype html><title>Loading</title><script>document.title="AttackBox Chromium OK"</script>\n' > "$ROOT/tmp/browser-check.html"
+  install -m 0644 "$SOURCE/burp_ca.py" "$ROOT/tmp/burp_ca.py"
   # A private PID namespace guarantees all browser/desktop children are reaped
   # on exit, including D-Bus services that outlive their launching shell.
   chroot "$ROOT" /usr/sbin/runuser -u box -- /usr/bin/env -i \
@@ -91,7 +70,7 @@ trap cleanup EXIT
 btrfs subvolume snapshot "$ROOT" "$WORK/rootfs"
 CREATED=1
 set +e
-timeout --signal=TERM --kill-after=10 180 \
+timeout --signal=TERM --kill-after=10 300 \
   unshare --mount --pid --fork --kill-child --propagation private \
   /bin/bash "$0" --inside "$WORK/rootfs"
 RESULT=$?

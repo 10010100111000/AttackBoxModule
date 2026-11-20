@@ -24,7 +24,9 @@ MATE 保留窗口管理、面板、终端和文件管理器，关闭合成、动
 
 `chromium-policy.json` 管理浏览器后台行为和扩展安装，默认安装 FoxyProxy、Wappalyzer、Cookie-Editor。浏览器以 `box` 用户运行，保持自身安全沙箱。可以通过 `chrome://policy` 检查策略，首次启动需要联网获取扩展。
 
-`bin/burpsuite` 和对应桌面入口启动已安装的 Burp，并关闭其自动更新提醒。Burp 在学员打开时启动。使用外部浏览器抓包时，代理地址为 `127.0.0.1:8080`；CA 信任需要与 Burp 实际使用的证书匹配。
+`bin/burpsuite` 和对应桌面入口启动已安装的 Burp，并关闭其自动更新提醒。Burp 在学员打开时启动。使用外部浏览器抓包时，代理地址为 `127.0.0.1:8080`；构建阶段以 `box` 身份启动 Burp，按仓库所有者授权接受 Community 条款，由 Burp 生成 CA，并保存其真实 CA 配置和条款状态。每个金盘版本的实例共用该版本 CA，浏览器 NSS 信任库预先导入对应证书；该 CA 用于金盘内的实验浏览器。构建机器标识和窗口状态不进入用户模板。
+
+`burp-user-config.json` 将启动时拦截设为关闭，并关闭匿名反馈；学员可在 Burp 中开启拦截。CA 初始化和验证代码在 `burp_ca.py`，不会安装为学员的常驻服务。
 
 `configure.sh` 负责账号、sudo、语言和桌面默认配置；`build.sh` 负责基础系统引导、隔离挂载、清理和锁定子卷。账号由系统工具维护，`box` 固定为 `1001:1013`。金盘内的 machine-id 为空；平台接入时需要在每个实例初始化阶段生成独立标识。
 
@@ -48,7 +50,7 @@ MATE 保留窗口管理、面板、终端和文件管理器，关闭合成、动
 
 软件包来自持续更新的 Parrot 仓库。manifest 记录教材仓库提交及参考的上游构建提交，包清单记录实际安装版本。安装端按 manifest 顺序验证并接收分卷。
 
-工作流验证源子卷与回读子卷的结构、只读属性、locale、文件 capabilities 和安装清单，并在临时快照中运行 `check-desktop.sh`：以 `box` 用户启动 TigerVNC、MATE 和 Chromium，验证 VNC 握手、浏览器 JavaScript 及三个扩展的安装。测试在独立挂载和 PID 命名空间运行，结束后删除测试快照。
+工作流验证源子卷与回读子卷的结构、只读属性、locale、文件 capabilities 和安装清单，并在临时快照中运行 `check-desktop.sh`：以 `box` 用户启动 TigerVNC、MATE 和 Chromium，验证 VNC 握手、浏览器 JavaScript 及三个扩展的安装。验收还会重新启动 Burp、核对 CA、通过本地 HTTPS 测试服务验证 TLS 抓包，并确认 Chromium 正常加载被代理的 HTTPS 页面。测试保留证书校验和浏览器安全沙箱。测试在独立挂载和 PID 命名空间运行，结束后删除测试快照。
 
 真实 Worker 的权限、网络、GUI 网关和释放验收属于平台接入步骤；CI 的桌面测试用于确认金盘本身可以运行。
 

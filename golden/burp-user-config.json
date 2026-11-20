@@ -1,0 +1,8 @@
+{
+  "user_options": {
+    "misc": {
+      "enable_proxy_interception_at_startup": "never",
+      "submit_anonymous_feedback": false
+    }
+  }
+}

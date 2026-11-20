@@ -72,6 +72,16 @@ install -D -m 0755 "$PAYLOAD/bin/burpsuite" /usr/local/bin/burpsuite
 install -D -m 0644 "$PAYLOAD/applications/attackbox-burpsuite.desktop" /usr/share/applications/attackbox-burpsuite.desktop
 
 install -d /usr/share/attackbox
+install -m 0644 "$PAYLOAD/burp-user-config.json" /usr/share/attackbox/burp-user-config.json
+# The repository owner authorizes accepting Burp Community terms during CI.
+runuser -u box -- /usr/bin/env HOME=/home/box LANG=en_US.UTF-8 \
+  python3 "$PAYLOAD/burp_ca.py" initialize
+install -m 0644 /home/box/.local/share/attackbox/burp-ca.der /usr/share/attackbox/burp-ca.der
+# Current Chromium uses the XDG data directory for its NSS certificate database.
+install -d -m 0700 -o 1001 -g 1013 /home/box/.local/share/pki/nssdb
+runuser -u box -- certutil -N -d sql:/home/box/.local/share/pki/nssdb --empty-password
+runuser -u box -- certutil -A -d sql:/home/box/.local/share/pki/nssdb \
+  -n AttackBox-Burp -t 'C,,' -i /usr/share/attackbox/burp-ca.der
 cp "$PAYLOAD/packages.txt" /usr/share/attackbox/
 LC_ALL=C getcap -r /usr | LC_ALL=C sort > /usr/share/attackbox/file-capabilities.txt
 dpkg-query -W -f='${binary:Package}\t${Version}\t${Installed-Size}\n' > /usr/share/attackbox/packages.tsv

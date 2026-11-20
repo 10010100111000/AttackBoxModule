@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 # The distribution wrapper discards arguments; invoke the installed launcher.
 cd /usr/share/burpsuite
-exec ./BurpSuiteCommunity --disable-auto-update "$@"
+exec ./BurpSuiteCommunity --disable-auto-update --user-config-file=/usr/share/attackbox/burp-user-config.json "$@"

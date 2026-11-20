@@ -87,7 +87,7 @@ jobs:
           sudo bash golden/check.sh /mnt/golden/received/base_rootfs
           {
             printf '### Golden %s\n\n' "$VERSION"
-            printf '构建、分卷校验、Btrfs 回读和离线 CLI 检查通过。\n\n'
+            printf '构建、CLI、桌面、Chromium 扩展、Burp HTTPS、分卷校验和 Btrfs 回读通过。\n\n'
             printf '完整软件包清单随产物提供。\n'
           } >> "$GITHUB_STEP_SUMMARY"
 

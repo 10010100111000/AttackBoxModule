@@ -5,6 +5,7 @@ import subprocess
 import shutil
 import tempfile
 import unittest
+import xml.etree.ElementTree as ET
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -108,6 +109,42 @@ class DesktopTests(unittest.TestCase):
             self.assertTrue((home / 'Public').is_dir())
             self.assertIn('XDG_PUBLICSHARE_DIR="$HOME/Public"', (home / '.config/user-dirs.dirs').read_text())
             self.assertEqual((home / '.config/user-dirs.locale').read_text(), 'en_US\n')
+
+
+class BurpProfileTests(unittest.TestCase):
+    def setUp(self):
+        spec = importlib.util.spec_from_file_location('burp_ca', ROOT / 'burp_ca.py')
+        self.burp = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(self.burp)
+
+    def test_seed_keeps_ca_and_license_without_device_ids(self):
+        with tempfile.TemporaryDirectory() as temp:
+            home = Path(temp)
+            directory = home / '.java/.userPrefs/burp'
+            directory.mkdir(parents=True)
+            (directory / 'community').mkdir()
+            (directory / 'community/window-state').write_text('build only')
+            prefs = directory / 'prefs.xml'
+            prefs.write_text('<map MAP_XML_VERSION="1.0">'
+                             '<entry key="caCert" value="test-private-key"/>'
+                             '<entry key="eulacommunity" value="accepted"/>'
+                             '<entry key="global.suite.deviceId" value="build-device"/>'
+                             '</map>')
+            self.burp.retain_seed_preferences(home)
+            result = {entry.get('key'): entry.get('value') for entry in ET.parse(prefs).getroot()}
+            self.assertEqual(result, {'caCert': 'test-private-key', 'eulacommunity': 'accepted'})
+            self.assertEqual(prefs.stat().st_mode & 0o777, 0o600)
+            self.assertFalse((directory / 'community').exists())
+            self.assertIn('<!DOCTYPE map SYSTEM', prefs.read_text())
+
+    def test_missing_ca_is_rejected(self):
+        with tempfile.TemporaryDirectory() as temp:
+            home = Path(temp)
+            directory = home / '.java/.userPrefs/burp'
+            directory.mkdir(parents=True)
+            (directory / 'prefs.xml').write_text('<map><entry key="eulacommunity" value="accepted"/></map>')
+            with self.assertRaisesRegex(RuntimeError, 'did not persist'):
+                self.burp.retain_seed_preferences(home)
 
 
 class SourceTests(unittest.TestCase):

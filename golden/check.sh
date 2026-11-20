@@ -21,6 +21,9 @@ assert (root / 'home/box/Public').is_dir()
 assert (root / 'usr/share/burpsuite/BurpSuiteCommunity').is_file()
 assert (root / 'usr/share/burpsuite/.install4j/BurpSuiteCommunity.png').is_file()
 assert (root / 'usr/local/bin/burpsuite').stat().st_mode & 0o111
+assert (root / 'usr/share/attackbox/burp-ca.der').stat().st_size > 0
+assert (root / 'home/box/.java/.userPrefs/burp/prefs.xml').stat().st_mode & 0o077 == 0
+assert (root / 'home/box/.local/share/pki/nssdb/cert9.db').is_file()
 policy = json.loads((root / 'etc/chromium/policies/managed/attackbox.json').read_text())
 assert policy['BackgroundModeEnabled'] is False
 assert len(policy['ExtensionInstallForcelist']) == 3
@@ -43,6 +46,7 @@ done
 expected_caps="$(cat "$ROOT/usr/share/attackbox/file-capabilities.txt")"
 actual_caps="$(chroot "$ROOT" /usr/bin/env LC_ALL=C /usr/sbin/getcap -r /usr | LC_ALL=C sort)"
 [[ $expected_caps == "$actual_caps" ]] || { echo 'File capabilities differ from recorded image inventory' >&2; exit 1; }
+chroot "$ROOT" /usr/sbin/runuser -u box -- certutil -L -d sql:/home/box/.local/share/pki/nssdb -n AttackBox-Burp > /dev/null
 chroot "$ROOT" /usr/bin/nmap --version
 chroot "$ROOT" /usr/bin/python3 --version
 chroot "$ROOT" /usr/sbin/visudo -cf /etc/sudoers.d/attackbox
