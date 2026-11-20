@@ -77,10 +77,11 @@ rm -f /etc/xdg/autostart/parrot-updater.desktop \
       /etc/xdg/autostart/onboard-autostart.desktop \
       /etc/xdg/autostart/discovery-autostart.desktop
 
-# Use the HTB settings shipped by parrot-core-htb as system-wide defaults.
-install -D -m 0644 /usr/lib/parrot-skel/etc/dconf/db/local.d/htb-config /etc/dconf/db/local.d/htb-config
-# Replace any lingering firefox references in htb-config with chromium
-sed -i 's|/usr/share/applications/firefox\.desktop|/usr/share/applications/chromium.desktop|g' /etc/dconf/db/local.d/htb-config 2>/dev/null || true
+# Keep theme settings separate from the project's authoritative panel layout.
+rm -rf /etc/dconf/db/local.d
+install -d /etc/dconf/db/local.d
+python3 "$PAYLOAD/desktop_check.py" theme \
+  /usr/lib/parrot-skel/etc/dconf/db/local.d/htb-config /etc/dconf/db/local.d/10-theme
 
 install -d /etc/dconf/profile
 printf 'user-db:user\nsystem-db:local\n' > /etc/dconf/profile/user
@@ -121,6 +122,7 @@ printf '127.0.0.1 localhost\n127.0.1.1 attackbox trytopwn\n::1 localhost ip6-loc
 
 install -d /usr/share/attackbox
 install -m 0644 "$PAYLOAD/burp-user-config.json" /usr/share/attackbox/burp-user-config.json
+python3 "$PAYLOAD/desktop_check.py" static /
 # The repository owner authorizes accepting Burp Community terms during CI.
 runuser -u box -- /usr/bin/env HOME=/home/box LANG=en_US.UTF-8 \
   python3 "$PAYLOAD/burp_ca.py" initialize

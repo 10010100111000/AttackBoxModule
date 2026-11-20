@@ -2,7 +2,9 @@
 # Offline image checks. Worker lifecycle acceptance is performed by the platform.
 set -euo pipefail
 [[ $# == 1 ]] || { echo 'Usage: check.sh ROOTFS' >&2; exit 1; }
+SOURCE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(realpath "$1")"
+python3 "$SOURCE/desktop_check.py" static "$ROOT"
 [[ $(btrfs property get "$ROOT" ro) == ro=true ]] || { echo 'Golden must be read-only' >&2; exit 1; }
 python3 - "$ROOT" <<'PY'
 import json, sys

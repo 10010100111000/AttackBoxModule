@@ -12,7 +12,7 @@
 
 `packages.txt` 是唯一的安装清单，每行一个 APT 软件包。全部条目都必须成功安装。APT 自动解析依赖，以 `--no-install-recommends` 安装。
 
-桌面按 MATE 组件安装，HTB 主题和终端配色来自 Parrot 软件包，面板采用 MATE 自带的基础布局。清单包含 Chromium、中文字体、TigerVNC、FreeRDP、SSH 客户端、编译工具、SecLists、常用枚举和网络客户端。Chromium 为默认 HTTP/HTTPS 浏览器。
+桌面按 MATE 组件安装，HTB 主题、壁纸和终端配色按选定配置组提取自 Parrot 软件包。面板由 `attackbox.layout` 统一定义，包含顶部启动器和底部任务栏。清单包含 Chromium、中文字体、TigerVNC、FreeRDP、SSH 客户端、编译工具、SecLists、常用枚举和网络客户端。Chromium 为默认 HTTP/HTTPS 浏览器。
 
 可选工具按管理员确认的清单安装：Burp、Wireshark、Geany、FreeRDP；ffuf、Gobuster、dirsearch、wfuzz、dirb、sqlmap、WPScan、Nikto；Nmap、Masscan、协议客户端与抓包工具；Metasploit、Impacket、NetExec、evil-winrm、SMB 枚举、Windows/PowerShell 载荷；Chisel、Proxychains、Redis/MySQL/PostgreSQL 客户端；密码分析工具与完整字典库。Python、C/C++、Java、Node/npm 和 Go 编译环境保留。
 
@@ -50,7 +50,7 @@ MATE 保留窗口管理、面板、终端和文件管理器，关闭合成、动
 
 软件包来自持续更新的 Parrot 仓库。manifest 记录教材仓库提交及参考的上游构建提交，包清单记录实际安装版本。安装端按 manifest 顺序验证并接收分卷。
 
-工作流验证源子卷与回读子卷的结构、只读属性、locale、文件 capabilities 和安装清单，并在临时快照中运行 `check-desktop.sh`：以 `box` 用户启动 TigerVNC、MATE 和 Chromium，验证 VNC 握手、浏览器 JavaScript 及三个扩展的安装。验收还会重新启动 Burp、核对 CA、通过本地 HTTPS 测试服务验证 TLS 抓包，并确认 Chromium 正常加载被代理的 HTTPS 页面。测试保留证书校验和浏览器安全沙箱。测试在独立挂载和 PID 命名空间运行，结束后删除测试快照。
+工作流验证源子卷与回读子卷的结构、只读属性、locale、文件 capabilities 和安装清单，并在临时快照中运行 `check-desktop.sh`：以 `box` 用户启动 TigerVNC、MATE 和 Chromium，验证 VNC 握手、浏览器 JavaScript 及三个扩展的安装。`desktop_check.py` 按安装的 applet 注册信息检查布局中的 IID、执行文件和启动器；桌面启动期间通过 X11 监测错误对话框，先注入并关闭一个测试对话框确认探测器能拒绝它，再持续监测真实桌面；检测到面板或 applet 弹窗时验收失败，窗口信息写入测试日志。验收还会重新启动 Burp、核对 CA、通过本地 HTTPS 测试服务验证 TLS 抓包，并确认 Chromium 正常加载被代理的 HTTPS 页面。测试保留证书校验和浏览器安全沙箱。测试在独立挂载和 PID 命名空间运行，结束后删除测试快照。
 
 真实 Worker 的权限、网络、GUI 网关和释放验收属于平台接入步骤；CI 的桌面测试用于确认金盘本身可以运行。
 

@@ -43,6 +43,8 @@ xdg-user-dirs
 tigervnc-tools
 xauth
 x11-xserver-utils
+x11-utils
+wmctrl
 fonts-dejavu-core
 fonts-noto-cjk
 fonts-noto-color-emoji

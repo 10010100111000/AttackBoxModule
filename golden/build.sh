@@ -51,7 +51,7 @@ printf 'nameserver 1.1.1.1\nnameserver 8.8.8.8\n' > "$TARGET/etc/resolv.conf"
 printf '#!/bin/sh\nexit 101\n' > "$TARGET/usr/sbin/policy-rc.d"
 chmod 0755 "$TARGET/usr/sbin/policy-rc.d"
 install -d "$TARGET/tmp/attackbox-build" "$TARGET/proc" "$TARGET/sys" "$TARGET/dev" "$TARGET/run"
-install -m 0644 "$SOURCE/packages.txt" "$SOURCE/configure.sh" "$SOURCE/desktop_defaults.py" "$SOURCE/chromium-policy.json" "$SOURCE/mate-defaults.ini" "$SOURCE/attackbox.layout" "$SOURCE/burp_ca.py" "$SOURCE/burp-user-config.json" "$TARGET/tmp/attackbox-build/"
+install -m 0644 "$SOURCE/packages.txt" "$SOURCE/configure.sh" "$SOURCE/desktop_defaults.py" "$SOURCE/desktop_check.py" "$SOURCE/chromium-policy.json" "$SOURCE/mate-defaults.ini" "$SOURCE/attackbox.layout" "$SOURCE/burp_ca.py" "$SOURCE/burp-user-config.json" "$TARGET/tmp/attackbox-build/"
 
 cp -a "$SOURCE/skel" "$SOURCE/bin" "$SOURCE/applications" "$TARGET/tmp/attackbox-build/"
 
