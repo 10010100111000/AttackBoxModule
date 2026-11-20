@@ -1,0 +1,95 @@
+[Toplevel top]
+expand=true
+orientation=top
+size=30
+
+[Toplevel bottom]
+expand=true
+orientation=bottom
+size=30
+
+[Object menu-bar]
+object-type=menu-bar
+toplevel-id=top
+position=0
+locked=true
+
+[Object chromium-launcher]
+object-type=launcher
+launcher-location=/usr/share/applications/chromium.desktop
+toplevel-id=top
+position=1
+locked=true
+
+[Object terminal-launcher]
+object-type=launcher
+launcher-location=/usr/share/applications/mate-terminal.desktop
+toplevel-id=top
+position=2
+locked=true
+
+[Object burp-launcher]
+object-type=launcher
+launcher-location=/usr/share/applications/attackbox-burpsuite.desktop
+toplevel-id=top
+position=3
+locked=true
+
+[Object caja-launcher]
+object-type=launcher
+launcher-location=/usr/share/applications/caja.desktop
+toplevel-id=top
+position=4
+locked=true
+
+[Object geany-launcher]
+object-type=launcher
+launcher-location=/usr/share/applications/geany.desktop
+toplevel-id=top
+position=5
+locked=true
+
+[Object wireshark-launcher]
+object-type=launcher
+launcher-location=/usr/share/applications/wireshark.desktop
+toplevel-id=top
+position=6
+locked=true
+
+[Object notification-area]
+object-type=applet
+applet-iid=NotificationAreaAppletFactory::NotificationArea
+toplevel-id=top
+position=10
+relative-to-edge=end
+locked=true
+
+[Object clock]
+object-type=applet
+applet-iid=ClockAppletFactory::ClockApplet
+toplevel-id=top
+position=0
+relative-to-edge=end
+locked=true
+
+[Object show-desktop]
+object-type=applet
+applet-iid=WnckletFactory::ShowDesktopApplet
+toplevel-id=bottom
+position=0
+locked=true
+
+[Object window-list]
+object-type=applet
+applet-iid=WnckletFactory::WindowListApplet
+toplevel-id=bottom
+position=20
+locked=true
+
+[Object workspace-switcher]
+object-type=applet
+applet-iid=WnckletFactory::WorkspaceSwitcherApplet
+toplevel-id=bottom
+position=0
+relative-to-edge=end
+locked=true

@@ -2,7 +2,7 @@
 # Executed inside the freshly bootstrapped image by build.sh.
 set -euo pipefail
 PAYLOAD=/tmp/attackbox-build
-[[ -r "$PAYLOAD/packages.txt" && -d "$PAYLOAD/skel" && -r "$PAYLOAD/chromium-policy.json" && -r "$PAYLOAD/mate-defaults.ini" ]] || {
+[[ -r "$PAYLOAD/packages.txt" && -d "$PAYLOAD/skel" && -r "$PAYLOAD/chromium-policy.json" && -r "$PAYLOAD/mate-defaults.ini" && -r "$PAYLOAD/attackbox.layout" ]] || {
   echo 'Run this script through golden/build.sh inside the build rootfs' >&2
   exit 1
 }
@@ -41,20 +41,68 @@ printf 'box ALL=(ALL) NOPASSWD: ALL\n' > /etc/sudoers.d/attackbox
 chmod 0440 /etc/sudoers.d/attackbox
 visudo -cf /etc/sudoers.d/attackbox
 
+# Install AttackBox layout with top launchers and bottom taskbar.
+install -D -m 0644 "$PAYLOAD/attackbox.layout" /usr/share/mate-panel/layouts/attackbox.layout
+install -D -m 0644 "$PAYLOAD/attackbox.layout" /usr/share/mate-panel/layouts/default.layout
+
+# Ensure Wireshark desktop entry is discoverable at /usr/share/applications/wireshark.desktop.
+if [[ ! -f /usr/share/applications/wireshark.desktop ]]; then
+  for candidate in /usr/share/applications/org.wireshark.Wireshark.desktop /usr/share/applications/parrot-wireshark.desktop; do
+    if [[ -f "$candidate" ]]; then
+      cp "$candidate" /usr/share/applications/wireshark.desktop
+      break
+    fi
+  done
+fi
+
+# Purge any remaining Firefox binaries, wrapper scripts, desktop entries, and user templates.
+rm -f /usr/bin/firefox-selector \
+      /usr/share/applications/firefox*.desktop \
+      /usr/share/applications/firefox-selector.desktop
+rm -rf /etc/skel/.local/share/applications/firefox* \
+       /root/.local/share/applications/firefox* \
+       /home/box/.local/share/applications/firefox*
+
+# Remove noisy or container-incompatible XDG autostart entries.
+rm -f /etc/xdg/autostart/parrot-updater.desktop \
+      /etc/xdg/autostart/update-notifier.desktop \
+      /etc/xdg/autostart/user-dirs-update-gtk.desktop \
+      /etc/xdg/autostart/nm-applet.desktop \
+      /etc/xdg/autostart/mate-power-manager.desktop \
+      /etc/xdg/autostart/mate-screensaver.desktop \
+      /etc/xdg/autostart/aa-notify.desktop \
+      /etc/xdg/autostart/geoclue-demo-agent.desktop \
+      /etc/xdg/autostart/spice-vdagent.desktop \
+      /etc/xdg/autostart/vmware-user.desktop \
+      /etc/xdg/autostart/onboard-autostart.desktop \
+      /etc/xdg/autostart/discovery-autostart.desktop
+
 # Use the HTB settings shipped by parrot-core-htb as system-wide defaults.
 install -D -m 0644 /usr/lib/parrot-skel/etc/dconf/db/local.d/htb-config /etc/dconf/db/local.d/htb-config
+# Replace any lingering firefox references in htb-config with chromium
+sed -i 's|/usr/share/applications/firefox\.desktop|/usr/share/applications/chromium.desktop|g' /etc/dconf/db/local.d/htb-config 2>/dev/null || true
+
 install -d /etc/dconf/profile
 printf 'user-db:user\nsystem-db:local\n' > /etc/dconf/profile/user
 install -m 0644 "$PAYLOAD/mate-defaults.ini" /etc/dconf/db/local.d/zz-attackbox
 dconf update
+
 printf 'en_US.UTF-8 UTF-8\nzh_CN.UTF-8 UTF-8\n' > /etc/locale.gen
 locale-gen
+update-locale LANG=en_US.UTF-8
 # Fail the build if the requested locales were not actually generated.
 for language in en_US.UTF-8 zh_CN.UTF-8; do
   env -i PATH=/usr/bin:/bin LANG="$language" LC_ALL="$language" \
     python3 -c 'import locale; locale.setlocale(locale.LC_ALL, "")'
 done
 printf 'LANG=en_US.UTF-8\n' > /etc/default/locale
+printf 'LANG=en_US.UTF-8\n' > /etc/environment
+
+install -D -m 0755 "$PAYLOAD/bin/burpsuite" /usr/local/bin/burpsuite
+install -D -m 0644 "$PAYLOAD/applications/attackbox-burpsuite.desktop" /usr/share/applications/attackbox-burpsuite.desktop
+install -D -m 0644 "$PAYLOAD/applications/attackbox-burpsuite.desktop" /usr/share/applications/burpsuite.desktop
+
+python3 "$PAYLOAD/desktop_defaults.py" /etc/skel /usr/share/applications
 python3 "$PAYLOAD/desktop_defaults.py" /home/box /usr/share/applications
 install -D -m 0644 "$PAYLOAD/chromium-policy.json" /etc/chromium/policies/managed/attackbox.json
 cat > /home/box/.config/mimeapps.list <<'MIME'
@@ -65,11 +113,11 @@ text/html=chromium.desktop
 MIME
 chown -R 1001:1013 /home/box/.config
 if [[ -d /home/box/.local ]]; then chown -R 1001:1013 /home/box/.local; fi
-printf 'attackbox\n' > /etc/hostname
-printf '127.0.0.1 localhost\n127.0.1.1 attackbox\n::1 localhost ip6-localhost\n' > /etc/hosts
+if [[ -d /home/box/Desktop ]]; then chown -R 1001:1013 /home/box/Desktop; fi
+chown -R 1001:1013 /home/box
 
-install -D -m 0755 "$PAYLOAD/bin/burpsuite" /usr/local/bin/burpsuite
-install -D -m 0644 "$PAYLOAD/applications/attackbox-burpsuite.desktop" /usr/share/applications/attackbox-burpsuite.desktop
+printf 'attackbox\n' > /etc/hostname
+printf '127.0.0.1 localhost\n127.0.1.1 attackbox trytopwn\n::1 localhost ip6-localhost\n' > /etc/hosts
 
 install -d /usr/share/attackbox
 install -m 0644 "$PAYLOAD/burp-user-config.json" /usr/share/attackbox/burp-user-config.json

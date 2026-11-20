@@ -20,6 +20,25 @@ def configure(home: Path, applications: Path):
         f'XDG_{key}_DIR="$HOME/{value}"\n' for key, value in DIRECTORIES.items()
     ))
     (config / 'user-dirs.locale').write_text('en_US\n')
+
+    desktop_dir = home / 'Desktop'
+    desktop_dir.mkdir(exist_ok=True)
+    preferred_launchers = [
+        'chromium.desktop',
+        'mate-terminal.desktop',
+        'attackbox-burpsuite.desktop',
+        'burpsuite.desktop',
+        'caja.desktop',
+        'geany.desktop',
+        'wireshark.desktop',
+    ]
+    for name in preferred_launchers:
+        source = applications / name
+        if source.is_file():
+            target = desktop_dir / name
+            target.write_text(source.read_text())
+            target.chmod(0o755)
+
     # vncconfig remains available to the Worker for clipboard synchronization,
     # but learners do not need its low-level configuration launcher in the menu.
     for desktop in sorted(applications.glob('*.desktop')):

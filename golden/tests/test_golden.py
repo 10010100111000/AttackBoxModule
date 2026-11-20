@@ -78,7 +78,7 @@ class MountTests(unittest.TestCase):
         result = self.shell('''
 mount() { [[ "${!#}" != failing ]]; }
 mountpoint() { return 0; }
-umount() { printf '%s\\n' "$1"; }
+umount() { printf '%s\n' "$1"; }
 mount_image proc first
 mount_image sys second
 mount_image dev failing || true
@@ -111,6 +111,7 @@ class DesktopTests(unittest.TestCase):
             self.assertTrue((home / 'Public').is_dir())
             self.assertIn('XDG_PUBLICSHARE_DIR="$HOME/Public"', (home / '.config/user-dirs.dirs').read_text())
             self.assertEqual((home / '.config/user-dirs.locale').read_text(), 'en_US\n')
+            self.assertTrue((home / 'Desktop/chromium.desktop').is_file())
 
 
 class BurpProfileTests(unittest.TestCase):
@@ -203,6 +204,14 @@ class SourceTests(unittest.TestCase):
             source.mkdir()
             shutil.copyfile(ROOT / 'mate-defaults.ini', source / 'attackbox')
             subprocess.run(['dconf', 'compile', str(path / 'compiled'), str(source)], check=True)
+
+    def test_mate_panel_layout(self):
+        layout = (ROOT / 'attackbox.layout').read_text()
+        self.assertIn('[Toplevel top]', layout)
+        self.assertIn('[Object chromium-launcher]', layout)
+        self.assertIn('[Object terminal-launcher]', layout)
+        self.assertIn('[Object burp-launcher]', layout)
+        self.assertIn("default-layout='attackbox'", (ROOT / 'mate-defaults.ini').read_text())
 
     def test_shell_syntax(self):
         for script in [*ROOT.glob('*.sh'), *ROOT.joinpath('skel').iterdir(), *ROOT.joinpath('bin').iterdir()]:

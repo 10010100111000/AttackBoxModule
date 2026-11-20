@@ -16,6 +16,13 @@ for name in ['etc/machine-id', 'var/lib/dbus/machine-id']:
 for directory in ['boot', 'usr/lib/modules', 'usr/lib/firmware']:
     assert not any((root / directory).iterdir()), directory
 assert (root / 'usr/share/mate-panel/layouts/default.layout').is_file()
+assert (root / 'usr/share/mate-panel/layouts/attackbox.layout').is_file()
+assert (root / 'usr/share/applications/attackbox-burpsuite.desktop').is_file() or (root / 'usr/share/applications/burpsuite.desktop').is_file()
+assert not (root / 'usr/bin/firefox-selector').exists()
+assert not (root / 'usr/share/applications/firefox-selector.desktop').exists()
+assert not (root / 'home/box/.local/share/applications/firefox.desktop').exists()
+assert (root / 'home/box/Desktop/chromium.desktop').is_file()
+assert (root / 'home/box/Desktop/mate-terminal.desktop').is_file()
 assert (root / 'home/box/.config/user-dirs.locale').read_text().strip() == 'en_US'
 assert (root / 'home/box/Public').is_dir()
 assert (root / 'usr/share/burpsuite/BurpSuiteCommunity').is_file()
