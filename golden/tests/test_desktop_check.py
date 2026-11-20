@@ -116,6 +116,19 @@ class ErrorWindowTests(unittest.TestCase):
             windows = check.inspect_windows(self.owners)
         self.assertEqual([window['id'] for window in windows], ['0x02'])
 
+    def test_empty_startup_client_list_is_valid(self):
+        results = [subprocess.CompletedProcess([], 1, '', 'Cannot get client list properties. (_NET_CLIENT_LIST or _WIN_CLIENT_LIST)'),
+                   subprocess.CompletedProcess([], 0, '_NET_CLIENT_LIST: not found.', '')]
+        with patch.object(check.subprocess, 'run', side_effect=results):
+            self.assertEqual(check.inspect_windows(self.owners), [])
+
+    def test_wmctrl_failure_with_existing_clients_is_rejected(self):
+        results = [subprocess.CompletedProcess([], 1, '', 'Cannot get client list properties. (_NET_CLIENT_LIST or _WIN_CLIENT_LIST)'),
+                   subprocess.CompletedProcess([], 0, '_NET_CLIENT_LIST(WINDOW): window id # 0x1234', '')]
+        with patch.object(check.subprocess, 'run', side_effect=results):
+            with self.assertRaisesRegex(RuntimeError, 'wmctrl failed'):
+                check.inspect_windows(self.owners)
+
     def test_x11_connection_failure_is_not_ignored(self):
         results = [subprocess.CompletedProcess([], 0, '0x01 0 999999 mate-panel.Mate-panel host Panel\n', ''),
                    subprocess.CompletedProcess([], 1, '', 'Unable to open display')]

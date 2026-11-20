@@ -126,7 +126,16 @@ def is_error_window(window, owners):
 
 
 def list_windows():
-    result = subprocess.run(['wmctrl', '-lpx'], check=True, capture_output=True, text=True)
+    result = subprocess.run(['wmctrl', '-lpx'], capture_output=True, text=True)
+    if result.returncode:
+        # wmctrl reports a missing/empty EWMH client list as an error while
+        # Marco is starting, or after the last managed window closes.
+        if 'client list' in result.stderr.lower():
+            clients = subprocess.run(['xprop', '-root', '_NET_CLIENT_LIST'],
+                                     capture_output=True, text=True)
+            if clients.returncode == 0 and not re.search(r'0x[0-9a-fA-F]+', clients.stdout):
+                return []
+        raise RuntimeError(f'wmctrl failed: {result.stderr.strip()}')
     windows = []
     for line in result.stdout.splitlines():
         fields = line.split(None, 5)
