@@ -172,38 +172,42 @@ def is_error_window(window, owners):
 
 
 def list_windows():
-    result = subprocess.run(['wmctrl', '-lpx'], capture_output=True, text=True)
+    # Only enumerate IDs on the stable root window. wmctrl -lpx also reads
+    # properties while enumerating; a client closing can abort its entire scan.
+    result = subprocess.run(['xprop', '-root', '_NET_CLIENT_LIST'], capture_output=True, text=True)
     if result.returncode:
-        # wmctrl reports a missing/empty EWMH client list as an error while
-        # Marco is starting, or after the last managed window closes.
-        if 'client list' in result.stderr.lower():
-            clients = subprocess.run(['xprop', '-root', '_NET_CLIENT_LIST'],
-                                     capture_output=True, text=True)
-            if clients.returncode == 0 and not re.search(r'0x[0-9a-fA-F]+', clients.stdout):
-                return []
-        raise RuntimeError(f'wmctrl failed: {result.stderr.strip()}')
+        raise RuntimeError(f'X11 client list failed: {result.stderr.strip()}')
+    identifiers = re.findall(r'0x[0-9a-fA-F]+', result.stdout)
     windows = []
-    for line in result.stdout.splitlines():
-        fields = line.split(None, 5)
-        if len(fields) == 5:
-            fields.append('')
-        if len(fields) != 6 or not re.fullmatch(r'0x[0-9a-fA-F]+', fields[0]):
-            raise ValueError(f'Unexpected wmctrl window record: {line}')
-        identifier, _, pid, wmclass, _, title = fields
-        result = subprocess.run(['xprop', '-id', identifier, '_NET_WM_WINDOW_TYPE'],
+    for identifier in identifiers:
+        result = subprocess.run(['xprop', '-id', identifier, '_NET_WM_PID', 'WM_CLASS',
+                                 '_NET_WM_NAME', 'WM_NAME', '_NET_WM_WINDOW_TYPE'],
                                 capture_output=True, text=True)
         if result.returncode:
-            # Windows can close between enumeration and property lookup.
+            # Each client is ephemeral. Discard all its partial properties if
+            # it disappeared; connection and other X11 failures remain errors.
             if 'BadWindow' in result.stderr:
                 continue
             raise RuntimeError(f'xprop failed for {identifier}: {result.stderr.strip()}')
-        properties = result.stdout
+        properties = {}
+        type_line = ''
+        for line in result.stdout.splitlines():
+            match = re.match(r'^([A-Z_]+)\([^)]*\) = (.*)$', line)
+            if match:
+                properties[match[1]] = match[2]
+                if match[1] == '_NET_WM_WINDOW_TYPE':
+                    type_line = line
+        pid = properties.get('_NET_WM_PID', '')
+        wmclass = ast.literal_eval(properties.get('WM_CLASS', "''"))
+        if isinstance(wmclass, tuple):
+            wmclass = '.'.join(wmclass)
+        title = ast.literal_eval(properties.get('_NET_WM_NAME', properties.get('WM_NAME', "''")))
         try:
             process = Path(f'/proc/{int(pid)}/comm').read_text().strip()
         except (OSError, ValueError):
             process = ''
         windows.append({'id': identifier, 'pid': pid, 'class': wmclass, 'title': title,
-                        'process': process, 'properties': properties.strip()})
+                        'process': process, 'properties': type_line})
     return windows
 
 

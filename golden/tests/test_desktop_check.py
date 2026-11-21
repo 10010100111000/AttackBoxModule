@@ -160,33 +160,57 @@ class ErrorWindowTests(unittest.TestCase):
     def test_normal_panel_is_not_rejected(self):
         self.assertFalse(check.is_error_window(self.window('Top Panel', kind='DOCK'), self.owners))
 
+    def properties(self, wmclass='mate-panel', title='Top Panel', kind='DOCK'):
+        return (f'_NET_WM_PID(CARDINAL) = 999999\nWM_CLASS(STRING) = "{wmclass}", "{wmclass}"\n'
+                f'_NET_WM_NAME(UTF8_STRING) = "{title}"\n_NET_WM_WINDOW_TYPE(ATOM) = _NET_WM_WINDOW_TYPE_{kind}\n')
+
     def test_window_closing_during_inspection_is_not_a_failure(self):
-        results = [subprocess.CompletedProcess([], 0, '0x01 0 999999 mate-panel.Mate-panel host Top Panel\n0x02 0 999998 chromium.Chromium host\n', ''),
-                   subprocess.CompletedProcess([], 1, '', 'X Error: BadWindow'),
-                   subprocess.CompletedProcess([], 0, '_NET_WM_WINDOW_TYPE_NORMAL', '')]
+        results = [subprocess.CompletedProcess([], 0, '_NET_CLIENT_LIST(WINDOW): window id # 0x01, 0x02', ''),
+                   subprocess.CompletedProcess([], 1, self.properties(title='Error'), 'X Error: BadWindow'),
+                   subprocess.CompletedProcess([], 0, self.properties(wmclass='chromium', title='Page', kind='NORMAL'), '')]
         with patch.object(check.subprocess, 'run', side_effect=results):
             windows = check.inspect_windows(self.owners)
         self.assertEqual([window['id'] for window in windows], ['0x02'])
 
     def test_empty_startup_client_list_is_valid(self):
-        results = [subprocess.CompletedProcess([], 1, '', 'Cannot get client list properties. (_NET_CLIENT_LIST or _WIN_CLIENT_LIST)'),
-                   subprocess.CompletedProcess([], 0, '_NET_CLIENT_LIST: not found.', '')]
-        with patch.object(check.subprocess, 'run', side_effect=results):
+        result = subprocess.CompletedProcess([], 0, '_NET_CLIENT_LIST: not found.', '')
+        with patch.object(check.subprocess, 'run', return_value=result):
             self.assertEqual(check.inspect_windows(self.owners), [])
 
-    def test_wmctrl_failure_with_existing_clients_is_rejected(self):
-        results = [subprocess.CompletedProcess([], 1, '', 'Cannot get client list properties. (_NET_CLIENT_LIST or _WIN_CLIENT_LIST)'),
-                   subprocess.CompletedProcess([], 0, '_NET_CLIENT_LIST(WINDOW): window id # 0x1234', '')]
-        with patch.object(check.subprocess, 'run', side_effect=results):
-            with self.assertRaisesRegex(RuntimeError, 'wmctrl failed'):
-                check.inspect_windows(self.owners)
+    def test_root_query_failure_is_rejected_even_if_badwindow(self):
+        for message in ['Unable to open display', 'X Error: BadWindow']:
+            with self.subTest(message=message):
+                result = subprocess.CompletedProcess([], 1, '', message)
+                with patch.object(check.subprocess, 'run', return_value=result):
+                    with self.assertRaisesRegex(RuntimeError, 'X11 client list failed'):
+                        check.inspect_windows(self.owners)
 
     def test_x11_connection_failure_is_not_ignored(self):
-        results = [subprocess.CompletedProcess([], 0, '0x01 0 999999 mate-panel.Mate-panel host Panel\n', ''),
+        results = [subprocess.CompletedProcess([], 0, '_NET_CLIENT_LIST(WINDOW): window id # 0x01', ''),
                    subprocess.CompletedProcess([], 1, '', 'Unable to open display')]
         with patch.object(check.subprocess, 'run', side_effect=results):
             with self.assertRaisesRegex(RuntimeError, 'Unable to open display'):
                 check.inspect_windows(self.owners)
+
+    def test_closed_window_does_not_hide_a_surviving_error_dialog(self):
+        results = [subprocess.CompletedProcess([], 0, '_NET_CLIENT_LIST(WINDOW): window id # 0x01, 0x02', ''),
+                   subprocess.CompletedProcess([], 1, '', 'X Error: BadWindow'),
+                   subprocess.CompletedProcess([], 0, self.properties(title='Panel problem', kind='DIALOG'), '')]
+        with patch.object(check.subprocess, 'run', side_effect=results):
+            with self.assertRaises(check.DesktopDialogError) as error:
+                check.inspect_windows(self.owners)
+        self.assertEqual(error.exception.windows[0]['id'], '0x02')
+
+    def test_titles_and_classes_are_read_as_properties_not_whitespace_columns(self):
+        result = self.properties(wmclass='chromium (/tmp/profile)', title='中文 title', kind='NORMAL')
+        result = result.replace('_NET_WM_NAME(UTF8_STRING)', 'WM_NAME(STRING)')
+        with patch.object(check.subprocess, 'run', side_effect=[
+            subprocess.CompletedProcess([], 0, '_NET_CLIENT_LIST(WINDOW): window id # 0x01', ''),
+            subprocess.CompletedProcess([], 0, result, ''),
+        ]):
+            window = check.list_windows()[0]
+        self.assertEqual(window['title'], '中文 title')
+        self.assertEqual(window['class'], 'chromium (/tmp/profile).chromium (/tmp/profile)')
 
 
 if __name__ == '__main__':
