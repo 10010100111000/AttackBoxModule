@@ -1,5 +1,8 @@
 # syntax=docker/dockerfile:1.7
-# Real historical OffSec PG Pebbles reference stack. Isolated Linux Docker only.
+# Authentic PG Pebbles lab: original ZoneMinder/MySQL/Tomcat services, isolated Linux Docker.
+# Stage 1 verifies Tomcat source, stage 2 assembles Xenial runtime packages,
+# stage 3 packs the actual Ubuntu filesystem into a smaller final image.
+# This does NOT replace Ubuntu/glibc with Alpine, nor simulate vulnerable components.
 FROM alpine:3.20 AS tomcat-artifact
 RUN apk add --no-cache ca-certificates curl tar coreutils
 ARG TOMCAT_VERSION=9.0.30
@@ -12,7 +15,7 @@ RUN set -eux; \
     tar -xzf /tmp/tomcat.tar.gz --strip-components=1 -C /opt/tomcat; \
     test -f /opt/tomcat/RELEASE-NOTES
 
-FROM ubuntu:16.04 AS runtime
+FROM ubuntu:16.04 AS xenial-assembled
 ENV DEBIAN_FRONTEND=noninteractive \
     LANG=C.UTF-8 \
     JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64 \
@@ -32,6 +35,12 @@ RUN set -eux; \
     printf '%s\n' 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99-lab-archive; \
     printf '#!/bin/sh\nexit 101\n' > /usr/sbin/policy-rc.d; \
     chmod 0755 /usr/sbin/policy-rc.d; \
+    # The original MySQL 5.7 package must remain unchanged. Its default
+    # InnoDB redo logs are large for a small training database; configure
+    # an 8 MiB log size BEFORE the package initializes its data directory.
+    # Verify the real on-disk sizes and database behavior in CI.
+    mkdir -p /etc/mysql/conf.d; \
+    printf '[mysqld]\ninnodb_log_file_size=8M\n' > /etc/mysql/conf.d/99-pebbles-redo-size.cnf; \
     # Avoid unpacking documentation/translations into the final image.
     # Retain package copyright files for redistributing historical software.
     printf '%s\n' \
@@ -66,7 +75,11 @@ RUN set -eux; \
     chown root:www-data /etc/zm/zm.conf; \
     chmod 0640 /etc/zm/zm.conf; \
     apt-get clean; \
-    rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*.deb
+    rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*.deb; \
+    # Database init must use small logs in the *image*, not recreate them
+    # in every learner container. Reject an unexpected package behavior.
+    test "$(stat -c %s /var/lib/mysql/ib_logfile0)" = 8388608; \
+    test "$(stat -c %s /var/lib/mysql/ib_logfile1)" = 8388608
 
 # Set Tomcat ownership as files enter their image layer, instead of
 # recursively chown-ing them in a later layer (which duplicates content).
@@ -99,6 +112,29 @@ RUN set -eux; \
     chmod 0755 /var/www/html; \
     printf 'date.timezone = UTC\n' > /etc/php/7.0/apache2/conf.d/99-pebbles-timezone.ini; \
     ln -sf /opt/tomcat/RELEASE-NOTES /opt/tomcat/webapps/ROOT/RELEASE-NOTES.txt
+
+
+
+
+# Repack the already assembled Ubuntu runtime into one final layer. This
+# preserves the ORIGINAL Ubuntu 16.04, PHP 7, MySQL 5.7, ZoneMinder 1.29.0
+# and Tomcat binaries/configuration, while dropping any deleted files and
+# whiteouts from prior Ubuntu/APT install layers.
+#
+# NOTE: scratch is ONLY the packaging base; the final runtime still contains
+# all necessary Ubuntu binaries, glibc, service accounts and shared libraries.
+FROM scratch AS optimized-runtime
+COPY --from=xenial-assembled / /
+
+# OCI image metadata is not inherited when copying the root filesystem.
+ENV DEBIAN_FRONTEND=noninteractive \
+    LANG=C.UTF-8 \
+    JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64 \
+    CATALINA_HOME=/opt/tomcat \
+    CATALINA_BASE=/opt/tomcat \
+    JAVA_OPTS="-Xms32m -Xmx128m -Djava.security.egd=file:/dev/./urandom" \
+    PEBBLES_MYSQL_BOOTSTRAP=pebbles-bootstrap-only \
+    PEBBLES_ZM_PASSWORD=zmpass
 
 EXPOSE 21 22 80 3305 8080
 STOPSIGNAL SIGTERM
