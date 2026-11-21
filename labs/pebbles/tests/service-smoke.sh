@@ -46,7 +46,8 @@ if [[ "${PEBBLES_TEST_UDF:-0}" == 1 ]]; then
     docker cp "$helper_dir/ttp_udf_probe.so" "$container":/tmp/ttp_udf_probe.so
     rm -rf "$helper_dir"
     docker cp "$here/udf-acceptance.sh" "$container":/tmp/pebbles-udf-acceptance.sh
-    docker exec --user www-data "$container" bash /tmp/pebbles-udf-acceptance.sh
+    expected_sha256=$(sha256sum "$here/../flags/root.txt" | cut -d' ' -f1)
+    docker exec --user www-data --env "PEBBLES_EXPECTED_ROOT_SHA256=$expected_sha256" "$container" bash /tmp/pebbles-udf-acceptance.sh
 else
     echo 'NOTE: MySQL UDF root escalation is not tested unless PEBBLES_TEST_UDF=1'
 fi

