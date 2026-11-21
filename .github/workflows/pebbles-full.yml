@@ -1,12 +1,6 @@
 name: Validate Pebbles original-stack candidate
 
 on:
-  push:
-    branches:
-      - feat/pebbles-original-entry
-    paths:
-      - 'labs/pebbles/**'
-      - '.github/workflows/pebbles-full.yml'
   pull_request:
     paths:
       - 'labs/pebbles/**'
