@@ -1,6 +1,6 @@
 # Shocker — 原版 GNU Bash 4.3 / Apache CGI 复现（测试分支）
 
-> 不是 HTB 官方镜像。必须以完整 Docker CI 结果为准，未通过前不合并或发布。
+> 不是 HTB 官方镜像。**真实 Bash 4.3 / CGI / sudo 漏洞链 Docker CI 已通过；尚未完成正式 Worker 端到端验收，未合并也未发布。**
 
 ## 真实利用链
 
@@ -20,7 +20,7 @@
 
 ## 轻量镜像
 
-多阶段构建：第一阶段 Alpine 3.15 用 build-base 编译真 Bash 4.3；第二阶段仅拷贝旧 Bash 二进制、保留 Apache、OpenSSH、sudo、Perl 等服务。不加入 GCC、编译器、MySQL、PHP、Java。镜像目标 **90 MiB 以内**，运行目标 **96 MiB 以内**。CI 量化后才会标记验收。
+多阶段构建：第一阶段 Alpine 3.15 用 build-base 编译真 Bash 4.3；第二阶段仅拷贝旧 Bash 二进制、保留 Apache、OpenSSH、sudo、Perl 等服务。不加入 GCC、编译器、MySQL、PHP、Java。**CI 实测镜像 16.4 MiB、运行内存 4.1 MiB、7 PIDs**（快照；非峰值/并发测试）。CI 运行限额 96 MiB、96 PIDs，真实 Apache CGI 和 sudo Perl Root 测试通过。验收日志：https://github.com/10010100111000/AttackBoxModule/actions/runs/44955028484
 
 原题 Ubuntu 16.04、Apache2 2.4.18、SSH 2222，当前开发采用 Alpine 3.15 并保留端口、真实 CGI 行为和 Perl sudo 提权，不伪造软件版本指纹。初始页面为仅外观重制，不声称是官方图形。
 

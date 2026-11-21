@@ -1,6 +1,6 @@
 # Nibbles — 原版 Nibbleblog 4.0.3（测试中）
 
-> 实现分支：`test/nibbles-authentic-small`。**尚未通过 Docker 端到端验收，不能发布。** 不是 HTB 官方镜像。
+> 实现分支：`test/nibbles-authentic-small`。**已通过 Docker CI 的真实漏洞和重置测试，但尚未在正式 Worker 验收，不发布。** 不是 HTB 官方镜像。
 
 ## 为什么选择这台
 
@@ -42,7 +42,8 @@ docker inspect -f '{{.State.Health.Status}}' nibbles
 
 ## 占用目标与验收
 
-- 镜像目标：**不超过 120 MiB**；运行内存目标：**不超过 160 MiB**，256 PIDs 以内，单 Docker 实例。
+- **实测镜像 25.0 MiB，CI 快照内存 17.2 MiB、8 PIDs**；CI 限制 160 MiB 和 128 PIDs，单 Docker 实例。数据为一次运行快照，不是并发峰值。
+- 完整构建和原版 CMS 上传 → native sudo Root → 两枚静态 Flag → 清除状态：**CI 通过**。https://github.com/10010100111000/AttackBoxModule/actions/runs/44954697830
 - 不安装 MySQL、MariaDB、Java/Tomcat、Python 或 GUI。
 - CI 必须测试原生 CMS 版本及 PHP 登录、My Image 上传、以 UID 1001 执行、sudo UID 0、两枚静态 Flag、停止删除再建的重置流程。
 - 不将测试用 Python 或 Exploit 脚本复制到最终运行镜像。

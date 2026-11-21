@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """Real Apache CGI + unpatched Bash 4.3 Shellshock integration test."""
 import os
+import socket
 import urllib.error
 import urllib.request
+import urllib.parse
 base = os.environ.get("TARGET_URL","http://shocker-target")
 def call(path, agent=None):
     req = urllib.request.Request(base+path)
@@ -13,6 +15,12 @@ def call(path, agent=None):
             return response.status, response.read().decode(errors="replace")
     except urllib.error.HTTPError as exc:
         return exc.code, exc.read().decode(errors="replace")
+# Network enumeration is part of the challenge: 80/tcp HTTP and a native
+# SSH banner on 2222/tcp, not just a listening placeholder.
+host = urllib.parse.urlsplit(base).hostname
+with socket.create_connection((host, 2222), timeout=5) as sock:
+    banner = sock.recv(180)
+    assert banner.startswith(b"SSH-2.0-"), f"Expected OpenSSH 2222, got {banner[:80]!r}"
 status, homepage = call("/")
 assert status == 200 and "Don't Bug Me!" in homepage
 assert "/cgi-bin/" not in homepage, "Do not tell learners the discovery path"

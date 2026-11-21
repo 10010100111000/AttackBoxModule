@@ -2,6 +2,7 @@
 """End-to-end original CMS HTTP test, using Python stdlib from a separate attacker."""
 import http.cookiejar
 import os
+import socket
 import urllib.parse
 import urllib.request
 
@@ -14,6 +15,11 @@ def req(path, data=None, content_type=None):
     with client.open(r, timeout=10) as res:
         return res.status, res.read().decode("utf-8", errors="replace")
 
+# The original scan begins with HTTP and a real SSH service.
+host = urllib.parse.urlsplit(BASE).hostname
+with socket.create_connection((host, 22), timeout=5) as sock:
+    banner = sock.recv(180)
+    assert banner.startswith(b"SSH-2.0-"), f"Expected native SSH on port 22, got {banner[:80]!r}"
 status, home = req("/")
 assert status == 200 and "Hello world!" in home, "Initial root page missing"
 assert "<!-- /nibbleblog/ -->" in home, "HTML source reconnaissance clue missing"
