@@ -1,6 +1,6 @@
 # PG Pebbles — original-stack Docker reconstruction
 
-> **Unverified implementation candidate — NOT a finished / published machine.** The GitHub PR stays in draft until a clean image build and real exploitation tests pass. This is an independent recreation, not an official OffSec image or a copy of non-public OffSec assets.
+> **CI-validated exploitation candidate — NOT yet published.** The genuine Docker image and the SQLi-to-root chain passed GitHub Actions. The GitHub PR remains a draft until reset, real Worker isolation, concurrency and player-facing fidelity are accepted. This is not an official OffSec image.
 
 ## Design objective
 

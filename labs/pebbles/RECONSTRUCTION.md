@@ -1,6 +1,6 @@
-# PG Pebbles — 原题优先的复现研究（未开始构建）
+# PG Pebbles — 原题优先的复现与验收记录
 
-> **状态：已查阅第三方完整 Writeup 与 ZoneMinder 上游资料；尚未构建 Docker 镜像、未运行利用链、未发布。**
+> **状态：原版 ZoneMinder Docker 镜像及核心漏洞链已通过 GitHub Actions 实测；还未通过实际 Worker 节点验收，未发布。**
 >
 > 目标不是另写一个带 SQLi 的网站，而是尽可能复原 OffSec PG Practice *Pebbles* 的真实服务、访问入口、前端和权限转折。公开资料无法还原的部分必须注明，不应编造并宣称与原题一致。
 
@@ -47,26 +47,27 @@
 
 - 当前 Worker 以**单个 Docker 容器**作为一个靶机实例，用户通过隔离目标网络访问其 IP；并不支持一题自动创建多个 Compose 容器。
 - 因此原题涉及的真实 Apache、PHP、MySQL、Tomcat、FTP、SSH 服务，需在同一容器内使用原进程运行，保留独立端口；进程监管可作为启动实现，不改变应用本身。
-- Docker 默认资源配置是 512 MiB / 1 CPU / 256 PIDs，ZoneMinder + MySQL + Tomcat 很可能需要提高内存和 PIDs；**实际需求尚未测量**。
+- Docker 默认资源配置是 512 MiB / 1 CPU / 256 PIDs。CI 曾在此限额下健康运行，内存快照约 418.8 MiB、100 PIDs，但未做压力测试；建议上线前在真实 Worker 节点以 1 GiB 测试，勿将 CI 单次采样视为稳定并发容量。
 - 原题 MySQL 的 root 运行及 UDF 执行只允许在隔离 Docker 实例内部；禁止 privileged、宿主机根目录或 Docker socket 挂载，不能以宿主级提权替代真实利用链。
 - 所有故意脆弱端口只可通过平台的私有练习网络访问，不得在公网直连暴露。
 - 按项目现状暂用**静态 Flag**；与现有 `quiz.answer` 一致，无需先改造动态 Flag 服务端。
 
-## 5. 复现验收标准（尚未通过）
+## 5. 当前实测验收（2026-11-22 核查）
 
-| 顺序 | 验收项 | 当前 |
-| --- | --- | --- |
-| A | 真正取得并锁定上游 ZoneMinder 1.29.0 + 依赖版本及许可证 | **源码 Tag 已确认，尚未获取/构建** |
-| B | 单容器启动实际的多进程服务并监听与原题对应的端口 | 未实现 |
-| C | 3305 的初始页不提前提示漏洞；通过目录枚举找到真实 /zm/ 界面 | 未验证 |
-| D | HTTP 前端显示真实 ZoneMinder 1.29.0，不是模仿页面 | 未验证 |
-| E | 原始 `limit` SQLi 能通过真实 MySQL 查询测试，不是模拟 | 未验证 |
-| F | 数据库文件写入受真实权限约束，PHP 以低权限用户运行 | 未验证 |
-| G | UDF 提权真实发生在 Docker 内；不会越界到宿主 | 未验证 |
-| H | 静态 Flag、镜像健康检查、停止、重建后恢复初始状态 | 未验证 |
-| I | 通过目标 Worker 的隔离网络与资源限制执行端到端验收 | 未验证 |
+原始整栈的 GitHub Actions 成功运行：[44943603262](https://github.com/10010100111000/AttackBoxModule/actions/runs/44943603262)。验证对象是独立 Linux Docker 容器与另一台 Docker 攻击者容器；不是生产 Worker 节点。
 
-**阻塞项**：旧系统软件包的安装与依赖、所有服务的单容器生命周期、原题自定义首页源码未公开、原题 MySQL root 配置的隔离边界。这些在验收前都不能写成“复现完成”。
+| 验收项 | 现状与证据边界 |
+| --- | --- |
+| Ubuntu 16.04、ZoneMinder 1.29.0、MySQL 5.7、Apache/PHP、Tomcat、FTP、SSH | **CI 已构建成功**；使用真实上游包和签名校验 |
+| TCP 21/22/80/3305/8080 可枚举，数据库及 AJP 不对外 | **独立攻击容器验收通过**，FTP banner 恢复正常 |
+| PHP 登录首页没有直接暗示漏洞，/zm 可被目录枚举找到 | **HTTP 黑盒检查通过**；80 端口自定义页面仍是行为近似，并非原版 HTML/CSS |
+| ZoneMinder 1.29.0 原始 PHP SQLi | **真实 SQLi HTTP 请求、文件写入及 Apache PHP 执行通过** |
+| MySQL UDF → UID 0 → 读取容器 Root proof | **独立 CI UDF helper 测试通过**；helper 仅用于验证，不进入正式靶机镜像 |
+| 512 MiB 默认资源配置 | **CI 短暂健康运行**：内存约 418.8 MiB / 512 MiB、100 PIDs；并发与峰值未实测 |
+| 静态 Flag、删除新建后重置数据库/文件状态 | 静态演示 Flag 可用；**专门的重启、重建验收脚本已添加，尚待最新 CI 结果** |
+| 真实 Worker 网络、宿主隔离、并发用户、发布 | **未验证**，不得宣称正式上线 |
+
+历史 Ubuntu 包、ZoneMinder 原版源码和漏洞均已通过 CI；剩余重点是**实例生命周期、原版页面差异和生产 Worker 隔离**。不可使用特权容器、宿主目录或 Docker socket 来缩短验证链。
 
 ## 6. 选题决策
 
@@ -80,7 +81,7 @@
 - 上游 ZoneMinder 2016 年文档明确指出 Ubuntu 16.04 官方仓库包含 **ZoneMinder 1.29.0**，依赖 PHP 7.0 + MySQL 5.7 + Apache，可先使用历史 Ubuntu 系统包而非为原版应用自行写 HTML/CSS。
 - 真实漏洞的 **CVE 是 CVE-2016-10204**：日志查询中的 `limit` SQL 注入。CVE-2016-10203 是另一个 XSS，不能混淆。
 - `probe/Dockerfile.package-probe` 仅安装历史包并检查版本及文件是否存在；文件名故意**不是 Dockerfile**，以防未经验证的原型被现有 GHCR 自动构建工作流当成靶机发布。
-- 无 Docker 引擎的当前作者环境无法运行 Ubuntu 16.04 软件包测试；历史镜像可获得性、旧 apt 仓库签名、包安装、ZoneMinder 的真实 SQLi、MySQL 以 root 身份运行及 UDF 链仍需分开实测。
+- 虽然当前工作区没有本地 Docker 引擎，**GitHub Actions 已经用实际 Docker 完成旧版包、真实 SQLi 与 UDF 运行验证**。这些结果仍不代替真实 Worker 部署与宿主隔离验收。
 
 **上游依据：** https://wiki.zoneminder.com/Ubuntu_Server_16.04_64-bit_with_Zoneminder_1.29.0_the_easy_way ；漏洞说明：https://ubuntu.com/security/CVE-2016-10204
 
