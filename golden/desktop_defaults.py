@@ -22,10 +22,23 @@ DEFAULT_APPLICATIONS = {
 DISABLED_AUTOSTART = (
     'mate-power-manager.desktop', 'mate-screensaver.desktop',
     'nm-applet.desktop', 'user-dirs-update-gtk.desktop',
+    'mate-user-share.desktop', 'mate-user-share-webdav.desktop',
+    'mate-user-share-obexpush.desktop', 'mate-user-share-obexftp.desktop',
 )
 
 
-def configure(home: Path, applications: Path):
+def hide_desktop_entry(source, destination, *, autostart=False):
+    entry = configparser.ConfigParser(interpolation=None, strict=False)
+    entry.optionxform = str
+    entry.read(source)
+    entry['Desktop Entry']['Hidden'] = 'true'
+    if autostart:
+        entry['Desktop Entry']['X-MATE-Autostart-enabled'] = 'false'
+    with destination.open('w') as stream:
+        entry.write(stream, space_around_delimiters=False)
+
+
+def configure(home: Path, applications: Path, *, autostart_sources=Path('/etc/xdg/autostart')):
     config = home / '.config'
     config.mkdir(parents=True, exist_ok=True)
     for directory in DIRECTORIES.values():
@@ -41,7 +54,11 @@ def configure(home: Path, applications: Path):
     autostart = config / 'autostart'
     autostart.mkdir(exist_ok=True)
     for name in DISABLED_AUTOSTART:
-        (autostart / name).write_text('[Desktop Entry]\nType=Application\nHidden=true\n')
+        source = autostart_sources / name
+        if not source.is_file():
+            source = autostart / name
+        if source.is_file():
+            hide_desktop_entry(source, autostart / name, autostart=True)
 
     # Parrot's shared skeleton also serves Plasma. Its KDE color reload module
     # does not belong to a MATE session; retain the other GTK preferences.
@@ -81,7 +98,7 @@ def configure(home: Path, applications: Path):
         ):
             overrides = home / '.local/share/applications'
             overrides.mkdir(parents=True, exist_ok=True)
-            (overrides / desktop.name).write_text('[Desktop Entry]\nType=Application\nHidden=true\n')
+            hide_desktop_entry(desktop, overrides / desktop.name)
 
 
 if __name__ == '__main__':

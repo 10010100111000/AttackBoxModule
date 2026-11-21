@@ -200,6 +200,7 @@ def wait_browser(browser):
     client = urllib.request.build_opener(urllib.request.ProxyHandler({}))
     deadline = time.monotonic() + 120
     last_error = ''
+    observed_pages = []
     while time.monotonic() < deadline:
         if browser.poll() is not None:
             raise RuntimeError('Chromium exited before acceptance completed')
@@ -207,6 +208,7 @@ def wait_browser(browser):
             port = int((profile / 'DevToolsActivePort').read_text().splitlines()[0])
             with client.open(f'http://127.0.0.1:{port}/json/list', timeout=2) as response:
                 pages = json.load(response)
+            observed_pages = [{key: page.get(key) for key in ('type', 'title', 'url')} for page in pages]
             if not any(page.get('title') == PAGE_TITLE for page in pages):
                 raise RuntimeError('Chromium did not load the intercepted HTTPS page')
             if not all(any((profile / 'Default/Extensions' / item).glob('*/manifest.json'))
@@ -216,7 +218,7 @@ def wait_browser(browser):
         except (OSError, ValueError, RuntimeError) as error:
             last_error = str(error)
             time.sleep(0.25)
-    raise RuntimeError(f'Chromium acceptance timed out: {last_error}')
+    raise RuntimeError(f'Chromium acceptance timed out: {last_error}; pages={json.dumps(observed_pages)}')
 
 
 if __name__ == '__main__':

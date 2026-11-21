@@ -5,6 +5,9 @@ SOURCE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 if [[ ${1:-} == --session ]]; then
   [[ $(id -u) == 1001 ]] || { echo 'Desktop must run as box' >&2; exit 1; }
+  stage='VNC startup'
+  result=0
+  trap 'result=$?; printf "Desktop acceptance failed at %s (exit %s): %s\n" "$stage" "$result" "$BASH_COMMAND" >&2; python3 /tmp/desktop_check.py snapshot /var/log/attackbox-check/state.json || true; exit "$result"' ERR
   export DISPLAY=:99 XDG_RUNTIME_DIR=/tmp/runtime-box XDG_CURRENT_DESKTOP=MATE XDG_SESSION_TYPE=x11
   Xtigervnc :99 -rfbunixpath /run/attackbox/gui.sock -rfbunixmode 0600 \
     -rfbport -1 -nolisten tcp -SecurityTypes None -AlwaysShared \
@@ -20,11 +23,15 @@ if [[ ${1:-} == --session ]]; then
   mate-session > /var/log/attackbox-check/mate.log 2>&1 &
   python3 /tmp/desktop_check.py watch /var/log/attackbox-check/windows.done > /var/log/attackbox-check/windows.log 2>&1 &
   window_check=$!
+  stage='Chromium and Burp HTTPS'
   python3 /tmp/burp_ca.py verify-browser
+  stage='desktop operations'
   python3 /tmp/desktop_smoke.py
   touch /var/log/attackbox-check/windows.done
+  stage='startup dialogs'
   wait "$window_check"
   head -n 1 /var/log/attackbox-check/windows.log
+  stage='VNC protocol'
   python3 - <<'PY_SOCKET'
 import socket
 with socket.socket(socket.AF_UNIX) as connection:
@@ -34,6 +41,7 @@ with socket.socket(socket.AF_UNIX) as connection:
         greeting = stream.read(12)
     assert len(greeting) == 12 and greeting.startswith(b'RFB '), greeting
 PY_SOCKET
+  stage='desktop process liveness'
   pgrep -u box -x mate-session
   pgrep -u box -x mate-panel
   pgrep -u box -x marco
@@ -82,8 +90,13 @@ timeout --signal=TERM --kill-after=10 300 \
 RESULT=$?
 set -e
 if ((RESULT != 0)); then
-  for logfile in vnc vncconfig mate chromium windows; do
-    [[ ! -f "$WORK/rootfs/var/log/attackbox-check/$logfile.log" ]] || tail -n 30 "$WORK/rootfs/var/log/attackbox-check/$logfile.log"
+  for logfile in vnc.log vncconfig.log mate.log chromium.log windows.log state.json; do
+    file="$WORK/rootfs/var/log/attackbox-check/$logfile"
+    if [[ -f $file ]]; then
+      printf '::group::Desktop diagnostic: %s\n' "$logfile"
+      tail -n 100 "$file"
+      printf '::endgroup::\n'
+    fi
   done
   exit "$RESULT"
 fi

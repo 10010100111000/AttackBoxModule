@@ -152,6 +152,11 @@ class ErrorWindowTests(unittest.TestCase):
     def test_generic_error_dialog_is_rejected(self):
         self.assertTrue(check.is_error_window(self.window('Error', 'zenity.Zenity'), self.owners))
 
+    def test_unnamed_keyring_prompt_is_rejected(self):
+        with tempfile.TemporaryDirectory() as temp:
+            owners = check.desktop_owners(Path(temp))
+        self.assertTrue(check.is_error_window(self.window('', 'gcr-prompter.Gcr-prompter'), owners))
+
     def test_normal_panel_is_not_rejected(self):
         self.assertFalse(check.is_error_window(self.window('Top Panel', kind='DOCK'), self.owners))
 

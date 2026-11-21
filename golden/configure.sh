@@ -68,6 +68,7 @@ install -D -m 0644 "$PAYLOAD/applications/burpsuite.desktop" /usr/share/applicat
 python3 "$PAYLOAD/desktop_defaults.py" /etc/skel /usr/share/applications
 python3 "$PAYLOAD/desktop_defaults.py" /home/box /usr/share/applications
 install -D -m 0644 "$PAYLOAD/chromium-policy.json" /etc/chromium/policies/managed/attackbox.json
+install -D -m 0644 "$PAYLOAD/chromium-flags.sh" /etc/chromium.d/attackbox
 chown -R 1001:1013 /home/box
 
 printf 'attackbox\n' > /etc/hostname

@@ -156,7 +156,8 @@ def validate_static(root):
 
 
 def desktop_owners(root):
-    owners = {'mate-panel', 'mate-session', 'marco', 'caja', 'mate-settings-d'}
+    owners = {'mate-panel', 'mate-session', 'marco', 'caja', 'mate-settings-d',
+              'gcr-prompter', 'gcr4-prompter', 'gnome-keyring-d'}
     for location, _ in applet_registry(root).values():
         owners.add(Path(location).name[:15])
     return owners
@@ -284,9 +285,11 @@ if __name__ == '__main__':
         write_theme(Path(sys.argv[2]), Path(sys.argv[3]))
     elif sys.argv[1:2] == ['static'] and len(sys.argv) == 3:
         validate_static(Path(sys.argv[2]))
+    elif sys.argv[1:2] == ['snapshot'] and len(sys.argv) == 3:
+        Path(sys.argv[2]).write_text(json.dumps(list_windows(), ensure_ascii=False, indent=2))
     elif sys.argv[1:] == ['settings']:
         validate_settings()
     elif sys.argv[1:2] == ['watch'] and len(sys.argv) == 3:
         watch_windows(Path(sys.argv[2]))
     else:
-        raise SystemExit('Usage: desktop_check.py theme SOURCE DESTINATION | static ROOTFS | settings | watch STOP_FILE')
+        raise SystemExit('Usage: desktop_check.py theme SOURCE DESTINATION | static ROOTFS | settings | snapshot FILE | watch STOP_FILE')

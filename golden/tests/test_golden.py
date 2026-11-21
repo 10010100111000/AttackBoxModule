@@ -102,27 +102,39 @@ class DesktopTests(unittest.TestCase):
             home = root / 'box'
             applications = root / 'applications'
             applications.mkdir()
-            (applications / 'vncconfig.desktop').write_text('[Desktop Entry]\nExec=vncconfig -iconic\n')
+            autostart = root / 'autostart'
+            autostart.mkdir()
+            (autostart / 'mate-power-manager.desktop').write_text(
+                '[Desktop Entry]\nType=Application\nName=Power Manager\nExec=mate-power-manager\n')
+            (applications / 'vncconfig.desktop').write_text('[Desktop Entry]\nType=Application\nName=VNC settings\nExec=vncconfig -iconic\n')
             (applications / 'chromium.desktop').write_text('[Desktop Entry]\nExec=chromium\n')
-            (applications / 'firefox-selector.desktop').write_text('[Desktop Entry]\nExec=firefox-selector\n')
+            (applications / 'firefox-selector.desktop').write_text('[Desktop Entry]\nType=Application\nName=Firefox\nExec=firefox-selector\n')
             (home / '.config').mkdir(parents=True)
             (home / '.config/upstream.conf').write_text('original settings')
+            (home / '.config/autostart').mkdir()
+            (home / '.config/autostart/mate-user-share.desktop').write_text(
+                '[Desktop Entry]\nType=Application\nName=File sharing\nExec=/usr/lib/mate-user-share/mate-user-share\n')
             (home / '.config/gtk-3.0').mkdir()
             (home / '.config/gtk-3.0/settings.ini').write_text(
                 '[Settings]\ngtk-font-name=Noto Sans 10\ngtk-modules=colorreload-gtk-module:atk-bridge\n')
             for name in ['attackbox-burpsuite.desktop', 'burpsuite.desktop']:
                 (applications / name).write_text('[Desktop Entry]\nExec=burpsuite\n')
-            desktop.configure(home, applications)
-            desktop.configure(home, applications)
+            desktop.configure(home, applications, autostart_sources=autostart)
+            desktop.configure(home, applications, autostart_sources=autostart)
             self.assertTrue((home / '.local/share/applications/vncconfig.desktop').exists())
             self.assertFalse((home / '.local/share/applications/chromium.desktop').exists())
             self.assertIn('Hidden=true', (home / '.local/share/applications/firefox-selector.desktop').read_text())
+            self.assertIn('Name=Firefox', (home / '.local/share/applications/firefox-selector.desktop').read_text())
             self.assertEqual((home / '.config/upstream.conf').read_text(), 'original settings')
             gtk = (home / '.config/gtk-3.0/settings.ini').read_text()
             self.assertNotIn('colorreload-gtk-module', gtk)
             self.assertIn('atk-bridge', gtk)
             self.assertIn('Noto Sans 10', gtk)
             self.assertIn('Hidden=true', (home / '.config/autostart/mate-power-manager.desktop').read_text())
+            entry = (home / '.config/autostart/mate-power-manager.desktop').read_text()
+            self.assertIn('Name=Power Manager', entry)
+            self.assertIn('X-MATE-Autostart-enabled=false', entry)
+            self.assertIn('Hidden=true', (home / '.config/autostart/mate-user-share.desktop').read_text())
             self.assertTrue((home / 'Public').is_dir())
             self.assertIn('XDG_PUBLICSHARE_DIR="$HOME/Public"', (home / '.config/user-dirs.dirs').read_text())
             self.assertEqual((home / '.config/user-dirs.locale').read_text(), 'en_US\n')
