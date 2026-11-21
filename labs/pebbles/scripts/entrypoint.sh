@@ -22,23 +22,28 @@ shutdown() {
 trap shutdown EXIT
 trap 'exit 143' TERM INT
 
-# Production uses a fixed static answer supplied through Worker environment variables.
-# Never put the real answer in this public Docker image.
+# Production uses the platform's existing STATIC answer. Keep the demo value
+# only for local CI. Fail closed when the worker requires a private answer.
 if [[ "${PEBBLES_REQUIRE_STATIC_FLAG:-0}" == 1 && -z "${PEBBLES_STATIC_ROOT_FLAG:-}" ]]; then
-    say 'private static Flag required; refusing to use the public demo'
+    say 'production static Root Flag missing; refusing to serve public demo'
     exit 1
 fi
 if [[ -n "${PEBBLES_STATIC_ROOT_FLAG:-}" ]]; then
-    root_flag="$PEBBLES_STATIC_ROOT_FLAG"
-    if [[ ${#root_flag} -lt 16 || ${#root_flag} -gt 128 ]] || [[ "$root_flag" =~ [[:cntrl:]] ]]; then
-        say 'invalid static Flag: must be 16-128 printable characters'
+    root_flag="${PEBBLES_STATIC_ROOT_FLAG}"
+    if (( ${#root_flag} < 16 || ${#root_flag} > 128 )); then
+        say 'invalid static Root Flag length (16-128 characters)'
         exit 1
     fi
-    (umask 077; printf '%s\n' "$root_flag" > /root/proof.txt)
+    case "$root_flag" in
+        *$'\n'*|*$'\r'*) say 'invalid static Root Flag (must be one line)'; exit 1 ;;
+    esac
+    umask 077
+    printf '%s\n' "$root_flag" > /root/proof.txt
     chmod 0600 /root/proof.txt
     unset root_flag PEBBLES_STATIC_ROOT_FLAG
 fi
 unset PEBBLES_REQUIRE_STATIC_FLAG
+
 mkdir -p /run/mysqld /run/sshd /run/zm /var/log/mysql /var/log/zoneminder
 # /run is ephemeral in Docker; vsftpd needs an empty, non-writable chroot.
 install -d -o root -g root -m 0555 /var/run/vsftpd/empty
