@@ -66,14 +66,13 @@ RUN set -eux; \
     mkdir -p /run/mysqld /run/sshd /run/zm /var/log/mysql /var/log/zoneminder \
       /var/www/pebbles /opt/tomcat/temp /opt/tomcat/logs /opt/tomcat/work; \
     chown -R tomcat:tomcat /opt/tomcat; \
-    sed -i 's/port="8080" protocol="HTTP\/1.1"/port="18080" address="127.0.0.1" protocol="HTTP\/1.1"/' /opt/tomcat/conf/server.xml; \
-    grep -q 'port="18080" address="127.0.0.1"' /opt/tomcat/conf/server.xml; \
+    grep -q 'port="8080" protocol="HTTP/1.1"' /opt/tomcat/conf/server.xml; \
     sed -i 's/port="8009" protocol="AJP\/1.3"/port="8009" address="127.0.0.1" protocol="AJP\/1.3"/' /opt/tomcat/conf/server.xml; \
     grep -q 'port="8009" address="127.0.0.1"' /opt/tomcat/conf/server.xml; \
     test -f /var/www/html/index.html; \
     a2dissite 000-default; \
     a2ensite pebbles; \
-    a2enmod cgi rewrite proxy proxy_http headers; \
+    a2enmod cgi rewrite headers; \
     a2enconf zoneminder; \
     chmod 0755 /usr/local/bin/pebbles-entrypoint /usr/local/bin/pebbles-healthcheck; \
     chmod 0600 /root/proof.txt; \

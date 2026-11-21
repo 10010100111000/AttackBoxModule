@@ -12,7 +12,7 @@ Do not put SQLi on the public login page. Preserve original reconnaissance: the 
 | 22 | Real OpenSSH, Xenial | SSH fingerprint and possible dead end |
 | 80 | Apache 2.4.18 + PHP 7.0 | Pebbles PHP login (behavioral approximation; no SQLi) |
 | 3305 | Apache 2.4.18 + PHP 7.0 | Ubuntu default page; original `/zm/` ZoneMinder interface |
-| 8080 | Apache proxy to original Tomcat 9.0.30 | Nonessential HTTP route, matching original discovery |
+| 8080 | Native Tomcat 9.0.30 listener (not Apache) | Nonessential HTTP route, matching original discovery |
 | 3306 | MySQL 5.7 on `127.0.0.1` | Original dangerous database privilege boundary |
 
 Source packages come from the Ubuntu 16.04 historical archive; ZoneMinder is pinned to **`1.29.0+dfsg-1ubuntu2`**. Tomcat is downloaded from the Apache archive with a pinned SHA-512. The Ubuntu package supplies the genuine ZoneMinder HTML/CSS/JS and `web/ajax/log.php`.
