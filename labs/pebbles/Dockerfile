@@ -73,8 +73,6 @@ RUN set -eux; \
     a2dissite 000-default; \
     a2ensite pebbles; \
     a2enmod cgi rewrite headers; \
-    # Keep upstream /zm visible only on the 3305 discovery site. \ 
-    # Disable the packaging default's global Alias on port 80. \ 
     a2disconf zoneminder; \
     chmod 0755 /usr/local/bin/pebbles-entrypoint /usr/local/bin/pebbles-healthcheck; \
     chmod 0600 /root/proof.txt; \
