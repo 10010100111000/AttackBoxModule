@@ -1,6 +1,6 @@
 # PG Pebbles — original-stack Docker reconstruction
 
-> **CI-validated exploitation candidate — NOT yet published.** The genuine Docker image and the SQLi-to-root chain passed GitHub Actions. The GitHub PR remains a draft until reset, real Worker isolation, concurrency and player-facing fidelity are accepted. This is not an official OffSec image.
+> **Original exploit chain CI-validated; not an official OffSec image.** The initial reconstruction has been merged into main; the smaller multi-stage image is being reviewed separately in PR #3. Successful GitHub CI does not prove the live Worker deployment, realistic multi-user load or that all unintended shortcuts have been eliminated.
 
 ## Design objective
 
@@ -59,7 +59,7 @@ No public port forwarding is used, and the probe needs only Python's standard li
 
 ## Static Flag
 
-The original end goal is the root proof. `flags/root.txt` is copied into `/root/proof.txt` with restrictive permissions. **The repository contains only a public demonstration value**, not an actual production answer. Before release, inject a privately managed static flag during the build and set the same answer in the platform `quiz.answer`; do not leak the real value through Git.
+The original end goal is the root proof. `flags/root.txt` is copied into `/root/proof.txt` with restrictive permissions. **The repository contains only a public demonstration value**, not an actual production answer. Before release, provide a private static flag through the existing Worker **runtime environment** and set the same answer in the platform `quiz.answer`; do not leak the real value through Git or the public GHCR image.
 
 ### Provisioning a private static Flag with the existing Worker
 
@@ -90,6 +90,29 @@ An earlier GitHub CI resource sample measured **414.7 MiB and ~102 PIDs** with t
 
 The Pebbles 80/tcp page was not released in the reviewed public sources, so that custom landing page is only an approximate behavioral reconstruction. The actual ZoneMinder web frontend is installed unmodified from the original Ubuntu package.
 
+## Lean runtime build and measured disk usage
+
+The Dockerfile uses **three actual stages**:
+
+1. `tomcat-artifact` (Alpine only for artifact download, verifying upstream SHA-512);
+2. `xenial-assembled` (Ubuntu 16.04 installs and configures genuine old PHP 7, Apache, MySQL 5.7, ZoneMinder 1.29.0, OpenSSH, vsftpd, Java 8 and original Tomcat);
+3. `optimized-runtime` (`FROM scratch` copies the completed **Ubuntu** filesystem and reinstates ENV, entrypoint, ports and healthcheck). This is **not** an Alpine or musl runtime; the old Ubuntu userspace and glibc remain.
+
+An InnoDB redo-log configuration is applied **before** MySQL's package initialization, creating two **8 MiB** redo logs in the shared image, rather than default 48 MiB logs. These are real MySQL 5.7 files, not placeholders, and the full SQLi and UDF chain is verified in Docker.
+
+| CI result | Prior image | Optimized image |
+| --- | ---: | ---: |
+| Local Docker image size | 228.6 MiB | **220.7 MiB** |
+| MySQL initialized data directory | approximately 122 MiB | **approximately 42 MiB** |
+| Worker 512 MiB memory profile | Healthy, approximately 390 MiB | Healthy, approximately 394 MiB |
+| Original ports, SQLi, UDF, static Flag and per-user reset | Pass | Pass |
+
+CI comparison: https://github.com/10010100111000/AttackBoxModule/actions/runs/44946865137
+
+**Trade-off:** A non-squashed Ubuntu-based image with the smaller redo logs is approximately **228.5 MiB**, whereas the final scratch-repacked image is **220.7 MiB**. The latter saves about 7.8 MiB as an individual image, but it does **not** share the original Ubuntu parent layers with other images. When running many different Xenial labs on one VPS, total disk usage across all images may favor the layered alternative. The directory-size reduction and the `docker image inspect .Size` reduction are different measurements and should not be confused.
+
+The real Java 8/Tomcat and ZoneMinder/MySQL components were not removed just to obtain a smaller size. The production Worker and sustained concurrent-user memory still need verification.
+
 ## Sources
 
 - Full PG research and known deviations: [RECONSTRUCTION.md](RECONSTRUCTION.md)
@@ -104,7 +127,7 @@ The Pebbles 80/tcp page was not released in the reviewed public sources, so that
 
 - Real upstream ZoneMinder `limit` SQL concatenation: **source verified**.
 - PHP entry page: **local HTTP tests passed**.
-- Docker build, runtime, real ZoneMinder SQLi → PHP and UDF Root: **passed in GitHub CI on an earlier revision**, pending successful checks on this branch head.
-- Attacker-side reconnaissance: **CI passed previously**; independent instance reset and static private Flag provisioning: **tests added, awaiting latest CI**; real Worker remains unverified.
+- Docker build, runtime, real ZoneMinder SQLi → PHP and UDF Root: **passed in both the original-stack CI and the three-stage size-comparison CI**; retest final promoted Dockerfile before merging PR #3.
+- Attacker-side reconnaissance, independent instance reset and private static Flag provisioning: **passed in GitHub CI**; real Worker remains unverified.
 
 **Do not register or publish until all tests pass.**
