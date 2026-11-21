@@ -19,17 +19,24 @@ trap cleanup EXIT
 new_instance() {
   docker run -d --network none --memory 1024m --pids-limit 256 --cpus 1 "$image"
 }
+diagnose() {
+  local container="$1"
+  echo "Container failure details:" >&2
+  docker inspect --format 'state={{.State.Status}} exit={{.State.ExitCode}} oom={{.State.OOMKilled}} error={{.State.Error}}' "$container" >&2 || true
+  docker logs --tail 100 "$container" >&2 || true
+}
 wait_healthy() {
   local container="$1" health="starting" state="unknown"
   for _ in $(seq 1 120); do
     state=$(docker inspect -f '{{.State.Status}}' "$container")
-    [[ "$state" == running ]] || { echo "FAIL: container $container state $state" >&2; return 1; }
+    [[ "$state" == running ]] || { echo "FAIL: container $container state $state" >&2; diagnose "$container"; return 1; }
     health=$(docker inspect -f '{{.State.Health.Status}}' "$container")
     [[ "$health" == healthy ]] && return 0
-    [[ "$health" == unhealthy ]] && { echo "FAIL: unhealthy $container" >&2; return 1; }
+    [[ "$health" == unhealthy ]] && { echo "FAIL: unhealthy $container" >&2; diagnose "$container"; return 1; }
     sleep 2
   done
   echo "FAIL: timeout waiting for container health ($container)" >&2
+  diagnose "$container"
   return 1
 }
 table_count() {
@@ -39,8 +46,10 @@ root_proof_hash() {
   docker exec "$1" sha256sum /root/proof.txt | awk '{print $1}'
 }
 
+echo '[reset] starting first instance'
 first=$(new_instance)
 wait_healthy "$first"
+echo '[reset] first instance healthy'
 [[ "$(table_count "$first")" == 0 ]] || { echo "FAIL: initial SQL state not clean" >&2; exit 1; }
 first_hash=$(root_proof_hash "$first")
 
@@ -51,17 +60,23 @@ docker exec "$first" sh -c 'printf "instance-state" > /var/www/html/ttp-reset-ma
 [[ "$(table_count "$first")" == 1 ]] || { echo "FAIL: SQL state marker missing" >&2; exit 1; }
 docker exec "$first" test -f /var/www/html/ttp-reset-marker.txt
 
+echo '[reset] seeded database and filesystem'
 # Restart preserves that user's state. Reset is achieved by deleting the
 # container and creating a fresh instance from the immutable image.
+echo '[reset] restarting first instance'
 docker restart --time 15 "$first" >/dev/null
+echo '[reset] Docker restart returned; waiting for health'
 wait_healthy "$first"
+echo '[reset] restarted instance healthy'
 [[ "$(table_count "$first")" == 1 ]] || { echo "FAIL: state disappeared on restart" >&2; exit 1; }
 docker exec "$first" test -f /var/www/html/ttp-reset-marker.txt
 
+echo '[reset] deleting first instance and creating a fresh one'
 docker rm -f "$first" >/dev/null
 first=""
 second=$(new_instance)
 wait_healthy "$second"
+echo '[reset] fresh instance healthy'
 [[ "$(table_count "$second")" == 0 ]] || { echo "FAIL: previous learner's SQL state survived reset" >&2; exit 1; }
 if docker exec "$second" test -e /var/www/html/ttp-reset-marker.txt; then
   echo "FAIL: previous learner's file survived reset" >&2
