@@ -1,0 +1,97 @@
+name: Nibbles original CMS lightweight Docker lab
+
+on:
+  push:
+    branches: ["test/nibbles-authentic-small"]
+    paths:
+      - "labs/nibbles/**"
+      - ".github/workflows/nibbles.yml"
+  pull_request:
+    paths:
+      - "labs/nibbles/**"
+      - ".github/workflows/nibbles.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: nibbles-original-small
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  nibbles:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build authentic upstream Nibbleblog 4.0.3 with Apache, PHP and SSH
+        run: docker build --progress=plain -f labs/nibbles/Dockerfile -t ttp-nibbles:ci labs/nibbles
+
+      - name: Measure final image size
+        run: |
+          set -euo pipefail
+          bytes=$(docker image inspect -f '{{.Size}}' ttp-nibbles:ci)
+          awk -v bytes="$bytes" 'BEGIN {printf "Target image: %.1f MiB (%d bytes)\n", bytes / 1048576, bytes}'
+          printf 'Nibbles image bytes: %s\n' "$bytes" >> "$GITHUB_STEP_SUMMARY"
+          test "$bytes" -le $((120 * 1048576))
+
+      - name: Test genuine reconnaissance, PHP upload, sudo root, static flags and reset
+        run: |
+          set -euo pipefail
+          net=nibbles-ci-network
+          target=nibbles-target
+          docker network create --internal "$net"
+          cleanup() {
+            docker logs --tail 160 "$target" || true
+            docker rm -f "$target" >/dev/null 2>&1 || true
+            docker network rm "$net" >/dev/null 2>&1 || true
+          }
+          trap cleanup EXIT
+          start_target() {
+            docker run -d --name "$target" --network "$net" \
+              --memory 160m --pids-limit 128 --cpus 1 \
+              -e NIBBLES_REQUIRE_PRIVATE_FLAGS=1 \
+              -e NIBBLES_STATIC_USER_FLAG='TTP{nibbles_ci_private_user_0123456789}' \
+              -e NIBBLES_STATIC_ROOT_FLAG='TTP{nibbles_ci_private_root_0123456789}' \
+              ttp-nibbles:ci
+          }
+          wait_healthy() {
+            for i in $(seq 1 60); do
+              state=$(docker inspect -f '{{.State.Status}}' "$target")
+              if [ "$state" != running ]; then
+                docker logs "$target"; return 1
+              fi
+              health=$(docker inspect -f '{{.State.Health.Status}}' "$target")
+              if [ "$health" = healthy ]; then return 0; fi
+              if [ "$health" = unhealthy ]; then
+                docker logs "$target"; return 1
+              fi
+              sleep 2
+            done
+            docker logs "$target"; return 1
+          }
+          start_target
+          wait_healthy
+          docker exec "$target" sh -c \
+            'test -f /var/www/localhost/htdocs/nibbleblog/admin/controllers/plugins/config.bit; test -x /usr/sbin/sshd'
+          docker run --rm --network "$net" \
+            -e TARGET_URL=http://nibbles-target \
+            -v "$PWD/labs/nibbles/tests:/tests:ro" \
+            python:3.12-alpine python /tests/attack_path.py
+          docker exec -u nibbler "$target" sh -c \
+            'test "$(cat /home/nibbler/user.txt)" = "TTP{nibbles_ci_private_user_0123456789}"; test ! -r /root/root.txt'
+          docker exec -i -u nibbler "$target" sh /dev/stdin \
+            < labs/nibbles/tests/native_sudo.sh
+          docker exec "$target" sh -c \
+            'test "$(cat /root/root.txt)" = "TTP{nibbles_ci_private_root_0123456789}"'
+          docker stats --no-stream --format 'Target memory: {{.MemUsage}}, PIDs: {{.PIDs}}' "$target"
+          docker rm -f "$target"
+          start_target
+          wait_healthy
+          docker run --rm --network "$net" \
+            -e TARGET_URL=http://nibbles-target \
+            -v "$PWD/labs/nibbles/tests:/tests:ro" \
+            python:3.12-alpine python /tests/reset_path.py
+          echo 'PASS: vendor Nibbleblog PHP upload + native sudo UID0 + private flags + reset'
