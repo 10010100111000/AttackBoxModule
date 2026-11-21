@@ -11,7 +11,10 @@ from desktop_defaults import DEFAULT_APPLICATIONS
 
 
 def run(*args, **kwargs):
-    return subprocess.run(args, check=True, capture_output=True, timeout=15, **kwargs)
+    result = subprocess.run(args, capture_output=True, timeout=15, **kwargs)
+    if result.returncode:
+        raise RuntimeError(f'{shlex.join(args)}: {result.stderr.decode(errors="replace").strip()}')
+    return result
 
 
 def wait_for(check, description):
@@ -55,7 +58,7 @@ def open_document(path, application):
 
 def verify_desktop():
     validate_handlers()
-    with tempfile.TemporaryDirectory(prefix='desktop-smoke-') as temp:
+    with tempfile.TemporaryDirectory(prefix='desktop-smoke-', dir=Path.home()) as temp:
         root = Path(temp)
         # Use the real screenshot tool and X11 clipboard, without a save dialog.
         screenshot = subprocess.Popen(['mate-screenshot', '--clipboard'])

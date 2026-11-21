@@ -104,12 +104,25 @@ class DesktopTests(unittest.TestCase):
             applications.mkdir()
             (applications / 'vncconfig.desktop').write_text('[Desktop Entry]\nExec=vncconfig -iconic\n')
             (applications / 'chromium.desktop').write_text('[Desktop Entry]\nExec=chromium\n')
+            (applications / 'firefox-selector.desktop').write_text('[Desktop Entry]\nExec=firefox-selector\n')
+            (home / '.config').mkdir(parents=True)
+            (home / '.config/upstream.conf').write_text('original settings')
+            (home / '.config/gtk-3.0').mkdir()
+            (home / '.config/gtk-3.0/settings.ini').write_text(
+                '[Settings]\ngtk-font-name=Noto Sans 10\ngtk-modules=colorreload-gtk-module:atk-bridge\n')
             for name in ['attackbox-burpsuite.desktop', 'burpsuite.desktop']:
                 (applications / name).write_text('[Desktop Entry]\nExec=burpsuite\n')
             desktop.configure(home, applications)
             desktop.configure(home, applications)
             self.assertTrue((home / '.local/share/applications/vncconfig.desktop').exists())
             self.assertFalse((home / '.local/share/applications/chromium.desktop').exists())
+            self.assertIn('Hidden=true', (home / '.local/share/applications/firefox-selector.desktop').read_text())
+            self.assertEqual((home / '.config/upstream.conf').read_text(), 'original settings')
+            gtk = (home / '.config/gtk-3.0/settings.ini').read_text()
+            self.assertNotIn('colorreload-gtk-module', gtk)
+            self.assertIn('atk-bridge', gtk)
+            self.assertIn('Noto Sans 10', gtk)
+            self.assertIn('Hidden=true', (home / '.config/autostart/mate-power-manager.desktop').read_text())
             self.assertTrue((home / 'Public').is_dir())
             self.assertIn('XDG_PUBLICSHARE_DIR="$HOME/Public"', (home / '.config/user-dirs.dirs').read_text())
             self.assertEqual((home / '.config/user-dirs.locale').read_text(), 'en_US\n')
@@ -179,11 +192,13 @@ class BurpProfileTests(unittest.TestCase):
 
 class SourceTests(unittest.TestCase):
     def test_packages_are_unique_concrete_names(self):
-        packages = [line.split('#')[0].strip() for line in (ROOT / 'packages.txt').read_text().splitlines()]
-        packages = [name for name in packages if name]
-        self.assertEqual(len(packages), len(set(packages)))
-        for name in packages:
-            self.assertRegex(name, r'^[a-z0-9][a-z0-9+.-]+$')
+        for file in ['packages.txt', 'desktop-packages.txt', 'remove-packages.txt']:
+            with self.subTest(file=file):
+                packages = [line.split('#')[0].strip() for line in (ROOT / file).read_text().splitlines()]
+                packages = [name for name in packages if name]
+                self.assertEqual(len(packages), len(set(packages)))
+                for name in packages:
+                    self.assertRegex(name, r'^[a-z0-9][a-z0-9+.-]+$')
 
     def test_selected_toolset_and_browser(self):
         packages = {line.split('#')[0].strip() for line in (ROOT / 'packages.txt').read_text().splitlines()}
@@ -222,7 +237,7 @@ class SourceTests(unittest.TestCase):
         self.assertIn("default-layout='attackbox'", (ROOT / 'mate-defaults.ini').read_text())
 
     def test_shell_syntax(self):
-        for script in [*ROOT.glob('*.sh'), *ROOT.joinpath('skel').iterdir(), *ROOT.joinpath('bin').iterdir()]:
+        for script in [*ROOT.glob('*.sh'), *ROOT.joinpath('bin').iterdir()]:
             subprocess.run(['bash', '-n', str(script)], check=True)
 
 

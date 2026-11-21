@@ -20,9 +20,6 @@ for directory in ['boot', 'usr/lib/modules', 'usr/lib/firmware']:
 assert (root / 'usr/share/mate-panel/layouts/default.layout').is_file()
 assert (root / 'usr/share/mate-panel/layouts/attackbox.layout').is_file()
 assert (root / 'usr/share/applications/burpsuite.desktop').is_file()
-assert not (root / 'usr/bin/firefox-selector').exists()
-assert not (root / 'usr/share/applications/firefox-selector.desktop').exists()
-assert not (root / 'home/box/.local/share/applications/firefox.desktop').exists()
 assert (root / 'home/box/Desktop/chromium.desktop').is_file()
 assert (root / 'home/box/Desktop/mate-terminal.desktop').is_file()
 assert (root / 'home/box/.config/user-dirs.locale').read_text().strip() == 'en_US'
@@ -37,13 +34,24 @@ policy = json.loads((root / 'etc/chromium/policies/managed/attackbox.json').read
 assert policy['BackgroundModeEnabled'] is False
 assert len(policy['ExtensionInstallForcelist']) == 3
 PY
+source "$SOURCE/packages.sh"
+declare -a required=() removed=()
+inventory="$(chroot "$ROOT" /usr/bin/dpkg-query -W -f='${binary:Package}\t${db:Status-Status}\n')"
+declare -A installed=()
+while IFS=$'\t' read -r package status; do
+  if [[ $status == installed ]]; then installed[${package%%:*}]=1; fi
+done <<< "$inventory"
+for list in packages desktop-packages; do
+  read_packages "$ROOT/usr/share/attackbox/$list.txt" required
+  for package in "${required[@]}"; do
+    [[ ${installed[$package]:-} == 1 ]] || { echo "Required package missing: $package" >&2; exit 1; }
+  done
+done
+read_packages "$ROOT/usr/share/attackbox/remove-packages.txt" removed
+for package in "${removed[@]}"; do
+  [[ ${installed[$package]:-} != 1 ]] || { echo "Removed package still installed: $package" >&2; exit 1; }
+done
 chroot "$ROOT" /usr/bin/env -i PATH=/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin /bin/bash -euc '
-while IFS= read -r line || [[ -n $line ]]; do
-  package="${line%%#*}"
-  package="${package//[[:space:]]/}"
-  [[ -n $package ]] || continue
-  [[ $(dpkg-query -W -f="\${db:Status-Status}" "$package") == installed ]]
-done < /usr/share/attackbox/packages.txt
 desktop-file-validate /usr/share/applications/burpsuite.desktop
 for command in bash sudo nmap python3 Xtigervnc vncconfig mate-session mate-panel marco caja chromium dbus-run-session burpsuite msfconsole xfreerdp3 mate-screenshot mate-search-tool mate-calc eom engrampa geany xdg-open xdg-mime gio xclip desktop-file-validate; do
   command -v "$command" >/dev/null

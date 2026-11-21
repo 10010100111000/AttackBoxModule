@@ -1,0 +1,24 @@
+# 明确移除的软件。APT 的额外级联删除会使构建失败。
+# 浏览器统一为 Chromium。
+firefox
+firefox-esr
+parrot-firefox-profiles
+webext-foxyproxy
+webext-ublock-origin-firefox
+
+# 更新提示、空工具菜单和物理设备服务。
+parrot-updater
+parrot-menu
+bluez
+blueman
+cups
+cups-daemon
+system-config-printer
+
+# 未选用的工具与旧版实现。
+bloodhound
+caido
+remmina
+dirbuster
+enum4linux
+kerberoast

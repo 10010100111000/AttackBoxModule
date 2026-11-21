@@ -2,35 +2,19 @@
 # Executed inside the freshly bootstrapped image by build.sh.
 set -euo pipefail
 PAYLOAD=/tmp/attackbox-build
-[[ -r "$PAYLOAD/packages.txt" && -d "$PAYLOAD/skel" && -r "$PAYLOAD/chromium-policy.json" && -r "$PAYLOAD/mate-defaults.ini" && -r "$PAYLOAD/attackbox.layout" ]] || {
+[[ -r "$PAYLOAD/packages.txt" && -r "$PAYLOAD/chromium-policy.json" && -r "$PAYLOAD/mate-defaults.ini" && -r "$PAYLOAD/attackbox.layout" ]] || {
   echo 'Run this script through golden/build.sh inside the build rootfs' >&2
   exit 1
 }
-mapfile -t packages < <(sed 's/#.*//;s/^[[:space:]]*//;s/[[:space:]]*$//' "$PAYLOAD/packages.txt" | sed '/^$/d')
-for package in "${packages[@]}"; do
-  [[ $package =~ ^[a-z0-9][a-z0-9+.-]+$ ]] || { echo "Invalid package: $package" >&2; exit 1; }
-done
-printf 'wireshark-common wireshark-common/install-setuid boolean true\n' | debconf-set-selections
-apt-get update -o Acquire::Retries=3 -o APT::Update::Error-Mode=any
-apt-get install -y --no-install-recommends -o Acquire::Retries=3 "${packages[@]}"
-# parrot-core supplies the canonical Deb822 repository configuration. Keep it
-# as the single source of repository settings after the bootstrap transaction.
-test -s /etc/apt/sources.list.d/parrot.sources
-rm /etc/apt/sources.list
-# Upgrade the base packages as well as explicitly requested applications.
-apt-get full-upgrade -y --no-install-recommends -o Acquire::Retries=3
-apt-get check
-audit="$(dpkg --audit)"
-[[ -z "$audit" ]] || { printf '%s\n' "$audit" >&2; exit 1; }
-
 # Let account tools enforce UID/GID uniqueness and maintain shadow/gshadow.
 # Desktop defaults live in the system dconf database; each learner starts with
 # a fresh user database rather than a precompiled copy that overrides them.
-# Parrot ships a complete workstation profile, including optional applets.
-# New learner homes use this project's small, explicit skeleton instead.
-find /etc/skel /root -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
-cp -a "$PAYLOAD/skel/." /etc/skel/
-cp -a "$PAYLOAD/skel/." /root/
+# Preserve the distribution's shell and application defaults. Remove only
+# compiled user overrides and Burp's seed identity before creating box.
+for home in /etc/skel /root; do
+  rm -f "$home/.config/dconf/user"
+  rm -rf "$home/.java/.userPrefs/burp" "$home/.BurpSuite" "$home/.cache"
+done
 groupadd --gid 1013 box
 useradd --uid 1001 --gid 1013 --create-home --shell /bin/bash box
 usermod -a -G wireshark box
@@ -55,30 +39,8 @@ if [[ ! -f /usr/share/applications/wireshark.desktop ]]; then
   done
 fi
 
-# Purge any remaining Firefox binaries, wrapper scripts, desktop entries, and user templates.
-rm -f /usr/bin/firefox-selector \
-      /usr/share/applications/firefox*.desktop \
-      /usr/share/applications/firefox-selector.desktop
-rm -rf /etc/skel/.local/share/applications/firefox* \
-       /root/.local/share/applications/firefox* \
-       /home/box/.local/share/applications/firefox*
-
-# Remove noisy or container-incompatible XDG autostart entries.
-rm -f /etc/xdg/autostart/parrot-updater.desktop \
-      /etc/xdg/autostart/update-notifier.desktop \
-      /etc/xdg/autostart/user-dirs-update-gtk.desktop \
-      /etc/xdg/autostart/nm-applet.desktop \
-      /etc/xdg/autostart/mate-power-manager.desktop \
-      /etc/xdg/autostart/mate-screensaver.desktop \
-      /etc/xdg/autostart/aa-notify.desktop \
-      /etc/xdg/autostart/geoclue-demo-agent.desktop \
-      /etc/xdg/autostart/spice-vdagent.desktop \
-      /etc/xdg/autostart/vmware-user.desktop \
-      /etc/xdg/autostart/onboard-autostart.desktop \
-      /etc/xdg/autostart/discovery-autostart.desktop
-
 # Keep theme settings separate from the project's authoritative panel layout.
-rm -rf /etc/dconf/db/local.d
+rm -f /etc/dconf/db/local.d/parrot-skel /etc/dconf/db/local.d/htb-config
 install -d /etc/dconf/db/local.d
 python3 "$PAYLOAD/desktop_check.py" theme \
   /usr/lib/parrot-skel/etc/dconf/db/local.d/htb-config /etc/dconf/db/local.d/10-theme
@@ -123,7 +85,7 @@ install -d -m 0700 -o 1001 -g 1013 /home/box/.local/share/pki /home/box/.local/s
 runuser -u box -- certutil -N -d sql:/home/box/.local/share/pki/nssdb --empty-password
 runuser -u box -- certutil -A -d sql:/home/box/.local/share/pki/nssdb \
   -n AttackBox-Burp -t 'C,,' -i /usr/share/attackbox/burp-ca.der
-cp "$PAYLOAD/packages.txt" /usr/share/attackbox/
+install -m 0644 "$PAYLOAD/packages.txt" "$PAYLOAD/desktop-packages.txt" "$PAYLOAD/remove-packages.txt" /usr/share/attackbox/
 LC_ALL=C getcap -r /usr | LC_ALL=C sort > /usr/share/attackbox/file-capabilities.txt
 dpkg-query -W -f='${binary:Package}\t${Version}\t${Installed-Size}\n' > /usr/share/attackbox/packages.tsv
 printf '{"format":1,"uid":1001,"gid":1013}\n' > /etc/.attackbox_golden_ready

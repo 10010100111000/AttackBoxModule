@@ -1,11 +1,9 @@
-# AttackBox 软件清单。每行一个 APT 软件包，全部为必需项。
-# 依赖由 APT 自动解析；清单变更后重新构建金盘。
+# 平台适配和已确认的教学工具。每行一个必需的 APT 软件包。
+# 完整桌面由 desktop-packages.txt 安装，移除项由 remove-packages.txt 管理。
 
-# 基础系统、MATE 桌面与浏览器
+# 平台适配、HTB 外观和浏览器
 parrot-core
 parrot-core-htb
-mate-session-manager
-mate-terminal
 parrot-themes
 parrot-wallpapers
 ara-icon-theme
@@ -29,20 +27,8 @@ nano
 vim-tiny
 parrot-archive-keyring
 debian-mate-default-settings
-mate-panel
 mate-applet-brisk-menu
-mate-settings-daemon
-mate-control-center
-mate-notification-daemon
-marco
-caja
-engrampa
-mate-utils
-eom
 gir1.2-peas-1.0
-mate-calc
-gvfs-backends
-mate-polkit
 dconf-cli
 libgl1-mesa-dri
 chromium

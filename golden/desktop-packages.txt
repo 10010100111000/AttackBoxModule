@@ -1,0 +1,2 @@
+# 官方完整 MATE 桌面；按元包的 Depends 和 Recommends 安装。
+mate-desktop-environment
