@@ -20,6 +20,8 @@
 
 `install-packages.sh` 安装软件、更新系统并执行移除策略。软件卸载使用 APT，移除范围由清单控制；实际版本与安装大小记录在 `packages.tsv`，三份策略清单一同保存在金盘的 `/usr/share/attackbox/`。
 
+远程桌面采用无音频 VNC 配置，移除音频服务、音量控制器、英文语音识别模型、电池管理、离线桌面用户手册和额外 MATE 壁纸集。HTB／Parrot 外观、常用桌面操作、命令行手册和已确认的教学工具保留。
+
 桌面组件由官方元包维护。项目保留发行版的 Shell 和应用用户模板，HTB 外观字段来自 Parrot 软件包。`attackbox.layout` 维护已选定的 BriskMenu 搜索菜单、顶部启动器和底部任务栏，`mate-defaults.ini` 维护平台需要的运行设置。
 
 默认应用由 `desktop_defaults.py` 统一配置：网页使用 Chromium，目录使用 Caja，文本使用 Geany，图片使用 EOM，压缩包使用 Engrampa。截图、文件搜索、计算器、通知和 SMB／SFTP 浏览由完整桌面提供；中文字体、主题引擎和浏览器相关配置由平台适配清单提供。
@@ -42,6 +44,8 @@ Worker 桌面通过切换用户启动，没有 PAM 登录来解锁系统密钥�
 
 `install-packages.sh` 负责软件安装与移除，`configure.sh` 负责账号、sudo、语言和桌面默认配置；`build.sh` 负责基础系统引导、隔离挂载、清理和锁定子卷。账号由系统工具维护，`box` 固定为 `1001:1013`。金盘内的 machine-id 为空；平台接入时需要在每个实例初始化阶段生成独立标识。
 
+`cleanup.py` 在根文件系统卸载后清理构建临时文件、APT 下载与索引、日志、用户缓存、回收站、历史记录和旧会话，并移除其他桌面及未安装 Neovim 的残留配置。Burp CA、NSS 证书库、字体／图标缓存、GSettings schema 和 dpkg 数据库保留。`cleanup-report.json` 记录实际移除包的原安装大小及清掉的文件内容大小；压缩产物体积以 Release 分卷为准。
+
 ## GitHub Actions
 
 在 **Actions → Build golden image → Run workflow** 中填写三段版本号，例如 `1.0.0`。
@@ -59,6 +63,7 @@ Worker 桌面通过切换用户启动，没有 PAM 登录来解锁系统密钥�
 | `attackbox-golden.btrfs.zst.part-*` | 每卷最多 1900 MiB 的压缩 Btrfs 数据流 |
 | `attackbox-golden.sha256` | 分卷校验值 |
 | `packages.tsv` | 实际安装的软件包、版本及安装大小（KiB） |
+| `cleanup-report.json` | 移除的软件包、安装大小估计与清理文件内容的字节数 |
 
 软件包来自持续更新的 Parrot 仓库。manifest 记录教材仓库提交及参考的上游构建提交，包清单记录实际安装版本。安装端按 manifest 顺序验证并接收分卷。
 

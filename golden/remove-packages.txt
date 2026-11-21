@@ -22,3 +22,27 @@ remmina
 dirbuster
 enum4linux
 kerberoast
+
+# 离线桌面用户手册；命令行 man 手册和教学工具保留。
+mate-user-guide
+gnome-user-docs
+
+# 无音频 VNC：音频服务、音量控制器与英文语音识别模型。
+pipewire-audio
+pipewire
+pipewire-bin
+pipewire-pulse
+pipewire-alsa
+wireplumber
+pulseaudio
+pulseaudio-utils
+libcanberra-pulse
+mate-media
+mate-media-common
+pocketsphinx-en-us
+gstreamer1.0-pipewire
+
+# 远程桌面使用 HTB／Parrot 壁纸，不需要电池管理及额外 MATE 壁纸集。
+mate-power-manager
+mate-power-manager-common
+mate-backgrounds

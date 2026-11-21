@@ -73,8 +73,8 @@ jobs:
           sudo btrfs send --proto 1 /mnt/golden/base_rootfs \
             | zstd -10 -T2 \
             | split -b 1900M -d -a 2 - golden-dist/attackbox-golden.btrfs.zst.part-
-          sudo cp /mnt/golden/base_rootfs/usr/share/attackbox/packages.tsv golden-dist/packages.tsv
-          sudo chown "$USER" golden-dist/packages.tsv
+          sudo cp /mnt/golden/base_rootfs/usr/share/attackbox/packages.tsv /mnt/golden/base_rootfs/usr/share/attackbox/cleanup-report.json golden-dist/
+          sudo chown "$USER" golden-dist/packages.tsv golden-dist/cleanup-report.json
           python3 golden/artifact.py create golden-dist --version "$VERSION" --revision "$GITHUB_SHA"
 
       - name: Verify and receive exported parts

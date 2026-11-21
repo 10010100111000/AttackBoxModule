@@ -20,6 +20,14 @@ apt-get install -y --install-recommends -o Acquire::Retries=3 "${desktop_package
 test -s /etc/apt/sources.list.d/parrot.sources
 rm /etc/apt/sources.list
 apt-get full-upgrade -y --no-install-recommends -o Acquire::Retries=3
+: > "$PAYLOAD/removed-packages.tsv"
+for package in "${removed_packages[@]}"; do
+  details=$(dpkg-query -W -f='${db:Status-Status}\t${Installed-Size}' "$package" 2>/dev/null || true)
+  IFS=$'\t' read -r status size <<< "$details"
+  if [[ $status == installed ]]; then
+    printf '%s\t%s\n' "$package" "$size" >> "$PAYLOAD/removed-packages.tsv"
+  fi
+done
 remove_packages "$PAYLOAD/remove-packages.txt"
 apt-get check
 audit="$(dpkg --audit)"

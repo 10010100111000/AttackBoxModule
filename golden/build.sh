@@ -64,17 +64,7 @@ chroot "$TARGET" /usr/bin/env -i HOME=/root PATH=/usr/sbin:/usr/bin:/sbin:/bin \
   /bin/bash /tmp/attackbox-build/configure.sh
 unmount_image
 rm "$TARGET/usr/sbin/policy-rc.d"
-for directory in boot usr/lib/modules usr/lib/firmware tmp var/tmp run var/log var/lib/apt/lists var/cache/apt/archives; do
-  mkdir -p "$TARGET/$directory"
-  find "$TARGET/$directory" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
-done
-chmod 1777 "$TARGET/tmp" "$TARGET/var/tmp"
-rm -f "$TARGET/etc/machine-id" "$TARGET/var/lib/dbus/machine-id"
-touch "$TARGET/etc/machine-id"
-mkdir -p "$TARGET/var/lib/dbus"
-touch "$TARGET/var/lib/dbus/machine-id"
-rm -f "$TARGET/etc/ssh/ssh_host_"* "$TARGET/root/.bash_history" \
-  "$TARGET/etc/passwd-" "$TARGET/etc/group-" "$TARGET/etc/shadow-" "$TARGET/etc/gshadow-"
+python3 "$SOURCE/cleanup.py" "$TARGET"
 btrfs property set "$TARGET" ro true
 SUCCESS=1
 echo "Golden rootfs ready: $TARGET"
