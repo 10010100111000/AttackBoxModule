@@ -40,5 +40,5 @@ jobs:
       - name: Verify private static Flag provisioning (unchanged judge format)
         run: bash labs/pebbles/tests/static-flag-acceptance.sh ttp-pebbles:ci
 
-      - name: Verify persistent restart and clean per-user container reset
+      - name: Verify learner isolation and Worker-style fresh-container reset
         run: bash labs/pebbles/tests/reset-acceptance.sh ttp-pebbles:ci

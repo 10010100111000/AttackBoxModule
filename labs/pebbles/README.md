@@ -79,7 +79,7 @@ Flag is missing. This **does not use dynamic Flag rotation** or modify Worker in
 Admin access to Docker inspection can reveal container environment variables, so
 restrict Docker API/Worker administrative access.
 
-CI additionally checks that the override survives restart, remains unreadable to
+CI additionally checks that the same private override works across fresh instances, remains unreadable to
 `www-data`, and that a required-but-missing Flag fails closed.
 
 ## Runtime constraints
@@ -105,6 +105,6 @@ The Pebbles 80/tcp page was not released in the reviewed public sources, so that
 - Real upstream ZoneMinder `limit` SQL concatenation: **source verified**.
 - PHP entry page: **local HTTP tests passed**.
 - Docker build, runtime, real ZoneMinder SQLi → PHP and UDF Root: **passed in GitHub CI on an earlier revision**, pending successful checks on this branch head.
-- Attacker-side port reconnaissance, access restrictions, real Worker, and reset: **new remote regression test added; latest result pending**.
+- Attacker-side reconnaissance: **CI passed previously**; independent instance reset and static private Flag provisioning: **tests added, awaiting latest CI**; real Worker remains unverified.
 
 **Do not register or publish until all tests pass.**

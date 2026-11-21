@@ -64,7 +64,7 @@
 | ZoneMinder 1.29.0 原始 PHP SQLi | **真实 SQLi HTTP 请求、文件写入及 Apache PHP 执行通过** |
 | MySQL UDF → UID 0 → 读取容器 Root proof | **独立 CI UDF helper 测试通过**；helper 仅用于验证，不进入正式靶机镜像 |
 | 512 MiB 默认资源配置 | **CI 短暂健康运行**：内存约 418.8 MiB / 512 MiB、100 PIDs；并发与峰值未实测 |
-| 静态 Flag、删除新建后重置数据库/文件状态 | 静态演示 Flag 可用；**专门的重启、重建验收脚本已添加，尚待最新 CI 结果** |
+| 静态 Flag、删除新建后重置数据库/文件状态 | 静态演示 Flag 可用；**专门的双实例隔离与删除重建验收脚本已添加，尚待最新 CI 结果** |
 | 真实 Worker 网络、宿主隔离、并发用户、发布 | **未验证**，不得宣称正式上线 |
 
 历史 Ubuntu 包、ZoneMinder 原版源码和漏洞均已通过 CI；剩余重点是**实例生命周期、原版页面差异和生产 Worker 隔离**。不可使用特权容器、宿主目录或 Docker socket 来缩短验证链。
