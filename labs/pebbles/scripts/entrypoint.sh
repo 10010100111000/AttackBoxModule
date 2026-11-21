@@ -77,7 +77,7 @@ ftp_pid=$!
 
 /usr/sbin/apache2ctl -D FOREGROUND &
 apache_pid=$!
-/usr/sbin/runuser -u tomcat -- /opt/tomcat/bin/catalina.sh run &
+su -s /bin/sh -c 'exec /opt/tomcat/bin/catalina.sh run' tomcat &
 tomcat_pid=$!
 
 say 'starting original ZoneMinder daemons'
