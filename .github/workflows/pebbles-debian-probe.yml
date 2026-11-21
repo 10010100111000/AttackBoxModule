@@ -29,3 +29,37 @@ jobs:
             mysql --version
             php --version
           '
+
+      - name: Build complete Debian Pebbles candidate (still experimental)
+        run: |
+          set -euo pipefail
+          docker build --progress=plain -f labs/pebbles/Dockerfile.debian -t pebbles-debian:ci labs/pebbles
+
+      - name: Probe native original services and Debian package versions
+        run: |
+          set -euo pipefail
+          c=$(docker run -d --network none --memory 1536m --pids-limit 512 pebbles-debian:ci)
+          cleanup() {
+            docker logs --tail 120 "$c" || true
+            docker rm -f "$c" >/dev/null 2>&1 || true
+          }
+          trap cleanup EXIT
+          status=starting
+          for i in $(seq 1 150); do
+            state=$(docker inspect -f '{{.State.Status}}' "$c")
+            if [ "$state" != running ]; then
+              echo "FAIL: container exited with status $state"
+              docker inspect -f 'exit={{.State.ExitCode}} oom={{.State.OOMKilled}}' "$c"
+              exit 1
+            fi
+            status=$(docker inspect -f '{{.State.Health.Status}}' "$c")
+            if [ "$status" = healthy ]; then break; fi
+            if [ "$status" = unhealthy ]; then echo 'FAIL: healthcheck unhealthy'; exit 1; fi
+            sleep 2
+          done
+          test "$status" = healthy
+          docker exec "$c" bash /usr/local/bin/pebbles-healthcheck
+          docker cp labs/pebbles/debian/source-contract.sh "$c":/tmp/debian-source-contract.sh
+          docker exec "$c" bash /tmp/debian-source-contract.sh
+          docker exec "$c" curl -fsS http://127.0.0.1:3305/zm/index.php | grep -q ZoneMinder
+          docker image inspect -f 'Debian candidate image size: {{.Size}} bytes' pebbles-debian:ci
