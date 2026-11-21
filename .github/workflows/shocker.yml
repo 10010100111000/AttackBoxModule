@@ -53,11 +53,19 @@ jobs:
               -e SHOCKER_STATIC_ROOT_FLAG='TTP{shocker_ci_private_root_0123456789}' \
               ttp-shocker:ci
           }
+          diagnostics() {
+            echo '--- container / Apache CGI diagnostics ---' >&2
+            docker inspect -f 'status={{.State.Status}} exit={{.State.ExitCode}} oom={{.State.OOMKilled}}' "$target" >&2 || true
+            docker inspect -f '{{range .State.Health.Log}}{{.ExitCode}}: {{.Output}}{{end}}' "$target" >&2 || true
+            docker exec "$target" sh -c 'wget -S -T 3 -O - http://127.0.0.1/cgi-bin/user.sh' >&2 || true
+            docker exec "$target" sh -c 'httpd -t; grep -in ScriptAlias /etc/apache2/httpd.conf /etc/apache2/conf.d/shocker-cgi.conf' >&2 || true
+            docker logs --tail 100 "$target" >&2 || true
+          }
           wait_healthy() {
             for i in $(seq 1 60); do
               state=$(docker inspect -f '{{.State.Status}}' "$target")
               if [ "$state" != running ]; then
-                docker logs "$target"; return 1
+                diagnostics; return 1
               fi
               health=$(docker inspect -f '{{.State.Health.Status}}' "$target")
               if [ "$health" = healthy ]; then return 0; fi

@@ -25,6 +25,10 @@ RUN set -eux; \
     adduser -D -u 1001 -G shelly -h /home/shelly -s /bin/sh shelly; \
     mkdir -p /run/apache2 /run/sshd /usr/lib/cgi-bin; \
     sed -ri 's/^User[[:space:]]+apache/User shelly/;s/^Group[[:space:]]+apache/Group shelly/' /etc/apache2/httpd.conf; \
+    # Alpine httpd.conf already has /cgi-bin ScriptAlias; remove only that
+    # default mapping so our genuine Apache CGI script is the one dispatched.
+    sed -ri '/^[[:space:]]*ScriptAlias[[:space:]]+"?\/cgi-bin\//d' /etc/apache2/httpd.conf; \
+    grep -Fq 'ScriptAlias /cgi-bin/ "/usr/lib/cgi-bin/"' /etc/apache2/conf.d/shocker-cgi.conf; \
     printf '%s\n' 'shelly ALL=(root) NOPASSWD: /usr/bin/perl' > /etc/sudoers.d/shelly; \
     chmod 0440 /etc/sudoers.d/shelly; \
     mkdir -p /etc/ssh/sshd_config.d; \
