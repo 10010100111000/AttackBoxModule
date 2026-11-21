@@ -73,3 +73,15 @@
 此前的 `Credential Gate` 是原创演示程序，不属于 PG Cockpit 的复现。原 PG Cockpit 还使用真正的 Cockpit 9090 端口、PHP/MySQL 站点及自定义 SUID 程序 `Authchecker`；目前没有核实到原版 Blaze 网站/自定义 ELF 的可授权源码，因此不应将自编站点冒充原题。
 
 本项目优先研究并实现 *PG Pebbles* 这台具有**公开原始 Web 应用源码**的 SQLi 靶机。若最终不能在平台的 Docker 隔离边界内完整、安全地复现 UDF Root 链，要明确记录差异与不支持原因，不交付假提权链。
+
+## 7. 第二轮核查：原始软件包比自行重写更容易
+
+- 初始 TCP 80 的 Pebbles PHP 登录页面是**非主要利用入口**。不同 Writeup 均指出常见账号/SQLi 测试不成功；不能将这里伪造为真正 SQLi。已在 `site80/` 复原行为，原版网页静态素材尚未找到，所以未承诺像素级还原。
+- 上游 ZoneMinder 2016 年文档明确指出 Ubuntu 16.04 官方仓库包含 **ZoneMinder 1.29.0**，依赖 PHP 7.0 + MySQL 5.7 + Apache，可先使用历史 Ubuntu 系统包而非为原版应用自行写 HTML/CSS。
+- 真实漏洞的 **CVE 是 CVE-2016-10204**：日志查询中的 `limit` SQL 注入。CVE-2016-10203 是另一个 XSS，不能混淆。
+- `probe/Dockerfile.package-probe` 仅安装历史包并检查版本及文件是否存在；文件名故意**不是 Dockerfile**，以防未经验证的原型被现有 GHCR 自动构建工作流当成靶机发布。
+- 无 Docker 引擎的当前作者环境无法运行 Ubuntu 16.04 软件包测试；历史镜像可获得性、旧 apt 仓库签名、包安装、ZoneMinder 的真实 SQLi、MySQL 以 root 身份运行及 UDF 链仍需分开实测。
+
+**上游依据：** https://wiki.zoneminder.com/Ubuntu_Server_16.04_64-bit_with_Zoneminder_1.29.0_the_easy_way ；漏洞说明：https://ubuntu.com/security/CVE-2016-10204
+
+**研究分支：** https://github.com/10010100111000/AttackBoxModule/tree/feat/pebbles-original-entry/labs/pebbles/
