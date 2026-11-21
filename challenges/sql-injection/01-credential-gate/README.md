@@ -1,17 +1,16 @@
-# 认证绕过 · 设计占位
+# 暂停：PG Cockpit 原题研究尚不充分
 
-- 状态：**仅选题，未构建、未验证、未发布**
-- 建议级别：初级
-- 核心关口：登录 SQL 注入及权限变化
-- 预期演进：登录功能 → SQLi 认证绕过 → 访问本不应开放的数据
-- 参考机器：PG Cockpit、HTB Magic（仅研究攻击链，不复刻原始品牌与设计）
+> **不再制作 Credential Gate 原创登录演示。** 之前基于这个目录做过一个自编 Web 登录应用，并且已关闭未合并的 Draft PR #1，因为它没有复原真实 PG Cockpit。
 
-## 进入开发前
+已从第三方原题 Writeup 核对：
 
-1. 明确独立的原创业务场景、靶机 slug、正常业务行为和最短预期利用路径。
-2. 核对源代码、软件版本、具体漏洞成因及可合法使用的素材。
-3. 先验证真实漏洞；再设计必要的凭据、文件与权限转折。
-4. 在 `labs/<slug>/` 实现可重复构建的环境，并独立完成健康检查、动态 Flag、启动和重置验收。
-5. 验收后在**当前目录**放置正式的中文挑战正文 `.md`；`writeup.md` 仅在决定发布官方题解时添加。
+- 22/tcp OpenSSH 8.2p1。
+- 80/tcp Apache 2.4.41，网站标题 **blaze**，其 PHP 登录页包含真实 MySQL SQLi；数据库为 blazeDB。
+- 9090/tcp 是原生 Cockpit 管理平台，通过 SQLi 获得凭据后登录成为系统用户 james。
+- 后续必须经过原题的自定义 SUID ELF `Authchecker` 的文件拷贝通配符漏洞，才能完成 Root。
 
-> 当前 README.md 不是学员题面，也不会被现有内容解析器当作挑战导入。
+**阻塞原因**：暂未取得可授权使用的 Blaze 自定义前端和 Authchecker 原始程序及完整代码。只搭一个自编登录页不足以称为“PG Cockpit 复现”。因此本题搁置，不能作为首个发布机器。
+
+参考：https://hackindex.io/writeups/cockpit
+
+首个正在研究的 SQLi 复现对象改为 [PG Pebbles（真实 ZoneMinder 1.29.0）](../../../labs/pebbles/RECONSTRUCTION.md)。当前使用静态 Flag；任何环境都必须先完成 Docker 真实利用链验收。
