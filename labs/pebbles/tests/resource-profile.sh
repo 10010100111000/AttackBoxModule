@@ -10,6 +10,14 @@ report() {
 }
 report "### Pebbles Docker resource profile"
 report "Image size: ${mib} MiB (${bytes} bytes); Linux amd64, all original services."
+report ""
+report "Main installed runtime directory sizes (MiB; file contents only, not layer duplication):"
+breakdown=$(docker run --rm --network none --entrypoint /bin/sh "$image" -c \
+  'du -sm /var/lib/mysql /usr/share/zoneminder /opt/tomcat /usr/lib/jvm /usr/share/doc 2>/dev/null | sort -rn' || true)
+while IFS= read -r line; do
+  [[ -z "$line" ]] || report "  $line"
+done <<< "$breakdown"
+report "Image layers are measured separately by docker image inspect; directory sizes are not additive."
 profile() {
   local ram="$1" pids="$2" label="$3" cid="" state="unknown" health="starting" usage=""
   report ""
