@@ -25,6 +25,7 @@ jobs:
         run: |
           set -euo pipefail
           docker build --progress=plain -f labs/pebbles/Dockerfile -t ttp-pebbles:baseline labs/pebbles
+          docker build --progress=plain -f labs/pebbles/Dockerfile.lean --target xenial-assembled -t ttp-pebbles:lean-layered labs/pebbles
           docker build --progress=plain -f labs/pebbles/Dockerfile.lean -t ttp-pebbles:lean labs/pebbles
 
       - name: Measure exact image sizes and InnoDB redo files
@@ -32,10 +33,12 @@ jobs:
           set -euo pipefail
           original=$(docker image inspect -f '{{.Size}}' ttp-pebbles:baseline)
           lean=$(docker image inspect -f '{{.Size}}' ttp-pebbles:lean)
-          printf 'Baseline image: %s bytes\nOptimized candidate: %s bytes\n' "$original" "$lean"
+          layered=$(docker image inspect -f '{{.Size}}' ttp-pebbles:lean-layered)
+          printf 'Baseline image: %s bytes\nLayered Xenial candidate: %s bytes\nSingle-layer repack: %s bytes\n' "$original" "$layered" "$lean"
           docker run --rm --network none --entrypoint sh ttp-pebbles:lean -c 'ls -l /var/lib/mysql/ib_logfile*; test -x /usr/sbin/mysqld; test -f /usr/share/zoneminder/www/ajax/log.php'
+          docker run --rm --network none --entrypoint sh ttp-pebbles:lean-layered -c 'test -x /usr/sbin/mysqld; test -f /usr/share/zoneminder/www/ajax/log.php'
           echo '### Pebbles size comparison' >> "$GITHUB_STEP_SUMMARY"
-          awk -v old="$original" -v new="$lean" 'BEGIN {printf "Baseline: %.1f MiB; candidate: %.1f MiB; reduction: %.1f MiB (%.1f%%)\n", old/1048576, new/1048576, (old-new)/1048576,100*(old-new)/old}' | tee -a "$GITHUB_STEP_SUMMARY"
+          awk -v old="$original" -v new="$lean" -v layered="$layered" 'BEGIN {printf "Baseline: %.1f MiB; layered (shared Ubuntu base): %.1f MiB; scratch repack: %.1f MiB\n", old/1048576,layered/1048576,new/1048576; printf "Layered savings: %.1f MiB; flat savings: %.1f MiB\n", (old-layered)/1048576,(old-new)/1048576}' | tee -a "$GITHUB_STEP_SUMMARY"
           if (( lean >= original )); then
             echo "FAIL: additional stages did not actually reduce the final image size" >&2
             exit 1
