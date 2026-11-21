@@ -10,8 +10,12 @@ mysql --protocol=socket --user=zmuser --password=zmpass -D zm -Nse 'SELECT COUNT
 for port in 21 22 80 3305 8080; do
     nc -z -w 3 127.0.0.1 "$port" >/dev/null 2>&1
 done
-curl -fsS --max-time 5 http://127.0.0.1:80/ | grep -q 'Pebbles'
-curl -fsS --max-time 5 http://127.0.0.1:3305/ | grep -q 'Apache2 Ubuntu Default Page'
-curl -fsS --max-time 5 http://127.0.0.1:3305/zm/index.php | grep -qi 'ZoneMinder'
-curl -fsS --max-time 7 http://127.0.0.1:8080/ | grep -qi 'Tomcat'
+page80=$(curl -fsS --max-time 5 http://127.0.0.1:80/)
+[[ "$page80" == *Pebbles* ]]
+page3305=$(curl -fsS --max-time 5 http://127.0.0.1:3305/)
+[[ "$page3305" == *"Apache2 Ubuntu Default Page"* ]]
+zm_page=$(curl -fsS --max-time 5 http://127.0.0.1:3305/zm/index.php)
+[[ "$zm_page" == *ZoneMinder* ]]
+tomcat_page=$(curl -fsS --max-time 7 http://127.0.0.1:8080/)
+[[ "$tomcat_page" == *Tomcat* ]]
 test -s /root/proof.txt
