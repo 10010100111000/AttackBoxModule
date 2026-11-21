@@ -31,5 +31,8 @@ jobs:
           PEBBLES_TEST_UDF: '1'
         run: bash labs/pebbles/tests/service-smoke.sh ttp-pebbles:ci
 
+      - name: Verify reconnaissance from a separate attacker container
+        run: bash labs/pebbles/tests/remote-recon.sh ttp-pebbles:ci
+
       - name: Profile Docker image and Worker default limits
         run: bash labs/pebbles/tests/resource-profile.sh ttp-pebbles:ci

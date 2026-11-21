@@ -40,6 +40,23 @@ PEBBLES_TEST_SQLI=1 bash tests/service-smoke.sh ttp-pebbles:dev
 
 The acceptance script must verify the actual vulnerable ZoneMinder log query writes a PHP marker via MySQL `INTO OUTFILE` and that Apache executes it. This cannot be replaced by a synthetic route or by merely checking the CVE version number. A separate UDF execution proof as container root is still required for the final Root stage.
 
+## Real attacker-side reconnaissance acceptance
+
+The original-stack test validates internal services and the genuine SQL injection and root chain.
+A separate `tests/remote-recon.sh` launches **two containers on an isolated Docker internal
+bridge**. It checks that an attacker sees the original five TCP services, identifies the
+Apache default page and native Tomcat, can enumerate ZoneMinder at **3305/zm/**, and **cannot
+access /zm/ on the 80/tcp decoy**. It also verifies MySQL and Tomcat's AJP connector are not
+externally reachable.
+
+Run on a dedicated Docker-capable test host:
+
+```bash
+bash tests/remote-recon.sh ttp-pebbles:ci
+```
+
+No public port forwarding is used, and the probe needs only Python's standard library.
+
 ## Static Flag
 
 The original end goal is the root proof. `flags/root.txt` is copied into `/root/proof.txt` with restrictive permissions. **The repository contains only a public demonstration value**, not an actual production answer. Before release, inject a privately managed static flag during the build and set the same answer in the platform `quiz.answer`; do not leak the real value through Git.
@@ -48,7 +65,7 @@ The original end goal is the root proof. `flags/root.txt` is copied into `/root/
 
 One challenge = one Docker image = one per-user target container, as supported by the existing AttackBox Worker. All original processes share an isolated network namespace; MySQL listens only on container loopback and deliberately runs as **container UID 0** to reproduce the original unsafe UDF escalation. This is not host root.
 
-Memory **1536 MB** and PIDs **512** are provisional test allocations, not measured production usage. The Java server and old ZoneMinder dependencies may need more RAM than your default target settings.
+An earlier GitHub CI resource sample measured **414.7 MiB and ~102 PIDs** with the Worker default 512 MiB / 256 PIDs and one CPU. That was healthy but leaves little headroom. Start production Worker trials with **1024 MiB and 256 PIDs**, then measure sustained usage and adjust; this is a provisional recommendation, not a proven capacity requirement.
 
 The Pebbles 80/tcp page was not released in the reviewed public sources, so that custom landing page is only an approximate behavioral reconstruction. The actual ZoneMinder web frontend is installed unmodified from the original Ubuntu package.
 
@@ -66,6 +83,7 @@ The Pebbles 80/tcp page was not released in the reviewed public sources, so that
 
 - Real upstream ZoneMinder `limit` SQL concatenation: **source verified**.
 - PHP entry page: **local HTTP tests passed**.
-- Docker build, runtime, SQLi → PHP, UDF Root, Worker and restart/reset: **not yet verified**.
+- Docker build, runtime, real ZoneMinder SQLi → PHP and UDF Root: **passed in GitHub CI on an earlier revision**, pending successful checks on this branch head.
+- Attacker-side port reconnaissance, access restrictions, real Worker, and reset: **new remote regression test added; latest result pending**.
 
 **Do not register or publish until all tests pass.**
