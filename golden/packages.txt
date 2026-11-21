@@ -4,6 +4,9 @@
 # 平台适配、HTB 外观和浏览器
 parrot-core
 parrot-core-htb
+parrot-menu
+python3-gi
+gir1.2-matemenu-2.0
 parrot-themes
 parrot-wallpapers
 ara-icon-theme

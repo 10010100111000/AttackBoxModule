@@ -35,7 +35,7 @@ def read_ini(path, *, strict=True):
     return parser
 
 
-def validate_settings(root=Path('/')):
+def validate_settings(root=Path('/'), *, sources=None):
     """Validate dconf keys and values against installed GSettings schemas.
 
     dconf compile alone accepts misspelled paths and unknown keys. A memory
@@ -50,7 +50,11 @@ def validate_settings(root=Path('/')):
     schemas['org/mate/terminal/profiles/default'] = (
         'org.mate.terminal.profile:/org/mate/terminal/profiles/default/')
     environment = dict(os.environ, GSETTINGS_BACKEND='memory', GSETTINGS_SCHEMA_DIR=str(schema_dir))
-    for file in sorted((root / 'etc/dconf/db/local.d').iterdir()):
+    defaults = root / 'etc/dconf/db/local.d'
+    files = [defaults / name for name in sources] if sources is not None else sorted(defaults.iterdir())
+    for file in files:
+        if sources is not None and not file.is_file():
+            raise FileNotFoundError(f'Missing project settings: {file}')
         if not file.is_file() or file.name.startswith('.'):
             continue
         settings = read_ini(file)
@@ -292,7 +296,7 @@ if __name__ == '__main__':
     elif sys.argv[1:2] == ['snapshot'] and len(sys.argv) == 3:
         Path(sys.argv[2]).write_text(json.dumps(list_windows(), ensure_ascii=False, indent=2))
     elif sys.argv[1:] == ['settings']:
-        validate_settings()
+        validate_settings(sources=('10-theme', 'zz-attackbox'))
     elif sys.argv[1:2] == ['watch'] and len(sys.argv) == 3:
         watch_windows(Path(sys.argv[2]))
     else:

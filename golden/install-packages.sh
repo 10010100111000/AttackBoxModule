@@ -29,6 +29,10 @@ for package in "${removed_packages[@]}"; do
   fi
 done
 remove_packages "$PAYLOAD/remove-packages.txt"
+# Refresh official menu entries after the final installed tool set is known.
+install -d /etc/parrot-menu
+printf 'ShowInstallableLaunchers=false\n' > /etc/parrot-menu/launcher.conf
+/usr/share/parrot-menu/update-launchers
 apt-get check
 audit="$(dpkg --audit)"
 [[ -z "$audit" ]] || { printf '%s\n' "$audit" >&2; exit 1; }

@@ -24,6 +24,8 @@
 
 桌面组件由官方元包维护。项目保留发行版的 Shell 和应用用户模板，HTB 外观字段来自 Parrot 软件包。`attackbox.layout` 维护已选定的 BriskMenu 搜索菜单、顶部启动器和底部任务栏，`mate-defaults.ini` 维护平台需要的运行设置。
 
+`parrot-menu` 提供官方安全工具分类，`ShowInstallableLaunchers=false` 使菜单按实际安装的软件生成入口。软件安装及移除后调用发行版的 `update-launchers` 更新分类；用户模板中的启动器也参与统一处理，未安装的用户应用通过 `TryExec` 自动隐藏。
+
 默认应用由 `desktop_defaults.py` 统一配置：网页使用 Chromium，目录使用 Caja，文本使用 Geany，图片使用 EOM，压缩包使用 Engrampa。截图、文件搜索、计算器、通知和 SMB／SFTP 浏览由完整桌面提供；中文字体、主题引擎和浏览器相关配置由平台适配清单提供。
 
 教学工具按管理员确认的清单安装：Burp、Wireshark、Geany、FreeRDP；ffuf、Gobuster、dirsearch、wfuzz、dirb、sqlmap、WPScan、Nikto；Nmap、Masscan、协议客户端与抓包工具；Metasploit、Impacket、NetExec、evil-winrm、SMB 枚举、Windows/PowerShell 载荷；Chisel、Proxychains、Redis/MySQL/PostgreSQL 客户端；密码分析工具与完整字典库。Python、C/C++、Java、Node/npm 和 Go 编译环境保留。
@@ -67,7 +69,7 @@ Worker 桌面通过切换用户启动，没有 PAM 登录来解锁系统密钥�
 
 软件包来自持续更新的 Parrot 仓库。manifest 记录教材仓库提交及参考的上游构建提交，包清单记录实际安装版本。安装端按 manifest 顺序验证并接收分卷。
 
-工作流验证源子卷与回读子卷的结构、只读属性、locale、文件 capabilities 和安装清单，并在临时快照中运行 `check-desktop.sh`：以 `box` 用户启动 TigerVNC、MATE 和 Chromium，验证 VNC 握手、浏览器 JavaScript 及三个扩展的安装。`desktop_check.py` 按安装的 applet 注册信息检查布局中的 IID、执行文件、启动器和主题资源；桌面启动期间通过 X11 监测错误对话框，先注入并关闭一个测试对话框确认探测器能拒绝它，再持续监测真实桌面；检测到面板或 applet 弹窗时验收失败，窗口信息写入测试日志。`desktop_smoke.py` 在同一会话验证默认打开方式、真实截图、图片和文本打开、终端执行、文本剪贴板、ZIP 往返与回收站操作。验收还会重新启动 Burp、核对 CA、通过本地 HTTPS 测试服务验证 TLS 抓包，并确认 Chromium 正常加载被代理的 HTTPS 页面。测试保留证书校验和浏览器安全沙箱。日常文件操作的测试数据放在学员主目录。测试在独立挂载和 PID 命名空间运行，结束后删除测试快照。
+工作流验证源子卷与回读子卷的结构、只读属性、locale、文件 capabilities 和安装清单，并在临时快照中运行 `check-desktop.sh`：以 `box` 用户启动 TigerVNC、MATE 和 Chromium，验证 VNC 握手、浏览器 JavaScript 及三个扩展的安装。`desktop_check.py` 按安装的 applet 注册信息检查布局中的 IID、执行文件、启动器和主题资源；桌面启动期间通过 X11 监测错误对话框，先注入并关闭一个测试对话框确认探测器能拒绝它，再持续监测真实桌面；检测到面板或 applet 弹窗时验收失败，窗口信息写入测试日志。`desktop_smoke.py` 使用原生 MateMenu 库验证安全工具分类和可见浏览器入口，再在同一会话验证默认打开方式、真实截图、图片和文本打开、终端执行、文本剪贴板、ZIP 往返与回收站操作。验收还会重新启动 Burp、核对 CA、通过本地 HTTPS 测试服务验证 TLS 抓包，并确认 Chromium 正常加载被代理的 HTTPS 页面。测试保留证书校验和浏览器安全沙箱。日常文件操作的测试数据放在学员主目录。测试在独立挂载和 PID 命名空间运行，结束后删除测试快照。
 
 窗口观察器从 X11 根窗口读取客户端 ID，再逐个读取属性；查询期间已经关闭的客户端从本次快照中略过，显示连接错误和仍存在的错误弹窗会使验收失败。
 

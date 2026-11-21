@@ -1,7 +1,7 @@
 """Prepare a non-interactive desktop for each new learner home."""
 from pathlib import Path
 import configparser
-import re
+import shlex
 import sys
 
 
@@ -89,16 +89,41 @@ def configure(home: Path, applications: Path, *, autostart_sources=Path('/etc/xd
             target.write_text(source.read_text())
             target.chmod(0o755)
 
-    # User-level overrides keep package-owned launchers intact. Chromium is
-    # the selected browser; vncconfig runs under the Worker supervisor.
-    for desktop in sorted(applications.glob('*.desktop')):
-        lines = desktop.read_text().splitlines()
-        if desktop.name.startswith('firefox') or any(
-            line.startswith('Exec=') and re.search(r'(?<![\w-])vncconfig(?![\w-])', line) for line in lines
-        ):
-            overrides = home / '.local/share/applications'
+    configure_applications(home, applications)
+
+
+def configure_applications(home, applications):
+    # XDG user entries override system entries by desktop-file ID. Apply the
+    # same policy to that effective set, including launchers inherited in skel.
+    overrides = home / '.local/share/applications'
+    entries = {path.name: (path, False) for path in applications.glob('*.desktop')}
+    entries.update({path.name: (path, True) for path in overrides.glob('*.desktop')})
+    for name, (source, local) in sorted(entries.items()):
+        metadata = configparser.ConfigParser(interpolation=None, strict=False)
+        metadata.optionxform = str
+        metadata.read(source)
+        entry = metadata['Desktop Entry']
+        command = shlex.split(entry.get('Exec', ''))
+        executable = Path(command[0]).name if command else ''
+        changed = False
+        if name.startswith('firefox') or executable in {'firefox', 'firefox-esr', 'firefox-selector', 'vncconfig'}:
+            entry['Hidden'] = 'true'
+            changed = True
+        elif local and command and 'TryExec' not in entry:
+            # Preserve useful inherited launchers while letting the menu hide
+            # applications that are not installed in this desktop.
+            entry['TryExec'] = command[0]
+            changed = True
+        if name == 'parrot-burpsuite.desktop':
+            canonical = configparser.ConfigParser(interpolation=None)
+            canonical.optionxform = str
+            canonical.read(applications / 'burpsuite.desktop')
+            entry['Exec'] = canonical['Desktop Entry']['Exec']
+            changed = True
+        if changed:
             overrides.mkdir(parents=True, exist_ok=True)
-            hide_desktop_entry(desktop, overrides / desktop.name)
+            with (overrides / name).open('w') as stream:
+                metadata.write(stream, space_around_delimiters=False)
 
 
 if __name__ == '__main__':

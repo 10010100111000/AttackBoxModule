@@ -6,9 +6,8 @@ parrot-firefox-profiles
 webext-foxyproxy
 webext-ublock-origin-firefox
 
-# 更新提示、空工具菜单和物理设备服务。
+# 更新提示和物理设备服务。
 parrot-updater
-parrot-menu
 bluez
 blueman
 cups

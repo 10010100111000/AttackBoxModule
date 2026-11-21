@@ -44,6 +44,38 @@ def validate_handlers():
                 raise RuntimeError(f'{mime}: expected {launcher}, got {default}')
 
 
+def validate_menu():
+    import gi
+    gi.require_version('MateMenu', '2.0')
+    from gi.repository import MateMenu
+
+    tree = MateMenu.Tree.new_for_path('/etc/xdg/menus/mate-applications.menu', MateMenu.TreeFlags.NONE)
+    tree.load_sync()
+    nmap_categorized = False
+
+    def walk(directory, depth):
+        nonlocal nmap_categorized
+        iterator = directory.iter()
+        while True:
+            kind = iterator.next()
+            if kind == MateMenu.TreeItemType.INVALID:
+                break
+            if kind == MateMenu.TreeItemType.DIRECTORY:
+                walk(iterator.get_directory(), depth + 1)
+            elif kind == MateMenu.TreeItemType.ENTRY:
+                entry = iterator.get_entry()
+                if entry.get_desktop_file_id() == 'parrot-nmap.desktop' and depth >= 2:
+                    nmap_categorized = True
+                executable = Path(entry.get_app_info().get_executable() or '').name
+                if executable in {'firefox', 'firefox-esr', 'firefox-selector'}:
+                    raise RuntimeError(f'Unexpected Firefox menu entry: {entry.get_desktop_file_id()}')
+
+    walk(tree.get_root_directory(), 0)
+    if not nmap_categorized:
+        raise RuntimeError('Parrot security categories do not contain the installed Nmap launcher')
+    print('Native MATE menu categories and visible browser entries passed')
+
+
 def open_document(path, application):
     # Launched GUI applications may inherit their parent's streams and keep
     # them open. Do not wait for those streams to close before checking X11.
@@ -57,6 +89,7 @@ def open_document(path, application):
 
 
 def verify_desktop():
+    validate_menu()
     validate_handlers()
     with tempfile.TemporaryDirectory(prefix='desktop-smoke-', dir=Path.home()) as temp:
         root = Path(temp)

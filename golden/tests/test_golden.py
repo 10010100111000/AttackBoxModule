@@ -111,6 +111,12 @@ class DesktopTests(unittest.TestCase):
             (applications / 'firefox-selector.desktop').write_text('[Desktop Entry]\nType=Application\nName=Firefox\nExec=firefox-selector\n')
             (home / '.config').mkdir(parents=True)
             (home / '.config/upstream.conf').write_text('original settings')
+            local_apps = home / '.local/share/applications'
+            local_apps.mkdir(parents=True)
+            (local_apps / 'firefox.desktop').write_text(
+                '[Desktop Entry]\nType=Application\nName=Firefox\nExec=firefox-selector %u\n')
+            (local_apps / 'codium.desktop').write_text(
+                '[Desktop Entry]\nType=Application\nName=Codium\nExec=/nonexistent/codium %U\n')
             (home / '.config/autostart').mkdir()
             (home / '.config/autostart/mate-user-share.desktop').write_text(
                 '[Desktop Entry]\nType=Application\nName=File sharing\nExec=/usr/lib/mate-user-share/mate-user-share\n')
@@ -124,6 +130,8 @@ class DesktopTests(unittest.TestCase):
             self.assertTrue((home / '.local/share/applications/vncconfig.desktop').exists())
             self.assertFalse((home / '.local/share/applications/chromium.desktop').exists())
             self.assertIn('Hidden=true', (home / '.local/share/applications/firefox-selector.desktop').read_text())
+            self.assertIn('Hidden=true', (local_apps / 'firefox.desktop').read_text())
+            self.assertIn('TryExec=/nonexistent/codium', (local_apps / 'codium.desktop').read_text())
             self.assertIn('Name=Firefox', (home / '.local/share/applications/firefox-selector.desktop').read_text())
             self.assertEqual((home / '.config/upstream.conf').read_text(), 'original settings')
             gtk = (home / '.config/gtk-3.0/settings.ini').read_text()
@@ -145,6 +153,23 @@ class DesktopTests(unittest.TestCase):
             self.assertIn('image/webp=eom.desktop;', defaults)
             self.assertIn('text/plain=geany.desktop;', defaults)
             self.assertEqual(defaults.count('text/html='), 1)
+
+    def test_parrot_burp_category_uses_the_configured_launcher(self):
+        spec = importlib.util.spec_from_file_location('desktop', ROOT / 'desktop_defaults.py')
+        desktop = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(desktop)
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            applications = root / 'applications'
+            applications.mkdir()
+            (applications / 'burpsuite.desktop').write_text(
+                '[Desktop Entry]\nType=Application\nName=Burp\nExec=/usr/local/bin/burpsuite %U\n')
+            (applications / 'parrot-burpsuite.desktop').write_text(
+                '[Desktop Entry]\nType=Application\nName=Burp\nExec=/usr/bin/burpsuite\nCategories=03-06-web-application-proxies;top10;\n')
+            desktop.configure_applications(root / 'home', applications)
+            entry = (root / 'home/.local/share/applications/parrot-burpsuite.desktop').read_text()
+            self.assertIn('Exec=/usr/local/bin/burpsuite %U', entry)
+            self.assertIn('Categories=03-06-web-application-proxies;top10;', entry)
 
 
 class BurpProfileTests(unittest.TestCase):
@@ -215,9 +240,9 @@ class SourceTests(unittest.TestCase):
     def test_selected_toolset_and_browser(self):
         packages = {line.split('#')[0].strip() for line in (ROOT / 'packages.txt').read_text().splitlines()}
         self.assertTrue({'chromium', 'chromium-sandbox', 'burpsuite', 'geany', 'freerdp3-x11',
-                         'postgresql-client', 'golang-go', 'nodejs', 'npm', 'enum4linux-ng'} <= packages)
+                         'postgresql-client', 'golang-go', 'nodejs', 'npm', 'enum4linux-ng', 'parrot-menu'} <= packages)
         self.assertFalse({'firefox-esr', 'webext-foxyproxy', 'parrot-interface-common',
-                          'parrot-menu', 'parrot-updater', 'caido', 'bloodhound',
+                          'parrot-updater', 'caido', 'bloodhound',
                           'remmina', 'enum4linux', 'kerberoast'} & packages)
 
     def test_browser_policies_install_distinct_extensions(self):

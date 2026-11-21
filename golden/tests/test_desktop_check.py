@@ -132,6 +132,13 @@ class SettingsContractTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, message):
                     check.validate_settings(self.root)
 
+    def test_project_settings_do_not_claim_distribution_relocatable_settings(self):
+        (self.defaults / 'project').write_text('[org/attackbox/test]\nanimations=false\n')
+        (self.defaults / 'distribution').write_text('[org/gnome/desktop/app-folders/folders/info]\nname=\'Information\'\n')
+        check.validate_settings(self.root, sources=('project',))
+        with self.assertRaises(FileNotFoundError):
+            check.validate_settings(self.root, sources=('missing-project',))
+
 
 class ErrorWindowTests(unittest.TestCase):
     owners = {'mate-panel', 'clock-applet'}
