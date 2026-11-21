@@ -25,9 +25,9 @@ ENV DEBIAN_FRONTEND=noninteractive \
 # Xenial is EOL: use signed historical Ubuntu archives, retaining signature checks.
 RUN set -eux; \
     printf '%s\n' \
-      'deb http://old-releases.ubuntu.com/ubuntu/ xenial main restricted universe multiverse' \
-      'deb http://old-releases.ubuntu.com/ubuntu/ xenial-updates main restricted universe multiverse' \
-      'deb http://old-releases.ubuntu.com/ubuntu/ xenial-security main restricted universe multiverse' \
+      'deb http://archive.ubuntu.com/ubuntu/ xenial main restricted universe multiverse' \
+      'deb http://archive.ubuntu.com/ubuntu/ xenial-updates main restricted universe multiverse' \
+      'deb http://archive.ubuntu.com/ubuntu/ xenial-security main restricted universe multiverse' \
       > /etc/apt/sources.list; \
     printf '%s\n' 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99-lab-archive; \
     printf '#!/bin/sh\nexit 101\n' > /usr/sbin/policy-rc.d; \
