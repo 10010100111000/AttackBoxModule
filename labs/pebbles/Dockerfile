@@ -32,6 +32,15 @@ RUN set -eux; \
     printf '%s\n' 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99-lab-archive; \
     printf '#!/bin/sh\nexit 101\n' > /usr/sbin/policy-rc.d; \
     chmod 0755 /usr/sbin/policy-rc.d; \
+    # Avoid unpacking documentation/translations into the final image.
+    # Retain package copyright files for redistributing historical software.
+    printf '%s\n' \
+      'path-exclude=/usr/share/man/*' \
+      'path-exclude=/usr/share/info/*' \
+      'path-exclude=/usr/share/locale/*' \
+      'path-exclude=/usr/share/doc/*' \
+      'path-include=/usr/share/doc/*/copyright' \
+      > /etc/dpkg/dpkg.cfg.d/01-pebbles-small; \
     printf '%s\n' \
       'mysql-server-5.7 mysql-server/root_password password pebbles-bootstrap-only' \
       'mysql-server-5.7 mysql-server/root_password_again password pebbles-bootstrap-only' \
@@ -50,9 +59,19 @@ RUN set -eux; \
     test -f /usr/share/zoneminder/www/index.php; \
     test -f /usr/share/zoneminder/db/zm_create.sql; \
     test -f /usr/share/zoneminder/www/ajax/log.php; \
+    # Apply permissions in the SAME image layer as package installation,
+    # otherwise OverlayFS may store duplicate MySQL and ZoneMinder trees.
+    chown -R www-data:www-data /usr/share/zoneminder; \
+    chown -R root:root /var/lib/mysql; \
+    chown root:www-data /etc/zm/zm.conf; \
+    chmod 0640 /etc/zm/zm.conf; \
+    apt-get clean; \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*.deb
 
-COPY --from=tomcat-artifact /opt/tomcat/ /opt/tomcat/
+# Set Tomcat ownership as files enter their image layer, instead of
+# recursively chown-ing them in a later layer (which duplicates content).
+RUN useradd --system --user-group --home /opt/tomcat --shell /usr/sbin/nologin tomcat
+COPY --chown=tomcat:tomcat --from=tomcat-artifact /opt/tomcat/ /opt/tomcat/
 COPY site80/public/ /var/www/pebbles/
 COPY config/apache-pebbles.conf /etc/apache2/sites-available/pebbles.conf
 COPY config/pebbles-vsftpd.conf /etc/vsftpd.conf
@@ -62,10 +81,8 @@ COPY scripts/healthcheck.sh /usr/local/bin/pebbles-healthcheck
 COPY flags/root.txt /root/proof.txt
 # Restrict Tomcat's AJP connector to loopback: the original port scan had five TCP services.
 RUN set -eux; \
-    useradd --system --user-group --home /opt/tomcat --shell /usr/sbin/nologin tomcat; \
     mkdir -p /run/mysqld /run/sshd /run/zm /var/log/mysql /var/log/zoneminder \
       /var/www/pebbles /opt/tomcat/temp /opt/tomcat/logs /opt/tomcat/work; \
-    chown -R tomcat:tomcat /opt/tomcat; \
     grep -q 'port="8080" protocol="HTTP/1.1"' /opt/tomcat/conf/server.xml; \
     sed -i 's/port="8009" protocol="AJP\/1.3"/port="8009" address="127.0.0.1" protocol="AJP\/1.3"/' /opt/tomcat/conf/server.xml; \
     grep -q 'port="8009" address="127.0.0.1"' /opt/tomcat/conf/server.xml; \
@@ -79,10 +96,6 @@ RUN set -eux; \
     chown root:root /root/proof.txt; \
     sed -ri '/^[[:space:]]*user[[:space:]]*=[[:space:]]*mysql([[:space:]]*#.*)?$/d' /etc/mysql/mysql.conf.d/mysqld.cnf; \
     if grep -Eq '^[[:space:]]*user[[:space:]]*=' /etc/mysql/mysql.conf.d/mysqld.cnf; then exit 1; fi; \
-    chown root:www-data /etc/zm/zm.conf; \
-    chmod 0640 /etc/zm/zm.conf; \
-    chown -R www-data:www-data /usr/share/zoneminder; \
-    chown -R root:root /var/lib/mysql; \
     chmod 0755 /var/www/html; \
     printf 'date.timezone = UTC\n' > /etc/php/7.0/apache2/conf.d/99-pebbles-timezone.ini; \
     ln -sf /opt/tomcat/RELEASE-NOTES /opt/tomcat/webapps/ROOT/RELEASE-NOTES.txt
