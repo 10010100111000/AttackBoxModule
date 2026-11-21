@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Validate ephemeral one-container-per-learner lifecycle in Docker.
+# Validate independent Docker learner instances and Worker-style stop/create reset.
 # This is a reset/isolation test, not an exploit or player-facing guide.
 set -Eeuo pipefail
 
@@ -61,30 +61,40 @@ docker exec "$first" sh -c 'printf "instance-state" > /var/www/html/ttp-reset-ma
 docker exec "$first" test -f /var/www/html/ttp-reset-marker.txt
 
 echo '[reset] seeded database and filesystem'
-# Restart preserves that user's state. Reset is achieved by deleting the
-# container and creating a fresh instance from the immutable image.
-echo '[reset] restarting first instance'
-docker restart --time 15 "$first" >/dev/null
-echo '[reset] Docker restart returned; waiting for health'
-wait_healthy "$first"
-echo '[reset] restarted instance healthy'
-[[ "$(table_count "$first")" == 1 ]] || { echo "FAIL: state disappeared on restart" >&2; exit 1; }
-docker exec "$first" test -f /var/www/html/ttp-reset-marker.txt
-
-echo '[reset] deleting first instance and creating a fresh one'
-docker rm -f "$first" >/dev/null
-first=""
+# Worker.stop removes the container and volumes. Worker.start creates a fresh
+# container. Docker restart of the SAME container is not part of the platform's
+# current lifecycle contract, so we deliberately do not require it here.
+echo '[reset] starting a second independent learner instance'
 second=$(new_instance)
 wait_healthy "$second"
-echo '[reset] fresh instance healthy'
-[[ "$(table_count "$second")" == 0 ]] || { echo "FAIL: previous learner's SQL state survived reset" >&2; exit 1; }
+echo '[reset] second learner instance healthy'
+[[ "$(table_count "$second")" == 0 ]] || { echo "FAIL: first learner's SQL state leaked to second" >&2; exit 1; }
 if docker exec "$second" test -e /var/www/html/ttp-reset-marker.txt; then
-  echo "FAIL: previous learner's file survived reset" >&2
+  echo "FAIL: first learner's file leaked to second learner" >&2
   exit 1
 fi
 [[ "$(root_proof_hash "$second")" == "$first_hash" ]] || {
-  echo "FAIL: static proof is inconsistent across fresh instances" >&2
+  echo "FAIL: static proof inconsistent between independent learners" >&2
   exit 1
 }
-docker exec "$second" sh -c 'test -s /root/proof.txt && test "$(stat -c %a /root/proof.txt)" = 600'
-echo 'PASS: restart preserves instance state; new container resets DB and files; static proof remains consistent'
+[[ "$(table_count "$first")" == 1 ]] || { echo "FAIL: first learner's SQL state unexpectedly cleared" >&2; exit 1; }
+docker exec "$first" test -f /var/www/html/ttp-reset-marker.txt
+
+echo '[reset] deleting first instance to match Worker stop'
+docker rm -f "$first" >/dev/null
+first=""
+echo '[reset] starting a fresh instance to match Worker start'
+first=$(new_instance)
+wait_healthy "$first"
+echo '[reset] newly created first learner instance healthy'
+[[ "$(table_count "$first")" == 0 ]] || { echo "FAIL: old SQL state survived a fresh container" >&2; exit 1; }
+if docker exec "$first" test -e /var/www/html/ttp-reset-marker.txt; then
+  echo "FAIL: previous learner's file survived fresh container creation" >&2
+  exit 1
+fi
+[[ "$(root_proof_hash "$first")" == "$first_hash" ]] || {
+  echo "FAIL: static root proof changed across fresh instances" >&2
+  exit 1
+}
+docker exec "$first" sh -c 'test -s /root/proof.txt && test "$(stat -c %a /root/proof.txt)" = 600'
+echo 'PASS: independent learner instances; Worker-style stop/delete and fresh start reset DB and files; static proof consistent'
