@@ -27,7 +27,7 @@ RUN set -eux; \
   apt-get update; \
   apt-get install -y --no-install-recommends \
     libaio1 libnuma1 libmecab2 libsasl2-2 libncurses5 libtinfo5 \
-    perl psmisc adduser debconf ca-certificates \
+    perl psmisc adduser debconf init-system-helpers ca-certificates \
     apache2 libapache2-mod-php5 php5-cli php5-mysql php5-gd php5-json php5-curl; \
   printf '%s\n' \
     'mysql-community-server mysql-community-server/root-pass password pebbles-bootstrap-only' \
