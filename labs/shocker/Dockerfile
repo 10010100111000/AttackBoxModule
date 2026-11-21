@@ -28,7 +28,6 @@ RUN set -eux; \
     # Alpine httpd.conf already has /cgi-bin ScriptAlias; remove only that
     # default mapping so our genuine Apache CGI script is the one dispatched.
     sed -ri '/^[[:space:]]*ScriptAlias[[:space:]]+"?\/cgi-bin\//d' /etc/apache2/httpd.conf; \
-    grep -Fq 'ScriptAlias /cgi-bin/ "/usr/lib/cgi-bin/"' /etc/apache2/conf.d/shocker-cgi.conf; \
     printf '%s\n' 'shelly ALL=(root) NOPASSWD: /usr/bin/perl' > /etc/sudoers.d/shelly; \
     chmod 0440 /etc/sudoers.d/shelly; \
     mkdir -p /etc/ssh/sshd_config.d; \
@@ -51,6 +50,7 @@ RUN set -eux; \
     chown -R shelly:shelly /home/shelly; \
     chmod 0644 /home/shelly/user.txt; chmod 0600 /root/root.txt; \
     /usr/sbin/httpd -t; \
+    grep -Fq 'ScriptAlias /cgi-bin/ "/usr/lib/cgi-bin/"' /etc/apache2/conf.d/shocker-cgi.conf; \
     env 'SHOCKER_NATIVE=() { :;}; echo CVE2014_6271_REAL' \
       /usr/local/bin/bash43 -c 'true' | grep -Fq CVE2014_6271_REAL
 EXPOSE 80 2222
