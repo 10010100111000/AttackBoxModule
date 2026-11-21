@@ -37,8 +37,7 @@ if [[ -n "${PEBBLES_STATIC_ROOT_FLAG:-}" ]]; then
     case "$root_flag" in
         *$'\n'*|*$'\r'*) say 'invalid static Root Flag (must be one line)'; exit 1 ;;
     esac
-    umask 077
-    printf '%s\n' "$root_flag" > /root/proof.txt
+    (umask 077; printf '%s\n' "$root_flag" > /root/proof.txt)
     chmod 0600 /root/proof.txt
     unset root_flag PEBBLES_STATIC_ROOT_FLAG
 fi
