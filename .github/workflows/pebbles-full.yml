@@ -1,0 +1,47 @@
+name: Validate Pebbles original-stack candidate
+
+on:
+  pull_request:
+    paths:
+      - 'labs/pebbles/**'
+      - '.github/workflows/pebbles-full.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: pebbles-full-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+
+jobs:
+  original-stack:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check shell and PHP syntax
+        run: |
+          set -euo pipefail
+          bash -n labs/pebbles/scripts/*.sh labs/pebbles/tests/*.sh
+          php -l labs/pebbles/site80/public/index.php
+      - name: Build authentic Xenial Docker image
+        run: docker build --progress=plain -t ttp-pebbles:ci labs/pebbles
+      - name: Build test-only original MySQL 5.7 UDF helper
+        run: docker build -f labs/pebbles/tests/Dockerfile.udf-probe -t ttp-pebbles-udf:ci labs/pebbles/tests
+      - name: Verify real services and genuine SQLi file write
+        env:
+          PEBBLES_TEST_SQLI: '1'
+          PEBBLES_TEST_UDF: '1'
+        run: bash labs/pebbles/tests/service-smoke.sh ttp-pebbles:ci
+
+      - name: Verify reconnaissance from a separate attacker container
+        run: bash labs/pebbles/tests/remote-recon.sh ttp-pebbles:ci
+
+      - name: Profile Docker image and Worker default limits
+        run: bash labs/pebbles/tests/resource-profile.sh ttp-pebbles:ci
+
+      - name: Verify private static Flag provisioning (unchanged judge format)
+        run: bash labs/pebbles/tests/static-flag-acceptance.sh ttp-pebbles:ci
+
+      - name: Verify learner isolation and Worker-style fresh-container reset
+        run: bash labs/pebbles/tests/reset-acceptance.sh ttp-pebbles:ci

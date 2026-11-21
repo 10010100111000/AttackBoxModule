@@ -1,0 +1,20 @@
+# CI-only compiler for the original MySQL 5.7 UDF escalation path.
+# This stage must NEVER be part of the published Pebbles runtime image.
+FROM ubuntu:16.04
+ENV DEBIAN_FRONTEND=noninteractive
+RUN set -eux; \
+    printf '%s\n' \
+      'deb http://archive.ubuntu.com/ubuntu/ xenial main universe' \
+      'deb http://archive.ubuntu.com/ubuntu/ xenial-updates main universe' \
+      'deb http://archive.ubuntu.com/ubuntu/ xenial-security main universe' \
+      > /etc/apt/sources.list; \
+    printf '%s\n' 'Acquire::Check-Valid-Until "false";' \
+      > /etc/apt/apt.conf.d/99-lab-archive; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends gcc libc6-dev libmysqlclient-dev; \
+    rm -rf /var/lib/apt/lists/*
+COPY udf-probe.c /tmp/udf-probe.c
+RUN gcc -std=c99 -fPIC -shared -Wall -Wextra -o /tmp/ttp_udf_probe.so \
+      /tmp/udf-probe.c -lc \
+ && file /tmp/ttp_udf_probe.so || test -s /tmp/ttp_udf_probe.so
+CMD ["/bin/true"]

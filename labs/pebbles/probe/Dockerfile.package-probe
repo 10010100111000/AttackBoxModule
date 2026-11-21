@@ -1,0 +1,18 @@
+# EXPERIMENTAL dependency probe only; NOT a runnable lab image.
+# Ubuntu 16.04 included the genuine historical ZoneMinder 1.29.0 package.
+# Never deploy this image as a service or expose its outdated software.
+FROM ubuntu:16.04
+ENV DEBIAN_FRONTEND=noninteractive
+RUN printf '%s\n'       'deb http://old-releases.ubuntu.com/ubuntu/ xenial main restricted universe multiverse'       'deb http://old-releases.ubuntu.com/ubuntu/ xenial-updates main restricted universe multiverse'       'deb http://old-releases.ubuntu.com/ubuntu/ xenial-security main restricted universe multiverse'       > /etc/apt/sources.list \
+ && printf '%s\n' 'Acquire::Check-Valid-Until "false";'       > /etc/apt/apt.conf.d/99-old-archive \
+ && printf '#!/bin/sh\nexit 101\n' > /usr/sbin/policy-rc.d \
+ && chmod +x /usr/sbin/policy-rc.d
+# Throwaway nonproduction password used solely to satisfy historical
+# mysql-server package configuration during this installability probe.
+RUN printf '%s\n'       'mysql-server-5.7 mysql-server/root_password password probe-only'       'mysql-server-5.7 mysql-server/root_password_again password probe-only'       | debconf-set-selections \
+ && apt-get update \
+ && apt-get install -y --no-install-recommends       apache2 libapache2-mod-php7.0 php7.0-mysql php7.0-gd       mysql-server-5.7 zoneminder vsftpd openssh-server ca-certificates \
+ && dpkg-query -W zoneminder | awk '$2 ~ /^1[.]29[.]0/ { found=1 } END { exit !found }' \
+ && test -f /usr/share/zoneminder/www/index.php \
+ && test -f /usr/share/zoneminder/db/zm_create.sql
+CMD ["/bin/sh","-c","dpkg-query -W zoneminder mysql-server-5.7 apache2 php7.0; echo 'Dependency probe only; no services started'"]
