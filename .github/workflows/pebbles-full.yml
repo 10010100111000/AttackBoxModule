@@ -7,6 +7,9 @@ on:
       - '.github/workflows/pebbles-full.yml'
   workflow_dispatch:
 
+concurrency:
+  group: pebbles-full-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: read
 
