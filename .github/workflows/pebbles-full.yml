@@ -1,0 +1,35 @@
+name: Validate Pebbles original-stack candidate
+
+on:
+  push:
+    branches:
+      - feat/pebbles-original-entry
+    paths:
+      - 'labs/pebbles/**'
+      - '.github/workflows/pebbles-full.yml'
+  pull_request:
+    paths:
+      - 'labs/pebbles/**'
+      - '.github/workflows/pebbles-full.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  original-stack:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check shell and PHP syntax
+        run: |
+          set -euo pipefail
+          bash -n labs/pebbles/scripts/*.sh labs/pebbles/tests/*.sh
+          php -l labs/pebbles/site80/public/index.php
+      - name: Build authentic Xenial Docker image
+        run: docker build --progress=plain -t ttp-pebbles:ci labs/pebbles
+      - name: Verify real services and genuine SQLi file write
+        env:
+          PEBBLES_TEST_SQLI: '1'
+        run: bash labs/pebbles/tests/service-smoke.sh ttp-pebbles:ci
