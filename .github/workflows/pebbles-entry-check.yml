@@ -1,0 +1,20 @@
+name: Verify Pebbles entry-page reconstruction
+
+on:
+  pull_request:
+    paths:
+      - "labs/pebbles/site80/**"
+      - ".github/workflows/pebbles-entry-check.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  php-entry:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify PHP landing behavior
+        run: bash labs/pebbles/site80/tests/smoke.sh
