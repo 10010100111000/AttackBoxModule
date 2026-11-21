@@ -1,0 +1,17 @@
+# CI-only shared object: compiled against native Debian Jessie MySQL UDF ABI.
+# NOT included in the target image or published to learners.
+FROM debian/eol:jessie-slim
+ENV DEBIAN_FRONTEND=noninteractive
+RUN set -eux; \
+    printf '%s\n' \
+      'deb http://archive.debian.org/debian jessie main' \
+      'deb http://archive.debian.org/debian-security jessie/updates main' \
+      > /etc/apt/sources.list; \
+    printf 'Acquire::Check-Valid-Until "false";\n' > /etc/apt/apt.conf.d/99-historical; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends gcc libc6-dev libmysqlclient-dev; \
+    rm -rf /var/lib/apt/lists/*
+COPY udf-probe.c /tmp/udf-probe.c
+RUN gcc -std=c99 -fPIC -shared -Wall -Wextra \
+    -o /tmp/ttp_udf_probe.so /tmp/udf-probe.c -lc && test -s /tmp/ttp_udf_probe.so
+CMD ["/bin/true"]

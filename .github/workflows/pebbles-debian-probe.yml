@@ -70,3 +70,20 @@ jobs:
           docker exec "$c" bash /tmp/debian-source-contract.sh
           docker exec "$c" curl -fsS http://127.0.0.1:3305/zm/index.php | grep -q ZoneMinder
           docker image inspect -f 'Debian candidate image size: {{.Size}} bytes' pebbles-debian:ci
+
+      - name: Build Debian ABI test-only MySQL UDF helper
+        run: |
+          docker build --progress=plain -f labs/pebbles/debian/Dockerfile.udf-probe \
+            -t ttp-pebbles-udf-debian:ci labs/pebbles/tests
+
+      - name: Verify genuine ZoneMinder SQLi -> PHP -> MySQL UDF root
+        run: bash labs/pebbles/debian/tests/full-acceptance.sh pebbles-debian:ci
+
+      - name: Verify reconnaissance from separate isolated attacker
+        run: bash labs/pebbles/debian/tests/remote-recon.sh pebbles-debian:ci
+
+      - name: Verify private static flag with current Worker contract
+        run: bash labs/pebbles/tests/static-flag-acceptance.sh pebbles-debian:ci
+
+      - name: Verify per-user isolation and Worker-style reset
+        run: bash labs/pebbles/tests/reset-acceptance.sh pebbles-debian:ci
