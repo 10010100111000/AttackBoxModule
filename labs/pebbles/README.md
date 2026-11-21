@@ -4,7 +4,7 @@
 
 ## Design objective
 
-Do not put SQLi on the public login page. Preserve original reconnaissance: the player first sees a straightforward PHP login on port 80, an ordinary Apache default page on port 3305 and a Tomcat service on 8080, then discovers authentic ZoneMinder 1.29.0 at `/zm/`. This is CVE-2016-10204 in the **original upstream ZoneMinder PHP code**, not a simulated endpoint.
+Do not put SQLi on the public login page. Preserve original reconnaissance: the player first sees a straightforward PHP login on port 80, an ordinary Apache default page on port 3305 and a Tomcat service on 8080, then discovers authentic ZoneMinder 1.29.0 through directory enumeration under `/zm/` on **either Apache listener (80 or 3305)**. The landing page does not link to that path. This is CVE-2016-10204 in the **original upstream ZoneMinder PHP code**, not a simulated endpoint.
 
 | Port | Service | Role in enumeration |
 | --- | --- | --- |
@@ -45,8 +45,8 @@ The acceptance script must verify the actual vulnerable ZoneMinder log query wri
 The original-stack test validates internal services and the genuine SQL injection and root chain.
 A separate `tests/remote-recon.sh` launches **two containers on an isolated Docker internal
 bridge**. It checks that an attacker sees the original five TCP services, identifies the
-Apache default page and native Tomcat, can enumerate ZoneMinder at **3305/zm/**, and **cannot
-access /zm/ on the 80/tcp decoy**. It also verifies MySQL and Tomcat's AJP connector are not
+Apache default page and native Tomcat, can enumerate the unlinked ZoneMinder installation at **80/zm/** and **3305/zm/**,
+matching multiple independent PG writeups. It also verifies MySQL and Tomcat's AJP connector are not
 externally reachable.
 
 Run on a dedicated Docker-capable test host:

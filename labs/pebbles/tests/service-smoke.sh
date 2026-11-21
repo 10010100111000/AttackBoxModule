@@ -28,9 +28,9 @@ docker exec "$container" bash /tmp/pebbles-source-contract.sh
 html=$(docker exec "$container" curl -fsS http://127.0.0.1:80/)
 grep -q '<title>Pebbles</title>' <<<"$html"
 ! grep -iq 'ZoneMinder' <<<"$html"
-# A global Apache Alias would leak the real service on the decoy's port 80.
-decoy_zm_code=$(docker exec "$container" curl -sS -o /dev/null -w '%{http_code}' http://127.0.0.1:80/zm/index.php)
-[[ "$decoy_zm_code" == 404 ]] || { echo "FAIL: ZoneMinder leaked on PHP decoy port 80 (HTTP $decoy_zm_code)" >&2; exit 1; }
+# Independent writeups observed the unlinked /zm route on both Apache ports.
+decoy_zm=$(docker exec "$container" curl -fsS http://127.0.0.1:80/zm/index.php)
+grep -q 'ZoneMinder' <<<"$decoy_zm"
 grants=$(docker exec "$container" mysql --user=zmuser --password=zmpass -Nse 'SHOW GRANTS FOR CURRENT_USER()')
 grep -q 'ON \*\.\*' <<<"$grants"
 docker exec "$container" sh -c 'test "$(ps -o user= -C mysqld | head -n 1 | xargs)" = root'

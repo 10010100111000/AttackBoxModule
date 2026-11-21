@@ -10,7 +10,7 @@
 | --- | --- | --- | --- |
 | TCP/21 | FTP | 枚举入口之一，非主要利用路径 | vsftpd 3.0.3 |
 | TCP/22 | SSH | 枚举入口之一 | OpenSSH 7.2p2 (Ubuntu) |
-| TCP/80 | HTTP | Pebbles 自定义登录页；某些报告也能从这里访问 /zm | Apache 2.4.18、PHP（原自定义代码**未知**） |
+| TCP/80 | HTTP | Pebbles 自定义登录页；多份独立 Writeup 确认该端口的未链接 /zm 可通过目录枚举发现 | Apache 2.4.18、PHP（原自定义代码**未知**） |
 | TCP/3305 | HTTP | 初始 Apache 默认页；枚举发现 /zm/ 的真正 ZoneMinder 控制台 | Apache 2.4.18 + ZoneMinder 1.29.0 |
 | TCP/8080 | HTTP | Tomcat 9.0.30 页面与干扰性路径（不同 Writeup 对实际后端与路径记录有所差异） | Apache Tomcat 9.0.30 |
 

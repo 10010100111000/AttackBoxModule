@@ -6,9 +6,8 @@ grep -Fq '$limit = isset($_POST[' /usr/share/zoneminder/www/ajax/log.php
 grep -Fq '$sql .= " order by ".$sortField." ".$sortOrder." limit ".$limit;' /usr/share/zoneminder/www/ajax/log.php
 test -f /usr/share/zoneminder/www/index.php
 dpkg-query -W -f='${Version}' mysql-server-5.7 | grep -Eq '^5[.]7[.]'
-grep -Eq '^[[:space:]]*Alias[[:space:]]+/zm[[:space:]]' /etc/apache2/conf-available/zoneminder.conf
-test ! -e /etc/apache2/conf-enabled/zoneminder.conf
-grep -Fq 'Include /etc/apache2/conf-available/zoneminder.conf' /etc/apache2/sites-enabled/pebbles.conf
+# The original machine inherited the /zm Alias across both Apache listeners.
+grep -Eq '^[[:space:]]*Alias[[:space:]]+/zm[[:space:]]' /etc/apache2/conf-enabled/zoneminder.conf
 echo 'PASS: authentic ZoneMinder 1.29.0 package and vulnerable source'
 
 # Preserve the actual service fingerprint on 8080 during initial reconnaissance.

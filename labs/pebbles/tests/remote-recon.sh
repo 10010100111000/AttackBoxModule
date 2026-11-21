@@ -71,7 +71,7 @@ assert "ZoneMinder" not in front and "/zm/" not in front, "Decoy leaks hidden ap
 status, login = fetch(80, "/", method="POST", data=b"username=admin&password=admin")
 assert status == 200 and "Invalid username or password" in login, "Decoy login not functional"
 status, hidden = fetch(80, "/zm/index.php")
-assert status == 404, f"Hidden ZoneMinder unexpectedly exposed on port 80: HTTP {status}"
+assert status == 200 and "ZoneMinder" in hidden, "Original unlinked ZoneMinder path missing from port 80"
 
 status, default = fetch(3305)
 assert status == 200 and "Apache2 Ubuntu Default Page" in default, "Initial default Apache page is missing"
@@ -80,5 +80,5 @@ assert status == 200 and "ZoneMinder" in zoneminder, "Genuine ZoneMinder was not
 
 status, tomcat = fetch(8080)
 assert status == 200 and "Tomcat" in tomcat, "Native Apache Tomcat 9 console not visible"
-print("PASS: attacker-side port enumeration, decoy login, hidden /zm/ path, genuine Tomcat, and private-only DB/AJP")
+print("PASS: attacker-side port enumeration, unlinked /zm/ on both Apache ports, native Tomcat, private-only DB/AJP")
 PY

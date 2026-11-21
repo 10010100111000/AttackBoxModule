@@ -73,7 +73,7 @@ RUN set -eux; \
     a2dissite 000-default; \
     a2ensite pebbles; \
     a2enmod cgi rewrite headers; \
-    a2disconf zoneminder; \
+    a2enconf zoneminder; \
     chmod 0755 /usr/local/bin/pebbles-entrypoint /usr/local/bin/pebbles-healthcheck; \
     chmod 0600 /root/proof.txt; \
     chown root:root /root/proof.txt; \
