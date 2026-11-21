@@ -59,7 +59,12 @@ assert observed == [21, 22, 80, 3305, 8080], f"Missing original visible service(
 for port, prefix in ((21, b"220"), (22, b"SSH-2.0")):
     with socket.create_connection((HOST, port), timeout=5) as sock:
         sock.settimeout(5)
-        banner = sock.recv(256)
+        banner = b""
+        while b"\n" not in banner and len(banner) < 1024:
+            part = sock.recv(256)
+            if not part:
+                break
+            banner += part
     assert banner.startswith(prefix), f"{port} unexpected banner {banner!r}"
 
 for port in (3306, 8009, 18080):

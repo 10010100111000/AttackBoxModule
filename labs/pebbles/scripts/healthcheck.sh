@@ -10,6 +10,11 @@ mysql --protocol=socket --user=zmuser --password=zmpass -D zm -Nse 'SELECT COUNT
 for port in 21 22 80 3305 8080; do
     nc -z -w 3 127.0.0.1 "$port" >/dev/null 2>&1
 done
+# Checking the port alone misses vsftpd's 500 OOPS runtime failures.
+exec 9<>/dev/tcp/127.0.0.1/21
+IFS= read -r -t 3 ftp_banner <&9
+exec 9>&-
+[[ "$ftp_banner" == 220* ]]
 page80=$(curl -fsS --max-time 5 http://127.0.0.1:80/)
 [[ "$page80" == *Pebbles* ]]
 page3305=$(curl -fsS --max-time 5 http://127.0.0.1:3305/)

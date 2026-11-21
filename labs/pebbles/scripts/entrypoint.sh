@@ -23,6 +23,8 @@ trap shutdown EXIT
 trap 'exit 143' TERM INT
 
 mkdir -p /run/mysqld /run/sshd /run/zm /var/log/mysql /var/log/zoneminder
+# /run is ephemeral in Docker; vsftpd needs an empty, non-writable chroot.
+install -d -o root -g root -m 0555 /var/run/vsftpd/empty
 chown root:root /run/mysqld /var/log/mysql
 chown -R www-data:www-data /run/zm /var/log/zoneminder
 
