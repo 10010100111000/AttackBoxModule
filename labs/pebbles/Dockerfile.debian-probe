@@ -18,6 +18,7 @@ RUN set -eux; \
   printf '%s\n' \
     'deb http://archive.debian.org/debian jessie main contrib non-free' \
     'deb http://archive.debian.org/debian jessie-backports main contrib non-free' \
+    'deb http://archive.debian.org/debian-security jessie/updates main contrib non-free' \
     > /etc/apt/sources.list; \
   printf 'Acquire::Check-Valid-Until "false";\n' > /etc/apt/apt.conf.d/99-archive; \
   printf '#!/bin/sh\nexit 101\n' > /usr/sbin/policy-rc.d; \
