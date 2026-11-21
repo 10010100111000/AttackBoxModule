@@ -37,4 +37,16 @@ if [[ "${PEBBLES_TEST_SQLI:-0}" == 1 ]]; then
     docker cp "$here/sqli-outfile-acceptance.sh" "$container":/tmp/pebbles-sqli-outfile-acceptance.sh
     docker exec "$container" bash /tmp/pebbles-sqli-outfile-acceptance.sh
 fi
-echo 'NOTE: full MySQL UDF root proof remains a separate required test'
+if [[ "${PEBBLES_TEST_UDF:-0}" == 1 ]]; then
+    # Create helper image only in CI; production runtime never contains UDF source or binary.
+    tool_container=$(docker create ttp-pebbles-udf:ci)
+    helper_dir=$(mktemp -d)
+    docker cp "$tool_container":/tmp/ttp_udf_probe.so "$helper_dir/ttp_udf_probe.so"
+    docker rm -f "$tool_container" >/dev/null
+    docker cp "$helper_dir/ttp_udf_probe.so" "$container":/tmp/ttp_udf_probe.so
+    rm -rf "$helper_dir"
+    docker cp "$here/udf-acceptance.sh" "$container":/tmp/pebbles-udf-acceptance.sh
+    docker exec "$container" bash /tmp/pebbles-udf-acceptance.sh
+else
+    echo 'NOTE: MySQL UDF root escalation is not tested unless PEBBLES_TEST_UDF=1'
+fi
