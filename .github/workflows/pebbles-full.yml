@@ -30,3 +30,6 @@ jobs:
           PEBBLES_TEST_SQLI: '1'
           PEBBLES_TEST_UDF: '1'
         run: bash labs/pebbles/tests/service-smoke.sh ttp-pebbles:ci
+
+      - name: Profile Docker image and Worker default limits
+        run: bash labs/pebbles/tests/resource-profile.sh ttp-pebbles:ci
