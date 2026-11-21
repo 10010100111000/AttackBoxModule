@@ -45,6 +45,15 @@ RUN set -eux; \
   chmod 0755 /usr/sbin/policy-rc.d; \
   mkdir -p /etc/mysql/conf.d; \
   printf '[mysqld]\ninnodb_log_file_size=8M\n' > /etc/mysql/conf.d/99-pebbles-redo-size.cnf; \
+  # Keep upstream licenses while omitting optional non-runtime manual pages
+  # and translations as packages are extracted into the assembled image.
+  printf '%s\n' \
+    'path-exclude=/usr/share/man/*' \
+    'path-exclude=/usr/share/info/*' \
+    'path-exclude=/usr/share/locale/*' \
+    'path-exclude=/usr/share/doc/*' \
+    'path-include=/usr/share/doc/*/copyright' \
+    > /etc/dpkg/dpkg.cfg.d/01-pebbles-small; \
   apt-get update; \
   apt-get install -y --no-install-recommends \
     libaio1 libnuma1 libmecab2 libsasl2-2 libncurses5 libtinfo5 \
