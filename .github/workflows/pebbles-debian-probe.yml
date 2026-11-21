@@ -1,0 +1,31 @@
+name: Test Debian-only Pebbles historical dependencies
+
+on:
+  pull_request:
+    paths:
+      - 'labs/pebbles/Dockerfile.debian-probe'
+      - 'labs/pebbles/debian/**'
+      - '.github/workflows/pebbles-debian-probe.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+jobs:
+  dependency-probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Debian Jessie historical package probe
+        run: |
+          set -euo pipefail
+          docker build --progress=plain -f labs/pebbles/Dockerfile.debian-probe -t pebbles-debian-probe:ci labs/pebbles
+      - name: Verify software versions and original sources
+        run: |
+          docker run --rm --network none --entrypoint /bin/sh pebbles-debian-probe:ci -ec '
+            cat /etc/debian_version
+            dpkg-query -W zoneminder mysql-community-server
+            test -f /usr/share/zoneminder/www/ajax/log.php
+            mysql --version
+            php --version
+          '

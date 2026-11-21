@@ -1,0 +1,44 @@
+# EXPERIMENT ONLY: historical Debian package availability and ABI probe.
+# Do not use as a working target, no vulnerable service is started.
+FROM alpine:3.20 AS mysql-artifact
+RUN apk add --no-cache curl ca-certificates coreutils
+COPY debian/mysql-5.7.30.sha256 /tmp/mysql.sha256
+RUN set -eux; mkdir -p /debs; \
+  for pkg in mysql-common libmysqlclient20 mysql-community-client mysql-client mysql-community-server; do \
+    file="$pkg"_5.7.30-1debian8_amd64.deb; \
+    curl -fL --retry 3 --connect-timeout 20 -o "/debs/$file" \
+      "https://repo.mysql.com/apt/debian/pool/mysql-5.7/m/mysql-community/$file"; \
+  done; \
+  sha256sum -c /tmp/mysql.sha256
+
+FROM debian/eol:jessie-slim AS package-probe
+ENV DEBIAN_FRONTEND=noninteractive
+COPY --from=mysql-artifact /debs/ /tmp/mysql-debs/
+RUN set -eux; \
+  printf '%s\n' \
+    'deb http://archive.debian.org/debian jessie main contrib non-free' \
+    'deb http://archive.debian.org/debian jessie-backports main contrib non-free' \
+    > /etc/apt/sources.list; \
+  printf 'Acquire::Check-Valid-Until "false";\n' > /etc/apt/apt.conf.d/99-archive; \
+  printf '#!/bin/sh\nexit 101\n' > /usr/sbin/policy-rc.d; \
+  chmod 0755 /usr/sbin/policy-rc.d; \
+  printf '[mysqld]\ninnodb_log_file_size=8M\n' > /etc/mysql-redo-test.cnf; \
+  apt-get update; \
+  apt-get install -y --no-install-recommends \
+    libaio1 libnuma1 libmecab2 libsasl2-2 libncurses5 libtinfo5 \
+    perl psmisc adduser debconf ca-certificates \
+    apache2 libapache2-mod-php5 php5-cli php5-mysql php5-gd php5-json php5-curl; \
+  printf '%s\n' \
+    'mysql-community-server mysql-community-server/root-pass password pebbles-bootstrap-only' \
+    'mysql-community-server mysql-community-server/re-root-pass password pebbles-bootstrap-only' \
+    | debconf-set-selections; \
+  dpkg -i \
+    /tmp/mysql-debs/mysql-common_5.7.30-1debian8_amd64.deb \
+    /tmp/mysql-debs/libmysqlclient20_5.7.30-1debian8_amd64.deb \
+    /tmp/mysql-debs/mysql-community-client_5.7.30-1debian8_amd64.deb \
+    /tmp/mysql-debs/mysql-client_5.7.30-1debian8_amd64.deb \
+    /tmp/mysql-debs/mysql-community-server_5.7.30-1debian8_amd64.deb; \
+  apt-get -t jessie-backports install -y --no-install-recommends \
+    zoneminder=1.29.0+dfsg-1~bpo8+1 openjdk-8-jre-headless; \
+  dpkg-query -W zoneminder mysql-community-server openjdk-8-jre-headless; \
+  test -f /usr/share/zoneminder/www/ajax/log.php
