@@ -61,6 +61,27 @@ No public port forwarding is used, and the probe needs only Python's standard li
 
 The original end goal is the root proof. `flags/root.txt` is copied into `/root/proof.txt` with restrictive permissions. **The repository contains only a public demonstration value**, not an actual production answer. Before release, inject a privately managed static flag during the build and set the same answer in the platform `quiz.answer`; do not leak the real value through Git.
 
+### Provisioning a private static Flag with the existing Worker
+
+The image retains a public **demo** flag for CI. For real challenges, keep the correct static
+answer out of GitHub and the public GHCR image. In the target's existing Worker/admin
+**environment variables**, set:
+
+```text
+PEBBLES_REQUIRE_STATIC_FLAG=1
+PEBBLES_STATIC_ROOT_FLAG=<your privately chosen, fixed Flag>
+```
+
+Use the **same static value** in the challenge's `quiz.answer`. The entrypoint writes
+it to `/root/proof.txt` before starting the vulnerable services and keeps mode 0600.
+With `PEBBLES_REQUIRE_STATIC_FLAG=1`, the container refuses to start if the real
+Flag is missing. This **does not use dynamic Flag rotation** or modify Worker internals.
+Admin access to Docker inspection can reveal container environment variables, so
+restrict Docker API/Worker administrative access.
+
+CI additionally checks that the override survives restart, remains unreadable to
+`www-data`, and that a required-but-missing Flag fails closed.
+
 ## Runtime constraints
 
 One challenge = one Docker image = one per-user target container, as supported by the existing AttackBox Worker. All original processes share an isolated network namespace; MySQL listens only on container loopback and deliberately runs as **container UID 0** to reproduce the original unsafe UDF escalation. This is not host root.
