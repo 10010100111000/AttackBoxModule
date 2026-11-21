@@ -66,7 +66,7 @@ RUN set -eux; \
       /var/www/pebbles /opt/tomcat/temp /opt/tomcat/logs /opt/tomcat/work; \
     chown -R tomcat:tomcat /opt/tomcat; \
     sed -i 's/port="8080" protocol="HTTP\/1.1"/port="18080" address="127.0.0.1" protocol="HTTP\/1.1"/' /opt/tomcat/conf/server.xml; \
-    test "$(grep -c 'port="18080"' /opt/tomcat/conf/server.xml)" -eq 1; \
+    grep -q 'port="18080" address="127.0.0.1"' /opt/tomcat/conf/server.xml; \
     test -f /var/www/html/index.html; \
     a2dissite 000-default; \
     a2ensite pebbles; \
