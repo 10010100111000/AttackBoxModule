@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'labs/pebbles/Dockerfile.debian-probe'
+      - 'labs/pebbles/Dockerfile.debian'
       - 'labs/pebbles/debian/**'
       - '.github/workflows/pebbles-debian-probe.yml'
   workflow_dispatch:
@@ -34,6 +35,16 @@ jobs:
         run: |
           set -euo pipefail
           docker build --progress=plain -f labs/pebbles/Dockerfile.debian -t pebbles-debian:ci labs/pebbles
+
+      - name: Record Debian image disk and package footprint
+        run: |
+          set -euo pipefail
+          bytes=$(docker image inspect -f '{{.Size}}' pebbles-debian:ci)
+          printf 'Debian image size: %s bytes\n' "$bytes"
+          docker run --rm --network none --entrypoint /bin/sh pebbles-debian:ci -ec \
+            'du -sm /var/lib/mysql /usr/lib/jvm /usr/share/zoneminder /usr/share/doc 2>/dev/null || true'
+          printf '### Debian Jessie target image\n' >> "$GITHUB_STEP_SUMMARY"
+          awk -v b="$bytes" 'BEGIN {printf "Debian: %.1f MiB (%.0f bytes); Ubuntu comparison: 220.7 MiB (earlier CI)\n", b/1048576,b}' | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: Probe native original services and Debian package versions
         run: |
