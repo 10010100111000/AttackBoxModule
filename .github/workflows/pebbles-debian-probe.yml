@@ -45,7 +45,14 @@ jobs:
           }
           trap cleanup EXIT
           status=starting
-          for i in $(seq 1 150); do
+          for i in $(seq 1 70); do
+            if [ "$i" = 20 ]; then
+              echo '=== Debian service health diagnostic (not bypassed) ==='
+              docker exec "$c" bash -x /usr/local/bin/pebbles-healthcheck 2>&1 | tail -70 || true
+              echo '=== Live listeners / Apache / ZoneMinder ==='
+              docker exec "$c" sh -c 'netstat -tlnp 2>/dev/null || true; ls -l /etc/apache2/conf-enabled/; php -v | head -1' || true
+              echo '=== End Debian diagnostic ==='
+            fi
             state=$(docker inspect -f '{{.State.Status}}' "$c")
             if [ "$state" != running ]; then
               echo "FAIL: container exited with status $state"
