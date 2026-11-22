@@ -81,6 +81,10 @@ jobs:
           docker run --rm --network "$net" \
             -v "$PWD/labs/union/tests:/tests:ro" \
             ttp-union-attacker:ci python3 /tests/http_probe.py
+          docker run --rm --network "$net" \
+            -e UNION_TEST_QUALIFIER="$first_token" \
+            -v "$PWD/labs/union/tests:/tests:ro" \
+            ttp-union-attacker:ci python3 /tests/qualification_probe.py
           docker exec "$target" sh -c \
             'test "$(cat /home/uhc/user.txt)" = "TTP{union_ci_private_user_0123456789}"; test "$(cat /root/root.txt)" = "TTP{union_ci_private_root_0123456789}"'
           docker stats --no-stream --format 'Target memory: {{.MemUsage}}, PIDs: {{.PIDs}}' "$target"
