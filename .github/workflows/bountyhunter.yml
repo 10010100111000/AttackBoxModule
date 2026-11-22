@@ -79,6 +79,10 @@ jobs:
             -e EXPECTED_TARGET_HOSTNAME="$target_hostname" \
             -v "$PWD/labs/bountyhunter/tests:/tests:ro" \
             ttp-bountyhunter-attacker:ci python3 /tests/xml_file_probe.py
+          docker run --rm --network "$net" \
+            -e BOUNTY_TEST_PASSWORD='m19RoAU0hP41A1sTsq6K' \
+            -v "$PWD/labs/bountyhunter/tests:/tests:ro" \
+            ttp-bountyhunter-attacker:ci python3 /tests/ssh_auth.py
           docker exec "$target" sh -c \
             'test "$(cat /home/development/user.txt)" = "TTP{bountyhunter_ci_user_0123456789}"; test "$(cat /root/root.txt)" = "TTP{bountyhunter_ci_root_0123456789}"'
           docker stats --no-stream --format 'Target memory: {{.MemUsage}}, PIDs: {{.PIDs}}' "$target"
