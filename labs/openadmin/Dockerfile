@@ -42,7 +42,7 @@ RUN set -eux; \
     ssh-keygen -q -m PEM -t rsa -b 2048 -N 'bloodninjas' -f /home/joanna/.ssh/id_rsa; \
     cp /home/joanna/.ssh/id_rsa.pub /home/joanna/.ssh/authorized_keys; \
     chown -R joanna:joanna /home/joanna/.ssh; \
-    chmod 0700 /home/joanna/.ssh; \
+    chmod 0711 /home/joanna/.ssh; \
     chmod 0600 /home/joanna/.ssh/authorized_keys; \
     chmod 0644 /home/joanna/.ssh/id_rsa; \
     chown -R www-data:www-data /var/www/internal; \
