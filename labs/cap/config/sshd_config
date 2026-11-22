@@ -7,6 +7,5 @@ PasswordAuthentication yes
 KbdInteractiveAuthentication no
 PubkeyAuthentication yes
 AllowUsers nathan
-UsePAM no
 PidFile /run/sshd.pid
 Subsystem sftp /usr/lib/ssh/sftp-server
