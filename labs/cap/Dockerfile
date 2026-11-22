@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7
 # Cap: real vsftpd + SSH + Flask/Gunicorn + tcpdump + Python file capabilities.
 # Stage 1 creates the seeded PCAP from a real FTP session, not crafted packets.
-FROM python:3.8-alpine3.14 AS pcap-builder
+FROM python:3.8-alpine3.18 AS pcap-builder
 RUN apk add --no-cache vsftpd tcpdump
 RUN set -eux; \
     adduser -D -u 1000 -h /home/nathan -s /bin/sh nathan; \
@@ -38,7 +38,7 @@ RUN set -eux; \
     tcpdump -nn -A -r /pcaps/0.pcap 2>/dev/null | grep -Fq 'USER nathan'; \
     tcpdump -nn -A -r /pcaps/0.pcap 2>/dev/null | grep -Fq 'PASS Buck3tH4TF0RM3!'
 
-FROM python:3.8-alpine3.14 AS runtime
+FROM python:3.8-alpine3.18 AS runtime
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 RUN apk add --no-cache openssh vsftpd tcpdump iproute2 net-tools libcap-utils bash su-exec \
  && adduser -D -u 1000 -h /home/nathan -s /bin/bash nathan \
