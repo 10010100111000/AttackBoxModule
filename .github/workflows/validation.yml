@@ -81,6 +81,9 @@ jobs:
             -e VALIDATION_TEST_FILENAME='validation-probe-ci.txt' \
             -v "$PWD/labs/validation/tests:/tests:ro" \
             python:3.12-alpine python3 /tests/smoke.py
+          docker exec -i -u apache \
+            -e VALIDATION_CI_ROOT_PASSWORD='Val1dationCiRoot123' \
+            "$target" sh -s < labs/validation/tests/native_root_auth.sh
           docker exec "$target" sh -c \
             'test "$(cat /home/htb/user.txt)" = "TTP{validation_ci_private_user_0123456789}"; test "$(cat /root/root.txt)" = "TTP{validation_ci_private_root_0123456789}"'
           docker exec -u apache "$target" sh -c \
