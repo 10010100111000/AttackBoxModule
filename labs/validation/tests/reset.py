@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Fresh container restores registration without retaining per-instance state."""
 import http.cookiejar
+import os
 import urllib.error
 import urllib.request
 
@@ -11,7 +12,7 @@ opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.coo
 with opener.open(base + "/account.php", timeout=10) as response:
     assert b"September Qualifiers" in response.read()
 try:
-    urllib.request.urlopen(base + "/validation-probe-reset-sentinel.txt", timeout=10)
+    urllib.request.urlopen(base + "/" + os.environ.get("VALIDATION_TEST_FILENAME", "validation-probe-ci.txt"), timeout=10)
     raise AssertionError("unexpected probe file survived reset")
 except urllib.error.HTTPError as error:
     assert error.code == 404
