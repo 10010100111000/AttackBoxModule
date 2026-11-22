@@ -28,7 +28,7 @@ RUN set -eux; \
     /usr/sbin/vsftpd /tmp/vsftpd-pcap.conf >/tmp/vsftpd.log 2>&1 & \
     ftp_pid=$!; \
     sleep 1; \
-    python3.8 -c 'import socket; s=socket.create_connection(("127.0.0.1",2121),5); f=s.makefile("rwb", buffering=0); assert f.readline().startswith(b"220"); f.write(b"USER nathan\\r\\n"); assert f.readline().startswith(b"331"); f.write(b"PASS Buck3tH4TF0RM3!\\r\\n"); assert f.readline().startswith(b"230"); f.write(b"QUIT\\r\\n"); f.readline(); s.close()'; \
+    python3.8 -c 'import socket; s=socket.create_connection(("127.0.0.1",2121),5); f=s.makefile("rwb"); assert f.readline().startswith(b"220"); f.write(b"USER nathan\\r\\n"); f.flush(); assert f.readline().startswith(b"331"); f.write(b"PASS Buck3tH4TF0RM3!\\r\\n"); f.flush(); assert f.readline().startswith(b"230"); f.write(b"QUIT\\r\\n"); f.flush(); f.readline(); s.close()'; \
     sleep 1; \
     kill -INT "$capture_pid"; \
     wait "$capture_pid"; \
