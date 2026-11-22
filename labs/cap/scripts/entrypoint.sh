@@ -26,7 +26,7 @@ ssh-keygen -A >/dev/null 2>&1
 sshd_pid=$!
 /usr/sbin/vsftpd /etc/vsftpd.conf &
 ftp_pid=$!
-su-exec nathan /usr/bin/python3.8 -m gunicorn --bind 0.0.0.0:80 --workers 1 --threads 4 --timeout 30 app:app &
+su-exec nathan /usr/bin/python3.8 /app/app.py &
 web_pid=$!
 wait -n "$sshd_pid" "$ftp_pid" "$web_pid"
 status=$?

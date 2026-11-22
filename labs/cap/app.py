@@ -105,3 +105,9 @@ def download(capture_id):
     if not os.path.isfile(path):
         abort(404)
     return send_file(path, as_attachment=True, download_name=str(capture_id) + ".pcap")
+
+
+if __name__ == "__main__":
+    # The original service is a small Flask application bound directly to 80.
+    # Running it directly also avoids unrelated Gunicorn worker-temp behavior.
+    app.run(host="0.0.0.0", port=80, debug=False, threaded=False, use_reloader=False)
