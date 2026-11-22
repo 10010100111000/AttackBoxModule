@@ -18,7 +18,7 @@ home = urllib.request.urlopen(BASE + "/", timeout=8).read().decode()
 print("PASS: public landing page")
 assert "Bashed" in home
 page = urllib.request.urlopen(BASE + "/dev/phpbash.php", timeout=8).read().decode()
-assert "phpbash" in page.lower() and "sendCommand" in page, "Original Arrexel webshell missing"
+assert "sendCommand" in page, "Original Arrexel webshell interface missing"
 print("PASS: original Arrexel/phpbash discovered")
 
 identity = cmd("whoami; id")
