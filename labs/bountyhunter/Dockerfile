@@ -4,7 +4,7 @@
 FROM alpine:3.20
 
 RUN apk add --no-cache \
-      apache2 bash ca-certificates curl openssh-server \
+      apache2 apache2-proxy bash ca-certificates curl openssh-server \
       php83 php83-fpm php83-simplexml php83-xml \
       python3 shadow sudo \
  && adduser -D -u 1000 -h /home/development -s /bin/ash development \
@@ -42,6 +42,8 @@ RUN set -eu; \
     php83 -r 'if (!function_exists("simplexml_load_string")) exit(1);'; \
     php83 -l /var/www/localhost/htdocs/tracker_diRbPr00f314.php; \
     httpd -t; \
+    httpd -M 2>/dev/null | grep -Fq 'proxy_module'; \
+    httpd -M 2>/dev/null | grep -Fq 'proxy_fcgi_module'; \
     visudo -cf /etc/sudoers
 
 EXPOSE 80 22
