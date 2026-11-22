@@ -48,8 +48,8 @@ RUN set -eux; \
     chmod 0644 /opt/.bashrc; \
     chmod 0755 /usr/local/bin/photobomb-entrypoint /usr/local/bin/photobomb-healthcheck.rb; \
     chmod 0600 /etc/nginx/photobomb.htpasswd; \
-    printf '%s\\n' 'wizard ALL=(root) SETENV: NOPASSWD: /opt/cleanup.sh' > /etc/sudoers.d/wizard; \\
-    chmod 0440 /etc/sudoers.d/wizard; \\
+    printf '%s\n' 'wizard ALL=(root) SETENV: NOPASSWD: /opt/cleanup.sh' > /etc/sudoers.d/wizard; \
+    chmod 0440 /etc/sudoers.d/wizard; \
     nginx -t; \
     visudo -cf /etc/sudoers
 EXPOSE 22 80
