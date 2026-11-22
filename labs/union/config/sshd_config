@@ -1,0 +1,12 @@
+Port 22
+ListenAddress 0.0.0.0
+PasswordAuthentication yes
+KbdInteractiveAuthentication no
+PermitRootLogin no
+AllowUsers uhc
+UsePAM no
+PermitEmptyPasswords no
+AuthorizedKeysFile .ssh/authorized_keys
+Subsystem sftp /usr/lib/ssh/sftp-server
+PrintMotd no
+LogLevel VERBOSE

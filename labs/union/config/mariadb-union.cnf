@@ -1,0 +1,11 @@
+[mysqld]
+bind-address=127.0.0.1
+skip-networking=0
+socket=/run/mysqld/mysqld.sock
+pid-file=/run/mysqld/mysqld.pid
+secure-file-priv=
+max_connections=32
+innodb_buffer_pool_size=32M
+innodb_log_buffer_size=4M
+performance_schema=OFF
+skip-log-bin
