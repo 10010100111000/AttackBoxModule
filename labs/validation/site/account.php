@@ -30,7 +30,7 @@ $players = $conn->query($sql);
  <h3>Other Players In <?php echo htmlspecialchars($country, ENT_QUOTES, 'UTF-8'); ?></h3>
  <ul>
 <?php
-if ($players) {
+if ($players instanceof mysqli_result) {
     while ($player = $players->fetch_assoc()) {
         echo '<li>' . htmlspecialchars((string)$player['username'], ENT_QUOTES, 'UTF-8') . '</li>';
     }
