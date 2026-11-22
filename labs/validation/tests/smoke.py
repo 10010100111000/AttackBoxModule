@@ -66,3 +66,16 @@ register("NoRegisteredCountry' UNION SELECT 0x" + value + " INTO OUTFILE '/var/w
 _, output = visit("/" + file_name)
 assert output.strip() == plain_text
 print("PASS: native MariaDB INTO OUTFILE creates an HTTP-served ordinary text file", flush=True)
+
+# Confirm the uploaded PHP is interpreted, not returned as source.
+php_proof = '<?php echo "VALIDATION_PHP_EVALUATED"; ?>'
+php_filename = "validation-php-ci.php"
+register(
+    "AnotherUnusedCountry' UNION SELECT 0x" + php_proof.encode().hex() +
+    " INTO OUTFILE '/var/www/html/" + php_filename + "'-- -"
+)
+_, php_result = visit("/" + php_filename)
+assert php_result.strip() == "VALIDATION_PHP_EVALUATED", (
+    "Apache did not pass the database-written PHP file to the real PHP runtime"
+)
+print("PASS: MariaDB-written PHP is actually evaluated by PHP-FPM", flush=True)
