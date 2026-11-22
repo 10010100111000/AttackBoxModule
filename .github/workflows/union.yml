@@ -82,6 +82,9 @@ jobs:
             -v "$PWD/labs/union/tests:/tests:ro" \
             ttp-union-attacker:ci python3 /tests/http_probe.py
           docker run --rm --network "$net" \
+            -v "$PWD/labs/union/tests:/tests:ro" \
+            ttp-union-attacker:ci python3 /tests/sql_probe.py
+          docker run --rm --network "$net" \
             -e UNION_TEST_QUALIFIER="$first_token" \
             -v "$PWD/labs/union/tests:/tests:ro" \
             ttp-union-attacker:ci python3 /tests/qualification_probe.py
