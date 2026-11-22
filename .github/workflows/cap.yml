@@ -32,6 +32,7 @@ jobs:
       - name: Verify real IDOR, FTP password reuse, SSH and cap_setuid
         run: |
           set -euo pipefail
+          docker build --progress=plain -f labs/cap/tests/Dockerfile.ssh-attacker -t ttp-cap-ssh-attacker:ci labs/cap/tests
           net=cap-ci
           target=cap-target
           cleanup() {
@@ -66,8 +67,8 @@ jobs:
           docker run --rm --network "$net" \
             -v "$PWD/labs/cap/tests:/tests:ro" \
             python:3.12-alpine python /tests/attack_path.py
-          docker run --rm --network "$net" python:3.12-slim sh -c \
-            'apt-get update -qq && apt-get install -y -qq openssh-client sshpass >/dev/null && sshpass -p "Buck3tH4TF0RM3!" ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PreferredAuthentications=password -o PubkeyAuthentication=no -o ConnectTimeout=6 nathan@cap-target "id -un" | grep -Fx nathan'
+          docker run --rm --network "$net" ttp-cap-ssh-attacker:ci sh -c \
+            'sshpass -p "Buck3tH4TF0RM3!" ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PreferredAuthentications=password -o PubkeyAuthentication=no -o ConnectTimeout=6 nathan@cap-target "id -un" | grep -Fx nathan'
           docker exec -u nathan "$target" sh -c \
             'test "$(id -u)" = 1000; test -r /home/nathan/user.txt; test ! -r /root/root.txt'
           docker exec "$target" getcap /usr/bin/python3.8 | grep -q cap_setuid
