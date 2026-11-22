@@ -1,0 +1,10 @@
+Port 22
+ListenAddress 0.0.0.0
+PermitRootLogin no
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+PermitEmptyPasswords no
+AllowUsers htb
+PrintMotd no
+LogLevel VERBOSE
+Subsystem sftp /usr/lib/ssh/sftp-server
