@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Security Dashboard</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand"><span class="brand-mark">C</span><span>Security Dashboard</span></div>
+    <nav>
+      <a href="/dashboard" class="{% if active == 'dashboard' %}active{% endif %}">Dashboard</a>
+      <a href="/capture">Security Snapshot</a>
+      <a href="/ip" class="{% if active == 'ip' %}active{% endif %}">IP Config</a>
+      <a href="/netstat" class="{% if active == 'netstat' %}active{% endif %}">Network Status</a>
+    </nav>
+    <div class="sidebar-foot">Network monitoring</div>
+  </aside>
+  <main class="main">
+    <header class="topbar"><span>Security Overview</span><span class="user">Nathan <b>⌄</b></span></header>
+    <section class="content">{% block content %}{% endblock %}</section>
+  </main>
+</body>
+</html>

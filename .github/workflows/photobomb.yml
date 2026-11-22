@@ -1,0 +1,82 @@
+name: Photobomb original command-injection lab
+
+on:
+  push:
+    branches: ["test/nibbles-authentic-small"]
+    paths:
+      - "labs/photobomb/**"
+      - ".github/workflows/photobomb.yml"
+  pull_request:
+    paths:
+      - "labs/photobomb/**"
+      - ".github/workflows/photobomb.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  photobomb:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Sinatra, Nginx and real ImageMagick target
+        run: docker build --progress=plain -f labs/photobomb/Dockerfile -t ttp-photobomb:ci labs/photobomb
+      - name: Measure compact image
+        run: |
+          set -euo pipefail
+          bytes=$(docker image inspect -f '{{.Size}}' ttp-photobomb:ci)
+          awk -v b="$bytes" 'BEGIN {printf "Photobomb image: %.1f MiB (%d bytes)\n",b/1048576,b}'
+          test "$bytes" -le $((140 * 1048576))
+      - name: Real HTTP discovery, ImageMagick injection, sudo PATH hijack and reset
+        run: |
+          set -euo pipefail
+          net=photobomb-ci
+          target=photobomb-target
+          docker network create --internal "$net"
+          cleanup() {
+            docker logs --tail 120 "$target" || true
+            docker rm -f "$target" >/dev/null 2>&1 || true
+            docker network rm "$net" >/dev/null 2>&1 || true
+          }
+          trap cleanup EXIT
+          start_target() {
+            docker run -d --name "$target" --network "$net" \
+              --memory 160m --pids-limit 128 --cpus 1 \
+              -e PHOTOBOMB_REQUIRE_PRIVATE_FLAGS=1 \
+              -e PHOTOBOMB_STATIC_USER_FLAG='TTP{photobomb_ci_private_user_0123456789}' \
+              -e PHOTOBOMB_STATIC_ROOT_FLAG='TTP{photobomb_ci_private_root_0123456789}' \
+              ttp-photobomb:ci
+          }
+          wait_healthy() {
+            for i in $(seq 1 60); do
+              state=$(docker inspect -f '{{.State.Status}}' "$target")
+              if [ "$state" != running ]; then docker logs "$target"; return 1; fi
+              health=$(docker inspect -f '{{.State.Health.Status}}' "$target")
+              if [ "$health" = healthy ]; then return 0; fi
+              if [ "$health" = unhealthy ]; then docker logs "$target"; return 1; fi
+              sleep 2
+            done
+            docker logs "$target"; return 1
+          }
+          start_target
+          wait_healthy
+          docker run --rm --network "$net" \
+            -v "$PWD/labs/photobomb/tests:/tests:ro" \
+            python:3.12-alpine python /tests/attack_path.py
+          docker exec -u wizard "$target" sh -c \
+            'test "$(id -u)" = 1000; test -r /home/wizard/user.txt; test ! -r /root/root.txt; test -f /tmp/photobomb-command-executed'
+          docker exec -i -u wizard "$target" bash /dev/stdin \
+            < labs/photobomb/tests/native_sudo.sh
+          docker exec "$target" sh -c \
+            'test "$(cat /root/root.txt)" = "TTP{photobomb_ci_private_root_0123456789}"; grep -q "uid=0(root)" /tmp/photobomb-native-root-proof'
+          docker stats --no-stream --format 'Target memory: {{.MemUsage}}, PIDs: {{.PIDs}}' "$target"
+          docker rm -f "$target"
+          start_target
+          wait_healthy
+          docker run --rm --network "$net" \
+            -v "$PWD/labs/photobomb/tests:/tests:ro" \
+            python:3.12-alpine python /tests/reset_path.py
+          docker exec "$target" sh -c 'test ! -e /tmp/photobomb-command-executed; test ! -e /tmp/photobomb-native-root-proof'
+          echo 'PASS: real ImageMagick command injection + native sudo PATH hijack + static flags + reset'

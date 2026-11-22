@@ -1,0 +1,32 @@
+# Cap — IDOR / FTP PCAP / Python cap_setuid (test lab)
+
+> Retired HTB Cap reconstruction. CI must pass before release. This is not an official HTB image.
+
+## Player discovery path
+
+1. Recon identifies FTP/21, SSH/22 and HTTP/80. The web application is a security dashboard showing the logged-in service user Nathan.
+2. Browse Security Snapshot. It performs a real five-second `tcpdump` capture and redirects to `/data/<id>`, with a corresponding `/download/<id>` PCAP endpoint.
+3. The numeric capture ID is an IDOR. `/download/0` is accessible without authentication or ownership checks and exposes a seeded capture from another user's session.
+4. The seeded PCAP is generated during Docker build by capturing a real `USER nathan` / `PASS ...` exchange against a local vsftpd server. It is not a Scapy-crafted or hand-written packet file. Extract the cleartext FTP password and reuse it on the actual FTP/SSH services.
+5. As Nathan, inspect Linux file capabilities. `/usr/bin/python3.8` has `cap_setuid,cap_net_bind_service+eip`; Python `os.setuid(0)` provides a real root UID and access to `/root/root.txt`.
+
+## Original source and reconstruction notes
+
+- Original writeup and observed route behavior: https://0xdf.gitlab.io/2021/10/02/htb-cap.html ; https://ch3sh.github.io/hackthebox/HTB-Cap/ ; IppSec video: https://www.youtube.com/watch?v=O_z6o2xuvlw
+- Official retired machine: https://www.hackthebox.com/machines/cap
+- Original Flask `app.py` is not publicly released. This lab independently reconstructs the observed routes and behavior; it does not claim to contain HTB's original application source. The seed PCAP is captured from a real vsftpd login session during the build, and live `/capture` requests invoke real tcpdump.
+- Runtime uses Alpine + Python 3.8, vsftpd, OpenSSH, tcpdump and Gunicorn. The original machine used Ubuntu 20.04, vsftpd 3.0.3 and OpenSSH 8.2. The web behavior and Python capability path are preserved; package fingerprints may differ.
+
+## Build
+
+```bash
+docker build -f labs/cap/Dockerfile -t ttp-cap:dev labs/cap
+docker run --rm -d --name cap --network none ttp-cap:dev
+docker inspect -f '{{.State.Health.Status}}' cap
+```
+
+CI uses an independent attacker container and verifies real FTP/SSH banners, unauthenticated PCAP IDOR, FTP credentials in the actual capture, password reuse against vsftpd, a live five-second capture, the Python file capability, Root Flag access, static Flag injection and fresh-container reset.
+
+Resource target: **<= 120 MiB image, <= 128 MiB memory, <= 128 PIDs**. CI reports measured values; these are targets, not estimates. The Python file capability is essential; do not apply `no-new-privileges` or remove `CAP_SETUID` from the target's capability bounding set. The container does not require `--privileged` or host networking.
+
+Static demo flags only: `/home/nathan/user.txt` and `/root/root.txt`. Production Worker instances must inject `CAP_STATIC_USER_FLAG`, `CAP_STATIC_ROOT_FLAG`, and `CAP_REQUIRE_PRIVATE_FLAGS=1`. Keep production answers outside Git and public GHCR images.
