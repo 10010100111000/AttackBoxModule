@@ -84,7 +84,7 @@ post '/printer' do
   filetype = params[:filetype].to_s
   dimensions = params[:dimensions].to_s
 
-  if photo.match(/\.\.|\\//)
+  if photo.match(/\.\.|\/)
     halt 500, 'Invalid photo.'
   end
   if !FileTest.exist?("source_images/" + photo)
