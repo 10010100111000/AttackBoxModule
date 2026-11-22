@@ -74,6 +74,11 @@ jobs:
           docker run --rm --network "$net" \
             -v "$PWD/labs/bountyhunter/tests:/tests:ro" \
             ttp-bountyhunter-attacker:ci python3 /tests/smoke.py
+          target_hostname=$(docker exec "$target" cat /etc/hostname)
+          docker run --rm --network "$net" \
+            -e EXPECTED_TARGET_HOSTNAME="$target_hostname" \
+            -v "$PWD/labs/bountyhunter/tests:/tests:ro" \
+            ttp-bountyhunter-attacker:ci python3 /tests/xml_file_probe.py
           docker exec "$target" sh -c \
             'test "$(cat /home/development/user.txt)" = "TTP{bountyhunter_ci_user_0123456789}"; test "$(cat /root/root.txt)" = "TTP{bountyhunter_ci_root_0123456789}"'
           docker stats --no-stream --format 'Target memory: {{.MemUsage}}, PIDs: {{.PIDs}}' "$target"

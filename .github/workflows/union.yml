@@ -84,6 +84,11 @@ jobs:
           docker run --rm --network "$net" \
             -v "$PWD/labs/union/tests:/tests:ro" \
             ttp-union-attacker:ci python3 /tests/sql_probe.py
+          target_hostname=$(docker exec "$target" cat /etc/hostname)
+          docker run --rm --network "$net" \
+            -e EXPECTED_TARGET_HOSTNAME="$target_hostname" \
+            -v "$PWD/labs/union/tests:/tests:ro" \
+            ttp-union-attacker:ci python3 /tests/fileread_probe.py
           docker run --rm --network "$net" \
             -e UNION_TEST_QUALIFIER="$first_token" \
             -v "$PWD/labs/union/tests:/tests:ro" \
