@@ -5,7 +5,7 @@ FROM alpine:3.20 AS runtime
 RUN apk add --no-cache \
       apache2 apache2-proxy php83 php83-fpm php83-mysqli \
       mariadb mariadb-client openssh-server shadow openssl \
-      curl bash util-linux \
+      curl bash util-linux util-linux-login util-linux-misc \
  && adduser -D -u 1000 -h /home/htb -s /bin/ash htb \
  && chmod 0755 /home/htb \
  && mkdir -p /var/www/html /run/apache2 /run/php /run/mysqld /run/sshd \
@@ -30,6 +30,9 @@ RUN set -eu; \
     php83 -l /var/www/html/index.php; \
     php83 -l /var/www/html/account.php; \
     php83 -r 'if (!class_exists("mysqli")) exit(1);'; \
+    command -v su; \
+    command -v script; \
+    test -u "$(command -v su)"; \
     httpd -t; \
     httpd -M 2>/dev/null | grep -Fq 'proxy_module'; \
     httpd -M 2>/dev/null | grep -Fq 'proxy_fcgi_module'
