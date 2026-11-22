@@ -9,7 +9,7 @@ login = s.post("http://127.0.0.1:52846/index.php",
 assert login.status_code == 200
 page = s.get("http://127.0.0.1:52846/main.php", timeout=8)
 assert page.status_code == 200 and "Don't forget your" in page.text
-m = re.search(r"<pre>(-----BEGIN RSA PRIVATE KEY-----.*?-----END RSA PRIVATE KEY-----)</pre>", page.text, re.S)
+m = re.search(r"<pre>\s*(-----BEGIN RSA PRIVATE KEY-----.*?-----END RSA PRIVATE KEY-----)\s*</pre>", page.text, re.S)
 assert m, "Internal page did not return Joanna's encrypted private key"
 with open("/tmp/joanna_id_rsa", "w") as f:
     f.write(m.group(1) + "\n")
