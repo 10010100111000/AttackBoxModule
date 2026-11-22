@@ -64,7 +64,7 @@ RUN pip install --no-cache-dir --disable-pip-version-check -r /app/requirements.
  && chmod 0755 /usr/local/bin/cap-entrypoint /usr/local/bin/cap-healthcheck.py \
  && chown root:root /pcaps /pcaps/0.pcap \
  && chmod 0755 /pcaps \
- && chmod 0644 /pcaps/0.pcap \
+ && chmod 0644 /pcaps/0.pcap
 
 WORKDIR /app
 EXPOSE 21 22 80 30000-30009
