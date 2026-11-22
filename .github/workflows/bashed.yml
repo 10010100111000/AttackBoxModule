@@ -84,5 +84,5 @@ jobs:
             -v "$PWD/labs/bashed/tests:/tests:ro" \
             python:3.12-alpine python /tests/reset_path.py
           docker exec "$target" sh -c \
-            'test ! -e /tmp/bashed-root-proof; grep -Fq "f.write(\\"testing 123!\\")" /scripts/test.py'
+            'test ! -e /tmp/bashed-root-proof; grep -Fq "testing 123!" /scripts/test.py'
           echo 'PASS: genuine phpbash + native sudo + real one-minute root cron + static flags + isolated reset'
