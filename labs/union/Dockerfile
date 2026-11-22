@@ -12,8 +12,8 @@ FROM alpine:3.20 AS runtime
 RUN apk add --no-cache \
       bash ca-certificates curl nginx php83 php83-fpm php83-mysqli \
       mariadb mariadb-client openssh-server sudo iptables shadow openssl \
- && addgroup -S www-data \
- && adduser -D -S -G www-data -s /sbin/nologin www-data \
+ && { grep -q '^www-data:' /etc/group || addgroup -S www-data; } \
+ && { id www-data >/dev/null 2>&1 || adduser -D -S -G www-data -s /sbin/nologin www-data; } \
  && adduser -D -u 1001 -h /home/uhc -s /bin/ash uhc \
  && echo 'uhc:uhc-11qual-global-pw' | chpasswd \
  && mkdir -p /var/www/html/css /etc/sudoers.d /run/nginx /run/mysqld /run/sshd \
@@ -22,7 +22,7 @@ RUN apk add --no-cache \
  && rm -f /etc/php83/php-fpm.d/www.conf \
  && printf '%s\n' 'www-data ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/union-www-data \
  && chmod 0440 /etc/sudoers.d/union-www-data \
- && ln -sf "$(command -v iptables)" /usr/sbin/iptables \
+ && { test "$(command -v iptables)" = /usr/sbin/iptables || ln -sf "$(command -v iptables)" /usr/sbin/iptables; } \
  && chown -R mysql:mysql /var/lib/mysql /run/mysqld
 COPY --from=bootstrap-css /tmp/bootstrap.min.css /var/www/html/css/bootstrap.min.css
 COPY config/nginx.conf /etc/nginx/http.d/union.conf
