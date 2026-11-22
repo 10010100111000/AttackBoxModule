@@ -10,7 +10,7 @@ RUN apk add --no-cache ca-certificates curl \
 
 FROM alpine:3.20 AS runtime
 RUN apk add --no-cache \
-      bash ca-certificates curl nginx php83 php83-fpm php83-mysqli \
+      bash ca-certificates curl nginx php83 php83-fpm php83-mysqli php83-session \
       mariadb mariadb-client openssh-server sudo iptables shadow openssl \
  && { grep -q '^www-data:' /etc/group || addgroup -S www-data; } \
  && { id www-data >/dev/null 2>&1 || adduser -D -S -G www-data -s /sbin/nologin www-data; } \
@@ -42,6 +42,8 @@ RUN set -eu; \
     chown root:root /root/root.txt; chmod 0600 /root/root.txt; \
     chmod 0755 /usr/local/bin/union-entrypoint /usr/local/bin/union-healthcheck; \
     chmod 0600 /etc/ssh/sshd_config; \
+    php83 -r 'if (!function_exists("session_start")) exit(1);'; \
+    php83 -l /var/www/html/config.php; \
     php83 -l /var/www/html/index.php; \
     php83 -l /var/www/html/challenge.php; \
     php83 -l /var/www/html/firewall.php; \
