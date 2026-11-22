@@ -35,6 +35,8 @@ jobs:
           net=bashed-ci
           target=bashed-target
           cleanup() {
+            docker inspect --format '{{range .State.Health.Log}}{{println .ExitCode}}{{println .Output}}{{end}}' "$target" || true
+            docker exec "$target" bash -x /usr/local/bin/bashed-healthcheck || true
             docker logs --tail 120 "$target" || true
             docker exec "$target" sh -c 'date; ps aux; cat /etc/cron.d/root-scripts; ls -la /scripts; cat /scripts/test.py; stat /scripts/test.txt; cat /tmp/bashed-cron-runs 2>/dev/null' || true
             docker rm -f "$target" bashed-other >/dev/null 2>&1 || true
