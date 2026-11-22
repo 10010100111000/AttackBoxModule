@@ -9,7 +9,7 @@ RUN gem install --no-document sinatra -v 2.0.8.1 \
 FROM ruby:2.7.8-alpine3.16 AS runtime
 ENV GEM_HOME=/usr/local/bundle
 ENV PATH=/usr/local/bundle/bin:$PATH
-RUN apk add --no-cache nginx imagemagick openssh sudo bash su-exec \
+RUN apk add --no-cache nginx imagemagick openssh sudo bash su-exec openssl \
  && addgroup -g 1000 wizard \
  && adduser -D -u 1000 -G wizard -h /home/wizard -s /bin/bash wizard \
  && mkdir -p /run/nginx /run/sshd /home/wizard/photobomb/source_images \
@@ -29,6 +29,8 @@ COPY scripts/entrypoint.sh /usr/local/bin/photobomb-entrypoint
 COPY scripts/healthcheck.rb /usr/local/bin/photobomb-healthcheck.rb
 COPY flags/user.txt /home/wizard/user.txt
 COPY flags/root.txt /root/root.txt
+# Recreate the documented APR1 Basic Auth hash deterministically for Nginx.
+RUN set -eux; hash=$(openssl passwd -apr1 -salt dnyF00ZD 'b0Mb!'); printf 'pH0t0:%s\n' "$hash" > /etc/nginx/photobomb.htpasswd
 # Original high-resolution Unsplash files are not publicly distributed with
 # the writeups. Generate tiny local JPG gallery assets with real ImageMagick.
 RUN set -eux; \
