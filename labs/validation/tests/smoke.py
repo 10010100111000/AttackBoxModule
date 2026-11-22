@@ -29,7 +29,7 @@ def register(country, name=None):
     name = name or "validation-test-" + secrets.token_hex(4) + "-" + str(count)
     status, page = visit("/", {"username": name, "country": country})
     assert status == 200 and "Welcome " + name in page
-    assert cookies._cookies["validation-target"]["/"]["user"].value == hashlib.md5(name.encode()).hexdigest()
+    assert next((c.value for c in cookies if c.name == "user"), None) == hashlib.md5(name.encode()).hexdigest()
     return html.unescape(page)
 
 

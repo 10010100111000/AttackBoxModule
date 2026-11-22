@@ -7,6 +7,7 @@ RUN apk add --no-cache \
       mariadb mariadb-client openssh-server shadow openssl \
       curl bash util-linux \
  && adduser -D -u 1000 -h /home/htb -s /bin/ash htb \
+ && chmod 0755 /home/htb \
  && mkdir -p /var/www/html /run/apache2 /run/php /run/mysqld /run/sshd \
              /etc/php83/php-fpm.d \
  && rm -f /etc/php83/php-fpm.d/www.conf \
