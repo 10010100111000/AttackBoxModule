@@ -61,7 +61,7 @@ RUN set -eux; \
     printf '\n\n\n\n\nn1nj4W4rri0R!\n\ndefault\nopenadmin.htb\n' | php /opt/ona/install/installcli.php >/tmp/ona-install.log 2>&1; \
     test -s /opt/ona/www/local/config/database_settings.inc.php; \
     grep -Fq "n1nj4W4rri0R!" /opt/ona/www/local/config/database_settings.inc.php; \
-    grep -Fq "Created new DB user 'ona_sys'." /tmp/ona-install.log; \
+    grep -Fq "Created system user 'ona_sys'." /tmp/ona-install.log; \
     service mysql stop; \
     chown -R root:www-data /opt/ona; \
     chmod 0644 /home/joanna/.ssh/id_rsa; \
