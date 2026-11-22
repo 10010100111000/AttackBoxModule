@@ -9,5 +9,8 @@ KbdInteractiveAuthentication no
 PubkeyAuthentication yes
 UsePAM yes
 AllowUsers jimmy joanna
+AllowTcpForwarding yes
+PermitOpen 127.0.0.1:52846
+GatewayPorts no
 PidFile /run/sshd.pid
 Subsystem sftp /usr/lib/openssh/sftp-server
