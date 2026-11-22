@@ -1,0 +1,1 @@
+* * * * * root cd /scripts; for f in *.py; do /usr/bin/python3 "$f"; done
