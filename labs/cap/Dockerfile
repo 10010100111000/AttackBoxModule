@@ -42,6 +42,7 @@ FROM python:3.8-alpine3.18 AS runtime
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 RUN apk add --no-cache openssh vsftpd tcpdump iproute2 net-tools libcap-utils bash su-exec \
  && adduser -D -u 1000 -h /home/nathan -s /bin/bash nathan \
+ && echo 'nathan:Buck3tH4TF0RM3!' | chpasswd \
  && mkdir -p /run/sshd /var/run/vsftpd/empty /pcaps /app/templates \
  && ln /usr/local/bin/python3.8 /usr/bin/python3.8 \
  && setcap cap_setuid,cap_net_bind_service+eip /usr/bin/python3.8 \
