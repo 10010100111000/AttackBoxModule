@@ -68,7 +68,7 @@ RUN set -eux; \
     chown joanna:joanna /home/joanna/user.txt; chmod 0644 /home/joanna/user.txt; \
     chown root:root /root/root.txt; chmod 0600 /root/root.txt; \
     chmod 0755 /usr/local/bin/openadmin-entrypoint /usr/local/bin/openadmin-healthcheck; \
-    sshd -t; apache2ctl configtest; visudo -cf /etc/sudoers
+    mkdir -p /run/sshd; sshd -t; apache2ctl configtest; visudo -cf /etc/sudoers
 EXPOSE 22 80
 STOPSIGNAL SIGTERM
 HEALTHCHECK --interval=25s --timeout=12s --start-period=45s --retries=4 \
