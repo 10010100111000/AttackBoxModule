@@ -101,6 +101,7 @@ assert prod_credential, "Previous Git commit does not contain the ops credential
 prod = ssh_as("prod", prod_credential.group(1), "id -un; sudo -n -l")
 assert prod.returncode == 0 and "prod" in prod.stdout, (prod.stdout, prod.stderr)
 assert "clone_prod_change.py" in prod.stdout, (prod.stdout, prod.stderr)
+assert ssh_as("prod", prod_credential.group(1), "test -r /root/root.txt").returncode != 0, "Prod can read Root Flag without exploiting GitPython"
 print("PASS: real Git history credential reuse, prod SSH and restricted sudo allowance", flush=True)
 
 # The native GitPython/Git helper is intentionally exercised on the isolated
