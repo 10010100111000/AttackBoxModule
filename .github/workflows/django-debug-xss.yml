@@ -1,4 +1,5 @@
 name: Django 1.11.4 authentic technical-500 XSS CI
+# Runs independent Chromium black-box verification against vulnerable and patched images.
 on:
   pull_request:
     paths:
