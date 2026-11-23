@@ -1,0 +1,10 @@
+WonderCMS XSS (CVE-2023-41425) is an authenticated-browser security lab.
+Publishing is blocked until all of the following are accepted:
+1. Genuine original upstream 3.4.2 XSS browser execution validated.
+2. Browser under the legitimate administrator session obtains per-instance
+   admin-only challenge objective through the original injection context.
+3. The Worker provides an independently isolated administrator URL-review bot
+   so a learner can trigger the challenge without knowing the admin password.
+4. Worker verifies private flag lifecycle, network isolation, no unwanted
+   internal network access, concurrent resource limits, and session reset.
+The browser CI runner is TEST INFRASTRUCTURE, not part of the small runtime image.
