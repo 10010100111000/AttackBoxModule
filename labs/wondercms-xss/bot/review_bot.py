@@ -66,6 +66,7 @@ async def _review_async(url_path: str, admin_password: str, profile: str) -> Non
         userDataDir=profile,
         args=[
             "--disable-dev-shm-usage",
+            "--no-sandbox",  # Docker default blocks Chrome user-namespace sandbox; retain container isolation.
             "--disable-gpu",
             "--disable-background-networking",
             "--disable-extensions",
