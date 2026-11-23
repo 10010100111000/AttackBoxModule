@@ -45,6 +45,6 @@ No public host port publication, --privileged, host networking, Docker socket mo
 
 The current CI builds the original components, creates an isolated attacker container, verifies port isolation, genuine SSRF and internal API discovery, verifies service health, checks the pinned GitPython dependency and sudo configuration, and checks flag rotation after a fresh instance.
 
-**Full interactive SSH pivot and native GitPython-to-root exploitation have not yet passed an independent automated end-to-end acceptance test. This box is a development candidate, not a verified web-to-root machine. Do not merge or release on the basis of green smoke CI alone.**
+**The independent attacker-container test has verified SSRF → internal API → SSH as `dev` → User Flag. The existence of historical Git credentials, sudo configuration and vulnerable GitPython is checked, but an actual `prod` → GitPython → Root Flag exploit chain has NOT been independently validated.** This source is already merged into `main` for development only; publication remains blocked by `.release-blocked` until the full Root path and Worker isolation are verified.
 
 Measured image footprint is reported in GitHub Actions. Resource limits are test boundaries, not a measured capacity guarantee.
