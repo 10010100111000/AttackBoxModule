@@ -28,7 +28,7 @@ def local_path(raw):
 
 async def visit(path, password, profile):
     browser = await launch(
-        executablePath="/usr/bin/chromium-headless-shell",
+        executablePath="/usr/bin/chromium-browser",
         headless=True, autoClose=False, userDataDir=profile,
         args=["--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu",
               "--disable-background-networking", "--disable-extensions", "--no-first-run"],
