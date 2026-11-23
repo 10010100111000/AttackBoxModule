@@ -86,10 +86,10 @@
 | [HTB Headless](https://www.hackthebox.com/machines/headless) | §xss.blind§，管理员浏览器；HTTP User-Agent 输入面 | 支持表单 → Blind XSS → 管理员会话 → 命令注入 | **中高优先**；必须有真实管理员浏览器，不可硬编码 cookie |
 | [HTB Trick](https://www.hackthebox.com/machines/trick) | §file_read.nested-traversal§，§sqli.file-operations§ | DNS/vhost → SQLi/读取配置 → LFI → SSH → fail2ban | **高优先**；多服务内存/时间成本需审查 |
 | [HTB NodeBlog](https://www.hackthebox.com/machines/nodeblog) | §nosql.operator-auth-bypass§，§deserialization.unsafe-parse§ | Express + MongoDB 操作符、真实 XML 解析与 node-serialize | **高优先**；必须使用原始危险依赖及真实 DB |
-| [HTB Precious](https://www.hackthebox.com/machines/precious) | §deserialization.dependency-gadget§，Ruby/YAML | PDFKit 文件转换 → Ruby 凭据 → YAML 反序列化 | **高优先**；保留真实 PDF 转换而非模拟返回 |
+| [HTB Precious](https://www.hackthebox.com/machines/precious) | §deserialization.unsafe-parse§，Ruby/YAML | PDFKit 文件转换 → Ruby 凭据 → YAML 反序列化 | **高优先**；保留真实 PDF 转换而非模拟返回 |
 | [HTB Soccer](https://www.hackthebox.com/machines/Soccer) | §websockets.blind-sqli§，§sqli.boolean-blind§ | Tiny File Manager → WS 盲注 → SSH → doas/dstat | **高优先**；不是普通 PHP UNION 的重复 |
 | [HTB Inject](https://www.hackthebox.com/machines/inject) | §file_read.lfi§，Java 组件漏洞 | 上传功能的 LFI → 真实 Spring Cloud Function → SSH/Ansible | Java 内存、漏洞版本与原版环境必须核实 |
-| [HTB Zipping](https://www.hackthebox.com/machines/zipping) | §file_upload.parser-mismatch§，§file_read.file-to-rce§ | ZIP 符号链接文件读取 → SQLi → LFI/执行 | 与普通 PHP 文件上传区别明显 |
+| [HTB Zipping](https://www.hackthebox.com/machines/zipping) | §file_read.path-traversal§，§file_read.file-to-rce§ | ZIP 符号链接文件读取 → SQLi → LFI/执行 | 与普通 PHP 文件上传区别明显 |
 | [HTB Codify](https://www.hackthebox.com/machines/codify) | **补充专题** JavaScript vm2 沙箱逃逸 | JS 测试器 → 真实 vm2 → SQLite → Bash | 属于应用沙箱，不是 Docker 容器逃逸；不是 XSS |
 | [HTB Shared](https://www.hackthebox.com/machines/shared) | Cookie 输入面 SQLi | Cookie SQLi → 真实后续服务利用 | 与常规表单 SQLi 场景不同；后续细节待核对 |
 | [HTB Gavel](https://www.hackthebox.com/machines/gavel) | PHP PDO SQLi 与 YAML 解析链 | PDO 错用 → PHP 代码执行 → YAML/后台工作流 | 中高级候选，重点审查版本与 Worker 隔离 |
