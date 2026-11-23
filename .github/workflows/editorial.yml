@@ -1,4 +1,4 @@
-name: Editorial isolated SSRF services
+name: Editorial SSRF to User smoke (Root not verified)
 
 on:
   push:
@@ -24,7 +24,7 @@ jobs:
         run: docker build -f labs/editorial/tests/Dockerfile.attacker -t editorial-attacker:ci labs/editorial/tests
       - name: Measure runtime image
         run: docker image inspect editorial:ci --format 'Image bytes {{.Size}}'
-      - name: Test SSRF, native services and reset in isolated network
+      - name: Test SSRF to SSH User and reset (does not test Root)
         shell: bash
         run: |
           set -euo pipefail
@@ -77,4 +77,10 @@ jobs:
             'test "$(cat /root/root.txt)" = "TTP{ci_root_new_instance}"'
           docker exec editorial-target sh -c \
             'test -z "$(find /var/www/editorial/uploads -type f -print -quit)"'
-          echo 'PASS: real SSRF, service isolation, vulnerable dependency and fresh-container reset'
+          echo 'PASS: real SSRF, SSH dev user, dependency check and fresh-container reset; NOT ROOT-VERIFIED'
+
+      - name: Mark incomplete Root acceptance
+        if: always()
+        run: |
+          echo "::warning title=Editorial Root unverified::This smoke workflow does not exercise the prod to GitPython to Root Flag path. Manual publication is blocked until full acceptance."
+          printf '%s\n' '### Editorial status' '' 'SSRF-to-User validation only; Root chain and Worker integration are not accepted. See labs/editorial/.release-blocked.' >> "$GITHUB_STEP_SUMMARY"

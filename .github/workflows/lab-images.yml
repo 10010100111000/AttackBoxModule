@@ -52,6 +52,10 @@ jobs:
           owner = os.environ['GITHUB_REPOSITORY_OWNER'].lower()
           publishing = os.environ['EVENT_NAME'] == 'workflow_dispatch'
           version = os.environ.get('RELEASE_VERSION', '').strip()
+          # A lab may be merged for development but explicitly blocked from release.
+          # Only manual GHCR publishing is gated; pull-request builds still run.
+          if publishing and selected_path and (selected_path / ".release-blocked").is_file():
+              raise SystemExit(f'{selected}: release blocked; see {selected}/.release-blocked')
           if publishing:
               if not selected:
                   raise SystemExit('发布时必须指定一个靶机目录')
