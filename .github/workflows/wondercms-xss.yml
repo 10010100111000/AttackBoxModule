@@ -26,7 +26,8 @@ jobs:
       - name: Build independent Chromium verifier
         run: docker build -t wcms-browser:ci -f labs/wondercms-xss/tests/Dockerfile.browser labs/wondercms-xss/tests
       - name: Report uncompressed target size
-        run: docker image inspect wcms-xss:ci --format 'Target image bytes: {{.Size}}'
+        run: |
+          docker image inspect wcms-xss:ci --format 'Target image bytes: {{.Size}}'
       - name: Verify real administrator context, browser XSS and fresh reset
         shell: bash
         run: |
