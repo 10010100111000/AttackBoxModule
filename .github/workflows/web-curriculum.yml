@@ -1,0 +1,35 @@
+name: Web curriculum consistency
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "catalog/web-competencies.json"
+      - "catalog/web-curriculum.json"
+      - "docs/WEB_*.md"
+      - "README.md"
+      - "scripts/validate_web_curriculum.py"
+      - ".github/workflows/web-curriculum.yml"
+      - "labs/**/Dockerfile"
+  pull_request:
+    paths:
+      - "catalog/web-competencies.json"
+      - "catalog/web-curriculum.json"
+      - "docs/WEB_*.md"
+      - "README.md"
+      - "scripts/validate_web_curriculum.py"
+      - ".github/workflows/web-curriculum.yml"
+      - "labs/**/Dockerfile"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate Academy taxonomy, existing labs and planned scenarios
+        run: python3 scripts/validate_web_curriculum.py
