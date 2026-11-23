@@ -937,6 +937,34 @@
         "confidence": "from_repository_readme_or_existing_tests"
       },
       "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review"
+    },
+    {
+      "id": "wondercms-xss",
+      "path": "labs/wondercms-xss",
+      "track": "web",
+      "provisional_difficulty": "intermediate",
+      "primary_category": "xss",
+      "secondary_categories": [
+        "auth_session"
+      ],
+      "validated_skills": [],
+      "implemented_skills": [
+        "xss.reflected-attribute"
+      ],
+      "lab_ci_status": "unverified",
+      "worker_status": "not_verified",
+      "release_status": "blocked_by_marker",
+      "evidence": "",
+      "note": "WonderCMS 3.4.2 原版 PHP CMS；CVE-2023-41425。CI 浏览器真实执行与管理员审核 Bot 接入是分别的验收门槛。",
+      "variant_profile": {
+        "technology": "WonderCMS 3.4.2, PHP 8.2 Alpine, JSON datastore",
+        "initial_discovery": "自然 CMS 页面、管理员登录与原版页面/表单上下文",
+        "key_constraint_or_mechanism": "真实原版 WonderCMS 管理端 HTML form action 属性上下文反射型 XSS",
+        "attack_path": "普通站点枚举 → 原版 XSS 入口 → 管理员浏览器实际执行 → 原生会话保护的单 Flag 目标",
+        "incremental_learning_value": "较现有 Cursed Stale Policy 增加轻量真实 CMS 与管理员点击/HTML 属性边界场景",
+        "confidence": "confirmed_upstream_342_source; browser_test_pending"
+      },
+      "skill_mapping_stage": "upstream_version_confirmed_independent_browser_ci_pending"
     }
   ],
   "backlog": [
@@ -1126,13 +1154,18 @@
       "required_skill_coverage": [
         "xss.reflected-attribute"
       ],
-      "status": "planned",
+      "status": "in_progress",
       "candidate_status": "research_required",
       "scope": "repeatable_skill_variant_requirement",
       "one_to_many_allowed": true,
       "scenario_variant_focus": "属性/事件/引用符上下文；区别于 HTML 正文反射型 XSS",
-      "candidate_options": [],
-      "objective": "属性/事件/引用符上下文；区别于 HTML 正文反射型 XSS"
+      "candidate_options": [
+        "wondercms-xss"
+      ],
+      "objective": "属性/事件/引用符上下文；区别于 HTML 正文反射型 XSS",
+      "selected_candidate": "wondercms-xss",
+      "selected_lab": "labs/wondercms-xss",
+      "source_review_status": "upstream_source_commit_confirmed"
     },
     {
       "id": "xss-dom-source",
@@ -1740,7 +1773,7 @@
       ],
       "signature": "WonderCMS 3.4.2 CVE-2023-41425: real CMS XSS with administrator action and module installer privilege boundary; confirm exact injection context in original version",
       "source_status": "upstream_342_and_patched_343_confirmed",
-      "review_status": "research_required",
+      "review_status": "in_progress",
       "size_policy": "flat_file_php_cms_no_database_server_measure_runtime",
       "priority_hint": "intermediate_xss_second"
     },
