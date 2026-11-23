@@ -138,6 +138,7 @@ def main() -> None:
         if job_path is None:
             time.sleep(POLL_SECONDS)
             continue
+        job = {}
         try:
             job = json.loads(job_path.read_text(encoding="utf-8"))
             url_path = local_path(job.get("website"))
@@ -146,12 +147,17 @@ def main() -> None:
             print("[review-bot] review completed", flush=True)
             job_path.unlink(missing_ok=True)
         except Exception as exc:
-            # Do not log submitted URLs or credentials. Invalid jobs are
-            # discarded; transient browser errors are retried once.
-            attempts = int(job.get("attempts", 0)) + 1 if "job" in locals() and isinstance(job, dict) else 1
+            # Do not log submitted URLs or credentials. Retry one transient
+            # browser failure, then discard the invalid/unserviceable entry.
+            attempts = int(job.get("attempts", 0)) + 1
             if attempts < 2 and job_path.exists():
                 try:
-                    job_path.replace(job_path.with_suffix(".json"))
+                    job["attempts"] = attempts
+                    retry = job_path.with_suffix(".retry")
+                    retry.write_text(json.dumps(job), encoding="utf-8")
+                    os.chmod(retry, 0o660)
+                    retry.replace(job_path.with_suffix(".json"))
+                    job_path.unlink(missing_ok=True)
                 except OSError:
                     job_path.unlink(missing_ok=True)
             else:
