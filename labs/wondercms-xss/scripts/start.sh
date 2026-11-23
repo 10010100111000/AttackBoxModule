@@ -9,7 +9,7 @@ mkdir -p /run/wcms/reports /run/wcms/bot-state/profiles
 chown www-data:wcmsbot /run/wcms/reports
 chmod 2770 /run/wcms/reports
 chown -R wcmsbot:wcmsbot /run/wcms/bot-state
-chmod 0750 /run/wcms/bot-state; chmod 0700 /run/wcms/bot-state/profiles
+chmod 0755 /run/wcms/bot-state; chmod 0700 /run/wcms/bot-state/profiles
 
 # Do not leave plaintext bootstrap credentials in the web process environment.
 unset WONDERCMS_ADMIN_PASSWORD WONDERCMS_STATIC_XSS_FLAG WONDERCMS_REQUIRE_PRIVATE_FLAGS
