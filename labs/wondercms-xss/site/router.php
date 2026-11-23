@@ -1,7 +1,7 @@
 <?php
 /**
- * Minimal path router for the authentic upstream WonderCMS entrypoint.
- * It substitutes only for .htaccess rewrite rules in the PHP CLI server.
+ * Path router for the authentic WonderCMS entrypoint.
+ * It substitutes only for Apache rewrite and access-control rules.
  */
 declare(strict_types=1);
 
@@ -13,13 +13,26 @@ if ($path === '/healthz') {
     return true;
 }
 
+if ($path === '/bot-healthz') {
+    $ready = '/run/wcms/bot.ready';
+    if (!is_file($ready) || (time() - filemtime($ready)) > 120) {
+        http_response_code(503);
+        header('Content-Type: application/json');
+        echo json_encode(['status' => 'unavailable', 'component' => 'admin-review-bot']);
+        return true;
+    }
+    header('Content-Type: application/json');
+    echo json_encode(['status' => 'ok', 'component' => 'admin-review-bot']);
+    return true;
+}
+
 if ($path === '/review-proof.php') {
     require __DIR__ . '/review-proof.php';
     return true;
 }
 
 // Apache's upstream .htaccess denies direct data/backup/config access.
-// PHP's development webserver does not read .htaccess, so mirror that rule.
+// PHP's development server does not read .htaccess, so mirror that rule.
 if (preg_match('~^/(?:data|\.git)(?:/|$)~i', $path)
     || in_array($path, ['/LICENSE-WonderCMS', '/version', '/.htaccess', '/router.php'], true)) {
     http_response_code(404);
@@ -28,12 +41,9 @@ if (preg_match('~^/(?:data|\.git)(?:/|$)~i', $path)
 }
 
 if ($path !== '/' && is_file(__DIR__ . $path)) {
-    // Real static theme files (and intentionally installable PHP modules)
-    // are handled by PHP's built-in server normally.
     return false;
 }
 
-// The original Apache rewrite populates ?page= for clean paths.
 if (!isset($_GET['page'])) {
     $_GET['page'] = trim($path, '/');
 }
