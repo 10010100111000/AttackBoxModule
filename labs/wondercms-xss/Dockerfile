@@ -23,7 +23,7 @@ RUN set -eux; \
     chown -R wcmsbot:wcmsbot /home/wcmsbot /run/wcms/bot-state; \
     chown www-data:wcmsbot /run/wcms/reports; \
     chmod 2770 /run/wcms/reports; \
-    chmod 0700 /run/wcms/bot-state /run/wcms/bot-state/profiles
+    chmod 0750 /run/wcms/bot-state; chmod 0700 /run/wcms/bot-state/profiles
 ENV PYTHONPATH=/opt/wcms-bot-deps HOME=/home/wcmsbot
 WORKDIR /srv/wcms
 COPY --from=upstream /src/index.php /srv/wcms/index.php
