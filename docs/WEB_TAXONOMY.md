@@ -159,7 +159,7 @@ Editorial 已对 SSRF 基本与内网 API 访问做了完整攻击链 CI，但**
 2. `researching`：已找到候选 HTB/OffSec/开源应用，但原始行为、版本和完整链未核实。
 3. `implemented`：真实源码和配置已提交，未完整验收。
 4. `lab_ci_verified`：独立攻击端完成规定的真实目标链和重置，附 CI/人工证据。**不会因为某台综合机器的 CI 通过就自动让每个关联技能通过。**
-5. `worker_verified`：真实平台 Worker 的私有网络、资源隔离、动态/实例 Flag 判题及多用户复用通过；这与 GitHub `main` 是否含代码是两回事。
+5. `worker_verified`：真实平台 Worker 的镜像启动、私有网络、资源隔离和多用户调度通过；**Worker 不判题、不管理 Flag、不提供 XSS 管理员 Bot**。Flag 由靶机经真实利用提供，答案由 Web 后端 `attemptChallenge()` 校验。详见 [平台与 Flag 责任边界](PLATFORM_FLAG_BOUNDARIES.md)。
 
 ## 八、如何维护
 
