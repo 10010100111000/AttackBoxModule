@@ -14,7 +14,7 @@ if ($path === '/healthz') {
 }
 
 if ($path === '/bot-healthz') {
-    $ready = '/run/wcms/bot.ready';
+    $ready = '/run/wcms/bot-state/bot.ready';
     if (!is_file($ready) || (time() - filemtime($ready)) > 120) {
         http_response_code(503);
         header('Content-Type: application/json');
