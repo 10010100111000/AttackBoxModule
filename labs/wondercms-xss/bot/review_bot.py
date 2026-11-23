@@ -3,10 +3,11 @@
 
 This process runs inside the target container as the unprivileged wcmsbot user.
 It reads the public contact-form queue and visits only same-origin URL paths
-with a fresh, real Chromium administrator session. It never reads the Flag file.
+with a fresh, real headless Chromium administrator session. It never reads the Flag file.
 """
 from __future__ import annotations
 
+import asyncio
 import json
 import os
 import shutil
@@ -15,12 +16,7 @@ import time
 from pathlib import Path
 from urllib.parse import urlsplit
 
-from selenium import webdriver
-from selenium.common.exceptions import TimeoutException, WebDriverException
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
+from pyppeteer import launch
 
 BASE_URL = "http://127.0.0.1:8080"
 QUEUE = Path("/run/wcms/reports")
@@ -59,56 +55,59 @@ def local_path(raw: object) -> str:
     return path + (("?" + parsed.query) if parsed.query else "") + (("#" + parsed.fragment) if parsed.fragment else "")
 
 
-def create_browser(profile: str) -> webdriver.Chrome:
-    options = Options()
-    options.binary_location = "/usr/bin/chromium-browser"
-    options.add_argument("--headless")
-    options.add_argument("--disable-dev-shm-usage")
-    options.add_argument("--disable-gpu")
-    options.add_argument("--disable-background-networking")
-    options.add_argument("--disable-extensions")
-    options.add_argument("--disable-sync")
-    options.add_argument("--no-first-run")
-    options.add_argument("--no-default-browser-check")
-    options.add_argument("--window-size=1280,900")
-    options.add_argument("--user-data-dir=" + profile)
-    # Intentionally do NOT disable Chromium's sandbox. The browser runs as
-    # wcmsbot, never as root, with no host mounts or Docker socket.
-    driver = webdriver.Chrome(
-        service=Service("/usr/bin/chromedriver"),
-        options=options,
+async def _review_async(url_path: str, admin_password: str, profile: str) -> None:
+    # Direct DevTools Protocol connection avoids ChromeDriver pulling in
+    # Alpine's full chromium package.
+    browser = await launch(
+        executablePath="/usr/bin/chromium-headless-shell",
+        headless=True,
+        autoClose=False,
+        userDataDir=profile,
+        args=[
+            "--disable-dev-shm-usage",
+            "--disable-gpu",
+            "--disable-background-networking",
+            "--disable-extensions",
+            "--disable-sync",
+            "--no-first-run",
+            "--no-default-browser-check",
+            "--window-size=1280,900",
+        ],
+        handleSIGINT=False,
+        handleSIGTERM=False,
+        handleSIGHUP=False,
     )
-    driver.set_page_load_timeout(12)
-    return driver
+    try:
+        page = await browser.newPage()
+        await page.setDefaultNavigationTimeout(12000)
+        await page.goto(BASE_URL + "/index.php?page=loginURL", waitUntil="domcontentloaded")
+        await page.waitForSelector('input[name="password"]', timeout=10000)
+        await page.type('input[name="password"]', admin_password)
+        await asyncio.gather(
+            page.waitForNavigation(waitUntil="domcontentloaded", timeout=12000),
+            page.querySelectorEval('input[name="password"]', "(el) => el.form.requestSubmit()"),
+        )
+        await page.waitForFunction(
+            'document.documentElement.innerText.includes("Settings") || '
+            'document.documentElement.innerText.includes("Logout")',
+            timeout=10000,
+        )
+        try:
+            await page.goto(BASE_URL + url_path, waitUntil="domcontentloaded", timeout=12000)
+        except Exception as exc:
+            # Only a navigation timeout is tolerated; do not hide unrelated errors.
+            if "Timeout" not in type(exc).__name__:
+                raise
+        await asyncio.sleep(VISIT_SECONDS)
+    finally:
+        await browser.close()
 
 
 def review(url_path: str, admin_password: str) -> None:
     profile = tempfile.mkdtemp(prefix="review-", dir=str(PROFILE_ROOT))
-    driver = None
     try:
-        driver = create_browser(profile)
-        driver.get(BASE_URL + "/index.php?page=loginURL")
-        password = driver.find_element(By.NAME, "password")
-        password.send_keys(admin_password)
-        password.submit()
-        WebDriverWait(driver, 10).until(
-            lambda current: "Settings" in current.page_source
-            or "Logout" in current.page_source
-        )
-        # The administrator browser now visits the submitted path on the local
-        # WonderCMS origin. Reflected XSS executes in this real admin session.
-        try:
-            driver.get(BASE_URL + url_path)
-        except TimeoutException:
-            # A slow page may still have executed its script before timing out.
-            pass
-        time.sleep(VISIT_SECONDS)
+        asyncio.run(_review_async(url_path, admin_password, profile))
     finally:
-        if driver is not None:
-            try:
-                driver.quit()
-            except WebDriverException:
-                pass
         shutil.rmtree(profile, ignore_errors=True)
 
 
