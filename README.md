@@ -12,6 +12,7 @@
 | [覆盖现状和滚动路线图](docs/WEB_ROADMAP.md) | 目前 17 个目录、SQLi/XSS 等细分缺口、可复现机器候选与后续顺序 |
 | [现有靶机及开发队列](catalog/web-curriculum.json) | 已有靶机的主标签、场景特征、CI/Worker 验收状态、候选清单和滚动需求 |
 | [清单一致性检查](scripts/validate_web_curriculum.py) | GitHub Actions 验证官方专题、细分技能、机器目录、候选引用及待开发任务的编号；见 [工作流](.github/workflows/web-curriculum.yml) |
+| [平台与靶机职责边界](docs/PLATFORM_FLAG_BOUNDARIES.md) | Web 后端判题、Worker 只调度、Flag 自靶机取得；XSS 管理员访问属于题目本身，不是 Worker 的 Bot |
 
 ## 选题的固定工作方式
 
