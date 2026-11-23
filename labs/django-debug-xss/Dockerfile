@@ -2,7 +2,7 @@
 # PostgreSQL must generate the original duplicate-key exception; SQLite does not.
 FROM python:3.9-alpine3.16
 ARG DJANGO_VERSION=1.11.4
-RUN apk add --no-cache postgresql postgresql-client su-exec libpq chromium-headless-shell \
+RUN apk add --no-cache postgresql postgresql-client su-exec libpq chromium \
  && pip install --no-cache-dir "Django==${DJANGO_VERSION}" "psycopg2-binary==2.9.9" "pyppeteer==2.0.0" \
  && addgroup -S lab && adduser -S -D -G lab lab \
  && addgroup -S reviewbot && adduser -S -D -G reviewbot reviewbot \
