@@ -957,16 +957,16 @@
       "worker_status": "not_verified",
       "release_status": "blocked_by_marker",
       "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45203163868",
-      "note": "真实 WonderCMS 3.4.2 管理端反射型 XSS 已用 Chromium 验证；单 Flag 仅管理员会话可读。缺 Worker 自动管理员审阅 Bot，故完整玩家挑战仍为 partial、禁止发布。镜像实测 43,536,713 字节，内存快照 15.28 MiB。",
+      "note": "原版 WonderCMS 3.4.2 反射型 XSS 已在管理员 Chromium 中验证；CI 事先登录管理员，尚未实现普通玩家获得单 Flag 的真实闭环。这是靶机玩法缺口，不是 Worker Bot/Flag 功能缺口；Web 后端判题，Worker 只调度。",
       "variant_profile": {
         "technology": "WonderCMS 3.4.2, PHP 8.2 Alpine, JSON datastore",
         "initial_discovery": "自然 CMS 页面、管理员登录与原版页面/表单上下文",
         "key_constraint_or_mechanism": "真实原版 WonderCMS 管理端 HTML form action 属性上下文反射型 XSS",
-        "attack_path": "普通站点枚举 → 原版 XSS 入口 → 管理员浏览器实际执行 → 原生会话保护的单 Flag 目标",
+        "attack_path": "普通站点侦察 → 真实 WonderCMS 管理端属性 XSS（管理员 CI 已验证）→ 普通玩家到 Flag 的路径仍待设计与验收；不可冒充完成",
         "incremental_learning_value": "较现有 Cursed Stale Policy 增加轻量真实 CMS 与管理员点击/HTML 属性边界场景",
         "confidence": "original_upstream_342_and_browser_marker_ci_verified"
       },
-      "skill_mapping_stage": "browser_reflected_xss_verified_worker_bot_missing"
+      "skill_mapping_stage": "chromium_admin_browser_executed; player_flag_path_unverified"
     }
   ],
   "backlog": [
@@ -1160,7 +1160,7 @@
       "candidate_status": "research_required",
       "scope": "repeatable_skill_variant_requirement",
       "one_to_many_allowed": true,
-      "scenario_variant_focus": "属性/事件/引用符上下文；区别于 HTML 正文反射型 XSS",
+      "scenario_variant_focus": "WonderCMS 真实属性反射型 XSS 已由管理员浏览器验证，但玩家并未拥有管理员会话；若做直接返 Flag 的基础 XSS，应优先另选公开可触发的真实漏洞，不能直接暴露 admin Flag",
       "candidate_options": [
         "wondercms-xss"
       ],
