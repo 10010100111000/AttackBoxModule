@@ -1011,11 +1011,14 @@
         "sqli.time-blind"
       ],
       "status": "planned",
-      "candidate_status": "source_not_selected",
-      "objective": "真实数据库盲注：独立测试布尔差异、时间差异及数据提取；不再重复 UNION",
+      "candidate_status": "source_verified",
+      "objective": "优先核实 HTB Usage 原始 Laravel 密码恢复 POST email 布尔盲注，通过真实 MySQL 条件响应提取；时间盲注必须另做独立证据",
       "scope": "repeatable_skill_variant_requirement",
       "one_to_many_allowed": true,
-      "scenario_variant_focus": "布尔和时间盲注分开证明，可按不同数据库/输入面复现多次"
+      "scenario_variant_focus": "Laravel POST+CSRF/session+MySQL 布尔回显差异；时间盲注留独立变体，不因同一台出现 sqlmap 就默认覆盖",
+      "candidate_options": [
+        "usage"
+      ]
     },
     {
       "id": "xss-stored-admin",
@@ -1772,6 +1775,28 @@
       "review_status": "research_required",
       "size_policy": "stdlib_python_extremely_small_source_measure_runtime",
       "priority_hint": "optional_basic_micro_lesson"
+    },
+    {
+      "id": "usage",
+      "platform": "HTB",
+      "url": "https://www.hackthebox.com/machines/usage",
+      "skills": [
+        "sqli.boolean-blind",
+        "sqli.db-enumeration",
+        "file_upload.unrestricted-upload"
+      ],
+      "signature": "Laravel password recovery POST email boolean-based blind SQLi -> genuine MySQL admin_users -> Laravel-Admin avatar upload -> dash shell -> monit creds -> xander -> sudo 7za wildcard file read",
+      "source_status": "original_HTB_writeups_and_IppSec_video_reviewed_not_original_private_app_source",
+      "review_status": "source_verified",
+      "evidence_urls": [
+        "https://www.youtube.com/watch?v=cx9Da-PoXG4",
+        "https://www.cipherbuu.net/posts/Usage-Walkthrough/",
+        "https://www.brunorochamoura.com/posts/usage/"
+      ],
+      "origin_notes": "Writeups identify /forget-password email POST and boolean-based blind SQLi; some observed Laravel-Admin version strings differ among reports (1.8.17 versus 1.8.19). Confirm exact vulnerable upstream Laravel-Admin release and CVE-2023-24249 before implementation. Password reset SQLi is in target-specific application code, not a general Laravel framework CVE.",
+      "reconstruction_gate": "Do not invent a password-recovery SQLi endpoint and call it authentic HTB Usage. Obtain credible application/DB behavior evidence, preserve CSRF/session and genuine database blind-response distinction; original private code cannot be claimed. Upstream Laravel-Admin must be an actual vulnerable version and tested with real upload handling. Preserve later Unix escalation only if reproducible under Docker without privileged/host access.",
+      "training_scope": "Primary sqli.boolean-blind; time-based extraction is optional only if an independently verified real backend timing oracle is demonstrated; do not claim time-blind from same boolean CI.",
+      "worker_status": "not_verified"
     }
   ],
   "lightweight_selection_policy": {
