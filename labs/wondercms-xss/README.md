@@ -24,7 +24,7 @@ The bot extracts only the submitted URL's path/query and visits it on the local 
 
 - PHP runs as www-data; the bot runs as a separate wcmsbot user.
 - The Flag file is readable only by the PHP service account; the bot does not open or read it from disk. It obtains the Flag only through the authenticated browser session and the vulnerable XSS path.
-- Chromium Headless Shell runs as non-root with its sandbox enabled (no --no-sandbox), a temporary per-review profile, no host mounts and no Docker socket.
+- Chromium Headless Shell runs as the unprivileged wcmsbot user with a temporary per-review profile, no host mounts and no Docker socket. Default Docker seccomp blocks the Chromium user-namespace sandbox in CI, so the bot uses --no-sandbox within its isolated per-player target container. This weakens defense in depth: a browser exploit could reach the wcmsbot account. The target must never be privileged, share the host network, mount host files, or have access to the Docker socket; production deployment must confirm this threat model or provide a compatible sandbox.
 - The bot accepts only absolute HTTP(S) URLs but discards the submitted authority, visiting only the local app path. The intended exfiltration destination is the learner's private AttackBox address on that instance's isolated lab network.
 - Contact submissions are queued atomically with a bounded pending queue; each browser review has a page-load timeout and a short visit window.
 - Container reset clears the admin session, bot profile, queue and instance Flag.
