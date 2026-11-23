@@ -947,20 +947,20 @@
       "secondary_categories": [],
       "validated_skills": [],
       "implemented_skills": [],
-      "lab_ci_status": "unverified",
+      "lab_ci_status": "full_chain_ci",
       "worker_status": "not_verified",
       "release_status": "not_assessed",
-      "evidence": "",
-      "note": "Django 1.11.4 actual technical-500 XSS triggered by PostgreSQL duplicate-key IntegrityError; browser verified against 1.11.5 patched control when CI passes",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45233000605",
+      "note": "Native PostgreSQL unique constraint -> actual Django 1.11.4 technical-500 XSS -> authenticated headless editor -> Flag callback; patched Django 1.11.5 negative control and rebuilt-instance Flag rotation pass",
       "variant_profile": {
         "technology": "Django 1.11.4, Python, PostgreSQL",
         "initial_discovery": "Normal public registry form and repeated handle registration",
         "key_constraint_or_mechanism": "Framework technical 500 page error-message HTML context; upstream CVE-2017-12794",
         "attack_path": "Register username -> duplicate triggers native PostgreSQL IntegrityError -> real Django debug page XSS",
         "incremental_learning_value": "Contrasts WonderCMS admin-session XSS by exercising Django's framework error-page context without an admin bot",
-        "confidence": "upstream_vulhub_reproduction_pending_ci"
+        "confidence": "verified_by_independent_black_box_ci"
       },
-      "skill_mapping_stage": "independent_browser_ci_pending"
+      "skill_mapping_stage": "browser_and_full_chain_ci_verified"
     }
   ],
   "backlog": [
