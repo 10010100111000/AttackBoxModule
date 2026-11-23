@@ -1,0 +1,4 @@
+FROM python:3.12-alpine
+WORKDIR /test
+COPY attacker_chain.py /test/attacker_chain.py
+CMD ["python","-u","/test/attacker_chain.py"]
