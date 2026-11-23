@@ -49,6 +49,7 @@ RUN set -eu; \
     php83 -l /var/www/html/index.php; \
     php83 -l /var/www/html/challenge.php; \
     php83 -l /var/www/html/firewall.php; \
+    php-fpm83 -t; \
     nginx -t; \
     visudo -cf /etc/sudoers
 
