@@ -1,6 +1,6 @@
 # WonderCMS 3.4.2 — CVE-2023-41425
 
-**Status: development candidate. Not an official OffSec/HTB image, and NOT Worker-ready.**
+**Status: XSS browser proof verified, but the ordinary learner-to-Flag path is incomplete. Not an official OffSec/HTB image; NOT RELEASE-READY.**
 
 A small, real PHP CMS built from the unmodified WonderCMS 3.4.2 upstream Git tag, checked against commit `65ad81405af2d27f75190805ed6c1d954d6fc72b`. WonderCMS uses a JSON file instead of MySQL. The deployment includes a real WonderCMS theme, administrator login and the original XSS-relevant page/form rendering code.
 
@@ -24,7 +24,7 @@ Sources:
 - The built-in PHP router only implements equivalent routing and denies public access to the JSON database, as the original Apache `.htaccess` normally does. It does not add an exploitable route.
 - **Objective**: `review-proof.php` returns one per-instance training Flag only when the CMS native administrator session is authenticated. It is not a vulnerable entrypoint and returns 403 to unauthenticated requests. The Flag is created at runtime in `/run/wcms/review.flag`.
 - The actual XSS route is not linked as a `/vuln` page or listed in the visitor UI.
-- **Bot requirement**: A real browser with the admin session must visit a user-supplied link for the student to solve the intended cross-user exercise. The CI browser test uses a separate attacker/tester image; **the present platform Worker does not yet provide a reusable admin browser bot for this machine**. This release is blocked until that integration is verified. It cannot be treated as a usable production XSS challenge simply because the source is merged.
+- **Current limitation**: The original XSS demonstration is in an *authenticated admin browser context*. CI logs in as the CMS administrator before running the benign proof. Ordinary learners do not have that session. For a real intermediate cross-user scenario, any visiting administrator/browser process is part of **this challenge's own environment**, NOT Worker. For a simpler directly returned Flag, select/implement an authentic public XSS variant that does not require someone else's session; do not make the admin-only Flag publicly accessible as a shortcut.
 
 ## Local isolated build and startup
 
@@ -45,9 +45,9 @@ No host ports should be published to the public Internet. The instance works thr
 3. A separate actual Chromium browser signs in through the real WonderCMS login, opens a crafted page URL and proves JavaScript executed in the administrator origin. Checking a string in HTTP response is *not* acceptance.
 4. In the admin browser proof, a private per-instance flag must be accessible only after real login, not returned to a visitor.
 5. Recreate the target with a different private flag and password; previous sessions, submitted changes and proof must be gone.
-6. CI reports actual runtime image size; Worker bot, multi-user network and real flag verification are a separate release gate.
+6. CI reports image size and browser evidence. A complete learner-to-Flag path must be delivered by this challenge; the **Web backend** (not Worker) already validates submitted Flags. Worker is limited to target orchestration, networking and lifecycle.
 
-**Do not claim a full browser-based challenge is complete if the administrator browser CI or Worker review mechanism is missing.**
+**Do not claim the learner path is complete merely because a test account can log in as administrator. The Worker is NOT responsible for browser victims or Flag validation.**
 
 ## Verified results — 2026-11-23
 
@@ -56,6 +56,13 @@ No host ports should be published to the public Internet. The instance works thr
 - **PASS**: unprivileged visitor receives 403 for the admin-only Flag and 404 for the native JSON database. Admin browser can access its private per-instance objective.
 - **PASS**: destroying and recreating the image changes both private admin passwords and Flag values; both first and second instance tests passed.
 - **Measured target runtime image**: 43,536,713 bytes ≈ **41.5 MiB**; **memory snapshot** 15.28 MiB with one PID under CI's 192 MiB / 128 PID limits. This is a snapshot, not concurrent/peak usage.
-- **NOT verified**: a real learner-controlled page-review bot on the production Worker that visits the submitted link; the CMS's full XSS→plugin installation→RCE path has also not been accepted as part of this **XSS-focused, single-Flag** exercise.
+- **NOT verified**: a normal learner's complete route from discovery to Flag; this test deliberately authenticates as administrator to prove original browser XSS. A victim-visiting mechanism, if required by this scenario, belongs to the **challenge itself** (not Worker). The CMS's XSS→plugin installation→RCE path is also not part of this single-Flag exercise.
 
-**Lab skill status:** verified browser-based reflected XSS. **Challenge readiness:** partial until administrator-link review is integrated; `.release-blocked` must remain. Never merge on the assumption that a green Chromium test also means the live Worker supports the required browser interaction.
+**Lab skill status:** reflected XSS browser execution verified. **Challenge readiness:** partial because the player's Flag acquisition is not proven; `.release-blocked` remains. The Web backend checks Flag submissions (`attemptChallenge()`), and Worker only schedules target containers. For a *direct-Flag XSS* exercise, don't artificially require a Worker Bot; either redesign a self-contained target proof or choose a public unauthenticated XSS.
+
+## Platform boundary (verified against the actual attackbox repository)
+
+- `attackbox/web/server/services/challenges.ts`: `attemptChallenge()` validates user-submitted answers against Web-side stage flags.
+- `attackbox/worker/node/targets/`: scheduling, lifecycle, Docker network, resource isolation, opaque environment variable forwarding; **no Flag judge and no administrator/browser bot**.
+- This lab's native PHP endpoint already returns a Flag to an **authenticated administrator**. That is *not* proof that an unauthenticated learner can reach the objective. Simply changing it to return the Flag to everyone bypasses the XSS entirely.
+- See [project architecture responsibility contract](../../docs/PLATFORM_FLAG_BOUNDARIES.md); the platform Web backend, not Worker, is responsible for recording submissions.
