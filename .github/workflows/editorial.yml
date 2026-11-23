@@ -83,4 +83,4 @@ jobs:
         if: always()
         run: |
           echo "::warning title=Editorial Root unverified::This smoke workflow does not exercise the prod to GitPython to Root Flag path. Manual publication is blocked until full acceptance."
-          printf '%s\n' '### Editorial status' '' 'SSR​F-to-User validation only; Root chain and Worker integration are not accepted. See labs/editorial/.release-blocked.' >> "$GITHUB_STEP_SUMMARY"
+          printf '%s\n' '### Editorial status' '' 'SSRF-to-User validation only; Root chain and Worker integration are not accepted. See labs/editorial/.release-blocked.' >> "$GITHUB_STEP_SUMMARY"
