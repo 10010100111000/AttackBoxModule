@@ -1,0 +1,702 @@
+{
+  "schema_version": 1,
+  "updated_on": "2026-11-23",
+  "main_snapshot_commit": "45c2e88165342dca8ce3583c33659651f5c3c7f2",
+  "purpose": "trytopwn Web 题库选题、覆盖率与验收状态的唯一结构化索引；每次新增靶机时维护本文件与 docs/WEB_ROADMAP.md",
+  "difficulty_is_provisional": true,
+  "statuses": {
+    "lab_ci_status": {
+      "full_chain_ci": "存在已验证的靶机完整目标攻击链 CI 证据，不等于正式 Worker 上线",
+      "partial": "源码/局部功能或 smoke 测试已建立，缺独立完整目标链证据",
+      "unverified": "尚无可信独立完整验收证据"
+    },
+    "worker_status": {
+      "not_verified": "未完成实际平台 Worker 的多用户网络、Flag 判题与资源验收"
+    },
+    "release_status": {
+      "blocked_by_marker": "仓库存在 .release-blocked 标记，禁止发布",
+      "not_assessed": "未在本次盘点中确认生产发布准备情况"
+    }
+  },
+  "categories": [
+    {
+      "id": "auth_session",
+      "title": "认证与会话安全",
+      "topics": [
+        "login-bypass",
+        "jwt",
+        "csrf",
+        "session-fixation",
+        "authorization-chain"
+      ]
+    },
+    {
+      "id": "sqli",
+      "title": "SQL 注入",
+      "topics": [
+        "auth-bypass",
+        "union",
+        "error-based",
+        "boolean-blind",
+        "time-blind",
+        "second-order",
+        "file-operations",
+        "out-of-band",
+        "filter-bypass"
+      ]
+    },
+    {
+      "id": "xss",
+      "title": "跨站脚本",
+      "topics": [
+        "reflected",
+        "stored",
+        "dom",
+        "blind",
+        "csp-bypass",
+        "cross-feature"
+      ]
+    },
+    {
+      "id": "ssrf",
+      "title": "服务端请求伪造",
+      "topics": [
+        "basic",
+        "internal-enumeration",
+        "redirect-bypass",
+        "url-parser-bypass",
+        "blind",
+        "internal-service-chain"
+      ]
+    },
+    {
+      "id": "idor",
+      "title": "对象级授权与 IDOR",
+      "topics": [
+        "direct-object-access",
+        "multi-role",
+        "tenant-boundary"
+      ]
+    },
+    {
+      "id": "file_upload",
+      "title": "文件上传",
+      "topics": [
+        "unrestricted-upload",
+        "extension-bypass",
+        "parser-mismatch",
+        "race-upload"
+      ]
+    },
+    {
+      "id": "file_read",
+      "title": "路径遍历与本地文件包含",
+      "topics": [
+        "path-traversal",
+        "lfi",
+        "wrapper-abuse",
+        "file-to-rce"
+      ]
+    },
+    {
+      "id": "command_injection",
+      "title": "命令注入与系统调用",
+      "topics": [
+        "basic-rce",
+        "shellshock",
+        "blind",
+        "argument-injection",
+        "environment-manipulation"
+      ]
+    },
+    {
+      "id": "ssti",
+      "title": "模板注入",
+      "topics": [
+        "expression",
+        "object-access",
+        "sandbox-escape"
+      ]
+    },
+    {
+      "id": "xxe",
+      "title": "XML 外部实体",
+      "topics": [
+        "file-read",
+        "ssrf",
+        "blind-oob"
+      ]
+    },
+    {
+      "id": "nosql",
+      "title": "NoSQL 注入",
+      "topics": [
+        "operator-auth-bypass",
+        "blind-extraction",
+        "logic-composition"
+      ]
+    },
+    {
+      "id": "deserialization",
+      "title": "不安全反序列化",
+      "topics": [
+        "unsafe-parse",
+        "dependency-gadget",
+        "restricted-gadget-chain"
+      ]
+    },
+    {
+      "id": "business_logic",
+      "title": "业务逻辑缺陷",
+      "topics": [
+        "workflow-bypass",
+        "state-transition",
+        "price-or-balance"
+      ]
+    },
+    {
+      "id": "race_conditions",
+      "title": "竞态条件",
+      "topics": [
+        "check-use-race",
+        "parallel-requests",
+        "multi-step-race"
+      ]
+    },
+    {
+      "id": "http_protocol",
+      "title": "HTTP 协议边界",
+      "topics": [
+        "request-smuggling",
+        "cache-poisoning",
+        "host-header",
+        "websocket-attack"
+      ]
+    },
+    {
+      "id": "cms_vulnerability",
+      "title": "CMS / 应用组件漏洞",
+      "topics": [
+        "information-disclosure",
+        "plugin-rce",
+        "versioned-cve"
+      ]
+    },
+    {
+      "id": "exposed_interface",
+      "title": "暴露的管理或执行接口",
+      "topics": [
+        "webshell-discovery",
+        "admin-console"
+      ]
+    },
+    {
+      "id": "service_pivot",
+      "title": "非 Web 服务链与协议枢纽",
+      "topics": [
+        "ftp-discovery",
+        "ssh-tunneling",
+        "db-service"
+      ]
+    }
+  ],
+  "machines": [
+    {
+      "id": "base",
+      "path": "labs/base",
+      "track": "web",
+      "provisional_difficulty": "beginner",
+      "primary_category": "auth_session",
+      "secondary_categories": [
+        "file_upload"
+      ],
+      "validated_skills": [],
+      "implemented_skills": [
+        "auth_session.login-bypass",
+        "file_upload.unrestricted-upload"
+      ],
+      "lab_ci_status": "unverified",
+      "worker_status": "not_verified",
+      "release_status": "not_assessed",
+      "evidence": "",
+      "note": "PHP 7.2 strcmp 认证逻辑及上传；缺独立完整验收"
+    },
+    {
+      "id": "bashed",
+      "path": "labs/bashed",
+      "track": "web",
+      "provisional_difficulty": "beginner",
+      "primary_category": "exposed_interface",
+      "secondary_categories": [
+        "command_injection"
+      ],
+      "validated_skills": [
+        "exposed_interface.webshell-discovery",
+        "command_injection.environment-manipulation"
+      ],
+      "implemented_skills": [
+        "exposed_interface.webshell-discovery",
+        "command_injection.environment-manipulation"
+      ],
+      "lab_ci_status": "full_chain_ci",
+      "worker_status": "not_verified",
+      "release_status": "not_assessed",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45073735584",
+      "note": "原版 phpbash → sudo scriptmanager → root cron；独立 CI"
+    },
+    {
+      "id": "bike",
+      "path": "labs/bike",
+      "track": "web",
+      "provisional_difficulty": "beginner",
+      "primary_category": "ssti",
+      "secondary_categories": [],
+      "validated_skills": [],
+      "implemented_skills": [
+        "ssti.expression",
+        "ssti.object-access"
+      ],
+      "lab_ci_status": "partial",
+      "worker_status": "not_verified",
+      "release_status": "not_assessed",
+      "evidence": "",
+      "note": "真实 Handlebars 4.1.2，尚缺独立 CI 充分证明"
+    },
+    {
+      "id": "bountyhunter",
+      "path": "labs/bountyhunter",
+      "track": "web",
+      "provisional_difficulty": "intermediate",
+      "primary_category": "xxe",
+      "secondary_categories": [
+        "deserialization"
+      ],
+      "validated_skills": [
+        "xxe.file-read",
+        "deserialization.unsafe-parse"
+      ],
+      "implemented_skills": [
+        "xxe.file-read",
+        "deserialization.unsafe-parse"
+      ],
+      "lab_ci_status": "full_chain_ci",
+      "worker_status": "not_verified",
+      "release_status": "not_assessed",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45166657846",
+      "note": "真实 SimpleXML/XXE、SSH、Skytrain Python eval；源码重建"
+    },
+    {
+      "id": "cap",
+      "path": "labs/cap",
+      "track": "web",
+      "provisional_difficulty": "intermediate",
+      "primary_category": "idor",
+      "secondary_categories": [
+        "auth_session"
+      ],
+      "validated_skills": [
+        "idor.direct-object-access"
+      ],
+      "implemented_skills": [
+        "idor.direct-object-access"
+      ],
+      "lab_ci_status": "full_chain_ci",
+      "worker_status": "not_verified",
+      "release_status": "not_assessed",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45073735596",
+      "note": "IDOR → PCAP → FTP/SSH 密码复用 → Python capability Root"
+    },
+    {
+      "id": "cursed-stale-policy",
+      "path": "labs/cursed-stale-policy",
+      "track": "web",
+      "provisional_difficulty": "advanced",
+      "primary_category": "xss",
+      "secondary_categories": [
+        "http_protocol"
+      ],
+      "validated_skills": [],
+      "implemented_skills": [
+        "xss.csp-bypass"
+      ],
+      "lab_ci_status": "unverified",
+      "worker_status": "not_verified",
+      "release_status": "not_assessed",
+      "evidence": "",
+      "note": "有 CSP/XSS/WebSocket 代码；尚无可确认的浏览器攻击链验收，不能算高级 XSS 已覆盖"
+    },
+    {
+      "id": "devvortex",
+      "path": "labs/devvortex",
+      "track": "web",
+      "provisional_difficulty": "intermediate",
+      "primary_category": "cms_vulnerability",
+      "secondary_categories": [
+        "auth_session"
+      ],
+      "validated_skills": [],
+      "implemented_skills": [
+        "cms_vulnerability.information-disclosure",
+        "cms_vulnerability.versioned-cve"
+      ],
+      "lab_ci_status": "partial",
+      "worker_status": "not_verified",
+      "release_status": "not_assessed",
+      "evidence": "",
+      "note": "Joomla 4.2.6 信息泄露；真实 Apport Root 交互链未通过端到端验收"
+    },
+    {
+      "id": "editorial",
+      "path": "labs/editorial",
+      "track": "web",
+      "provisional_difficulty": "intermediate",
+      "primary_category": "ssrf",
+      "secondary_categories": [
+        "cms_vulnerability"
+      ],
+      "validated_skills": [
+        "ssrf.basic",
+        "ssrf.internal-enumeration"
+      ],
+      "implemented_skills": [
+        "ssrf.basic",
+        "ssrf.internal-enumeration"
+      ],
+      "lab_ci_status": "full_chain_ci",
+      "worker_status": "not_verified",
+      "release_status": "blocked_by_marker",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45180593763",
+      "note": "独立 CI 验证 SSRF → dev/prod SSH → GitPython UID0/Root；Worker 发布仍被 .release-blocked 阻止"
+    },
+    {
+      "id": "goodgames",
+      "path": "labs/goodgames",
+      "track": "web",
+      "provisional_difficulty": "intermediate",
+      "primary_category": "sqli",
+      "secondary_categories": [
+        "ssti",
+        "auth_session"
+      ],
+      "validated_skills": [],
+      "implemented_skills": [
+        "sqli.auth-bypass",
+        "ssti.object-access"
+      ],
+      "lab_ci_status": "partial",
+      "worker_status": "not_verified",
+      "release_status": "not_assessed",
+      "evidence": "",
+      "note": "登录 SQLi → MD5 凭据 → 存储型 Jinja2 SSTI；刻意只有 User Flag，完整独立验收待补"
+    },
+    {
+      "id": "nibbles",
+      "path": "labs/nibbles",
+      "track": "web",
+      "provisional_difficulty": "beginner",
+      "primary_category": "file_upload",
+      "secondary_categories": [
+        "cms_vulnerability"
+      ],
+      "validated_skills": [
+        "file_upload.unrestricted-upload",
+        "cms_vulnerability.plugin-rce"
+      ],
+      "implemented_skills": [
+        "file_upload.unrestricted-upload",
+        "cms_vulnerability.plugin-rce"
+      ],
+      "lab_ci_status": "full_chain_ci",
+      "worker_status": "not_verified",
+      "release_status": "not_assessed",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/44954697830",
+      "note": "原版 Nibbleblog 4.0.3 插件上传 → sudo Root"
+    },
+    {
+      "id": "openadmin",
+      "path": "labs/openadmin",
+      "track": "web",
+      "provisional_difficulty": "intermediate",
+      "primary_category": "command_injection",
+      "secondary_categories": [
+        "cms_vulnerability"
+      ],
+      "validated_skills": [
+        "command_injection.basic-rce",
+        "cms_vulnerability.versioned-cve"
+      ],
+      "implemented_skills": [
+        "command_injection.basic-rce",
+        "cms_vulnerability.versioned-cve"
+      ],
+      "lab_ci_status": "full_chain_ci",
+      "worker_status": "not_verified",
+      "release_status": "not_assessed",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45166657718",
+      "note": "ONA 18.1.1 xajax RCE → 内网服务 → SSH → nano Root"
+    },
+    {
+      "id": "pebbles",
+      "path": "labs/pebbles",
+      "track": "web",
+      "provisional_difficulty": "advanced",
+      "primary_category": "sqli",
+      "secondary_categories": [
+        "cms_vulnerability"
+      ],
+      "validated_skills": [
+        "sqli.union",
+        "sqli.file-operations",
+        "cms_vulnerability.versioned-cve"
+      ],
+      "implemented_skills": [
+        "sqli.union",
+        "sqli.file-operations",
+        "cms_vulnerability.versioned-cve"
+      ],
+      "lab_ci_status": "full_chain_ci",
+      "worker_status": "not_verified",
+      "release_status": "not_assessed",
+      "evidence": ".github/workflows/pebbles-full.yml",
+      "note": "原版 ZoneMinder SQLi、FILE/UDF、Root；复杂历史栈，注意 CI 与 Worker 各自验收"
+    },
+    {
+      "id": "photobomb",
+      "path": "labs/photobomb",
+      "track": "web",
+      "provisional_difficulty": "intermediate",
+      "primary_category": "command_injection",
+      "secondary_categories": [
+        "auth_session"
+      ],
+      "validated_skills": [
+        "command_injection.basic-rce",
+        "command_injection.environment-manipulation"
+      ],
+      "implemented_skills": [
+        "command_injection.basic-rce",
+        "command_injection.environment-manipulation"
+      ],
+      "lab_ci_status": "full_chain_ci",
+      "worker_status": "not_verified",
+      "release_status": "not_assessed",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45073735570",
+      "note": "Sinatra/ImageMagick 命令注入 → sudo PATH 劫持"
+    },
+    {
+      "id": "shocker",
+      "path": "labs/shocker",
+      "track": "web",
+      "provisional_difficulty": "beginner",
+      "primary_category": "command_injection",
+      "secondary_categories": [
+        "exposed_interface"
+      ],
+      "validated_skills": [
+        "command_injection.shellshock"
+      ],
+      "implemented_skills": [
+        "command_injection.shellshock"
+      ],
+      "lab_ci_status": "full_chain_ci",
+      "worker_status": "not_verified",
+      "release_status": "not_assessed",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/44955028484",
+      "note": "真实 GNU Bash 4.3 Apache CGI Shellshock → sudo Perl Root"
+    },
+    {
+      "id": "union",
+      "path": "labs/union",
+      "track": "web",
+      "provisional_difficulty": "intermediate",
+      "primary_category": "sqli",
+      "secondary_categories": [
+        "command_injection"
+      ],
+      "validated_skills": [
+        "sqli.union",
+        "sqli.file-operations",
+        "command_injection.basic-rce"
+      ],
+      "implemented_skills": [
+        "sqli.union",
+        "sqli.file-operations",
+        "command_injection.basic-rce"
+      ],
+      "lab_ci_status": "full_chain_ci",
+      "worker_status": "not_verified",
+      "release_status": "not_assessed",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45166660910",
+      "note": "真实 MariaDB UNION 与 LOAD_FILE → iptables / SSH → HTTP 头 sudo UID0；Worker 需专用 NET_ADMIN"
+    },
+    {
+      "id": "validation",
+      "path": "labs/validation",
+      "track": "web",
+      "provisional_difficulty": "intermediate",
+      "primary_category": "sqli",
+      "secondary_categories": [
+        "auth_session"
+      ],
+      "validated_skills": [
+        "sqli.second-order",
+        "sqli.union",
+        "sqli.file-operations"
+      ],
+      "implemented_skills": [
+        "sqli.second-order",
+        "sqli.union",
+        "sqli.file-operations"
+      ],
+      "lab_ci_status": "full_chain_ci",
+      "worker_status": "not_verified",
+      "release_status": "not_assessed",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45166657712",
+      "note": "真实二阶 SQLi → MariaDB FILE → PHP → Unix su Root"
+    },
+    {
+      "id": "funnel",
+      "path": "labs/funnel",
+      "track": "service",
+      "provisional_difficulty": "beginner",
+      "primary_category": "service_pivot",
+      "secondary_categories": [],
+      "validated_skills": [],
+      "implemented_skills": [
+        "service_pivot.ftp-discovery",
+        "service_pivot.ssh-tunneling",
+        "service_pivot.db-service"
+      ],
+      "lab_ci_status": "partial",
+      "worker_status": "not_verified",
+      "release_status": "not_assessed",
+      "evidence": "",
+      "note": "FTP/SSH/PostgreSQL 数据库隧道；并非主要 Web 题，单枚数据库 Flag"
+    }
+  ],
+  "backlog": [
+    {
+      "id": "xss-reflected",
+      "priority": 1,
+      "difficulty": "beginner",
+      "track": "web_focus",
+      "primary_category": "xss",
+      "required_skill_coverage": [
+        "xss.reflected"
+      ],
+      "status": "planned",
+      "candidate_status": "source_not_selected",
+      "objective": "Web 专项：在真实页面输出上下文中复现反射型 XSS，并证明浏览器实际执行"
+    },
+    {
+      "id": "file-read-basic",
+      "priority": 2,
+      "difficulty": "beginner",
+      "track": "web_focus",
+      "primary_category": "file_read",
+      "required_skill_coverage": [
+        "file_read.path-traversal"
+      ],
+      "status": "planned",
+      "candidate_status": "source_not_selected",
+      "objective": "Web 专项：真实下载/附件功能，路径遍历与文件读取；不得硬编码 Flag 返回"
+    },
+    {
+      "id": "nosql-basic",
+      "priority": 3,
+      "difficulty": "beginner",
+      "track": "web_focus",
+      "primary_category": "nosql",
+      "required_skill_coverage": [
+        "nosql.operator-auth-bypass"
+      ],
+      "status": "planned",
+      "candidate_status": "source_not_selected",
+      "objective": "Web 专项：真实 MongoDB/驱动查询，操作符绕过；可参考 NodeBlog 技术栈但须核实细节"
+    },
+    {
+      "id": "sqli-blind",
+      "priority": 4,
+      "difficulty": "intermediate",
+      "track": "web_focus",
+      "primary_category": "sqli",
+      "required_skill_coverage": [
+        "sqli.boolean-blind",
+        "sqli.time-blind"
+      ],
+      "status": "planned",
+      "candidate_status": "source_not_selected",
+      "objective": "真实数据库盲注：独立测试布尔差异、时间差异及数据提取；不再重复 UNION"
+    },
+    {
+      "id": "xss-stored-admin",
+      "priority": 5,
+      "difficulty": "intermediate",
+      "track": "web_focus",
+      "primary_category": "xss",
+      "required_skill_coverage": [
+        "xss.stored"
+      ],
+      "status": "planned",
+      "candidate_status": "source_not_selected",
+      "objective": "真实持久化输入 + 管理员浏览器访问，验证会话/权限边界而非 alert 字符串"
+    },
+    {
+      "id": "deserialize-component",
+      "priority": 6,
+      "difficulty": "intermediate",
+      "track": "web_focus",
+      "primary_category": "deserialization",
+      "required_skill_coverage": [
+        "deserialization.unsafe-parse",
+        "deserialization.dependency-gadget"
+      ],
+      "status": "planned",
+      "candidate_status": "source_not_selected",
+      "objective": "使用受影响版本与真实组件，完整反序列化利用链；可对照 NodeBlog/Precious"
+    },
+    {
+      "id": "xss-csp-blind",
+      "priority": 7,
+      "difficulty": "advanced",
+      "track": "advanced_web",
+      "primary_category": "xss",
+      "required_skill_coverage": [
+        "xss.blind",
+        "xss.csp-bypass"
+      ],
+      "status": "planned",
+      "candidate_status": "source_not_selected",
+      "objective": "真实浏览器 Bot、CSP 和跨请求影响；先评估现有 Cursed Stale Policy 是否可升级验收"
+    },
+    {
+      "id": "sqli-websocket",
+      "priority": 8,
+      "difficulty": "advanced",
+      "track": "advanced_web",
+      "primary_category": "http_protocol",
+      "required_skill_coverage": [
+        "http_protocol.websocket-attack",
+        "sqli.boolean-blind"
+      ],
+      "status": "planned",
+      "candidate_status": "source_not_selected",
+      "objective": "WebSocket 真实盲注与跨服务枚举；Soccer 仅作为候选，核实原始漏洞与运行条件"
+    },
+    {
+      "id": "ssrf-restricted",
+      "priority": 9,
+      "difficulty": "advanced",
+      "track": "advanced_web",
+      "primary_category": "ssrf",
+      "required_skill_coverage": [
+        "ssrf.redirect-bypass",
+        "ssrf.url-parser-bypass",
+        "ssrf.internal-service-chain"
+      ],
+      "status": "planned",
+      "candidate_status": "source_not_selected",
+      "objective": "在真实 URL 检查、重定向或解析器差异下完成 SSRF 内部服务链；不要复制 Editorial 的基本入口"
+    }
+  ]
+}
