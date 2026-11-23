@@ -62,7 +62,7 @@ def local_path(raw: object) -> str:
 def create_browser(profile: str) -> webdriver.Chrome:
     options = Options()
     options.binary_location = "/usr/bin/chromium-browser"
-    options.add_argument("--headless=new")
+    options.add_argument("--headless")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-gpu")
     options.add_argument("--disable-background-networking")
@@ -162,7 +162,7 @@ def main() -> None:
                     job_path.unlink(missing_ok=True)
             else:
                 job_path.unlink(missing_ok=True)
-            print("[review-bot] review failed: " + type(exc).__name__, flush=True)
+            print("[review-bot] review failed: " + type(exc).__name__ + ": " + str(exc)[:1600], flush=True)
         finally:
             heartbeat()
 
