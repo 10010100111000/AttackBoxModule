@@ -947,24 +947,26 @@
       "secondary_categories": [
         "auth_session"
       ],
-      "validated_skills": [],
+      "validated_skills": [
+        "xss.reflected-attribute"
+      ],
       "implemented_skills": [
         "xss.reflected-attribute"
       ],
-      "lab_ci_status": "unverified",
+      "lab_ci_status": "partial",
       "worker_status": "not_verified",
       "release_status": "blocked_by_marker",
-      "evidence": "",
-      "note": "WonderCMS 3.4.2 原版 PHP CMS；CVE-2023-41425。CI 浏览器真实执行与管理员审核 Bot 接入是分别的验收门槛。",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45203163868",
+      "note": "真实 WonderCMS 3.4.2 管理端反射型 XSS 已用 Chromium 验证；单 Flag 仅管理员会话可读。缺 Worker 自动管理员审阅 Bot，故完整玩家挑战仍为 partial、禁止发布。镜像实测 43,536,713 字节，内存快照 15.28 MiB。",
       "variant_profile": {
         "technology": "WonderCMS 3.4.2, PHP 8.2 Alpine, JSON datastore",
         "initial_discovery": "自然 CMS 页面、管理员登录与原版页面/表单上下文",
         "key_constraint_or_mechanism": "真实原版 WonderCMS 管理端 HTML form action 属性上下文反射型 XSS",
         "attack_path": "普通站点枚举 → 原版 XSS 入口 → 管理员浏览器实际执行 → 原生会话保护的单 Flag 目标",
         "incremental_learning_value": "较现有 Cursed Stale Policy 增加轻量真实 CMS 与管理员点击/HTML 属性边界场景",
-        "confidence": "confirmed_upstream_342_source; browser_test_pending"
+        "confidence": "original_upstream_342_and_browser_marker_ci_verified"
       },
-      "skill_mapping_stage": "upstream_version_confirmed_independent_browser_ci_pending"
+      "skill_mapping_stage": "browser_reflected_xss_verified_worker_bot_missing"
     }
   ],
   "backlog": [
