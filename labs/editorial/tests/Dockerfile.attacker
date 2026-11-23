@@ -1,4 +1,6 @@
 FROM python:3.11-slim-bookworm
+RUN apt-get update && apt-get install -y --no-install-recommends openssh-client sshpass \
+    && rm -rf /var/lib/apt/lists/*
 WORKDIR /tests
 COPY smoke.py /tests/smoke.py
 CMD ["python3", "/tests/smoke.py"]

