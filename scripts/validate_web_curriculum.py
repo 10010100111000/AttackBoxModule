@@ -117,8 +117,7 @@ def main() -> None:
                  for a in associations),
              f"legacy evidence wrongly marked as independently verified: {skill}")
 
-    for path in ("README.md", "docs/WEB_TAXONOMY.md",
-                 "docs/WEB_ROADMAP.md", "docs/WEB_MACHINE_SELECTION.md"):
+    for path in ("README.md", "docs/WEB_LAB_DESIGN.md"):
         need((ROOT / path).is_file(), f"missing curriculum documentation: {path}")
 
     print(f"PASS: {len(topic_names)} topics, {len(skill_ids)} skill objectives, "
