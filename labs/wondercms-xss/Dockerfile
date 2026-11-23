@@ -8,14 +8,14 @@ RUN apk add --no-cache git ca-certificates \
  && git -C /src checkout --detach FETCH_HEAD \
  && test "$(git -C /src rev-parse HEAD)" = "65ad81405af2d27f75190805ed6c1d954d6fc72b"
 
-FROM php:8.2-alpine AS runtime
+FROM php:8.2-alpine3.23 AS runtime
 RUN set -eux; \
-    apk add --no-cache curl libzip oniguruma chromium chromium-chromedriver python3 py3-pip su-exec; \
+    apk add --no-cache curl libzip oniguruma chromium-headless-shell python3 py3-pip su-exec; \
     apk add --no-cache --virtual .php-build-deps $PHPIZE_DEPS libzip-dev curl-dev oniguruma-dev; \
     docker-php-ext-install -j2 curl mbstring zip; \
     apk del .php-build-deps; \
     php -r 'foreach (["curl", "mbstring", "zip"] as $ext) {if (!extension_loaded($ext)) {exit(1);}}'; \
-    python3 -m pip install --no-cache-dir --break-system-packages --target=/opt/wcms-bot-deps selenium==4.33.0; \
+    python3 -m pip install --no-cache-dir --break-system-packages --target=/opt/wcms-bot-deps pyppeteer==2.0.0; \
     addgroup -S wcmsbot; \
     adduser -S -D -h /home/wcmsbot -G wcmsbot wcmsbot; \
     addgroup www-data wcmsbot; \
