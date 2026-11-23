@@ -1,68 +1,65 @@
-# WonderCMS 3.4.2 — CVE-2023-41425
+# WonderCMS 3.4.2 — reflected XSS with an in-container administrator review bot
 
-**Status: XSS browser proof verified, but the ordinary learner-to-Flag path is incomplete. Not an official OffSec/HTB image; NOT RELEASE-READY.**
+**Status: real player-to-Flag path implemented; awaiting final CI and actual Worker-network smoke.** This is an independent training reconstruction, not an official HTB/OffSec image.
 
-A small, real PHP CMS built from the unmodified WonderCMS 3.4.2 upstream Git tag, checked against commit `65ad81405af2d27f75190805ed6c1d954d6fc72b`. WonderCMS uses a JSON file instead of MySQL. The deployment includes a real WonderCMS theme, administrator login and the original XSS-relevant page/form rendering code.
+## Training objective
 
-## Why this XSS target
+- Primary topic: **reflected XSS in an HTML form-action attribute** — CVE-2023-41425.
+- Intended level: **intermediate**. Players discover a normal publishing site, identify the contact form and WonderCMS, submit a crafted website URL, and use an administrator-browser XSS to obtain a private Flag.
+- The vulnerable upstream index.php is unmodified WonderCMS 3.4.2 pinned to commit 65ad81405af2d27f75190805ed6c1d954d6fc72b.
+- The public contact form is a separate challenge application component. It stores website submissions in an instance-local queue; it does not itself implement an XSS handler.
 
-- Primary topic: XSS, subtype: reflected XSS through HTML form attribute/context (CVE-2023-41425).
-- Learner level: intermediate comprehensive browser exercise, rather than a beginner `alert(1)` echo page.
-- Normal reconnaissance: discover the ordinary editorial website, identify WonderCMS, inspect admin login and navigation, and research the reported vulnerability.
-- Actual vulnerability is in the upstream CMS source. **We do not modify its input handling or add a fake vulnerable endpoint.**
-- The site text in its native `data/database.js` is seeded with ordinary publication content (not an invented exploit UI).
+## Correct runtime architecture
 
-Sources:
-- Upstream release: https://github.com/WonderCMS/wondercms/releases/tag/3.4.2
+The Worker starts **one target image/container**. This image runs two unprivileged service processes:
+
+1. **PHP / WonderCMS** (www-data): public site, real contact form, original vulnerable CMS, and /review-proof.php. The Flag endpoint is protected by the native WonderCMS administrator PHP session.
+2. **Admin Review Bot** (wcmsbot): a separate Python process with a real headless Chromium/ChromeDriver. It polls the contact queue, logs into WonderCMS with the instance's private admin account, and visits each submitted website URL in the admin browser.
+
+The bot extracts only the submitted URL's path/query and visits it on the local WonderCMS origin; it never navigates to the submitted hostname. The injected script can read the admin-only Flag using the admin session and exfiltrate it to the player's listener on the same private per-user lab network. The player then submits that Flag to trytopwn.
+
+**No Worker code changes or Worker-side browser/Flag logic are needed.** Worker only starts/stops the target image, supplies resource limits, and provides the per-user isolated lab network. The Web backend checks the player's submitted answer.
+
+### Process isolation inside the target
+
+- PHP runs as www-data; the bot runs as a separate wcmsbot user.
+- The Flag file is readable only by the PHP service account; the bot does not open or read it from disk. It obtains the Flag only through the authenticated browser session and the vulnerable XSS path.
+- Chromium runs as non-root with its sandbox enabled (no --no-sandbox), a temporary per-review profile, no host mounts and no Docker socket.
+- The bot accepts only absolute HTTP(S) URLs but discards the submitted authority, visiting only the local app path. The intended exfiltration destination is the learner's private AttackBox address on that instance's isolated lab network.
+- Contact submissions are queued atomically with a bounded pending queue; each browser review has a page-load timeout and a short visit window.
+- Container reset clears the admin session, bot profile, queue and instance Flag.
+
+## Sources and fidelity
+
+- Upstream WonderCMS release: https://github.com/WonderCMS/wondercms/releases/tag/3.4.2
 - CVE advisory: https://github.com/advisories/GHSA-58rr-37rr-r6h5
 - Original disclosure: https://gist.github.com/prodigiousMind/fc69a79629c4ba9ee88a7ad526043413
-- Upstream code license: MIT, retained within image at `/srv/wcms/LICENSE-WonderCMS`
+- HTB Sea's public writeup documents the same real pattern: public contact form stores a submitted website, an admin headless browser visits it, and the reflected WonderCMS XSS executes in that browser: https://0xdf.gitlab.io/2024/12/21/htb-sea.html
+- WonderCMS upstream MIT license is retained in the image at /srv/wcms/LICENSE-WonderCMS.
 
-## Architecture
-
-- **Target image**: PHP 8.2 Alpine, the actual WonderCMS 3.4.2 frontend, native session support, local JSON storage; no Node, Java, Python, MySQL, Chromium or browser in the target.
-- The built-in PHP router only implements equivalent routing and denies public access to the JSON database, as the original Apache `.htaccess` normally does. It does not add an exploitable route.
-- **Objective**: `review-proof.php` returns one per-instance training Flag only when the CMS native administrator session is authenticated. It is not a vulnerable entrypoint and returns 403 to unauthenticated requests. The Flag is created at runtime in `/run/wcms/review.flag`.
-- The actual XSS route is not linked as a `/vuln` page or listed in the visitor UI.
-- **Current limitation**: The original XSS demonstration is in an *authenticated admin browser context*. CI logs in as the CMS administrator before running the benign proof. Ordinary learners do not have that session. For a real intermediate cross-user scenario, any visiting administrator/browser process is part of **this challenge's own environment**, NOT Worker. For a simpler directly returned Flag, select/implement an authentic public XSS variant that does not require someone else's session; do not make the admin-only Flag publicly accessible as a shortcut.
-
-## Local isolated build and startup
+## Build and isolated local test
 
     docker build -t ttp-wondercms-xss:dev -f labs/wondercms-xss/Dockerfile labs/wondercms-xss
     docker network create --internal wcms-lab
-    docker run -d --name wcms-target --network wcms-lab --memory 128m --pids-limit 96 \
+    docker run -d --name wcms-target --network wcms-lab --memory 512m --cpus 1 --pids-limit 256 \
       -e WONDERCMS_REQUIRE_PRIVATE_FLAGS=1 \
       -e WONDERCMS_ADMIN_PASSWORD='use-a-private-test-password' \
       -e WONDERCMS_STATIC_XSS_FLAG='TTP{local_test_value}' \
       ttp-wondercms-xss:dev
 
-No host ports should be published to the public Internet. The instance works through a private attack environment. Source-code inclusion is not a license to deploy a live vulnerable CMS on a public host.
+Connect the AttackBox to the same private per-user lab network and submit a URL through /contact.php. Do not publish the target's vulnerable HTTP port to the public Internet.
 
-## Verification gates
+## Acceptance criteria
 
-1. Build from exact source commit and test that PHP extensions (curl/zip/mbstring) and core site work.
-2. Confirm visitors get 403 from the admin-only proof and cannot directly read `data/database.js`.
-3. A separate actual Chromium browser signs in through the real WonderCMS login, opens a crafted page URL and proves JavaScript executed in the administrator origin. Checking a string in HTTP response is *not* acceptance.
-4. In the admin browser proof, a private per-instance flag must be accessible only after real login, not returned to a visitor.
-5. Recreate the target with a different private flag and password; previous sessions, submitted changes and proof must be gone.
-6. CI reports image size and browser evidence. A complete learner-to-Flag path must be delivered by this challenge; the **Web backend** (not Worker) already validates submitted Flags. Worker is limited to target orchestration, networking and lifecycle.
+The independent attacker container must:
+1. Browse the public site and contact form without knowing the admin password.
+2. Confirm direct anonymous requests to /review-proof.php are forbidden and /data/database.js is not public.
+3. Submit a URL containing the original WonderCMS reflected-XSS vector through the normal contact form.
+4. Receive the private per-instance Flag at its own listener after the target-local admin bot visits the URL. The attacker container must never receive the admin password or read target files.
+5. Repeat after destroying/recreating the target with a different admin password and Flag.
 
-**Do not claim the learner path is complete merely because a test account can log in as administrator. The Worker is NOT responsible for browser victims or Flag validation.**
+The browser is part of the **target image**, not the CI-only tester. Chromium increases the runtime image and memory requirement; the CI reports the measured image size and memory snapshot rather than assuming it is small.
 
-## Verified results — 2026-11-23
+## Release boundary
 
-- **PASS**: [independent real Chromium CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/45203163868) against the genuine upstream 3.4.2 code, without a fake /vuln handler.
-- **PASS**: admin login through original WonderCMS PHP session; actual reflected HTML attribute injection executes a harmless JavaScript marker in Chromium.
-- **PASS**: unprivileged visitor receives 403 for the admin-only Flag and 404 for the native JSON database. Admin browser can access its private per-instance objective.
-- **PASS**: destroying and recreating the image changes both private admin passwords and Flag values; both first and second instance tests passed.
-- **Measured target runtime image**: 43,536,713 bytes ≈ **41.5 MiB**; **memory snapshot** 15.28 MiB with one PID under CI's 192 MiB / 128 PID limits. This is a snapshot, not concurrent/peak usage.
-- **NOT verified**: a normal learner's complete route from discovery to Flag; this test deliberately authenticates as administrator to prove original browser XSS. A victim-visiting mechanism, if required by this scenario, belongs to the **challenge itself** (not Worker). The CMS's XSS→plugin installation→RCE path is also not part of this single-Flag exercise.
-
-**Lab skill status:** reflected XSS browser execution verified. **Challenge readiness:** partial because the player's Flag acquisition is not proven; `.release-blocked` remains. The Web backend checks Flag submissions (`attemptChallenge()`), and Worker only schedules target containers. For a *direct-Flag XSS* exercise, don't artificially require a Worker Bot; either redesign a self-contained target proof or choose a public unauthenticated XSS.
-
-## Platform boundary (verified against the actual attackbox repository)
-
-- `attackbox/web/server/services/challenges.ts`: `attemptChallenge()` validates user-submitted answers against Web-side stage flags.
-- `attackbox/worker/node/targets/`: scheduling, lifecycle, Docker network, resource isolation, opaque environment variable forwarding; **no Flag judge and no administrator/browser bot**.
-- This lab's native PHP endpoint already returns a Flag to an **authenticated administrator**. That is *not* proof that an unauthenticated learner can reach the objective. Simply changing it to return the Flag to everyone bypasses the XSS entirely.
-- See [project architecture responsibility contract](../../docs/PLATFORM_FLAG_BOUNDARIES.md); the platform Web backend, not Worker, is responsible for recording submissions.
+The source-level target-to-bot-to-Flag path must pass the full black-box CI. Before removing .release-blocked, also verify the existing Worker can start this single image with the configured memory limit and that the bot's callback reaches only the same user's AttackBox over the existing private lab network. This is a Worker deployment/network smoke test, **not a request for Worker to implement a bot or Flag judge**.
