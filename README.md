@@ -11,6 +11,7 @@
 | [真实靶机的选择与评审](docs/WEB_MACHINE_SELECTION.md) | 如何从 HTB/OffSec/上游代码选择、比较并复现靶机；允许同技能多个不同场景 |
 | [覆盖现状和滚动路线图](docs/WEB_ROADMAP.md) | 目前 17 个目录、SQLi/XSS 等细分缺口、可复现机器候选与后续顺序 |
 | [现有靶机及开发队列](catalog/web-curriculum.json) | 已有靶机的主标签、场景特征、CI/Worker 验收状态、候选清单和滚动需求 |
+| [清单一致性检查](scripts/validate_web_curriculum.py) | GitHub Actions 验证官方专题、细分技能、机器目录、候选引用及待开发任务的编号；见 [工作流](.github/workflows/web-curriculum.yml) |
 
 ## 选题的固定工作方式
 
