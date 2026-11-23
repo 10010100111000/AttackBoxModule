@@ -1,0 +1,108 @@
+name: Validation real second-order SQLi lab
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "labs/validation/**"
+      - ".github/workflows/validation.yml"
+  pull_request:
+    paths:
+      - "labs/validation/**"
+      - ".github/workflows/validation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build real Apache, PHP-FPM, MariaDB and OpenSSH
+        run: docker build --progress=plain -f labs/validation/Dockerfile -t ttp-validation:ci labs/validation
+      - name: Check image size
+        run: |
+          set -euo pipefail
+          bytes=$(docker image inspect -f '{{.Size}}' ttp-validation:ci)
+          awk -v b="$bytes" 'BEGIN {printf "Validation image: %.1f MiB (%d bytes)\n",b/1048576,b}'
+          test "$bytes" -le $((160 * 1048576))
+      - name: Verify independent HTTP, SQL, FILE permission, reset and isolation
+        run: |
+          set -euo pipefail
+          net=validation-ci
+          target=validation-target
+          cleanup() {
+            docker inspect --format '{{range .State.Health.Log}}{{println .ExitCode}}{{println .Output}}{{end}}' "$target" || true
+            docker logs --tail 150 "$target" || true
+            docker rm -f "$target" validation-other >/dev/null 2>&1 || true
+            docker network rm "$net" >/dev/null 2>&1 || true
+          }
+          docker network create --internal "$net"
+          trap cleanup EXIT
+          start_target() {
+            docker run -d --name "$target" --network "$net" \
+              --memory 256m --pids-limit 192 --cpus 2 \
+              -e VALIDATION_REQUIRE_PRIVATE_FLAGS=1 \
+              -e VALIDATION_DB_PASSWORD='Val1dationCiRoot123' \
+              -e VALIDATION_STATIC_USER_FLAG='TTP{validation_ci_private_user_0123456789}' \
+              -e VALIDATION_STATIC_ROOT_FLAG='TTP{validation_ci_private_root_0123456789}' \
+              ttp-validation:ci
+          }
+          wait_healthy() {
+            for i in $(seq 1 70); do
+              state=$(docker inspect -f '{{.State.Status}}' "$target")
+              if [ "$state" != running ]; then docker logs "$target"; return 1; fi
+              health=$(docker inspect -f '{{.State.Health.Status}}' "$target")
+              if [ "$health" = healthy ]; then return 0; fi
+              if [ "$health" = unhealthy ]; then
+                docker inspect --format '{{range .State.Health.Log}}{{println .ExitCode}}{{println .Output}}{{end}}' "$target" || true
+                docker logs "$target"
+                return 1
+              fi
+              sleep 2
+            done
+            docker logs "$target"; return 1
+          }
+          start_target
+          wait_healthy
+          test "$(docker inspect -f '{{.HostConfig.Privileged}}' "$target")" = false
+          test "$(docker inspect -f '{{.HostConfig.NetworkMode}}' "$target")" = "$net"
+          docker exec "$target" mariadb -N --batch -e 'SHOW DATABASES' | grep -Fx registration
+          docker exec "$target" mariadb -N --batch -e \
+            "SHOW GRANTS FOR 'uhc'@'127.0.0.1'" | grep -F FILE
+          docker run --rm --network "$net" \
+            -e VALIDATION_TEST_FILENAME='validation-probe-ci.txt' \
+            -v "$PWD/labs/validation/tests:/tests:ro" \
+            python:3.12-alpine python3 /tests/smoke.py
+          docker exec "$target" sh -c \
+            'test "$(cat /home/htb/user.txt)" = "TTP{validation_ci_private_user_0123456789}"; test "$(cat /root/root.txt)" = "TTP{validation_ci_private_root_0123456789}"'
+          docker exec -i -u apache "$target" env VALIDATION_CI_ROOT_PASSWORD='Val1dationCiRoot123' sh -s < labs/validation/tests/native_root_auth.sh
+          docker exec -u apache "$target" sh -c \
+            'test ! -r /root/root.txt; test -r /home/htb/user.txt; test -r /var/www/html/validation-probe-ci.txt'
+          docker stats --no-stream --format 'Target memory: {{.MemUsage}}, PIDs: {{.PIDs}}' "$target"
+          docker run -d --name validation-other --network "$net" \
+            --memory 256m --pids-limit 192 --cpus 2 \
+            -e VALIDATION_REQUIRE_PRIVATE_FLAGS=1 \
+            -e VALIDATION_DB_PASSWORD='DifferentValidCiPassword123' \
+            -e VALIDATION_STATIC_USER_FLAG='TTP{validation_other_private_user}' \
+            -e VALIDATION_STATIC_ROOT_FLAG='TTP{validation_other_private_root}' \
+            ttp-validation:ci
+          docker exec validation-other sh -c \
+            'test "$(cat /root/root.txt)" = "TTP{validation_other_private_root}"; test ! -e /var/www/html/validation-probe-ci.txt'
+          docker rm -f "$target"
+          start_target
+          wait_healthy
+          docker run --rm --network "$net" \
+            -e VALIDATION_TEST_FILENAME='validation-probe-ci.txt' \
+            -v "$PWD/labs/validation/tests:/tests:ro" \
+            python:3.12-alpine python3 /tests/reset.py
+          docker exec "$target" sh -c 'test ! -e /var/www/html/validation-probe-ci.txt'
+          docker exec "$target" mariadb --batch -N -e 'SELECT COUNT(*) FROM registration.registration' | grep -Fx 0
+          echo 'PASS: actual PHP/MariaDB stored SQLi, FILE read/write, private flags, isolated network and reset'

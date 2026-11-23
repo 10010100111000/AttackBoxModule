@@ -1,0 +1,114 @@
+name: Union real PHP-MariaDB-SSH Docker lab
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "labs/union/**"
+      - ".github/workflows/union.yml"
+  pull_request:
+    paths:
+      - "labs/union/**"
+      - ".github/workflows/union.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  union-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build real MariaDB, nginx, PHP, SSH and iptables image
+        run: docker build --progress=plain -f labs/union/Dockerfile -t ttp-union:ci labs/union
+      - name: Measure runtime image footprint
+        run: |
+          set -euo pipefail
+          bytes=$(docker image inspect -f '{{.Size}}' ttp-union:ci)
+          awk -v b="$bytes" 'BEGIN {printf "Union image: %.1f MiB (%d bytes)\n",b/1048576,b}'
+          test "$bytes" -le $((280 * 1048576))
+      - name: Build isolated external HTTP test environment
+        run: docker build --progress=plain -f labs/union/tests/Dockerfile.attacker -t ttp-union-attacker:ci labs/union/tests
+      - name: Run instance startup, DB, HTTP, network and reset checks
+        run: |
+          set -euo pipefail
+          net=union-ci
+          target=union-target
+          cleanup() {
+            docker inspect --format '{{range .State.Health.Log}}{{println .ExitCode}}{{println .Output}}{{end}}' "$target" || true
+            docker logs --tail 160 "$target" || true
+            docker rm -f "$target" union-other >/dev/null 2>&1 || true
+            docker network rm "$net" >/dev/null 2>&1 || true
+          }
+          docker network create --internal "$net"
+          trap cleanup EXIT
+          start_target() {
+            docker run -d --name "$target" --network "$net" \
+              --cap-add NET_ADMIN --memory 384m --pids-limit 256 --cpus 2 \
+              -e UNION_REQUIRE_PRIVATE_FLAGS=1 \
+              -e UNION_STATIC_USER_FLAG='TTP{union_ci_private_user_0123456789}' \
+              -e UNION_STATIC_ROOT_FLAG='TTP{union_ci_private_root_0123456789}' \
+              ttp-union:ci
+          }
+          wait_healthy() {
+            for i in $(seq 1 90); do
+              state=$(docker inspect -f '{{.State.Status}}' "$target")
+              if [ "$state" != running ]; then docker logs "$target"; return 1; fi
+              health=$(docker inspect -f '{{.State.Health.Status}}' "$target")
+              if [ "$health" = healthy ]; then return 0; fi
+              if [ "$health" = unhealthy ]; then
+                docker inspect --format '{{range .State.Health.Log}}{{println .Output}}{{end}}' "$target" || true
+                docker logs "$target"; return 1
+              fi
+              sleep 2
+            done
+            docker logs "$target"; return 1
+          }
+          start_target
+          wait_healthy
+          docker exec "$target" mariadb -N --batch -e 'SELECT player FROM november.players' | grep -Fx ippsec
+          first_token=$(docker exec "$target" mariadb -N --batch -e 'SELECT one FROM november.flag')
+          test -n "$first_token"
+          docker exec "$target" mariadb -N --batch -e \
+            "SHOW GRANTS FOR 'uhc'@'127.0.0.1'" | grep -F FILE
+          docker exec "$target" iptables -S INPUT | grep -F -- '-P INPUT DROP'
+          docker run --rm --network "$net" \
+            -v "$PWD/labs/union/tests:/tests:ro" \
+            ttp-union-attacker:ci python3 /tests/http_probe.py
+          docker run --rm --network "$net" \
+            -v "$PWD/labs/union/tests:/tests:ro" \
+            ttp-union-attacker:ci python3 /tests/sql_probe.py
+          target_hostname=$(docker exec "$target" cat /etc/hostname)
+          docker run --rm --network "$net" \
+            -e EXPECTED_TARGET_HOSTNAME="$target_hostname" \
+            -v "$PWD/labs/union/tests:/tests:ro" \
+            ttp-union-attacker:ci python3 /tests/fileread_probe.py
+          docker run --rm --network "$net" \
+            -e UNION_TEST_QUALIFIER="$first_token" \
+            -v "$PWD/labs/union/tests:/tests:ro" \
+            ttp-union-attacker:ci python3 /tests/qualification_probe.py
+          docker exec "$target" sh -c \
+            'test "$(cat /home/uhc/user.txt)" = "TTP{union_ci_private_user_0123456789}"; test "$(cat /root/root.txt)" = "TTP{union_ci_private_root_0123456789}"'
+          docker stats --no-stream --format 'Target memory: {{.MemUsage}}, PIDs: {{.PIDs}}' "$target"
+          docker run -d --name union-other --network "$net" \
+            --cap-add NET_ADMIN --memory 384m --pids-limit 256 --cpus 2 \
+            -e UNION_REQUIRE_PRIVATE_FLAGS=1 \
+            -e UNION_STATIC_USER_FLAG='TTP{union_other_private_user_0123456789}' \
+            -e UNION_STATIC_ROOT_FLAG='TTP{union_other_private_root_0123456789}' ttp-union:ci
+          docker exec union-other sh -c \
+            'test "$(cat /home/uhc/user.txt)" = "TTP{union_other_private_user_0123456789}"'
+          docker rm -f "$target"
+          start_target
+          wait_healthy
+          new_token=$(docker exec "$target" mariadb -N --batch -e 'SELECT one FROM november.flag')
+          test "$first_token" != "$new_token"
+          docker run --rm --network "$net" \
+            -v "$PWD/labs/union/tests:/tests:ro" \
+            ttp-union-attacker:ci python3 /tests/reset_probe.py
+          echo 'PASS: actual PHP+MariaDB+SSH services, network gating, private flags, instance isolation, randomized qualifier and reset'
