@@ -113,8 +113,8 @@
 | 选题优先 | 上游与可核实漏洞 | 预期训练能力 | 工程与教学限制 |
 | --- | --- | --- | --- |
 | 1：[Vulhub Django CVE-2017-12794](https://github.com/vulhub/vulhub/blob/master/django/CVE-2017-12794/README.md) | Django 1.11.4 在 DEBUG 500 页的真实 XSS；[官方依赖安全公告](https://github.com/advisories/GHSA-9r8w-6x8c-6jr9) | **初级**：反射型 XSS 与错误页的浏览器 HTML 上下文 | 仅复现原版 Django 错误页的特定触发条件，不伪装成普通搜索页漏洞；镜像体积须实测 |
-| 2：[WonderCMS 3.4.2](https://github.com/WonderCMS/wondercms/releases/tag/3.4.2) | PHP/JSON 平面文件 CMS、真实 [CVE-2023-41425](https://github.com/advisories/GHSA-58rr-37rr-r6h5)，3.4.3 已修复 | **中级**：真实 XSS + 管理员操作 + 插件权限边界 | 不需数据库服务；必须证实原版输入上下文与实际管理员浏览器交互，不能只验证 JS 字符串 |
+| 2：[WonderCMS 3.4.2](https://github.com/WonderCMS/wondercms/releases/tag/3.4.2) | PHP/JSON 平面文件 CMS、真实 [CVE-2023-41425](https://github.com/advisories/GHSA-58rr-37rr-r6h5)，3.4.3 已修复 | **中级**：真实 XSS + 管理员操作 + 插件权限边界 | 不需数据库服务；Bot 与 CMS 放在同一目标镜像，由不同非 root 用户运行；Bot 巡查 Contact 表单 Website 队列，必须验证普通玩家能从 Bot 的真实浏览器 XSS 路径拿到 Flag |
 | 3：[HTB Alert](https://0xdf.gitlab.io/2025/03/22/htb-alert.html) | Markdown → 浏览器 XSS → 敏感文件读取 → SSH → Cron Root 的公开真实链 | **中级综合靶机**：跨用户浏览器行为与多阶段侦察 | 原站点源码未公开，重建时如实标明；需要管理员浏览器，Bot 运行资源单独测量 |
 | 可选：[OWASP DSVW](https://vwad.owasp.org/app/damn-small-vulnerable-web-dsvw/) | 少于 100 行 Python 的教学源码 | **初级微型专项**：XSS/DOM 入门 | 尽管极小，但界面直接展示漏洞，不符合偏好自然侦察的综合靶机要求，不能硬称真实产品 CVE |
 
-**默认第一步**：审查并复现 Vulhub 的 Django CVE-2017-12794，同时对 WonderCMS 3.4.2 进行可移植性与实际版本核验。完整源代码/版本、浏览器执行和资源数据确认后才可开发。未构建前绝不宣称最终镜像 MiB 数值。
+**当前 XSS 实施候选**：WonderCMS 3.4.2 + Contact URL 队列 + 靶机内部 Admin Review Bot。Bot 属于目标镜像进程，不属于 Worker。普通攻击者必须通过真实表单提交 URL，并由真实管理员浏览器执行 XSS 后收到 Flag；CI 完成前不标记为完整靶机。
