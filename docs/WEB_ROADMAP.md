@@ -26,7 +26,7 @@
 | shocker | 初级 | 命令注入与系统调用 | 旧 Bash 环境函数解析 | 完整目标链 CI（非 Worker） |
 | union | 中级 | SQL 注入 | UNION/LOAD_FILE与请求头 shell | 完整目标链 CI（非 Worker） |
 | validation | 中级 | SQL 注入 | 真实二阶 SQLi | 完整目标链 CI（非 Worker） |
-| wondercms-xss | 中级 | Cross-site scripting (XSS) | 原版 WonderCMS 3.4.2 HTML 属性上下文真实 Chromium 执行 | 浏览器 XSS 已验，Worker 审阅 Bot 尚缺，部分验收 |\n| funnel | 初级 | 非 Web 服务链与协议枢纽 | 非 Web 网络服务 | 局部/目标未全验收 |
+| wondercms-xss | 中级 | Cross-site scripting (XSS) | 原版 WonderCMS 3.4.2 HTML 属性上下文真实 Chromium 执行 | 浏览器 XSS 与靶机内 Admin Bot 已实现，普通玩家黑盒 CI 待验，部分验收 |\n| funnel | 初级 | 非 Web 服务链与协议枢纽 | 非 Web 网络服务 | 局部/目标未全验收 |
 
 目前旧清单有 **11 项 full_chain_ci、5 项 partial、2 项 unverified**（按历史标记，不是 31 专题的覆盖率）。Worker 正式发布仍须独立验收；Editorial 有 .release-blocked 标记，代码虽已合并但不能据此发布。
 
@@ -67,7 +67,7 @@
 | 存储型 | 无可信专属验收 | 评论/工单/管理员查看页、不同权限受害者 |
 | DOM-based | 无 | hash、postMessage、localStorage 与危险 DOM sink |
 | Blind XSS | 无 | Headless 候选：支持表单 User-Agent、管理员会话 |
-| CSP 绕过 | Cursed Stale Policy 有代码但未验收完整链；WonderCMS 已验管理端反射属性 XSS，仍需 Worker Bot | 先核实现有题，再考虑其他 CSP 配置的重复题 |
+| CSP 绕过 | Cursed Stale Policy 有代码但未验收完整链；WonderCMS 正在增加靶机 Docker 内 Admin Review Bot；Worker 不负责 Bot | 先核实现有题，再考虑其他 CSP 配置的重复题 |
 | 浏览器执行到权限影响 | 无 | 真浏览器完成管理员权限操作；不只出现 alert() 文字 |
 
 真实浏览器管理员 Bot 对隔离、CPU/RAM 要求更高，不能用服务器返回一段 HTML 就算通过。
@@ -90,7 +90,7 @@
 
 | 滚动优先组 | 预期知识目标 | 实物候选或来源约束 |
 | --- | --- | --- |
-| **基础概念与浏览器** | 反射 XSS 的 HTML/属性上下文、基础路径遍历、NoSQL 操作符查询 | XSS 优先采用 Vulhub Django CVE-2017-12794，随后可做轻量 WonderCMS；不需要打包整套 Juice Shop |
+| **基础概念与浏览器** | 反射 XSS 的 HTML/属性上下文、基础路径遍历、NoSQL 操作符查询 | XSS 优先采用轻量 WonderCMS 3.4.2 + 靶机内 Admin Review Bot；不需要打包整套 Juice Shop |
 | **SQLi 递进** | 条件响应、报错、时间盲注、带外与不同数据库方言 | 可重复选 SQLi 综合靶机；Soccer 的 WebSocket 盲注与 Union 的 UNION 不是重复训练 |
 | **浏览器/会话进阶** | 存储/DOM/Blind XSS、CSP、CSRF、JWT、OAuth | Headless 是 Blind XSS 候选；Cursed 需先独立验证 |
 | **实际应用组件** | NoSQL + 反序列化、LFI + 真 CVE、Ruby PDF 转换 | NodeBlog、Trick、Inject、Precious，必须逐一核实原版软件版本 |
@@ -98,7 +98,7 @@
 
 ### 现已找到正式页面的机器候选（尚未批准开发）
 
-轻量优先：**Django 1.11.4 调试页面 XSS（Vulhub）、WonderCMS 3.4.2、HTB Alert**；细节见 [选题评审](WEB_MACHINE_SELECTION.md)，不把源代码不足或 Bot 环境复杂的题目当作已验收。
+轻量优先：**WonderCMS 3.4.2 + Docker 内管理员巡查 Bot、Django 1.11.4 调试页面 XSS（Vulhub）、HTB Alert**；细节见 [选题评审](WEB_MACHINE_SELECTION.md)，不把源代码不足或 Bot 环境复杂的题目当作已验收。
 
 | HTB 机器 | 公开资料支持的典型链 | 规划中的增量价值 |
 | --- | --- | --- |
