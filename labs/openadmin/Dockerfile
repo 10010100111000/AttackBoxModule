@@ -16,8 +16,8 @@ RUN set -eux; \
 
 FROM ubuntu:18.04 AS runtime
 ENV DEBIAN_FRONTEND=noninteractive TERM=xterm
-RUN sed -ri 's#http://(archive|security)\.ubuntu\.com/ubuntu#http://mirrors.edge.kernel.org/ubuntu#g' /etc/apt/sources.list \
- && grep -Fq 'mirrors.edge.kernel.org' /etc/apt/sources.list \
+RUN sed -ri 's#http://(archive|security)\.ubuntu\.com/ubuntu#https://archive.ubuntu.com/ubuntu#g' /etc/apt/sources.list \
+ && grep -Fq 'https://archive.ubuntu.com/ubuntu' /etc/apt/sources.list \
  && apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 update && apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 install -y --no-install-recommends \
       apache2 mysql-server \
       php7.2 php7.2-cli libapache2-mod-php7.2 php7.2-mysql php7.2-gmp \
