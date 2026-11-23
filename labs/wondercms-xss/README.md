@@ -14,7 +14,7 @@
 The Worker starts **one target image/container**. This image runs two unprivileged service processes:
 
 1. **PHP / WonderCMS** (www-data): public site, real contact form, original vulnerable CMS, and /review-proof.php. The Flag endpoint is protected by the native WonderCMS administrator PHP session.
-2. **Admin Review Bot** (wcmsbot): a separate Python process with a real headless Chromium/ChromeDriver. It polls the contact queue, logs into WonderCMS with the instance's private admin account, and visits each submitted website URL in the admin browser.
+2. **Admin Review Bot** (wcmsbot): a separate Python process with a real Chromium Headless Shell (controlled via DevTools Protocol). It polls the contact queue, logs into WonderCMS with the instance's private admin account, and visits each submitted website URL in the admin browser.
 
 The bot extracts only the submitted URL's path/query and visits it on the local WonderCMS origin; it never navigates to the submitted hostname. The injected script can read the admin-only Flag using the admin session and exfiltrate it to the player's listener on the same private per-user lab network. The player then submits that Flag to trytopwn.
 
@@ -24,7 +24,7 @@ The bot extracts only the submitted URL's path/query and visits it on the local 
 
 - PHP runs as www-data; the bot runs as a separate wcmsbot user.
 - The Flag file is readable only by the PHP service account; the bot does not open or read it from disk. It obtains the Flag only through the authenticated browser session and the vulnerable XSS path.
-- Chromium runs as non-root with its sandbox enabled (no --no-sandbox), a temporary per-review profile, no host mounts and no Docker socket.
+- Chromium Headless Shell runs as non-root with its sandbox enabled (no --no-sandbox), a temporary per-review profile, no host mounts and no Docker socket.
 - The bot accepts only absolute HTTP(S) URLs but discards the submitted authority, visiting only the local app path. The intended exfiltration destination is the learner's private AttackBox address on that instance's isolated lab network.
 - Contact submissions are queued atomically with a bounded pending queue; each browser review has a page-load timeout and a short visit window.
 - Container reset clears the admin session, bot profile, queue and instance Flag.
@@ -58,8 +58,14 @@ The independent attacker container must:
 4. Receive the private per-instance Flag at its own listener after the target-local admin bot visits the URL. The attacker container must never receive the admin password or read target files.
 5. Repeat after destroying/recreating the target with a different admin password and Flag.
 
-The browser is part of the **target image**, not the CI-only tester. Chromium materially increases the image size; the CI reports the measured image size and memory snapshot rather than assuming it is small.
+The Headless Shell is part of the **target image**, not the CI-only tester. ChromeDriver and the full Chromium browser are deliberately omitted from the target image; the bot uses Pyppeteer over the Chrome DevTools Protocol. The separate CI-only browser test container may still use full Chromium. The Headless Shell still materially increases the image size; the CI reports the measured image size and memory snapshot rather than assuming it is small.
 
 ## Release boundary
 
 The source-level target-to-bot-to-Flag path must pass the full black-box CI. Before removing .release-blocked, also verify the existing Worker can start this single image with the configured memory limit and that the bot's callback reaches only the same user's AttackBox over the existing private lab network. This is a Worker deployment/network smoke test, **not a request for Worker to implement a bot or Flag judge**.
+
+## Headless Shell optimization
+
+The runtime image is based on Alpine 3.23 to use the stable `chromium-headless-shell` package. It deliberately does **not** install `chromium-chromedriver`, since that package depends on the full `chromium` browser. Bot automation uses `pyppeteer==2.0.0` with the explicit system executable `/usr/bin/chromium-headless-shell`; it does not download another browser. The bot remains in the same target container and does not use Worker for reviews or Flags.
+
+Run the CI end-to-end attacker-path test before removing `.release-blocked`. Actual image-size and memory savings must be measured from built images; they have not been verified locally.
