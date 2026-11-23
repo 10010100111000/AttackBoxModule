@@ -937,6 +937,30 @@
         "confidence": "from_repository_readme_or_existing_tests"
       },
       "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review"
+    },
+    {
+      "id": "django-debug-xss",
+      "path": "labs/django-debug-xss",
+      "track": "web",
+      "provisional_difficulty": "beginner",
+      "primary_category": "xss",
+      "secondary_categories": [],
+      "validated_skills": [],
+      "implemented_skills": [],
+      "lab_ci_status": "unverified",
+      "worker_status": "not_verified",
+      "release_status": "not_assessed",
+      "evidence": "",
+      "note": "Django 1.11.4 actual technical-500 XSS triggered by PostgreSQL duplicate-key IntegrityError; browser verified against 1.11.5 patched control when CI passes",
+      "variant_profile": {
+        "technology": "Django 1.11.4, Python, PostgreSQL",
+        "initial_discovery": "Normal public registry form and repeated handle registration",
+        "key_constraint_or_mechanism": "Framework technical 500 page error-message HTML context; upstream CVE-2017-12794",
+        "attack_path": "Register username -> duplicate triggers native PostgreSQL IntegrityError -> real Django debug page XSS",
+        "incremental_learning_value": "Contrasts WonderCMS admin-session XSS by exercising Django's framework error-page context without an admin bot",
+        "confidence": "upstream_vulhub_reproduction_pending_ci"
+      },
+      "skill_mapping_stage": "independent_browser_ci_pending"
     }
   ],
   "backlog": [
