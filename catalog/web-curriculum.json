@@ -1657,12 +1657,12 @@
       "platform": "HTB",
       "url": "https://www.hackthebox.com/machines/inject",
       "skills": [
-        "file_read.lfi",
-        "cms_vulnerability.versioned-cve"
+        "file_read.lfi"
       ],
       "signature": "file upload LFI -> real Spring-Cloud-Function CVE -> privileged Ansible",
       "source_status": "official_synopsis_verified",
-      "review_status": "research_required"
+      "review_status": "research_required",
+      "supplemental_objective": "真实 Spring Cloud Function CVE 组件链；保留上游版本验证，而不是误记为 CMS 漏洞"
     },
     {
       "id": "zipping",
