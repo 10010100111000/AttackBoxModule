@@ -62,6 +62,7 @@ async def _review_async(url_path: str, admin_password: str, profile: str) -> Non
         executablePath="/usr/bin/chromium-headless-shell",
         headless=True,
         autoClose=False,
+        dumpio=True,
         userDataDir=profile,
         args=[
             "--disable-dev-shm-usage",
