@@ -1,0 +1,65 @@
+name: Django 1.11.4 authentic technical-500 XSS CI
+# Runs independent Chromium black-box verification against vulnerable and patched images.
+on:
+  pull_request:
+    paths:
+      - "labs/django-debug-xss/**"
+      - ".github/workflows/django-debug-xss.yml"
+  push:
+    branches: [main]
+    paths:
+      - "labs/django-debug-xss/**"
+      - ".github/workflows/django-debug-xss.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  django-debug-xss:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - django: "1.11.4"
+            mode: vulnerable
+          - django: "1.11.5"
+            mode: patched
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build real Django + PostgreSQL target
+        run: docker build --progress=plain --build-arg DJANGO_VERSION=${{ matrix.django }} -t django-debug:${{ matrix.mode }} -f labs/django-debug-xss/Dockerfile labs/django-debug-xss
+      - name: Build independent browser acceptance container
+        run: docker build --progress=plain -t django-debug-browser -f labs/django-debug-xss/tests/Dockerfile.browser labs/django-debug-xss/tests
+      - name: Measure exact target image size
+        run: docker image inspect django-debug:${{ matrix.mode }} --format 'Target image bytes: {{.Size}}'
+      - name: Run isolated target and prove database error and browser execution
+        shell: bash
+        run: |
+          set -euo pipefail
+          network=django-debug-ci
+          docker network create --internal "$network"
+          trap 'docker logs target 2>/dev/null || true; docker rm -f target 2>/dev/null || true; docker network rm "$network" 2>/dev/null || true' EXIT
+          docker run -d --name target --network "$network" --memory 384m --pids-limit 128 --cpus 1 django-debug:${{ matrix.mode }}
+          ready=0
+          for i in $(seq 1 75); do
+            state=$(docker inspect -f '{{.State.Status}}' target)
+            if [ "$state" != running ]; then docker logs target; exit 1; fi
+            health=$(docker inspect -f '{{.State.Health.Status}}' target)
+            if [ "$health" = healthy ]; then ready=1; break; fi
+            sleep 2
+          done
+          if [ "$ready" -ne 1 ]; then docker logs target; exit 1; fi
+          docker run --rm --network "$network" --memory 384m -e TEST_MODE=${{ matrix.mode }} django-debug-browser
+          docker stats --no-stream --format 'Target memory: {{.MemUsage}}; PIDs: {{.PIDs}}' target
+          docker rm -f target
+          # New instance must start with an empty database; the same handle must succeed again.
+          docker run -d --name target --network "$network" --memory 384m --pids-limit 128 --cpus 1 django-debug:${{ matrix.mode }}
+          ready=0
+          for i in $(seq 1 75); do
+            if [ "$(docker inspect -f '{{.State.Health.Status}}' target)" = healthy ]; then ready=1; break; fi
+            sleep 2
+          done
+          test "$ready" -eq 1
+          docker run --rm --network "$network" --entrypoint python django-debug-browser -c 'import urllib.request; assert urllib.request.urlopen("http://target:8000/create_user/?username=reset-check",timeout=15).status==200'
+          echo 'PASS: new target instance starts clean'

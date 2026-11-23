@@ -11,7 +11,7 @@
       "unverified": "尚无可信独立完整验收证据"
     },
     "worker_status": {
-      "not_verified": "未完成实际平台 Worker 的多用户网络、Flag 判题与资源验收"
+      "not_verified": "尚未完成实际平台 Worker 的镜像启动、实例私网隔离与多用户资源调度验收；不包含 Flag 判题"
     },
     "release_status": {
       "blocked_by_marker": "仓库存在 .release-blocked 标记，禁止发布",
@@ -939,6 +939,30 @@
       "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review"
     },
     {
+      "id": "django-debug-xss",
+      "path": "labs/django-debug-xss",
+      "track": "web",
+      "provisional_difficulty": "beginner",
+      "primary_category": "xss",
+      "secondary_categories": [],
+      "validated_skills": [],
+      "implemented_skills": [],
+      "lab_ci_status": "full_chain_ci",
+      "worker_status": "not_verified",
+      "release_status": "not_assessed",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45233000605",
+      "note": "Native PostgreSQL unique constraint -> actual Django 1.11.4 technical-500 XSS -> authenticated headless editor -> Flag callback; patched Django 1.11.5 negative control and rebuilt-instance Flag rotation pass",
+      "variant_profile": {
+        "technology": "Django 1.11.4, Python, PostgreSQL",
+        "initial_discovery": "Normal public registry form and repeated handle registration",
+        "key_constraint_or_mechanism": "Framework technical 500 page error-message HTML context; upstream CVE-2017-12794",
+        "attack_path": "Register username -> duplicate triggers native PostgreSQL IntegrityError -> real Django debug page XSS",
+        "incremental_learning_value": "Contrasts WonderCMS admin-session XSS by exercising Django's framework error-page context without an admin bot",
+        "confidence": "verified_by_independent_black_box_ci"
+      },
+      "skill_mapping_stage": "browser_and_full_chain_ci_verified"
+    },
+    {
       "id": "wondercms-xss",
       "path": "labs/wondercms-xss",
       "track": "web",
@@ -953,20 +977,20 @@
       "implemented_skills": [
         "xss.reflected-attribute"
       ],
-      "lab_ci_status": "partial",
+      "lab_ci_status": "full_chain_ci",
       "worker_status": "not_verified",
       "release_status": "blocked_by_marker",
-      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45203163868",
-      "note": "WonderCMS 3.4.2 原版反射型属性 XSS；靶机镜像内置独立 wcmsbot 用户与 Chromium，巡查 Contact 表单提交的 URL。CI 正在验证普通玩家提交→管理员 Bot 访问→XSS 读取 Flag→AttackBox 回连。Worker 只启动单一镜像，不负责 Bot/Flag。",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45229393592",
+      "note": "真实 WonderCMS 3.4.2 属性上下文 XSS；容器内非特权 Bot、独立玩家提交表单、真实管理员浏览器访问、受保护 Flag 经 XSS 回传完整链 CI 通过。生产 Worker 网络/资源仍待验证。",
       "variant_profile": {
         "technology": "WonderCMS 3.4.2, PHP 8.2 Alpine, JSON datastore, in-container Python/Chromium admin review bot",
         "initial_discovery": "正常出版网站 → Contact 表单 Website 字段 → 站点技术识别",
         "key_constraint_or_mechanism": "CVE-2023-41425 原版 loginURL 表单 action 属性反射型 XSS，需要管理员真实浏览器访问",
         "attack_path": "侦察 → 提交带 XSS 的 Website URL → 同一靶机容器内 admin bot 登录并巡查 → XSS 读取管理员 Flag → 回连玩家私网监听",
         "incremental_learning_value": "真实反射型 XSS + 管理员受害者浏览器 + 私网数据外带；不同于单人浏览器 alert 练习",
-        "confidence": "upstream_source_confirmed; target-local bot implementation committed; black-box CI pending"
+        "confidence": "real_browser_and_black_box_player_to_flag_ci_verified"
       },
-      "skill_mapping_stage": "bot_based_admin_context_xss_ci_pending"
+      "skill_mapping_stage": "browser_and_full_chain_ci_verified"
     }
   ],
   "backlog": [
@@ -1041,11 +1065,14 @@
         "sqli.time-blind"
       ],
       "status": "planned",
-      "candidate_status": "source_not_selected",
-      "objective": "真实数据库盲注：独立测试布尔差异、时间差异及数据提取；不再重复 UNION",
+      "candidate_status": "source_verified",
+      "objective": "优先核实 HTB Usage 原始 Laravel 密码恢复 POST email 布尔盲注，通过真实 MySQL 条件响应提取；时间盲注必须另做独立证据",
       "scope": "repeatable_skill_variant_requirement",
       "one_to_many_allowed": true,
-      "scenario_variant_focus": "布尔和时间盲注分开证明，可按不同数据库/输入面复现多次"
+      "scenario_variant_focus": "Laravel POST+CSRF/session+MySQL 布尔回显差异；时间盲注留独立变体，不因同一台出现 sqlmap 就默认覆盖",
+      "candidate_options": [
+        "usage"
+      ]
     },
     {
       "id": "xss-stored-admin",
@@ -1156,18 +1183,13 @@
       "required_skill_coverage": [
         "xss.reflected-attribute"
       ],
-      "status": "in_progress",
+      "status": "planned",
       "candidate_status": "research_required",
       "scope": "repeatable_skill_variant_requirement",
       "one_to_many_allowed": true,
-      "scenario_variant_focus": "反射型 XSS + 联系表单提交 + Docker 内管理员 Chromium 巡查 + 私网回连取 Flag；不依赖 Worker Bot",
-      "candidate_options": [
-        "wondercms-xss"
-      ],
-      "objective": "属性/事件/引用符上下文；区别于 HTML 正文反射型 XSS",
-      "selected_candidate": "wondercms-xss",
-      "selected_lab": "labs/wondercms-xss",
-      "source_review_status": "upstream_source_commit_confirmed"
+      "scenario_variant_focus": "属性/事件/引用符上下文；区别于 HTML 正文反射型 XSS",
+      "candidate_options": [],
+      "objective": "属性/事件/引用符上下文；区别于 HTML 正文反射型 XSS"
     },
     {
       "id": "xss-dom-source",
@@ -1587,7 +1609,7 @@
     "repetition_rule": "重复同一知识点的机器可以同时保留，必须明确至少一个有实质教学增量的场景差异，不因数量重复直接排除",
     "difficulty_rule": "初级/中级/高级按完整玩家发现与利用路径评级，不照搬上游机器评级；单项技术在不同限制下可跨三级",
     "coverage_rule": "legacy validated_skills 仅关联历史靶机与 CI；细分技能独立验收后才可计入细颗粒度 verified_scenario",
-    "release_rule": "靶机源码已合并 != 靶机完整攻击链CI通过 != Worker批准发布；区分三类状态",
+    "release_rule": "源码进入 main != 独立靶机攻击链 CI 通过 != Worker 对实例调度/网络/资源验证通过；Flag 由靶机获取，Web 后端判题，Worker 不判题",
     "no_fixed_quota": true
   },
   "academy_index": {
@@ -1775,7 +1797,7 @@
       ],
       "signature": "WonderCMS 3.4.2 CVE-2023-41425: real CMS XSS with administrator action and module installer privilege boundary; confirm exact injection context in original version",
       "source_status": "upstream_342_and_patched_343_confirmed",
-      "review_status": "in_progress",
+      "review_status": "research_required",
       "size_policy": "flat_file_php_cms_no_database_server_measure_runtime",
       "priority_hint": "intermediate_xss_second"
     },
@@ -1807,6 +1829,28 @@
       "review_status": "research_required",
       "size_policy": "stdlib_python_extremely_small_source_measure_runtime",
       "priority_hint": "optional_basic_micro_lesson"
+    },
+    {
+      "id": "usage",
+      "platform": "HTB",
+      "url": "https://www.hackthebox.com/machines/usage",
+      "skills": [
+        "sqli.boolean-blind",
+        "sqli.db-enumeration",
+        "file_upload.unrestricted-upload"
+      ],
+      "signature": "Laravel password recovery POST email boolean-based blind SQLi -> genuine MySQL admin_users -> Laravel-Admin avatar upload -> dash shell -> monit creds -> xander -> sudo 7za wildcard file read",
+      "source_status": "original_HTB_writeups_and_IppSec_video_reviewed_not_original_private_app_source",
+      "review_status": "source_verified",
+      "evidence_urls": [
+        "https://www.youtube.com/watch?v=cx9Da-PoXG4",
+        "https://www.cipherbuu.net/posts/Usage-Walkthrough/",
+        "https://www.brunorochamoura.com/posts/usage/"
+      ],
+      "origin_notes": "Writeups identify /forget-password email POST and boolean-based blind SQLi; some observed Laravel-Admin version strings differ among reports (1.8.17 versus 1.8.19). Confirm exact vulnerable upstream Laravel-Admin release and CVE-2023-24249 before implementation. Password reset SQLi is in target-specific application code, not a general Laravel framework CVE.",
+      "reconstruction_gate": "Do not invent a password-recovery SQLi endpoint and call it authentic HTB Usage. Obtain credible application/DB behavior evidence, preserve CSRF/session and genuine database blind-response distinction; original private code cannot be claimed. Upstream Laravel-Admin must be an actual vulnerable version and tested with real upload handling. Preserve later Unix escalation only if reproducible under Docker without privileged/host access.",
+      "training_scope": "Primary sqli.boolean-blind; time-based extraction is optional only if an independently verified real backend timing oracle is demonstrated; do not claim time-blind from same boolean CI.",
+      "worker_status": "not_verified"
     }
   ],
   "lightweight_selection_policy": {
@@ -1819,5 +1863,12 @@
     "sources_distinction": "VulnHub=完整下载 VM；Vulhub=按 CVE 构建的 Docker 复现环境；不要混为一谈",
     "performance": "须经 CI 实测镜像字节数、启动内存与浏览器 Bot 额外资源；未构建不得宣称实际镜像大小",
     "fidelity": "XSS 必须在真实浏览器中执行，不能仅通过 HTTP 响应包含脚本证明"
+  },
+  "platform_contract": {
+    "reference": "docs/PLATFORM_FLAG_BOUNDARIES.md",
+    "worker": "只负责镜像、网络、隔离与实例启动停止；部署变量只透明转交，不解释或判定 Flag",
+    "web": "challengeStages.flag/attemptChallenge 校验答案与记录完成阶段",
+    "target": "真实漏洞、玩家获取 Flag 的自然路径；管理员浏览器若需要属于靶机环境而非 Worker",
+    "dynamic_flags": "实例注入变量不等于服务器端动态判题功能已实现；Web 需要关联实例正确答案，Worker 不判题"
   }
 }
