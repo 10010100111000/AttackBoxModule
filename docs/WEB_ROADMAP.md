@@ -4,7 +4,7 @@
 
 先看：[31 专题 / 219 知识目标](../catalog/web-competencies.json) → [分类与难度](WEB_TAXONOMY.md) → [候选机器与评分方法](WEB_MACHINE_SELECTION.md) → [机器及滚动队列](../catalog/web-curriculum.json)。
 
-## 一、当前存量：17 个目录（Web 16 + 非 Web 服务链 1）
+## 一、当前存量：18 个目录（Web 17 + 非 Web 服务链 1）
 
 **以下是仓库快照与原有 CI 证据**；“有完整目标链 CI”不代表每个相关知识目标都有单独的专项断言，也不代表已在真实 Worker 上线。
 
@@ -26,9 +26,9 @@
 | shocker | 初级 | 命令注入与系统调用 | 旧 Bash 环境函数解析 | 完整目标链 CI（非 Worker） |
 | union | 中级 | SQL 注入 | UNION/LOAD_FILE与请求头 shell | 完整目标链 CI（非 Worker） |
 | validation | 中级 | SQL 注入 | 真实二阶 SQLi | 完整目标链 CI（非 Worker） |
-| funnel | 初级 | 非 Web 服务链与协议枢纽 | 非 Web 网络服务 | 局部/目标未全验收 |
+| wondercms-xss | 中级 | Cross-site scripting (XSS) | 原版 WonderCMS 3.4.2 HTML 属性上下文真实 Chromium 执行 | 浏览器 XSS 已验，Worker 审阅 Bot 尚缺，部分验收 |\n| funnel | 初级 | 非 Web 服务链与协议枢纽 | 非 Web 网络服务 | 局部/目标未全验收 |
 
-目前旧清单有 **11 项 full_chain_ci、4 项 partial、2 项 unverified**（按历史标记，不是 31 专题的覆盖率）。Worker 正式发布仍须独立验收；Editorial 有 .release-blocked 标记，代码虽已合并但不能据此发布。
+目前旧清单有 **11 项 full_chain_ci、5 项 partial、2 项 unverified**（按历史标记，不是 31 专题的覆盖率）。Worker 正式发布仍须独立验收；Editorial 有 .release-blocked 标记，代码虽已合并但不能据此发布。
 
 ## 二、每个知识点的“覆盖”要怎么计算
 
@@ -67,7 +67,7 @@
 | 存储型 | 无可信专属验收 | 评论/工单/管理员查看页、不同权限受害者 |
 | DOM-based | 无 | hash、postMessage、localStorage 与危险 DOM sink |
 | Blind XSS | 无 | Headless 候选：支持表单 User-Agent、管理员会话 |
-| CSP 绕过 | Cursed Stale Policy 有代码，但**未验收完整链** | 先核实现有题，再考虑其他 CSP 配置的重复题 |
+| CSP 绕过 | Cursed Stale Policy 有代码但未验收完整链；WonderCMS 已验管理端反射属性 XSS，仍需 Worker Bot | 先核实现有题，再考虑其他 CSP 配置的重复题 |
 | 浏览器执行到权限影响 | 无 | 真浏览器完成管理员权限操作；不只出现 alert() 文字 |
 
 真实浏览器管理员 Bot 对隔离、CPU/RAM 要求更高，不能用服务器返回一段 HTML 就算通过。
