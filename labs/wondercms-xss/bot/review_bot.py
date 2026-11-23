@@ -89,11 +89,16 @@ async def _review_async(url_path: str, admin_password: str, profile: str) -> Non
             page.waitForNavigation(waitUntil="domcontentloaded", timeout=12000),
             page.querySelectorEval('input[name="password"]', "(el) => el.form.requestSubmit()"),
         )
-        await page.waitForFunction(
-            'document.documentElement.innerText.includes("Settings") || '
-            'document.documentElement.innerText.includes("Logout")',
-            timeout=10000,
+        # Verify authentication via the actual protected resource rather than
+        # brittle theme-dependent text ("Settings" / "Logout").
+        proof_response = await page.goto(
+            BASE_URL + "/review-proof.php", waitUntil="domcontentloaded", timeout=12000
         )
+        if proof_response is None or proof_response.status != 200:
+            raise RuntimeError(
+                "WonderCMS admin login not established (proof HTTP "
+                + str(proof_response.status if proof_response else "no response") + ")"
+            )
         try:
             await page.goto(BASE_URL + url_path, waitUntil="domcontentloaded", timeout=12000)
         except Exception as exc:
