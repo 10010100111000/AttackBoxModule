@@ -1,11 +1,38 @@
 #!/bin/sh
 set -eu
+umask 027
 
-# Seeding uses WonderCMS's own unmodified Wcms constructor and createDb().
+# Seed the genuine WonderCMS database and instance-only bot credentials/Flag.
 php /usr/local/bin/wcms-seed.php
 
-# Do not give the web server access to the instance's administrative password
-# via its process environment after first boot.
+mkdir -p /run/wcms/reports /run/wcms/profiles
+chown www-data:wcmsbot /run/wcms/reports
+chmod 2770 /run/wcms/reports
+chown wcmsbot:wcmsbot /run/wcms/profiles
+chmod 0700 /run/wcms/profiles
+
+# Do not leave plaintext bootstrap credentials in the web process environment.
 unset WONDERCMS_ADMIN_PASSWORD WONDERCMS_STATIC_XSS_FLAG WONDERCMS_REQUIRE_PRIVATE_FLAGS
 
-exec php -S 0.0.0.0:8080 -t /srv/wcms /srv/wcms/router.php
+web_pid=""
+bot_pid=""
+shutdown() {
+    [ -z "$web_pid" ] || kill "$web_pid" 2>/dev/null || true
+    [ -z "$bot_pid" ] || kill "$bot_pid" 2>/dev/null || true
+    [ -z "$web_pid" ] || wait "$web_pid" 2>/dev/null || true
+    [ -z "$bot_pid" ] || wait "$bot_pid" 2>/dev/null || true
+}
+trap shutdown TERM INT
+
+su-exec www-data php -S 0.0.0.0:8080 -t /srv/wcms /srv/wcms/router.php &
+web_pid=$!
+su-exec wcmsbot /usr/bin/python3 /opt/wcms-bot/review_bot.py &
+bot_pid=$!
+
+# Keep the target healthy only while both the web application and review bot live.
+while kill -0 "$web_pid" 2>/dev/null && kill -0 "$bot_pid" 2>/dev/null; do
+    sleep 1
+done
+
+shutdown
+exit 1
