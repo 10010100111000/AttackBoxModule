@@ -6,5 +6,5 @@ class Migration(migrations.Migration):
     dependencies = []
     operations = [migrations.CreateModel(name="User", fields=[
         ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-        ("username", models.CharField(max_length=32, unique=True, verbose_name="Username")),
+        ("username", models.CharField(max_length=512, unique=True, verbose_name="Username")),
     ])]
