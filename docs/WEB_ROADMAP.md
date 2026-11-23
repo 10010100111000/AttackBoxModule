@@ -90,13 +90,15 @@
 
 | 滚动优先组 | 预期知识目标 | 实物候选或来源约束 |
 | --- | --- | --- |
-| **基础概念与浏览器** | 反射 XSS 的 HTML/属性上下文、基础路径遍历、NoSQL 操作符查询 | 首先寻找有公开源代码或原版可观察行为的真实应用，不能造假的漏洞接口 |
+| **基础概念与浏览器** | 反射 XSS 的 HTML/属性上下文、基础路径遍历、NoSQL 操作符查询 | XSS 优先采用 Vulhub Django CVE-2017-12794，随后可做轻量 WonderCMS；不需要打包整套 Juice Shop |
 | **SQLi 递进** | 条件响应、报错、时间盲注、带外与不同数据库方言 | 可重复选 SQLi 综合靶机；Soccer 的 WebSocket 盲注与 Union 的 UNION 不是重复训练 |
 | **浏览器/会话进阶** | 存储/DOM/Blind XSS、CSP、CSRF、JWT、OAuth | Headless 是 Blind XSS 候选；Cursed 需先独立验证 |
 | **实际应用组件** | NoSQL + 反序列化、LFI + 真 CVE、Ruby PDF 转换 | NodeBlog、Trick、Inject、Precious，必须逐一核实原版软件版本 |
 | **协议与高复杂度** | WebSocket、Race、API/GraphQL、Request Smuggling、Cache、Prototype pollution、LLM | 要有真实解析器、代理、数据库、浏览器/代理环境与独立测试 |
 
 ### 现已找到正式页面的机器候选（尚未批准开发）
+
+轻量优先：**Django 1.11.4 调试页面 XSS（Vulhub）、WonderCMS 3.4.2、HTB Alert**；细节见 [选题评审](WEB_MACHINE_SELECTION.md)，不把源代码不足或 Bot 环境复杂的题目当作已验收。
 
 | HTB 机器 | 公开资料支持的典型链 | 规划中的增量价值 |
 | --- | --- | --- |
@@ -107,7 +109,7 @@
 | [Soccer](https://www.hackthebox.com/machines/Soccer) | Tiny File Manager、WebSocket SQL 盲注 | WS 数据通道、盲注反馈、多阶段 Linux 提权 |
 | [Inject](https://www.hackthebox.com/machines/inject) | 上传中的 LFI → Spring Cloud Function | Java 栈 LFI 与真实 CVE，区别于 PHP |
 
-更完整的十台候选与量化评审标准请看 [WEB_MACHINE_SELECTION.md](WEB_MACHINE_SELECTION.md)。正式开发时仍须查证 Writeup/源码，确定版本，并且不能声称未公开的原题源码可得。
+更完整的十四台候选与量化评审标准请看 [WEB_MACHINE_SELECTION.md](WEB_MACHINE_SELECTION.md)。正式开发时仍须查证 Writeup/源码，确定版本，并且不能声称未公开的原题源码可得。
 
 ## 七、如何选择与提交下一台
 
