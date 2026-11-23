@@ -1633,7 +1633,7 @@
       "platform": "HTB",
       "url": "https://www.hackthebox.com/machines/precious",
       "skills": [
-        "deserialization.dependency-gadget",
+        "deserialization.unsafe-parse",
         "command_injection.basic-rce"
       ],
       "signature": "genuine Ruby PDFKit -> Ruby YAML deserialization",
@@ -1670,9 +1670,9 @@
       "url": "https://www.hackthebox.com/machines/zipping",
       "skills": [
         "file_read.file-to-rce",
-        "sqli.file-operations"
+        "file_read.path-traversal"
       ],
-      "signature": "ZIP symlink read -> SQLi file write -> LFI -> sudo",
+      "signature": "ZIP symlink file read -> SQLi file write -> LFI; archive symlink is not automatically a server parser-mismatch bug",
       "source_status": "official_synopsis_verified",
       "review_status": "research_required"
     },
@@ -1680,12 +1680,11 @@
       "id": "codify",
       "platform": "HTB",
       "url": "https://www.hackthebox.com/machines/codify",
-      "skills": [
-        "command_injection.basic-rce"
-      ],
+      "skills": [],
       "signature": "real vm2 JS application sandbox escape (NOT Docker escape) -> SQLite -> Bash",
       "source_status": "official_synopsis_verified",
-      "review_status": "research_required"
+      "review_status": "research_required",
+      "supplemental_objective": "真实 vm2 应用 JavaScript 沙箱逃逸，独立于 OS 命令注入、XSS 或 Docker 容器逃逸的课程目标"
     },
     {
       "id": "shared",
@@ -1703,12 +1702,12 @@
       "platform": "HTB",
       "url": "https://www.hackthebox.com/machines/gavel",
       "skills": [
-        "sqli.union",
-        "deserialization.unsafe-parse"
+        "sqli.where-hidden"
       ],
       "signature": "PHP PDO SQLi -> command execution -> YAML worker chain",
       "source_status": "official_synopsis_verified",
-      "review_status": "research_required"
+      "review_status": "research_required",
+      "supplemental_objective": "真实 PDO SQLi + YAML 工作流，YAML 是否构成不安全反序列化需后续证据确认"
     }
   ]
 }
