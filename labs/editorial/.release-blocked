@@ -1,12 +1,15 @@
-Editorial is merged to main for development but is NOT release-ready.
+Editorial has passed genuine Web-to-Root lab acceptance on an isolated CI network.
+Evidence: https://github.com/10010100111000/AttackBoxModule/actions/runs/45180129255
 
-Release gate:
-1. From an independent attacker container, verify the complete historical
-   Git credential -> prod account -> genuine GitPython-to-root sequence.
-2. Verify the per-instance Root Flag is recovered through that path, not
-   read using root-side docker exec or an assertion against a version string.
-3. Validate Worker isolation, answer invalidation after reset and resource limits.
-4. Confirm all acceptance tests pass on the final candidate revision.
+This marker remains ONLY because production Worker deployment has not been accepted.
+Before removing it:
+1. Verify dedicated network isolation between users, targets, platform APIs,
+   and host services under the actual Worker implementation.
+2. Verify per-instance private flag injection, server-side validation and
+   invalidation of previous answers after a reset.
+3. Validate effective resource limits and concurrency on the target Worker,
+   including SSH availability and least-privilege container capabilities.
+4. Confirm all full-chain acceptance tests still pass on the final image
+   candidate and formally review the rollout.
 
-Until the release gate has passed, the shared image publishing workflow
-must refuse manual GHCR publication of this lab.
+The shared manual GHCR publishing workflow must refuse this lab meanwhile.

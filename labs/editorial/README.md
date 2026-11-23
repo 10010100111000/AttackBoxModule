@@ -43,8 +43,10 @@ No public host port publication, --privileged, host networking, Docker socket mo
 
 ## CI scope and release gate
 
-The current CI builds the original components, creates an isolated attacker container, verifies port isolation, genuine SSRF and internal API discovery, verifies service health, checks the pinned GitPython dependency and sudo configuration, and checks flag rotation after a fresh instance.
+The current CI builds the original components, starts an isolated attacker container, validates SSRF and internal API discovery, native SSH user pivots, Git commit history, the real GitPython-to-Root chain, private User/Root flags, service health, and fresh-instance reset.
 
-**The independent attacker-container test has verified SSRF → internal API → SSH as `dev` → User Flag. The existence of historical Git credentials, sudo configuration and vulnerable GitPython is checked, but an actual `prod` → GitPython → Root Flag exploit chain has NOT been independently validated.** This source is already merged into `main` for development only; publication remains blocked by `.release-blocked` until the full Root path and Worker isolation are verified.
+**An independent attacker-container test now verifies the complete attack path:** server-side cover-preview SSRF → loopback-only API → SSH as `dev` → User Flag → real Git history → SSH as `prod` → genuine GitPython 3.1.29 remote transport running under scoped sudo → UID 0 → private per-instance Root Flag. This is not a simulated root endpoint; the CI confirms UID 0 and independently reads the Root Flag through the vulnerable execution path. See [CI run #45180129255](https://github.com/10010100111000/AttackBoxModule/actions/runs/45180129255).
+
+**Release is still blocked** because platform Worker integration, dedicated per-user network isolation under realistic deployment and concurrency/resource checks have not been independently accepted. The `.release-blocked` marker remains until those checks are complete.
 
 Measured image footprint is reported in GitHub Actions. Resource limits are test boundaries, not a measured capacity guarantee.
