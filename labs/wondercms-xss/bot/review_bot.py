@@ -79,7 +79,7 @@ async def _review_async(url_path: str, admin_password: str, profile: str) -> Non
     )
     try:
         page = await browser.newPage()
-        await page.setDefaultNavigationTimeout(12000)
+        page.setDefaultNavigationTimeout(12000)
         await page.goto(BASE_URL + "/index.php?page=loginURL", waitUntil="domcontentloaded")
         await page.waitForSelector('input[name="password"]', timeout=10000)
         await page.type('input[name="password"]', admin_password)
