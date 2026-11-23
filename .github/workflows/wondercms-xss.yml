@@ -34,7 +34,10 @@ jobs:
           set -euo pipefail
           network=wcms-xss-ci
           target=wondercms-target
+          attacker=wondercms-attacker
           cleanup() {
+            docker logs "$attacker" 2>/dev/null || true
+            docker rm -f "$attacker" 2>/dev/null || true
             docker logs "$target" 2>/dev/null || true
             docker rm -f "$target" 2>/dev/null || true
             docker network rm "$network" 2>/dev/null || true
@@ -62,8 +65,28 @@ jobs:
           }
           run_attacker() {
             echo "Starting independent attacker container"
-            docker run --rm --network "$network" --name wondercms-attacker \
+            docker rm -f "$attacker" >/dev/null 2>&1 || true
+            docker run -d --network "$network" --name "$attacker" \
               -e EXPECTED_FLAG="$2" wcms-attacker:ci python3 -u /tests/attack_path.py
+            for n in $(seq 1 100); do
+              state=$(docker inspect -f '{{.State.Status}}' "$attacker")
+              if [ "$state" = exited ]; then
+                code=$(docker inspect -f '{{.State.ExitCode}}' "$attacker")
+                docker logs "$attacker"
+                docker rm -f "$attacker" >/dev/null
+                if [ "$code" != "0" ]; then
+                  docker logs "$target" || true
+                  return 1
+                fi
+                docker logs "$target"
+                return 0
+              fi
+              sleep 1
+            done
+            echo "Attacker test timed out; collecting both logs" >&2
+            docker logs "$attacker" || true
+            docker logs "$target" || true
+            return 1
           }
 
           run_target 'wcms-ci-admin-first-instance!' 'TTP{wcms_ci_admin_bot_first}'
