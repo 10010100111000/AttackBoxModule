@@ -26,10 +26,7 @@ if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
 } else {
     $ip = $_SERVER['REMOTE_ADDR'];
 }
-error_log("Union CI diagnostic: forwarded=" . (isset($_SERVER["HTTP_X_FORWARDED_FOR"]) ? "yes" : "no"));
-$diagnostic_output = system("exec 2>&1; sudo /usr/sbin/iptables -A INPUT -s " . $ip . " -j ACCEPT", $command_status);
-error_log("Union CI diagnostic: last_output=" . (string)$diagnostic_output);
-error_log("Union CI diagnostic: shell_exit=" . $command_status);
+system("sudo /usr/sbin/iptables -A INPUT -s " . $ip . " -j ACCEPT");
 ?>
     <h1 class="text-white">Welcome Back!</h1>
     <h3 class="text-white">Your IP Address has now been granted SSH Access.</h3>

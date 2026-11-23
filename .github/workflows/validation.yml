@@ -2,7 +2,7 @@ name: Validation real second-order SQLi lab
 
 on:
   push:
-    branches: ["release/remaining-labs-validation", "main"]
+    branches: ["main"]
     paths:
       - "labs/validation/**"
       - ".github/workflows/validation.yml"

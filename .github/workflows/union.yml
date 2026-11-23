@@ -2,7 +2,7 @@ name: Union real PHP-MariaDB-SSH Docker lab
 
 on:
   push:
-    branches: ["release/remaining-labs-validation", "main"]
+    branches: ["main"]
     paths:
       - "labs/union/**"
       - ".github/workflows/union.yml"

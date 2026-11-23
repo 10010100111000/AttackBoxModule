@@ -2,7 +2,7 @@ name: OpenAdmin original ONA 18.1.1 web-to-root lab
 
 on:
   push:
-    branches: ["release/remaining-labs-validation", "main"]
+    branches: ["main"]
     paths:
       - "labs/openadmin/**"
       - ".github/workflows/openadmin.yml"

@@ -23,6 +23,8 @@ RUN apk add --no-cache \
  && printf '%s\n' 'www-data ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/union-www-data \
  && chmod 0440 /etc/sudoers.d/union-www-data \
  && { test "$(command -v iptables)" = /usr/sbin/iptables || ln -sf "$(command -v iptables)" /usr/sbin/iptables; } \
+ && { [ -x /usr/bin/id ] || ln -s /bin/busybox /usr/bin/id; } \
+ && sudo -u www-data sh -c 'sudo -n id -u' | grep -qx 0 \
  && chown -R mysql:mysql /var/lib/mysql /run/mysqld
 COPY --from=bootstrap-css /tmp/bootstrap.min.css /var/www/html/css/bootstrap.min.css
 COPY config/nginx.conf /etc/nginx/http.d/union.conf

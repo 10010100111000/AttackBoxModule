@@ -2,7 +2,7 @@ name: BountyHunter standalone Docker verification
 
 on:
   push:
-    branches: ["release/remaining-labs-validation", "main"]
+    branches: ["main"]
     paths:
       - "labs/bountyhunter/**"
       - ".github/workflows/bountyhunter.yml"
