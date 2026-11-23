@@ -27,7 +27,7 @@ permissions:
 
 jobs:
   django-xss-acceptance:
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'feat/django-debug-xss-lab'
     runs-on: ubuntu-latest
     timeout-minutes: 35
     strategy:
@@ -60,6 +60,63 @@ jobs:
           test "$(docker inspect -f '{{.State.Health.Status}}' django-target)" = healthy
           docker run --rm --network django-test -e TEST_MODE=${{ matrix.mode }} django-browser:test
           docker stats --no-stream --format 'Target memory: {{.MemUsage}}' django-target
+
+  django-full-flag-chain:
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'feat/django-debug-xss-lab'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - django: '1.11.4'
+            mode: vulnerable
+          - django: '1.11.5'
+            mode: patched
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build single target containing Django, PostgreSQL, headless editor browser
+        run: docker build --build-arg DJANGO_VERSION=${{ matrix.django }} -t django-target:test -f labs/django-debug-xss/Dockerfile labs/django-debug-xss
+      - name: Build independent ordinary learner
+        run: docker build -t django-attacker:test -f labs/django-debug-xss/tests/Dockerfile.attacker labs/django-debug-xss/tests
+      - name: Real attacker -> review queue -> editor browser -> XSS -> Flag
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker image inspect django-target:test --format 'Target image bytes: {{.Size}}'
+          docker network create --internal django-chain-ci
+          cleanup() {
+            docker logs django-target 2>/dev/null || true
+            docker rm -f django-target 2>/dev/null || true
+            docker network rm django-chain-ci 2>/dev/null || true
+          }
+          trap cleanup EXIT
+          start_target() {
+            docker run -d --name django-target --network django-chain-ci --network-alias target \
+              --memory 512m --cpus 1 --pids-limit 256 \
+              -e DJANGO_EDITOR_PASSWORD="private-editor-password-ci-123!" \
+              -e DJANGO_XSS_FLAG="TTP{real_django_xss_${{ matrix.mode }}_flag}" django-target:test
+            for i in $(seq 1 90); do
+              state=$(docker inspect -f '{{.State.Status}}' django-target)
+              if [ "$state" != running ]; then docker logs django-target; return 1; fi
+              health=$(docker inspect -f '{{.State.Health.Status}}' django-target)
+              if [ "$health" = healthy ]; then return 0; fi
+              sleep 2
+            done
+            docker logs django-target
+            return 1
+          }
+          start_target
+          docker run --rm --network django-chain-ci --network-alias a \
+            -e TEST_MODE=${{ matrix.mode }} \
+            -e EXPECTED_FLAG="TTP{real_django_xss_${{ matrix.mode }}_flag}" django-attacker:test
+          docker stats --no-stream --format 'Target memory: {{.MemUsage}}; PIDs: {{.PIDs}}' django-target
+          docker rm -f django-target
+          start_target
+          docker run --rm --network django-chain-ci --network-alias a \
+            -e TEST_MODE=${{ matrix.mode }} \
+            -e EXPECTED_FLAG="TTP{real_django_xss_${{ matrix.mode }}_flag}" django-attacker:test
+          echo 'PASS: rebuilt instance reproduces expected vulnerable/patched behavior'
   validate:
     runs-on: ubuntu-latest
     timeout-minutes: 3
