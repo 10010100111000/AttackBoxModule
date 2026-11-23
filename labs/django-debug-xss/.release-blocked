@@ -1,0 +1,1 @@
+Release blocked: CI must verify genuine Django 1.11.4 browser XSS and patched 1.11.5 negative control, then establish a meaningful player-side proof/Flag mechanism and Worker isolation before publishing.
