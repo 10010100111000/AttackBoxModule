@@ -48,3 +48,14 @@ No host ports should be published to the public Internet. The instance works thr
 6. CI reports actual runtime image size; Worker bot, multi-user network and real flag verification are a separate release gate.
 
 **Do not claim a full browser-based challenge is complete if the administrator browser CI or Worker review mechanism is missing.**
+
+## Verified results — 2026-11-23
+
+- **PASS**: [independent real Chromium CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/45203163868) against the genuine upstream 3.4.2 code, without a fake /vuln handler.
+- **PASS**: admin login through original WonderCMS PHP session; actual reflected HTML attribute injection executes a harmless JavaScript marker in Chromium.
+- **PASS**: unprivileged visitor receives 403 for the admin-only Flag and 404 for the native JSON database. Admin browser can access its private per-instance objective.
+- **PASS**: destroying and recreating the image changes both private admin passwords and Flag values; both first and second instance tests passed.
+- **Measured target runtime image**: 43,536,713 bytes ≈ **41.5 MiB**; **memory snapshot** 15.28 MiB with one PID under CI's 192 MiB / 128 PID limits. This is a snapshot, not concurrent/peak usage.
+- **NOT verified**: a real learner-controlled page-review bot on the production Worker that visits the submitted link; the CMS's full XSS→plugin installation→RCE path has also not been accepted as part of this **XSS-focused, single-Flag** exercise.
+
+**Lab skill status:** verified browser-based reflected XSS. **Challenge readiness:** partial until administrator-link review is integrated; `.release-blocked` must remain. Never merge on the assumption that a green Chromium test also means the live Worker supports the required browser interaction.
