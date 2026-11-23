@@ -954,7 +954,12 @@
       "objective": "Web 专项：在真实页面输出上下文中复现反射型 XSS，并证明浏览器实际执行",
       "scope": "repeatable_skill_variant_requirement",
       "one_to_many_allowed": true,
-      "scenario_variant_focus": "至少 HTML 正文与属性/JavaScript 上下文；后续可分别做多台"
+      "scenario_variant_focus": "真实旧版 Django 报错页反射型 XSS（优先），同时评估 WonderCMS 的真实 XSS；避免直接部署笨重的 Juice Shop 全家桶",
+      "candidate_options": [
+        "django-debug-xss",
+        "dsvw",
+        "wondercms-xss"
+      ]
     },
     {
       "id": "file-read-basic",
@@ -1026,9 +1031,11 @@
       "objective": "真实持久化输入 + 管理员浏览器访问，验证会话/权限边界而非 alert 字符串",
       "scope": "repeatable_skill_variant_requirement",
       "one_to_many_allowed": true,
-      "scenario_variant_focus": "真实管理员浏览器访问与权限影响，不能用返回 HTML 文本代替",
+      "scenario_variant_focus": "真实 Markdown/评论被管理员浏览器打开造成跨用户执行；需区分 XSS 是存储于服务端还是来自可分享链接",
       "candidate_options": [
-        "headless"
+        "alert",
+        "headless",
+        "wondercms-xss"
       ]
     },
     {
@@ -1160,6 +1167,7 @@
       "one_to_many_allowed": true,
       "scenario_variant_focus": "真实管理员浏览器的异步执行与权限变化",
       "candidate_options": [
+        "alert",
         "headless"
       ],
       "objective": "真实管理员浏览器的异步执行与权限变化"
@@ -1708,6 +1716,73 @@
       "source_status": "official_synopsis_verified",
       "review_status": "research_required",
       "supplemental_objective": "真实 PDO SQLi + YAML 工作流，YAML 是否构成不安全反序列化需后续证据确认"
+    },
+    {
+      "id": "django-debug-xss",
+      "platform": "Vulhub",
+      "url": "https://github.com/vulhub/vulhub/blob/master/django/CVE-2017-12794/README.md",
+      "skills": [
+        "xss.reflected"
+      ],
+      "signature": "Django 1.11.4 DEBUG 500 error page reflected XSS, CVE-2017-12794; real template/error handling, no MySQL service needed for actual app deployment design to be checked",
+      "source_status": "upstream_advisory_and_vulhub_repro_verified",
+      "review_status": "research_required",
+      "size_policy": "small_docker_candidate_build_measurement_required",
+      "priority_hint": "beginner_xss_first"
+    },
+    {
+      "id": "wondercms-xss",
+      "platform": "Upstream OSS",
+      "url": "https://github.com/WonderCMS/wondercms/releases/tag/3.4.2",
+      "skills": [
+        "xss.reflected",
+        "xss.cross-user-action"
+      ],
+      "signature": "WonderCMS 3.4.2 CVE-2023-41425: real CMS XSS with administrator action and module installer privilege boundary; confirm exact injection context in original version",
+      "source_status": "upstream_342_and_patched_343_confirmed",
+      "review_status": "research_required",
+      "size_policy": "flat_file_php_cms_no_database_server_measure_runtime",
+      "priority_hint": "intermediate_xss_second"
+    },
+    {
+      "id": "alert",
+      "platform": "HTB",
+      "url": "https://0xdf.gitlab.io/2025/03/22/htb-alert.html",
+      "skills": [
+        "xss.stored",
+        "xss.cross-user-action",
+        "file_read.path-traversal"
+      ],
+      "signature": "Markdown upload -> XSS when admin opens shared link -> internal file read via browser -> SSH -> cron privilege boundary; browser automation and original observables required",
+      "source_status": "retired_htb_and_public_writeup_verified",
+      "review_status": "research_required",
+      "size_policy": "php_http_ssh_cron_plus_attacker_browser_measure_runtime",
+      "priority_hint": "integrated_xss_third"
+    },
+    {
+      "id": "dsvw",
+      "platform": "OWASP VWAD",
+      "url": "https://vwad.owasp.org/app/damn-small-vulnerable-web-dsvw/",
+      "skills": [
+        "xss.reflected",
+        "xss.dom"
+      ],
+      "signature": "Original intentionally vulnerable Python under-100-lines app; good micro-lab reference but obvious routes/UI make it weaker for realistic recon and should not be disguised as a historic product CVE",
+      "source_status": "upstream_and_owasp_vwad_verified",
+      "review_status": "research_required",
+      "size_policy": "stdlib_python_extremely_small_source_measure_runtime",
+      "priority_hint": "optional_basic_micro_lesson"
     }
-  ]
+  ],
+  "lightweight_selection_policy": {
+    "preferred_start": "django-debug-xss",
+    "next_candidates": [
+      "wondercms-xss",
+      "alert"
+    ],
+    "scope": "针对 XSS，优先独立的真实受影响组件与最少必要服务；避免为基础题打包整套 Juice Shop 课程应用",
+    "sources_distinction": "VulnHub=完整下载 VM；Vulhub=按 CVE 构建的 Docker 复现环境；不要混为一谈",
+    "performance": "须经 CI 实测镜像字节数、启动内存与浏览器 Bot 额外资源；未构建不得宣称实际镜像大小",
+    "fidelity": "XSS 必须在真实浏览器中执行，不能仅通过 HTTP 响应包含脚本证明"
+  }
 }
