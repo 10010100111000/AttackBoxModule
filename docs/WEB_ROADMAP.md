@@ -1,101 +1,126 @@
-# trytopwn Web 题库覆盖盘点与分阶段路线图
+# trytopwn Web 题库覆盖现状与滚动路线图（v2）
 
-**2026-11-23 快照；来源为 GitHub `main`，对照提交 `45c2e88165342dca8ce3583c33659651f5c3c7f2`。** 统计只按唯一主类别计数；各靶机完成状态以代码及可追溯 CI 为准，**不把 main 已合并等同于 Worker 已上线**。请同时阅读 [难度/分类标准](WEB_TAXONOMY.md) 和 [可机读清单](../catalog/web-curriculum.json)。
+更新：2026-11-23。**选题依据是 PortSwigger 式的细分知识点和不同真实利用场景，不是“每种漏洞三台”“做满九台就停止”。**
 
-## 一、库存：17 个目录，16 个 Web（相关）+ 1 个非 Web 服务链
+先看：[31 专题 / 219 知识目标](../catalog/web-competencies.json) → [分类与难度](WEB_TAXONOMY.md) → [候选机器与评分方法](WEB_MACHINE_SELECTION.md) → [机器及滚动队列](../catalog/web-curriculum.json)。
 
-以下“初/中/高”为**暂定难度**，不是玩家实测评级。
+## 一、当前存量：17 个目录（Web 16 + 非 Web 服务链 1）
 
-| 机器 | 主类别 | 次要知识点 | 暂定难度 | 靶机 CI 状态 |
+**以下是仓库快照与原有 CI 证据**；“有完整目标链 CI”不代表每个相关知识目标都有单独的专项断言，也不代表已在真实 Worker 上线。
+
+| 靶机 | 暂定级别 | 主要训练类别 | 典型场景差异 | 验收状态 |
 | --- | --- | --- | --- | --- |
-| Base | 认证与会话 | PHP strcmp、上传 | 初级 | 未完整验收 |
-| Bashed | 暴露执行入口 | phpbash、sudo、cron | 初级 | 完整目标链 CI |
-| Bike | SSTI | Handlebars、服务器命令执行 | 初级 | 局部验证 |
-| BountyHunter | XXE | 凭据复用、Python eval 提权 | 中级 | 完整目标链 CI |
-| Cap | IDOR | PCAP、FTP/SSH、文件 capability | 中级 | 完整目标链 CI |
-| Cursed Stale Policy | XSS / CSP | 浏览器、WebSocket | 高级 | 尚无完整攻击链证据 |
-| Devvortex | CMS 组件漏洞 | Joomla、虚拟主机、Apport | 中级 | Root 阶段尚未验收 |
-| Editorial | SSRF | 内部 API、Git 历史、GitPython | 中级 | 完整目标链 CI；**Worker 发布封锁** |
-| GoodGames | SQLi | Jinja2 SSTI、凭据复用 | 中级 | 部分目标（仅 User Flag） |
-| Nibbles | 文件上传 | 真实 CMS 插件、sudo | 初级 | 完整目标链 CI |
-| OpenAdmin | 命令注入 | ONA xajax、SSH、nano | 中级 | 完整目标链 CI |
-| Pebbles | SQLi | ZoneMinder、数据库文件操作、UDF | 高级 | 有完整链 CI；Worker 待验收 |
-| Photobomb | 命令注入 | Sinatra、ImageMagick、PATH | 中级 | 完整目标链 CI |
-| Shocker | 命令执行 / Shellshock | Apache CGI、sudo Perl | 初级 | 完整目标链 CI |
-| Union | SQLi | MariaDB LOAD_FILE、iptables、SSH | 中级 | 完整目标链 CI |
-| Validation | SQLi | 二阶注入、FILE、su | 中级 | 完整目标链 CI |
-| Funnel | **非 Web 服务链** | FTP、SSH 转发、PostgreSQL | 初级 | 局部验证；单 Flag |
+| base | 初级 | 认证与会话安全 | 原生文件上传 | 尚无完整验收 |
+| bashed | 初级 | 暴露的管理或执行接口 | Web shell | 完整目标链 CI（非 Worker） |
+| bike | 初级 | 模板注入 | 模板上下文 | 局部/目标未全验收 |
+| bountyhunter | 中级 | XML 外部实体 | 真实外部实体 | 完整目标链 CI（非 Worker） |
+| cap | 中级 | 对象级授权与 IDOR | 越权获取其他人的网络流量 | 完整目标链 CI（非 Worker） |
+| cursed-stale-policy | 高级 | 跨站脚本 | 管理员浏览器 / CSP | 尚无完整验收 |
+| devvortex | 中级 | CMS / 应用组件漏洞 | CVE 信息泄露 | 局部/目标未全验收 |
+| editorial | 中级 | 服务端请求伪造 | 服务端 HTTP 请求到回环 API | 完整目标链 CI（非 Worker） |
+| goodgames | 中级 | SQL 注入 | SQLi 与存储模板上下文 | 局部/目标未全验收 |
+| nibbles | 初级 | 文件上传 | 真实原版上传文件处理 | 完整目标链 CI（非 Worker） |
+| openadmin | 中级 | 命令注入与系统调用 | 旧版本原生命令执行 | 完整目标链 CI（非 Worker） |
+| pebbles | 高级 | SQL 注入 | 真实数据库文件操作 | 完整目标链 CI（非 Worker） |
+| photobomb | 中级 | 命令注入与系统调用 | 真实命令拼接及执行 | 完整目标链 CI（非 Worker） |
+| shocker | 初级 | 命令注入与系统调用 | 旧 Bash 环境函数解析 | 完整目标链 CI（非 Worker） |
+| union | 中级 | SQL 注入 | UNION/LOAD_FILE与请求头 shell | 完整目标链 CI（非 Worker） |
+| validation | 中级 | SQL 注入 | 真实二阶 SQLi | 完整目标链 CI（非 Worker） |
+| funnel | 初级 | 非 Web 服务链与协议枢纽 | 非 Web 网络服务 | 局部/目标未全验收 |
 
-备注：部分旧 README 仍含“未合并”或早期 Smoke 说明；新目录以 `catalog/web-curriculum.json` 的**快照标签和 CI 证据**为规划基线，验收状态不得反向推断生产发布。`full_chain_ci` 不意味着所有细分技术均已覆盖，例如存在一台 SQLi 综合靶机，并不能自动计为“盲注已覆盖”。
+目前旧清单有 **11 项 full_chain_ci、4 项 partial、2 项 unverified**（按历史标记，不是 31 专题的覆盖率）。Worker 正式发布仍须独立验收；Editorial 有 .release-blocked 标记，代码虽已合并但不能据此发布。
 
-## 二、按漏洞能力而非机器数量衡量覆盖
+## 二、每个知识点的“覆盖”要怎么计算
 
-| 技术大类 | 已有的有效覆盖 | **核心缺口** | 下一轮策略 |
-| --- | --- | --- | --- |
-| **SQLi** | 登录查询、UNION、二阶、FILE 读写（GoodGames / Union / Validation / Pebbles） | 报错型、布尔盲注、时间盲注、OOB、复杂过滤 | **优先补盲注**，暂不增加普通 UNION 登录靶机 |
-| **XSS** | Cursed Stale Policy 存在 CSP/XSS 代码，但完整浏览器攻击链未验收 | 反射型、存储型、DOM、Blind XSS、CSP 验收 | **最大短板：先易后难做三档** |
-| **SSRF** | Editorial 的公开封面预览 → 内网 API | URL 校验/重定向绕过、Blind SSRF、复杂服务联动 | 保留 Editorial，新增高级受限 SSRF |
-| **IDOR / 授权** | Cap 的数值对象越权 | 多角色越权、多租户隔离、会话/JWT | 后续专项 |
-| **文件上传** | Nibbles、Base（Base 验收未全） | MIME/扩展名绕过、解析链、上传竞态 | 中高级专项 |
-| **路径遍历／LFI** | 无独立主分类靶机 | 基础遍历、LFI、包装器、文件到执行 | **新增初级** |
-| **命令注入** | OpenAdmin、Photobomb、Shocker | 盲执行、参数注入、过滤 | 现阶段暂缓重复 |
-| **SSTI** | Bike、GoodGames 的源码路径 | 沙箱限制、完整 CI | 补验收后再扩展 |
-| **XXE** | BountyHunter 文件读取 | SSRF / Blind OOB | 中高级补充 |
-| **NoSQL 注入** | 无 | MongoDB 操作符、盲提取 | **新增初级** |
-| **反序列化** | 仅其他靶机存在 eval 等相关机制，不能当作反序列化专项已覆盖 | 真实不安全反序列化 / 依赖 Gadget | **新增中级** |
-| **CSRF / JWT / 业务逻辑** | 暂缺独立专项 | 认证/会话、状态机、竞态 | 第二轮规划 |
-| **HTTP 协议** | 有 WebSocket 相关代码但无专项验收 | 请求走私、缓存、WebSocket 盲注 | 高级阶段 |
+以 [catalog/web-competencies.json](../catalog/web-competencies.json) 的 219 个目标为索引，每个目标关联 0..N 条场景变体、每个变体关联 0..N 台真实靶机。
 
-### SQLi：具体子项
+长期维护 3 个不同指标：
 
-- **已有**：登录/查询注入（GoodGames）、UNION（Union、Validation）、二阶（Validation）、数据库读取/写入文件（Union、Validation、Pebbles）。
-- **不足**：报错型盲数据提取、布尔盲注、时间盲注、OOB 与复杂过滤。**复杂的 SQLi 靶机不等于这些子项都存在**。
-- **排期**：中级首先补“同一真实数据库上的布尔盲注与时间盲注”，高级再选 OOB/协议组合，不重复做基础 UNION。
+1. **知识点覆盖**：多少个 skill_id 存在针对其机制的实际成功验收证据？不是只要在 README 提过就算。
+2. **场景深度**：同一 skill_id 在多少个**实质不同**的输入面、反馈模式、数据库/框架、校验约束、浏览器/协议边界下训练过？同点重复**可以加分**。
+3. **梯度完整性**：该技能在初级、中级和高级场景是否分别有适宜学习任务？不要求每项强行做三台，但核心知识点要有向上递进路径。
 
-### XSS：具体子项
+**最重要的规则：不限机器数量。** 即使当前 SQLi 已有四台，只要新机器能训练真实布尔盲注、时间盲注、XML 编码绕过、WebSocket、PostgreSQL 方言等新变体，都可以继续选择。
 
-- **反射型**：缺少独立可复现且浏览器实测的基础题。
-- **存储型**：缺少真实提交、存储和管理员访问的完整验收。
-- **DOM-based**：缺少专项。
-- **Blind XSS / CSP**：Cursed Stale Policy 是候选，现阶段只算代码资产，不算“已通过”。
-- **排期**：初级反射型 → 中级存储型管理员浏览器 → 高级 Blind XSS/CSP。实际 JavaScript 执行是证据，`alert(1)` 字样、静态字符串回显不是证据。
+## 三、SQLi：具体在哪些方向重复才有价值？
 
-## 三、第一轮计划：9 个“知识点/难度”需求，不是盲目新开 9 个分支
+| 知识方向 | 已有关联（不代表子项专项验收） | 新场景建议 |
+| --- | --- | --- |
+| 认证逻辑与基本查询 | GoodGames（仅部分验收） | 登录之外的查询过滤、JSON 结构、Cookie |
+| UNION 输出 | Union、Validation | 列数探测与数据类型、PostgreSQL/SQLite 差异、受限制输出 |
+| 二阶 SQLi | Validation | 与登录/预约/订单等后续消费点组合 |
+| DB 文件操作 | Pebbles、Union、Validation | 文件权限受限、数据库与文件系统不同用户 |
+| **布尔盲注** | 暂无该机制专门验收 | Cookie/隐藏 API、不同真/假响应，真实数据提取 |
+| **时间盲注** | 暂无该机制专门验收 | 多轮延时统计、PostgreSQL/MySQL 方言差异 |
+| **报错型/条件报错** | 暂无该机制专门验收 | 常规报错与条件错误分别对照 |
+| **OAST/过滤绕过** | 暂无该机制专门验收 | 独立内网回调、XML 编码、WAF/解析器差异 |
+| **WebSocket 盲注** | 暂无该机制专门验收 | Soccer 候选：实际 WS 服务传输和权限边界 |
 
-| 顺序 | 暂定级别 | 主分类与知识目标 | 题型 | 何时算完成 |
-| --- | --- | --- | --- | --- |
-| **01** | 初级 | **反射型 XSS** | Web 专项 | 真实浏览器执行、上下文验证、提交 Flag |
-| **02** | 初级 | **路径遍历 / 文件读取** | Web 专项 | 真实文件接口与授权边界，非硬编码响应 |
-| **03** | 初级 | **NoSQL 操作符注入** | Web 专项 | 真 MongoDB/驱动查询、授权绕过和测试 |
-| **04** | 中级 | **SQLi：布尔盲注 + 时间盲注** | Web 专项 / 综合 | 实际数据库可重复提取、差异统计 |
-| **05** | 中级 | **存储型 XSS + 管理员访问** | Web 专项 / 综合 | 真正的管理员浏览器、会话与权限验证 |
-| **06** | 中级 | **真实不安全反序列化** | Web 专项 / 综合 | 受影响版本、原始解析/Gadget、完整链 |
-| **07** | 高级 | **Blind XSS + CSP 限制** | 高级 Web | 实际浏览器 Bot、CSP 生效，必要时先验收旧 CSP 靶机 |
-| **08** | 高级 | **WebSocket SQL 盲注** | 高级 Web | 真 WebSocket / SQL 数据通道、盲注及限制 |
-| **09** | 高级 | **受限 SSRF + 内部服务链** | 高级综合 | 校验器/重定向约束真实生效，连续攻击链可重放 |
+**不能**因 Union 已有 UNION 就取消未来其他 UNION 题。如果数据库类型、列输出限制、输入面或真正的防护约束不同，仍可保留。不要把不同难度建立在换个前端颜色上。
 
-> 上表是**能力需求**，不是已经筛选完成的 HTB 机器名单。可考虑 NodeBlog、Trick、Precious、Headless、Soccer 等真实历史案例，但不能未经源码和 Writeup 核查就承诺一定复现，也不能把中级实战伪装成纯初级练习。
+## 四、XSS：目前核心短板，按浏览器上下文建立递进
 
-### 后续第二轮（暂不并发制作）
+| 子能力 | 当前现状 | 建议增加的不同场景 |
+| --- | --- | --- |
+| 反射型 / HTML 正文 | 无可信专属验收 | 查询/搜索结果页 → 真浏览器执行 |
+| HTML 属性与 JavaScript 字符串 | 无 | 参数引用、属性转义、JS 模板上下文 |
+| 存储型 | 无可信专属验收 | 评论/工单/管理员查看页、不同权限受害者 |
+| DOM-based | 无 | hash、postMessage、localStorage 与危险 DOM sink |
+| Blind XSS | 无 | Headless 候选：支持表单 User-Agent、管理员会话 |
+| CSP 绕过 | Cursed Stale Policy 有代码，但**未验收完整链** | 先核实现有题，再考虑其他 CSP 配置的重复题 |
+| 浏览器执行到权限影响 | 无 | 真浏览器完成管理员权限操作；不只出现 alert() 文字 |
 
-补充 DOM XSS、JWT／CSRF、IDOR 多角色、XXE Blind/OOB、文件上传解析差异、业务逻辑/竞态、缓存和请求走私。优先依据第一轮实际覆盖与用户反馈调整。
+真实浏览器管理员 Bot 对隔离、CPU/RAM 要求更高，不能用服务器返回一段 HTML 就算通过。
 
-## 四、挑选机器的具体顺序（每次开新 PR 前先执行）
+## 五、其余 29 个专题都必须进入计划，而不只是 SQLi/XSS
 
-1. **查缺口**：在上面的覆盖表和 `catalog/web-curriculum.json` 查未覆盖的 `required_skill_coverage`；优先缺口最多的初级档。
-2. **查来源**：至少一份可信 Writeup 加官方或上游源码/真实组件；记录原版环境、漏洞编号/版本、页面线索、完整攻击链。无法核实则换候选，不编假服务。
-3. **检查 Docker 可行性**：Linux 容器能复现、无需宿主机逃逸或 `--privileged`、不存在不可控的网络依赖；多阶段构建并测最终镜像字节数。
-4. **先验收再进度**：一个靶机一个开发 PR，外部独立攻击容器完成侦察 → 漏洞 → 目标权限／Flag，健康检查、跨实例隔离和重置。失败就修，不把 smoke CI 当已完成。
-5. **发布分离**：合并代码不代表生产发布。Worker 网络隔离、动态/私有 Flag 判题、限制、负载通过之后才能移除发布阻止标记并手动发行。
+其它技能也已经完整编目，以下列出当前选题方向（详细子目标见 JSON）：
 
-## 五、下次继续时如何使用本计划
+| 方向组 | 候选训练技术 |
+| --- | --- |
+| 服务端核心 | Authentication、Path traversal/LFI、Command injection、Business logic、Information disclosure、Access control、File upload、Race conditions、SSRF、XXE、NoSQL injection、API testing、Cache deception |
+| 客户端 | CSRF、CORS、Clickjacking、DOM-based、WebSockets |
+| 进阶 | Deserialization、Web LLM、GraphQL、SSTI、Cache poisoning、Host header、Request smuggling、OAuth、JWT、Prototype pollution、Essential skills |
 
-**默认动作**：先读取仓库根 `README.md` → `docs/WEB_TAXONOMY.md` → 本文件 → `catalog/web-curriculum.json`，检查最新 main/PR/CI。选择优先级最高、当前仍缺的条目，从真实 Writeup 和受影响组件开始，再提交开发 PR。
+其中初级题并非必然来自官方 Server-side 组。JWT、GraphQL 或 Prototype pollution 也需要基本概念题，而高级 SSRF/SQLi 需要更强限制和复杂反馈。**题目类型、难度、知识点是三个独立维度**。
 
-- 选题已定：更新 `backlog[].status = in_progress`，记录源机器、原始软件版本与预期证据。
-- 真实漏洞验收通过：补 `machines[]`，写主类别、细分技能和 CI 链接，将 backlog 标记 `done` 并在本文件更新覆盖表。
-- 只完成部分：保持 `partial`，不因 PR 已合并而列为“已完成”。
-- 级别不合理：基于独立体验调整暂定难度并说明原因。
-- 生产仍待验收：`worker_status` 保持 `not_verified`，不能标“上线”。
+## 六、持续滚动的下一批选题：不设固定九台上限
 
-**当前推荐的第一步：初级反射型 XSS；第二步：初级路径遍历；第三步：初级 NoSQL 操作符注入。**
+当前 [web-curriculum.json](../catalog/web-curriculum.json) 记录 **33 条待开展的技能/场景需求**；这不是 33 台机器的开发承诺，也不是所有需要覆盖的 219 个技能的终点。
+
+| 滚动优先组 | 预期知识目标 | 实物候选或来源约束 |
+| --- | --- | --- |
+| **基础概念与浏览器** | 反射 XSS 的 HTML/属性上下文、基础路径遍历、NoSQL 操作符查询 | 首先寻找有公开源代码或原版可观察行为的真实应用，不能造假的漏洞接口 |
+| **SQLi 递进** | 条件响应、报错、时间盲注、带外与不同数据库方言 | 可重复选 SQLi 综合靶机；Soccer 的 WebSocket 盲注与 Union 的 UNION 不是重复训练 |
+| **浏览器/会话进阶** | 存储/DOM/Blind XSS、CSP、CSRF、JWT、OAuth | Headless 是 Blind XSS 候选；Cursed 需先独立验证 |
+| **实际应用组件** | NoSQL + 反序列化、LFI + 真 CVE、Ruby PDF 转换 | NodeBlog、Trick、Inject、Precious，必须逐一核实原版软件版本 |
+| **协议与高复杂度** | WebSocket、Race、API/GraphQL、Request Smuggling、Cache、Prototype pollution、LLM | 要有真实解析器、代理、数据库、浏览器/代理环境与独立测试 |
+
+### 现已找到正式页面的机器候选（尚未批准开发）
+
+| HTB 机器 | 公开资料支持的典型链 | 规划中的增量价值 |
+| --- | --- | --- |
+| [Headless](https://www.hackthebox.com/machines/headless) | Python Werkzeug、Blind XSS 经管理员浏览器 | User-Agent + 管理员 Bot，补 XSS 较深场景 |
+| [Trick](https://www.hackthebox.com/machines/trick) | DNS/vhost、SQLi 文件读、LFI | 多站点真实发现，路径遍历/LFI/SQLi 不同组合 |
+| [NodeBlog](https://www.hackthebox.com/machines/nodeblog) | Node/Express、NoSQL、反序列化线索 | 真实 MongoDB/序列化栈，与 SQLi 区分 |
+| [Precious](https://www.hackthebox.com/machines/precious) | Ruby/PDFKit、YAML 处理 | 引入不同语言的反序列化与依赖漏洞 |
+| [Soccer](https://www.hackthebox.com/machines/Soccer) | Tiny File Manager、WebSocket SQL 盲注 | WS 数据通道、盲注反馈、多阶段 Linux 提权 |
+| [Inject](https://www.hackthebox.com/machines/inject) | 上传中的 LFI → Spring Cloud Function | Java 栈 LFI 与真实 CVE，区别于 PHP |
+
+更完整的十台候选与量化评审标准请看 [WEB_MACHINE_SELECTION.md](WEB_MACHINE_SELECTION.md)。正式开发时仍须查证 Writeup/源码，确定版本，并且不能声称未公开的原题源码可得。
+
+## 七、如何选择与提交下一台
+
+1. **先选知识目标**：web-competencies.json 里的一个或多个 skill_id，并给出初/中/高级的场景深度。
+2. **允许重复，但需有学习增量**：明确输入面/反馈/约束/技术栈/侦察/目标至少一项实质变化；记录 variant_id。
+3. **再找原版资料**：HTB/OffSec 题、历史 Writeup、漏洞公告和上游项目；优先真实存在的原版易受影响组件。
+4. **按选题规则评分**：来源真实性、知识差异、侦察自然性、CI 可复现性、Docker 约束、镜像资源；原则上不少于 75/100，硬性不合规则不准开发。
+5. **单机单 PR**：独立攻击容器从外部服务验证真实利用、目标 Flag、原生 Root 或其它目标、健康检查、实例隔离/重置和实测镜像字节数。
+6. **区分发布**：源码进入 main 和实验室 CI 通过，都不是 Worker 发布许可；未验证的场景保持未验证。
+7. **持续更新知识点**：成功后在目标技能下新增已验证的 variant_id 与 CI 证据。旧靶机可以补细分专项测试，不必每个目标都造新靶机。
+
+## 八、下次续作约定
+
+下次用户说“继续制作靶机”，先读取本文件、[分类](WEB_TAXONOMY.md)、[选题](WEB_MACHINE_SELECTION.md) 与两个 catalog/*.json，再比较 main、已合并 PR 与新 CI，选择适合的真实案例。
+
+**最关键的变化：题库既要横向全覆盖 Web 安全技术，又要纵向让同一个知识点从入门到复杂场景反复出现。选题服务于知识点，而不是知识点迁就手头的靶机。**
