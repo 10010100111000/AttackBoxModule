@@ -26,6 +26,40 @@ permissions:
   contents: read
 
 jobs:
+  django-xss-acceptance:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - django: '1.11.4'
+            mode: vulnerable
+          - django: '1.11.5'
+            mode: patched
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build real PostgreSQL Django target
+        run: docker build --build-arg DJANGO_VERSION=${{ matrix.django }} -t django-debug:test -f labs/django-debug-xss/Dockerfile labs/django-debug-xss
+      - name: Build browser acceptance test
+        run: docker build -t django-browser:test -f labs/django-debug-xss/tests/Dockerfile.browser labs/django-debug-xss/tests
+      - name: Full browser test
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker image inspect django-debug:test --format 'Target image bytes: {{.Size}}'
+          docker network create --internal django-test
+          trap 'docker logs django-target || true; docker rm -f django-target || true; docker network rm django-test || true' EXIT
+          docker run -d --name django-target --network-alias target --network django-test --memory 384m --pids-limit 128 django-debug:test
+          for i in $(seq 1 80); do
+            if [ "$(docker inspect -f '{{.State.Health.Status}}' django-target)" = healthy ]; then break; fi
+            if [ "$(docker inspect -f '{{.State.Status}}' django-target)" != running ]; then docker logs django-target; exit 1; fi
+            sleep 2
+          done
+          test "$(docker inspect -f '{{.State.Health.Status}}' django-target)" = healthy
+          docker run --rm --network django-test -e TEST_MODE=${{ matrix.mode }} django-browser:test
+          docker stats --no-stream --format 'Target memory: {{.MemUsage}}' django-target
   validate:
     runs-on: ubuntu-latest
     timeout-minutes: 3
