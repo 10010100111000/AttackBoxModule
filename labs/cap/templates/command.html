@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% set active = "ip" if title == "IP Config" else "netstat" %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">SYSTEM</p><h1>{{ title }}</h1><p class="subheading">Live system command output.</p></div></div>
+<section class="panel"><div class="panel-head"><h2>{{ title }} output</h2></div><pre>{{ output }}</pre></section>
+{% endblock %}

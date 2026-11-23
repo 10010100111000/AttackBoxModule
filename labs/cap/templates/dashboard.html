@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% set active = "dashboard" %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">OVERVIEW</p><h1>Dashboard</h1><p class="subheading">System activity and network security summary.</p></div><span class="status"><i></i> All systems operational</span></div>
+<div class="cards">
+  <article class="card"><span>Security Events</span><strong>1</strong><small>Last 24 hours</small></article>
+  <article class="card"><span>Failed Login Attempts</span><strong>0</strong><small>No recent failures</small></article>
+  <article class="card"><span>Active Sessions</span><strong>1</strong><small>Currently connected</small></article>
+</div>
+<section class="panel">
+  <div class="panel-head"><div><h2>Network activity</h2><p>Latest monitoring status</p></div><span class="pill">LIVE</span></div>
+  <div class="activity"><span class="activity-dot"></span><div><b>Packet monitoring is ready</b><p>Use Security Snapshot to capture a five-second PCAP and inspect the traffic.</p></div></div>
+</section>
+<p class="logged-in">Logged in as: <b>nathan</b></p>
+{% endblock %}

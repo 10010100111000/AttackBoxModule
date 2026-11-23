@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% set active = "capture" %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">SECURITY SNAPSHOT</p><h1>Capture {{ capture_id }}</h1><p class="subheading">Five-second packet capture analysis.</p></div><a class="button" href="/download/{{ capture_id }}">Download PCAP</a></div>
+<div class="cards">
+  <article class="card"><span>Total Packets</span><strong>{{ stats.total }}</strong><small>Captured packets</small></article>
+  <article class="card"><span>IP Packets</span><strong>{{ stats.ip }}</strong><small>IPv4 traffic</small></article>
+  <article class="card"><span>TCP Packets</span><strong>{{ stats.tcp }}</strong><small>TCP segments</small></article>
+  <article class="card"><span>UDP Packets</span><strong>{{ stats.udp }}</strong><small>UDP datagrams</small></article>
+</div>
+<section class="panel"><div class="panel-head"><h2>Capture details</h2><span class="pill">PCAP</span></div><p>Capture ID: <b>{{ capture_id }}</b></p><p>The capture is available for download for local analysis.</p></section>
+{% endblock %}
