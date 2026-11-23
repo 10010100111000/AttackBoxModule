@@ -1,0 +1,16 @@
+Port 22
+Protocol 2
+HostKey /etc/ssh/ssh_host_rsa_key
+HostKey /etc/ssh/ssh_host_ecdsa_key
+HostKey /etc/ssh/ssh_host_ed25519_key
+PermitRootLogin no
+PasswordAuthentication yes
+KbdInteractiveAuthentication no
+PubkeyAuthentication yes
+UsePAM yes
+AllowUsers jimmy joanna
+AllowTcpForwarding yes
+PermitOpen 127.0.0.1:52846
+GatewayPorts no
+PidFile /run/sshd.pid
+Subsystem sftp /usr/lib/openssh/sftp-server

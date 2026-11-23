@@ -1,0 +1,6 @@
+FROM debian:bookworm-slim
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update -qq \
+ && apt-get install -y -qq --no-install-recommends \
+      ca-certificates curl python3 python3-requests openssh-client sshpass expect \
+ && rm -rf /var/lib/apt/lists/*

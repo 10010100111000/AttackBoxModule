@@ -1,0 +1,1 @@
+TTP{openadmin_demo_root_replace_before_publish}

@@ -1,0 +1,9 @@
+Team,
+
+Please review the Skytrain Inc ticket verification process while the portal is
+being upgraded. We have some tickets failing checks unexpectedly.
+
+The ticket testing utility has been placed in /opt/skytrain_inc and the
+development account has permission to run that one tool for verification.
+
+-- John
