@@ -102,3 +102,13 @@ prod = ssh_as("prod", prod_credential.group(1), "id -un; sudo -n -l")
 assert prod.returncode == 0 and "prod" in prod.stdout, (prod.stdout, prod.stderr)
 assert "clone_prod_change.py" in prod.stdout, (prod.stdout, prod.stderr)
 print("PASS: real Git history credential reuse, prod SSH and restricted sudo allowance", flush=True)
+
+# The native GitPython/Git helper is intentionally exercised on the isolated
+# challenge target. A marker owned by UID 0 confirms native privilege context.
+probe = ssh_as(
+    "prod", prod_credential.group(1),
+    "sudo -n /usr/local/bin/python3 /opt/internal_apps/clone_changes/clone_prod_change.py 'ext::touch /tmp/editorial-gitpython-root-check'",
+)
+proof = ssh_as("prod", prod_credential.group(1), "stat -c %u /tmp/editorial-gitpython-root-check")
+assert proof.returncode == 0 and proof.stdout.strip() == "0", (probe.stderr, proof.stderr, proof.stdout)
+print("PASS: genuine GitPython clone transport executes as UID 0 through limited sudo", flush=True)
