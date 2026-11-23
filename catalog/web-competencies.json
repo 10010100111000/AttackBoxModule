@@ -1,0 +1,2016 @@
+{
+  "schema_version": 1,
+  "snapshot": "2026-11-23",
+  "source_index": "https://portswigger.net/web-security/all-topics",
+  "source_learning_materials": "https://portswigger.net/web-security/all-materials",
+  "attribution": "基于 PortSwigger Web Security Academy 的 31 个公开专题，自行撰写分层目标，不复制官方题目解答或声称官方认证",
+  "topic_counts": {
+    "server": 14,
+    "client": 6,
+    "advanced": 11
+  },
+  "coverage_definition": {
+    "topic_present": "专题已纳入规划，不代表完成",
+    "skill_status": "not_audited 表示未进行细分技能专项验收，即使现有综合靶机拥有相关标签",
+    "associated_labs": "对应旧台源码/综合 CI 的线索，不能直接作为细分技能已掌握的证据",
+    "verified_scenario": "必须有独立可重复的攻击步骤、技术条件、主/次结果与 CI/人工验收证据",
+    "practice_depth": "一个知识点可有多个不同版本、环境、限制、结果通道的训练变体；不设置唯一靶机数量上限",
+    "competition": "初级/中级/高级是每个场景的综合体验评级，不是该技术天生的固定等级",
+    "criteria": "同一知识点若改变输入面、DB/框架、回显方式、过滤或权限边界，可以重复收录；仅换页面皮肤不计新场景"
+  },
+  "scenario_dimensions": {
+    "input_surface": [
+      "query",
+      "post-form",
+      "cookie",
+      "header",
+      "json",
+      "xml",
+      "multipart",
+      "api",
+      "websocket",
+      "dom",
+      "file-upload"
+    ],
+    "response_feedback": [
+      "direct-response",
+      "error",
+      "boolean-difference",
+      "time-difference",
+      "oast",
+      "state-change",
+      "browser-execution",
+      "blind"
+    ],
+    "technology": [
+      "php",
+      "python",
+      "nodejs",
+      "ruby",
+      "java",
+      "database-mysql",
+      "database-postgresql",
+      "database-sqlite",
+      "database-mongodb",
+      "nginx",
+      "apache",
+      "browser",
+      "proxy"
+    ],
+    "discovery": [
+      "page-browsing",
+      "directory-enumeration",
+      "vhost",
+      "api-documentation",
+      "client-js",
+      "source-code",
+      "backup",
+      "version-fingerprint"
+    ],
+    "constraint": [
+      "unrestricted",
+      "blacklist",
+      "allowlist",
+      "normalization",
+      "encoding",
+      "csp",
+      "samesite",
+      "rate-limit",
+      "authorization",
+      "sandbox",
+      "two-parser"
+    ],
+    "outcome": [
+      "data-read",
+      "auth-bypass",
+      "data-write",
+      "business-state",
+      "shell-access",
+      "uid0",
+      "user-flag",
+      "root-flag",
+      "browser-admin-action"
+    ]
+  },
+  "topics": [
+    {
+      "id": "sqli",
+      "name": "SQL injection",
+      "academy_group": "server",
+      "source_url": "https://portswigger.net/web-security/sql-injection",
+      "acceptance_rule": "实际数据库查询、对照响应或可观测副作用；每种盲注技术需独立证据",
+      "scenario_examples": {
+        "beginner": "简单搜索/认证查询",
+        "intermediate": "不同字段、数据类型、无回显条件",
+        "advanced": "过滤/编码/外带或跨协议复合链"
+      },
+      "skills": [
+        {
+          "id": "sqli.auth-bypass",
+          "title": "SQL 查询逻辑与认证绕过",
+          "first_target_level": "beginner",
+          "status": "not_audited"
+        },
+        {
+          "id": "sqli.where-hidden",
+          "title": "WHERE 条件中的隐藏数据获取",
+          "first_target_level": "beginner",
+          "status": "not_audited"
+        },
+        {
+          "id": "sqli.union",
+          "title": "UNION 可见数据回显",
+          "first_target_level": "beginner",
+          "status": "not_audited"
+        },
+        {
+          "id": "sqli.union-column-count",
+          "title": "UNION 列数探测",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "sqli.union-type",
+          "title": "UNION 数据类型与拼接输出",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "sqli.db-enumeration",
+          "title": "数据库版本、表与列枚举",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "sqli.error-based",
+          "title": "显式数据库报错提取",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "sqli.conditional-error",
+          "title": "条件错误型盲注",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "sqli.boolean-blind",
+          "title": "布尔差异盲注",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "sqli.time-blind",
+          "title": "时间差异盲注",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "sqli.second-order",
+          "title": "二阶注入与后续消费点",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "sqli.file-operations",
+          "title": "数据库文件读取与写入",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "sqli.oast",
+          "title": "异步带外探测与数据带外获取",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        },
+        {
+          "id": "sqli.filter-bypass",
+          "title": "不同编码/上下文的过滤绕过",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        },
+        {
+          "id": "sqli.stacked-query",
+          "title": "多语句执行与权限边界",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        }
+      ]
+    },
+    {
+      "id": "auth_session",
+      "name": "Authentication vulnerabilities",
+      "academy_group": "server",
+      "source_url": "https://portswigger.net/web-security/authentication",
+      "acceptance_rule": "以两个独立账户证明身份与会话边界，不以页面提示代替实际授权变化",
+      "scenario_examples": {
+        "beginner": "基础登录与口令处理",
+        "intermediate": "重置/MFA/记住登录的跨步骤逻辑",
+        "advanced": "锁定策略、状态混淆、多因素组合"
+      },
+      "skills": [
+        {
+          "id": "auth_session.login-bypass",
+          "title": "逻辑错误绕过登录",
+          "first_target_level": "beginner",
+          "status": "not_audited"
+        },
+        {
+          "id": "auth_session.username-enumeration",
+          "title": "用户名枚举与错误侧信道",
+          "first_target_level": "beginner",
+          "status": "not_audited"
+        },
+        {
+          "id": "auth_session.weak-password-controls",
+          "title": "口令喷洒与限速/账户锁定边界",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "auth_session.password-reset",
+          "title": "找回密码令牌与验证流程缺陷",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "auth_session.password-change",
+          "title": "密码修改流程权限错误",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "auth_session.remember-me",
+          "title": "持久登录 Cookie 的生成/验证问题",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "auth_session.mfa-flow",
+          "title": "两步验证阶段状态绕过",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "auth_session.mfa-rate-limit",
+          "title": "验证码验证与频率限制绕过",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        },
+        {
+          "id": "auth_session.session-fixation",
+          "title": "会话固定与登录状态切换",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        }
+      ]
+    },
+    {
+      "id": "file_read",
+      "name": "Path traversal",
+      "academy_group": "server",
+      "source_url": "https://portswigger.net/web-security/file-path-traversal",
+      "acceptance_rule": "实际文件 API 读取到真实文件；拒绝硬编码模拟读取响应",
+      "scenario_examples": {
+        "beginner": "直接相对路径遍历",
+        "intermediate": "绝对路径/编码/路径前缀约束",
+        "advanced": "文件包含与解析器差异的综合利用"
+      },
+      "skills": [
+        {
+          "id": "file_read.path-traversal",
+          "title": "基础目录遍历读取文件",
+          "first_target_level": "beginner",
+          "status": "not_audited"
+        },
+        {
+          "id": "file_read.absolute-path",
+          "title": "过滤 ../ 后的绝对路径绕过",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "file_read.nested-traversal",
+          "title": "非递归过滤的嵌套遍历",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "file_read.double-decode",
+          "title": "重复/非标准 URL 解码差异",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "file_read.prefix-validation",
+          "title": "预期目录前缀校验绕过",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "file_read.extension-validation",
+          "title": "文件扩展名限制与终止边界",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "file_read.lfi",
+          "title": "本地文件包含与配置泄露",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "file_read.wrapper-abuse",
+          "title": "文件包装器与解析路径组合",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        },
+        {
+          "id": "file_read.file-to-rce",
+          "title": "文件读取、包含到执行的多阶段链",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        }
+      ]
+    },
+    {
+      "id": "command_injection",
+      "name": "OS command injection",
+      "academy_group": "server",
+      "source_url": "https://portswigger.net/web-security/os-command-injection",
+      "acceptance_rule": "原生目标系统程序产生不同权限的可检测结果；不能只打印模拟命令",
+      "scenario_examples": {
+        "beginner": "普通输入拼接到真实命令",
+        "intermediate": "参数/环境/无回显命令执行",
+        "advanced": "盲回传、解析差异和过滤约束"
+      },
+      "skills": [
+        {
+          "id": "command_injection.basic-rce",
+          "title": "基础 shell 命令执行",
+          "first_target_level": "beginner",
+          "status": "not_audited"
+        },
+        {
+          "id": "command_injection.shellshock",
+          "title": "CGI 与 Bash 环境解释缺陷",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "command_injection.argument-injection",
+          "title": "命令参数注入而非 shell 连接符",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "command_injection.environment-manipulation",
+          "title": "环境变量/PATH 影响原生命令",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "command_injection.blind-delay",
+          "title": "无回显时间探测",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "command_injection.blind-output",
+          "title": "无回显条件下的可观测结果或受控回传",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "command_injection.escape-context",
+          "title": "引号/转义/过滤环境下的上下文突破",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        }
+      ]
+    },
+    {
+      "id": "business_logic",
+      "name": "Business logic vulnerabilities",
+      "academy_group": "server",
+      "source_url": "https://portswigger.net/web-security/logic-flaws",
+      "acceptance_rule": "真实业务状态或账目发生违反规则的变化；负面用例同步证明",
+      "scenario_examples": {
+        "beginner": "简单流程顺序绕过",
+        "intermediate": "购物券、余额、类型与状态不一致",
+        "advanced": "跨账户、多动作状态机与边界组合"
+      },
+      "skills": [
+        {
+          "id": "business_logic.workflow-bypass",
+          "title": "业务步骤顺序绕过",
+          "first_target_level": "beginner",
+          "status": "not_audited"
+        },
+        {
+          "id": "business_logic.price-or-balance",
+          "title": "价格/余额/额度校验缺失",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "business_logic.type-trust",
+          "title": "不可信字段进入业务决策",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "business_logic.coupon-reuse",
+          "title": "优惠券/奖励重复兑换",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "business_logic.state-transition",
+          "title": "状态转换与授权检查错位",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "business_logic.multi-step-chain",
+          "title": "多个业务动作组合造成权限/资金错误",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        }
+      ]
+    },
+    {
+      "id": "information_disclosure",
+      "name": "Information disclosure",
+      "academy_group": "server",
+      "source_url": "https://portswigger.net/web-security/information-disclosure",
+      "acceptance_rule": "通过普通服务响应发现真实非公开资源；不能将标志直接伪装成漏洞",
+      "scenario_examples": {
+        "beginner": "错误信息和调试输出",
+        "intermediate": "备份、配置、源码和版本线索",
+        "advanced": "敏感数据与后续漏洞串联"
+      },
+      "skills": [
+        {
+          "id": "information_disclosure.verbose-errors",
+          "title": "详细错误与调试页面泄露",
+          "first_target_level": "beginner",
+          "status": "not_audited"
+        },
+        {
+          "id": "information_disclosure.backup-files",
+          "title": "备份与编辑器临时文件",
+          "first_target_level": "beginner",
+          "status": "not_audited"
+        },
+        {
+          "id": "information_disclosure.config-leak",
+          "title": "配置、环境变量与凭据暴露",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "information_disclosure.source-maps",
+          "title": "源码映射/前端包中隐藏信息",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "information_disclosure.api-metadata",
+          "title": "接口响应和文档中暴露隐私数据",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "information_disclosure.chain-credential",
+          "title": "信息泄露联动认证及后续攻击",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        }
+      ]
+    },
+    {
+      "id": "idor",
+      "name": "Access control",
+      "academy_group": "server",
+      "source_url": "https://portswigger.net/web-security/access-control",
+      "acceptance_rule": "必须使用两个主体或角色真实请求验证对象/权限边界",
+      "scenario_examples": {
+        "beginner": "数字 ID 直接对象读取",
+        "intermediate": "水平/垂直角色与方法检查差异",
+        "advanced": "多租户、多步授权链"
+      },
+      "skills": [
+        {
+          "id": "idor.direct-object-access",
+          "title": "直接对象引用越权（IDOR）",
+          "first_target_level": "beginner",
+          "status": "not_audited"
+        },
+        {
+          "id": "idor.horizontal",
+          "title": "横向账户对象越权",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "idor.vertical",
+          "title": "普通用户触达管理员操作",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "idor.role-parameter",
+          "title": "角色参数或头部信任问题",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "idor.method-path",
+          "title": "HTTP 方法或路径变体绕过授权",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "idor.multi-step",
+          "title": "多步骤操作的分段授权缺陷",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        },
+        {
+          "id": "idor.tenant-boundary",
+          "title": "跨租户/组织级对象隔离",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        }
+      ]
+    },
+    {
+      "id": "file_upload",
+      "name": "File upload vulnerabilities",
+      "academy_group": "server",
+      "source_url": "https://portswigger.net/web-security/file-upload",
+      "acceptance_rule": "真实上传存储、服务器如何解析、结果是否执行均需可验证",
+      "scenario_examples": {
+        "beginner": "没有上传限制",
+        "intermediate": "MIME/扩展名/目录限制绕过",
+        "advanced": "解析器差异、多阶段与竞争窗口"
+      },
+      "skills": [
+        {
+          "id": "file_upload.unrestricted-upload",
+          "title": "无限制文件上传",
+          "first_target_level": "beginner",
+          "status": "not_audited"
+        },
+        {
+          "id": "file_upload.content-type-bypass",
+          "title": "请求 Content-Type 伪造",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "file_upload.extension-bypass",
+          "title": "大小写/双扩展名过滤",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "file_upload.path-override",
+          "title": "上传路径或文件名穿越",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "file_upload.parser-mismatch",
+          "title": "后缀解析器/服务器处理差异",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        },
+        {
+          "id": "file_upload.polyglot",
+          "title": "图像或复合格式绕过检测",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        },
+        {
+          "id": "file_upload.race-upload",
+          "title": "上传扫描/重命名竞态",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        },
+        {
+          "id": "file_upload.put-method",
+          "title": "其他 HTTP 上传方法与接口",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        }
+      ]
+    },
+    {
+      "id": "race_conditions",
+      "name": "Race conditions",
+      "academy_group": "server",
+      "source_url": "https://portswigger.net/web-security/race-conditions",
+      "acceptance_rule": "并发与顺序对照试验能稳定复现状态竞争",
+      "scenario_examples": {
+        "beginner": "简单检查和使用时间差",
+        "intermediate": "多请求同时提交绕过次数限制",
+        "advanced": "同步窗口、双请求/多步骤竞态"
+      },
+      "skills": [
+        {
+          "id": "race_conditions.check-use-race",
+          "title": "检查与使用分离（TOCTOU）",
+          "first_target_level": "beginner",
+          "status": "not_audited"
+        },
+        {
+          "id": "race_conditions.limit-overrun",
+          "title": "请求频率/次数限制竞争",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "race_conditions.single-packet",
+          "title": "同批请求同步与单包竞争",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "race_conditions.multi-endpoint",
+          "title": "多个不同端点协调竞争",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        },
+        {
+          "id": "race_conditions.session-state",
+          "title": "会话/账户状态跨请求竞态",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        },
+        {
+          "id": "race_conditions.cross-account",
+          "title": "跨账户并发额度竞争",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        }
+      ]
+    },
+    {
+      "id": "ssrf",
+      "name": "Server-side request forgery (SSRF)",
+      "academy_group": "server",
+      "source_url": "https://portswigger.net/web-security/ssrf",
+      "acceptance_rule": "必须证明由服务器执行请求，目标内网对玩家不可直达；出网回调要用私有接收端",
+      "scenario_examples": {
+        "beginner": "本机访问",
+        "intermediate": "内网枚举和黑/白名单限制",
+        "advanced": "Blind SSRF、解析器/重定向、服务链"
+      },
+      "skills": [
+        {
+          "id": "ssrf.basic",
+          "title": "服务端请求本机资源",
+          "first_target_level": "beginner",
+          "status": "not_audited"
+        },
+        {
+          "id": "ssrf.internal-enumeration",
+          "title": "内部网络端口/API 发现",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "ssrf.blacklist-bypass",
+          "title": "回环地址/私网黑名单绕过",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "ssrf.whitelist-bypass",
+          "title": "域名白名单与 URL 解析差异",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        },
+        {
+          "id": "ssrf.redirect-bypass",
+          "title": "开放重定向绕过目标限制",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "ssrf.url-parser-bypass",
+          "title": "多种 URL 解释器不一致",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        },
+        {
+          "id": "ssrf.blind",
+          "title": "无回显 SSRF 与可观测探测",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "ssrf.oast",
+          "title": "独立回调接收端证明盲 SSRF",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        },
+        {
+          "id": "ssrf.internal-service-chain",
+          "title": "跨后端/协议的多阶段内部服务链",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        }
+      ]
+    },
+    {
+      "id": "xxe",
+      "name": "XML external entity injection (XXE)",
+      "academy_group": "server",
+      "source_url": "https://portswigger.net/web-security/xxe",
+      "acceptance_rule": "必须调用真实 XML 解析器并观察实际实体解析影响",
+      "scenario_examples": {
+        "beginner": "外部实体读取文件",
+        "intermediate": "利用实体访问内部接口",
+        "advanced": "Blind XXE / OOB 与 XInclude 等变体"
+      },
+      "skills": [
+        {
+          "id": "xxe.file-read",
+          "title": "外部实体读取本地文件",
+          "first_target_level": "beginner",
+          "status": "not_audited"
+        },
+        {
+          "id": "xxe.ssrf",
+          "title": "XML 解析器访问内网",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "xxe.parameter-entity",
+          "title": "参数实体与外部 DTD",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "xxe.blind-oob",
+          "title": "无回显 XXE 带外验证",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        },
+        {
+          "id": "xxe.xinclude",
+          "title": "XInclude 注入",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "xxe.upload-xml",
+          "title": "上传文档/图片中解析 XML",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "xxe.parser-config",
+          "title": "不同 XML 解析配置边界",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        }
+      ]
+    },
+    {
+      "id": "nosql",
+      "name": "NoSQL injection",
+      "academy_group": "server",
+      "source_url": "https://portswigger.net/web-security/nosql-injection",
+      "acceptance_rule": "真实 NoSQL 数据库/驱动执行查询并可对照认证或提取结果",
+      "scenario_examples": {
+        "beginner": "基础操作符认证绕过",
+        "intermediate": "正则/布尔/条件差异的数据提取",
+        "advanced": "受限上下文和查询结构组合"
+      },
+      "skills": [
+        {
+          "id": "nosql.operator-auth-bypass",
+          "title": "JSON 查询操作符认证绕过",
+          "first_target_level": "beginner",
+          "status": "not_audited"
+        },
+        {
+          "id": "nosql.syntax-injection",
+          "title": "语法型 NoSQL 查询注入",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "nosql.regex-filter",
+          "title": "正则查询影响匹配",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "nosql.boolean-extraction",
+          "title": "条件型数据推断",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "nosql.timing-extraction",
+          "title": "时间与无回显数据推断",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        },
+        {
+          "id": "nosql.filter-bypass",
+          "title": "输入结构/过滤与数据库语义差异",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        }
+      ]
+    },
+    {
+      "id": "api_testing",
+      "name": "API testing",
+      "academy_group": "server",
+      "source_url": "https://portswigger.net/web-security/api-testing",
+      "acceptance_rule": "真实 API 路由、方法、文档与授权/对象边界均可复现",
+      "scenario_examples": {
+        "beginner": "发现隐藏接口",
+        "intermediate": "HTTP 方法/内容类型和批量赋值",
+        "advanced": "服务端参数污染与多阶段 API 链"
+      },
+      "skills": [
+        {
+          "id": "api_testing.api-recon",
+          "title": "隐藏 API 端点与路径发现",
+          "first_target_level": "beginner",
+          "status": "not_audited"
+        },
+        {
+          "id": "api_testing.docs-discovery",
+          "title": "Swagger/OpenAPI 等文档发现",
+          "first_target_level": "beginner",
+          "status": "not_audited"
+        },
+        {
+          "id": "api_testing.hidden-methods",
+          "title": "HTTP 方法与内容类型可用性",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "api_testing.hidden-parameters",
+          "title": "隐藏字段与参数探测",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "api_testing.mass-assignment",
+          "title": "批量赋值与敏感字段越权",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "api_testing.server-parameter-pollution",
+          "title": "服务端参数污染影响内网 API",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        },
+        {
+          "id": "api_testing.api-authz",
+          "title": "API 对象授权与跨服务边界",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        }
+      ]
+    },
+    {
+      "id": "cache_deception",
+      "name": "Web cache deception",
+      "academy_group": "server",
+      "source_url": "https://portswigger.net/web-security/web-cache-deception",
+      "acceptance_rule": "真实共享缓存命中/未命中可测，跨用户读取响应可复现",
+      "scenario_examples": {
+        "beginner": "缓存静态资源与动态响应区分",
+        "intermediate": "路径/分隔符与规范化不一致",
+        "advanced": "缓存策略跨用户泄露及变体"
+      },
+      "skills": [
+        {
+          "id": "cache_deception.path-extension",
+          "title": "伪静态扩展名欺骗缓存",
+          "first_target_level": "beginner",
+          "status": "not_audited"
+        },
+        {
+          "id": "cache_deception.delimiter-confusion",
+          "title": "路径分隔符处理差异",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "cache_deception.normalization",
+          "title": "缓存与后端 URL 规范化不一致",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "cache_deception.sensitive-response",
+          "title": "身份响应被共享缓存保存",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "cache_deception.multi-user",
+          "title": "跨用户缓存污染与数据读取",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        }
+      ]
+    },
+    {
+      "id": "xss",
+      "name": "Cross-site scripting (XSS)",
+      "academy_group": "client",
+      "source_url": "https://portswigger.net/web-security/cross-site-scripting",
+      "acceptance_rule": "必须在真实浏览器上下文证明执行或权限影响；不能以响应含脚本文字当通过",
+      "scenario_examples": {
+        "beginner": "反射型 HTML 上下文",
+        "intermediate": "属性/JavaScript/DOM/持久化场景",
+        "advanced": "CSP/管理员浏览器/上下文过滤复杂链"
+      },
+      "skills": [
+        {
+          "id": "xss.reflected",
+          "title": "基础反射型 XSS",
+          "first_target_level": "beginner",
+          "status": "not_audited"
+        },
+        {
+          "id": "xss.reflected-html",
+          "title": "HTML 文本节点上下文",
+          "first_target_level": "beginner",
+          "status": "not_audited"
+        },
+        {
+          "id": "xss.reflected-attribute",
+          "title": "HTML 属性上下文",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "xss.reflected-js",
+          "title": "JavaScript 字符串/模板上下文",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "xss.reflected-url",
+          "title": "链接/URL 属性上下文",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "xss.stored",
+          "title": "存储型 XSS",
+          "first_target_level": "beginner",
+          "status": "not_audited"
+        },
+        {
+          "id": "xss.dom",
+          "title": "DOM sources 与 sinks",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "xss.client-template",
+          "title": "客户端模板注入触发脚本",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "xss.filter-bypass",
+          "title": "编码/标签/事件过滤约束",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        },
+        {
+          "id": "xss.csp-bypass",
+          "title": "有效 CSP 存在时的约束绕过",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        },
+        {
+          "id": "xss.blind",
+          "title": "管理员浏览器触发 Blind XSS",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        },
+        {
+          "id": "xss.cross-user-action",
+          "title": "由浏览器脚本完成跨用户权限操作",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        }
+      ]
+    },
+    {
+      "id": "csrf",
+      "name": "Cross-site request forgery (CSRF)",
+      "academy_group": "client",
+      "source_url": "https://portswigger.net/web-security/csrf",
+      "acceptance_rule": "真实跨来源页面在被害者会话执行敏感状态变更，浏览器 SameSite 生效",
+      "scenario_examples": {
+        "beginner": "无 Token 的状态操作",
+        "intermediate": "Token 方法/会话/SameSite/Referer 验证缺陷",
+        "advanced": "跨站限制与客户端跳转等组合"
+      },
+      "skills": [
+        {
+          "id": "csrf.no-defenses",
+          "title": "无防护状态修改请求",
+          "first_target_level": "beginner",
+          "status": "not_audited"
+        },
+        {
+          "id": "csrf.token-method",
+          "title": "仅对部分 HTTP 方法验证 Token",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "csrf.token-missing",
+          "title": "Token 缺失时校验被跳过",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "csrf.token-session",
+          "title": "Token 与用户会话未绑定",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "csrf.samesite",
+          "title": "SameSite 规则和跨站请求差异",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "csrf.samesite-gadget",
+          "title": "客户端跳转/同站小工具绕过",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        },
+        {
+          "id": "csrf.referer",
+          "title": "Referer 校验缺陷",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "csrf.xss-combination",
+          "title": "XSS 与 CSRF 跨上下文组合",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        }
+      ]
+    },
+    {
+      "id": "cors",
+      "name": "Cross-origin resource sharing (CORS)",
+      "academy_group": "client",
+      "source_url": "https://portswigger.net/web-security/cors",
+      "acceptance_rule": "从不同源的真实浏览器验证凭据或数据暴露，勿将 CORS 响应头存在视为漏洞",
+      "scenario_examples": {
+        "beginner": "跨域基本策略与 SOP",
+        "intermediate": "Origin 信任错误",
+        "advanced": "凭据/子域与缓存组合"
+      },
+      "skills": [
+        {
+          "id": "cors.origin-reflection",
+          "title": "任意 Origin 回显和敏感数据暴露",
+          "first_target_level": "beginner",
+          "status": "not_audited"
+        },
+        {
+          "id": "cors.null-origin",
+          "title": "对 null Origin 信任",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "cors.trusted-subdomain",
+          "title": "误信可控制的子域来源",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "cors.credentialed-cors",
+          "title": "携带凭据的跨域敏感读取",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        },
+        {
+          "id": "cors.cache-interaction",
+          "title": "动态 CORS 头与缓存相互影响",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        }
+      ]
+    },
+    {
+      "id": "clickjacking",
+      "name": "Clickjacking",
+      "academy_group": "client",
+      "source_url": "https://portswigger.net/web-security/clickjacking",
+      "acceptance_rule": "真实浏览器中跨域嵌入和用户动作触发 UI 状态改变",
+      "scenario_examples": {
+        "beginner": "缺少防嵌入响应头",
+        "intermediate": "覆盖/多步骤操作",
+        "advanced": "跨站表单与浏览器交互组合"
+      },
+      "skills": [
+        {
+          "id": "clickjacking.unprotected-frame",
+          "title": "无 X-Frame-Options/frame-ancestors 的嵌入",
+          "first_target_level": "beginner",
+          "status": "not_audited"
+        },
+        {
+          "id": "clickjacking.ui-redress",
+          "title": "覆盖图层诱导操作",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "clickjacking.multi-step",
+          "title": "多步骤 Clickjacking",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "clickjacking.csrf-combination",
+          "title": "Clickjacking 与状态更改组合",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        }
+      ]
+    },
+    {
+      "id": "dom_vulnerabilities",
+      "name": "DOM-based vulnerabilities",
+      "academy_group": "client",
+      "source_url": "https://portswigger.net/web-security/dom-based",
+      "acceptance_rule": "需要明确前端 source→sink 数据流，在真实浏览器观察行为；非仅静态 grep",
+      "scenario_examples": {
+        "beginner": "URL/哈希与 DOM sink",
+        "intermediate": "消息、存储、跳转和 cookie 等 DOM 操作",
+        "advanced": "DOM clobbering 与跨消息/客户端链"
+      },
+      "skills": [
+        {
+          "id": "dom_vulnerabilities.source-sink",
+          "title": "DOM 输入来源与危险 sink 的识别",
+          "first_target_level": "beginner",
+          "status": "not_audited"
+        },
+        {
+          "id": "dom_vulnerabilities.open-redirect",
+          "title": "DOM-based 开放重定向",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "dom_vulnerabilities.message-origin",
+          "title": "Web Message 来源验证",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "dom_vulnerabilities.storage",
+          "title": "localStorage / sessionStorage 操作",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "dom_vulnerabilities.cookie",
+          "title": "DOM-based cookie 操作",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "dom_vulnerabilities.dom-clobbering",
+          "title": "DOM clobbering 影响脚本对象",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        },
+        {
+          "id": "dom_vulnerabilities.websocket-url",
+          "title": "WebSocket URL / DOM 数据流注入",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        },
+        {
+          "id": "dom_vulnerabilities.client-template",
+          "title": "浏览器模板动态执行",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        }
+      ]
+    },
+    {
+      "id": "websockets",
+      "name": "WebSockets",
+      "academy_group": "client",
+      "source_url": "https://portswigger.net/web-security/websockets",
+      "acceptance_rule": "真实 WS 握手、帧交互与会话验证；需检查服务端权限",
+      "scenario_examples": {
+        "beginner": "基本 WS 服务权限",
+        "intermediate": "跨站 WebSocket 劫持和消息注入",
+        "advanced": "协议升级与后端注入链"
+      },
+      "skills": [
+        {
+          "id": "websockets.ws-recon",
+          "title": "WS 连接、协议与消息结构探测",
+          "first_target_level": "beginner",
+          "status": "not_audited"
+        },
+        {
+          "id": "websockets.cross-site-hijack",
+          "title": "Cross-site WebSocket hijacking",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "websockets.message-injection",
+          "title": "WS 消息渲染注入",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "websockets.origin-auth",
+          "title": "握手 Origin、Cookie 与认证",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "websockets.blind-sqli",
+          "title": "WebSocket 承载的盲注或跨协议数据提取",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        }
+      ]
+    },
+    {
+      "id": "deserialization",
+      "name": "Insecure deserialization",
+      "academy_group": "advanced",
+      "source_url": "https://portswigger.net/web-security/deserialization",
+      "acceptance_rule": "真实框架序列化/反序列化触发回调与副作用，不以直接 eval 代替",
+      "scenario_examples": {
+        "beginner": "序列化格式识别",
+        "intermediate": "魔术方法/真实依赖 Gadget",
+        "advanced": "受限环境、多 Gadget 链"
+      },
+      "skills": [
+        {
+          "id": "deserialization.unsafe-parse",
+          "title": "不安全反序列化输入识别",
+          "first_target_level": "beginner",
+          "status": "not_audited"
+        },
+        {
+          "id": "deserialization.data-tampering",
+          "title": "序列化对象属性篡改",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "deserialization.magic-methods",
+          "title": "魔术方法/反序列化钩子",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "deserialization.dependency-gadget",
+          "title": "真实依赖库 Gadget",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "deserialization.signed-cookie",
+          "title": "签名序列化对象的验证缺陷",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "deserialization.restricted-gadget-chain",
+          "title": "约束下的复杂 Gadget 链",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        },
+        {
+          "id": "deserialization.language-variants",
+          "title": "PHP/Java/Ruby/Node 解析行为差异",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        }
+      ]
+    },
+    {
+      "id": "web_llm",
+      "name": "Web LLM attacks",
+      "academy_group": "advanced",
+      "source_url": "https://portswigger.net/web-security/llm-attacks",
+      "acceptance_rule": "真实模型工具调用或访问边界中存在可重复且可审计的意外行为",
+      "scenario_examples": {
+        "beginner": "识别 Web LLM 能力边界",
+        "intermediate": "间接提示注入与工具过权",
+        "advanced": "工具链、RAG 和敏感数据访问限制"
+      },
+      "skills": [
+        {
+          "id": "web_llm.prompt-injection",
+          "title": "直达提示注入与指令混淆",
+          "first_target_level": "beginner",
+          "status": "not_audited"
+        },
+        {
+          "id": "web_llm.indirect-prompt",
+          "title": "外部内容引发间接提示注入",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "web_llm.excessive-agency",
+          "title": "过度代理权限与函数调用",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "web_llm.api-tool-abuse",
+          "title": "LLM 可调用的内部 API 滥用",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "web_llm.rag-data-leak",
+          "title": "检索内容引起敏感信息泄露",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        },
+        {
+          "id": "web_llm.scanner-secondary",
+          "title": "AI 驱动扫描器触发后续漏洞",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        }
+      ]
+    },
+    {
+      "id": "graphql",
+      "name": "GraphQL API vulnerabilities",
+      "academy_group": "advanced",
+      "source_url": "https://portswigger.net/web-security/graphql",
+      "acceptance_rule": "真实 GraphQL schema/Resolver 运行，证明可见字段与授权缺陷",
+      "scenario_examples": {
+        "beginner": "Schema / introspection 识别",
+        "intermediate": "字段、对象与批量请求越权",
+        "advanced": "复杂查询、mutation/alias 组合"
+      },
+      "skills": [
+        {
+          "id": "graphql.introspection",
+          "title": "GraphQL Schema introspection",
+          "first_target_level": "beginner",
+          "status": "not_audited"
+        },
+        {
+          "id": "graphql.suggestions",
+          "title": "禁用 introspection 后的建议字段",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "graphql.idor",
+          "title": "GraphQL Resolver 对象授权缺陷",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "graphql.alias-batching",
+          "title": "别名/批处理引发的限流与验证差异",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "graphql.mutation-auth",
+          "title": "Mutation 权限及字段批量赋值",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        },
+        {
+          "id": "graphql.resource-exhaustion",
+          "title": "深度/复杂度与资源限制",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        }
+      ]
+    },
+    {
+      "id": "ssti",
+      "name": "Server-side template injection",
+      "academy_group": "advanced",
+      "source_url": "https://portswigger.net/web-security/server-side-template-injection",
+      "acceptance_rule": "服务端真实模板引擎解释不受信任数据并产出可证明影响",
+      "scenario_examples": {
+        "beginner": "模板表达式与识别",
+        "intermediate": "对象访问、文件读取或命令执行",
+        "advanced": "隔离/沙箱限制与多阶段利用"
+      },
+      "skills": [
+        {
+          "id": "ssti.expression",
+          "title": "基本模板表达式注入",
+          "first_target_level": "beginner",
+          "status": "not_audited"
+        },
+        {
+          "id": "ssti.engine-detection",
+          "title": "确定模板引擎及处理上下文",
+          "first_target_level": "beginner",
+          "status": "not_audited"
+        },
+        {
+          "id": "ssti.object-access",
+          "title": "服务端对象/属性访问",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "ssti.code-execution",
+          "title": "真实模板执行环境中的权限变化",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "ssti.sandbox-escape",
+          "title": "模板沙箱边界突破",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        },
+        {
+          "id": "ssti.blind",
+          "title": "模板回显受限时的证明与提取",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        }
+      ]
+    },
+    {
+      "id": "cache_poisoning",
+      "name": "Web cache poisoning",
+      "academy_group": "advanced",
+      "source_url": "https://portswigger.net/web-security/web-cache-poisoning",
+      "acceptance_rule": "真实缓存键、共享响应和后端影响均需可观察",
+      "scenario_examples": {
+        "beginner": "缓存键和可缓存响应发现",
+        "intermediate": "非键控头/参数注入",
+        "advanced": "规范化和跨用户缓存投毒链"
+      },
+      "skills": [
+        {
+          "id": "cache_poisoning.cache-key-recon",
+          "title": "缓存键与可观测命中发现",
+          "first_target_level": "beginner",
+          "status": "not_audited"
+        },
+        {
+          "id": "cache_poisoning.unkeyed-headers",
+          "title": "非键控请求头影响响应",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "cache_poisoning.unkeyed-params",
+          "title": "非键控参数影响页面",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "cache_poisoning.normalization",
+          "title": "缓存规范化差异",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        },
+        {
+          "id": "cache_poisoning.cache-key-confusion",
+          "title": "Cache Key 控制与隐藏映射",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        },
+        {
+          "id": "cache_poisoning.cross-user-poison",
+          "title": "跨用户共享缓存投毒效果",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        }
+      ]
+    },
+    {
+      "id": "http_host",
+      "name": "HTTP Host header attacks",
+      "academy_group": "advanced",
+      "source_url": "https://portswigger.net/web-security/host-header",
+      "acceptance_rule": "真实网关/后端对 Host 的消费影响安全状态或路由",
+      "scenario_examples": {
+        "beginner": "虚拟主机与 Host 处理",
+        "intermediate": "密码重置链接与路由信任",
+        "advanced": "重复 Host/缓存/代理组合"
+      },
+      "skills": [
+        {
+          "id": "http_host.host-recon",
+          "title": "Host 与转发主机头的输入面",
+          "first_target_level": "beginner",
+          "status": "not_audited"
+        },
+        {
+          "id": "http_host.password-reset-poisoning",
+          "title": "密码重置链接污染",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "http_host.routing-bypass",
+          "title": "基于 Host 的内部路由或限制绕过",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "http_host.duplicate-host",
+          "title": "重复 Host / X-Forwarded-Host 解析差异",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        },
+        {
+          "id": "http_host.cache-interaction",
+          "title": "Host 注入与缓存联动",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        }
+      ]
+    },
+    {
+      "id": "request_smuggling",
+      "name": "HTTP request smuggling",
+      "academy_group": "advanced",
+      "source_url": "https://portswigger.net/web-security/request-smuggling",
+      "acceptance_rule": "必须存在两个真实 HTTP 解析边界并验证前后端状态不同；模拟 echo 不可接受",
+      "scenario_examples": {
+        "beginner": "请求长度解析基础",
+        "intermediate": "CL.TE / TE.CL 不一致",
+        "advanced": "HTTP/2、队列投毒、浏览器 desync"
+      },
+      "skills": [
+        {
+          "id": "request_smuggling.frontend-backend",
+          "title": "双 HTTP 解析器/网关模型",
+          "first_target_level": "beginner",
+          "status": "not_audited"
+        },
+        {
+          "id": "request_smuggling.cl-te",
+          "title": "CL.TE 请求长度歧义",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "request_smuggling.te-cl",
+          "title": "TE.CL 请求长度歧义",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "request_smuggling.te-obfuscation",
+          "title": "Transfer-Encoding 混淆",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        },
+        {
+          "id": "request_smuggling.http2-downgrade",
+          "title": "HTTP/2 降级引发歧义",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        },
+        {
+          "id": "request_smuggling.cl0",
+          "title": "CL.0 与暂停/连接重用",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        },
+        {
+          "id": "request_smuggling.response-queue",
+          "title": "响应队列污染",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        },
+        {
+          "id": "request_smuggling.request-tunneling",
+          "title": "请求隧道与内网路由",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        },
+        {
+          "id": "request_smuggling.browser-desync",
+          "title": "浏览器驱动的客户端 desync",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        }
+      ]
+    },
+    {
+      "id": "oauth",
+      "name": "OAuth authentication",
+      "academy_group": "advanced",
+      "source_url": "https://portswigger.net/web-security/oauth",
+      "acceptance_rule": "真实 OAuth 授权码/回调流程和状态校验；不以跳转字符串当令牌泄漏",
+      "scenario_examples": {
+        "beginner": "OAuth 授权流程和角色理解",
+        "intermediate": "state、redirect_uri、账户关联",
+        "advanced": "OIDC、跨授权方与复合链"
+      },
+      "skills": [
+        {
+          "id": "oauth.auth-code-flow",
+          "title": "OAuth 授权码与回调模型",
+          "first_target_level": "beginner",
+          "status": "not_audited"
+        },
+        {
+          "id": "oauth.state-csrf",
+          "title": "OAuth state 与 CSRF",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "oauth.redirect-uri",
+          "title": "redirect_uri 限制差异",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "oauth.account-linking",
+          "title": "第三方账户绑定错误",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "oauth.code-token-leak",
+          "title": "授权码/Token 泄漏及重放",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        },
+        {
+          "id": "oauth.openid-connect",
+          "title": "OIDC 发现、nonce 和 ID Token 验证",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        }
+      ]
+    },
+    {
+      "id": "jwt",
+      "name": "JWT attacks",
+      "academy_group": "advanced",
+      "source_url": "https://portswigger.net/web-security/jwt",
+      "acceptance_rule": "使用真实签发/验签库验证角色声明变化，不以自定义 JSON 冒充 JWT",
+      "scenario_examples": {
+        "beginner": "JWT 基本结构与签名验证",
+        "intermediate": "弱密钥/算法混淆/头字段滥用",
+        "advanced": "信任链和 JWK 来源组合"
+      },
+      "skills": [
+        {
+          "id": "jwt.claim-validation",
+          "title": "签名与声明验证边界",
+          "first_target_level": "beginner",
+          "status": "not_audited"
+        },
+        {
+          "id": "jwt.none-alg",
+          "title": "alg=none 验签缺失",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "jwt.weak-secret",
+          "title": "弱对称密钥签名",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "jwt.algorithm-confusion",
+          "title": "非对称与对称算法混淆",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        },
+        {
+          "id": "jwt.kid-injection",
+          "title": "kid 参与密钥定位的注入",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        },
+        {
+          "id": "jwt.jwk-jku",
+          "title": "JWK/jku 信任锚选择错误",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        }
+      ]
+    },
+    {
+      "id": "prototype_pollution",
+      "name": "Prototype pollution",
+      "academy_group": "advanced",
+      "source_url": "https://portswigger.net/web-security/prototype-pollution",
+      "acceptance_rule": "需证明属性污染并经真实 JS 框架/业务对象产生影响",
+      "scenario_examples": {
+        "beginner": "原型链与输入源发现",
+        "intermediate": "JSON/query 参数污染、客户端 Gadget",
+        "advanced": "服务端污染和复杂 Gadget"
+      },
+      "skills": [
+        {
+          "id": "prototype_pollution.prototype-chain",
+          "title": "JavaScript 原型链理解与可变属性",
+          "first_target_level": "beginner",
+          "status": "not_audited"
+        },
+        {
+          "id": "prototype_pollution.url-source",
+          "title": "URL/query 作为原型污染源",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "prototype_pollution.json-source",
+          "title": "JSON 解析与深度合并污染",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "prototype_pollution.client-gadget",
+          "title": "前端框架 Gadget 与 sink",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "prototype_pollution.server-side",
+          "title": "Node 服务端原型污染",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        },
+        {
+          "id": "prototype_pollution.constructor-prototype",
+          "title": "constructor.prototype 绕过",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        },
+        {
+          "id": "prototype_pollution.sanitizer-bypass",
+          "title": "过滤/无效化机制绕过",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        }
+      ]
+    },
+    {
+      "id": "essential_skills",
+      "name": "Essential skills",
+      "academy_group": "advanced",
+      "source_url": "https://portswigger.net/web-security/essential-skills",
+      "acceptance_rule": "可观察 HTTP 请求/响应并留有可复现实验记录",
+      "scenario_examples": {
+        "beginner": "Proxy/Repeater 基础",
+        "intermediate": "编码与批量参数探测",
+        "advanced": "多工具协作、回放、OAST"
+      },
+      "skills": [
+        {
+          "id": "essential_skills.proxy-repeater",
+          "title": "Burp Proxy 与 Repeater 基础",
+          "first_target_level": "beginner",
+          "status": "not_audited"
+        },
+        {
+          "id": "essential_skills.http-recon",
+          "title": "请求结构与入口枚举",
+          "first_target_level": "beginner",
+          "status": "not_audited"
+        },
+        {
+          "id": "essential_skills.encoding",
+          "title": "URL/Unicode/HTML 等编码层与混淆",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "essential_skills.intruder",
+          "title": "Intruder 枚举与差分观察",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
+        },
+        {
+          "id": "essential_skills.oast-tooling",
+          "title": "独立受控回调与带外验证",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        },
+        {
+          "id": "essential_skills.methodical-testing",
+          "title": "重现性、对照请求与证据记录",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        }
+      ]
+    }
+  ],
+  "legacy_associations": {
+    "auth_session.login-bypass": [
+      {
+        "lab": "base",
+        "legacy_label": "partial_or_unverified",
+        "skill_assertion_status": "requires_independent_audit"
+      }
+    ],
+    "file_upload.unrestricted-upload": [
+      {
+        "lab": "base",
+        "legacy_label": "partial_or_unverified",
+        "skill_assertion_status": "requires_independent_audit"
+      },
+      {
+        "lab": "nibbles",
+        "legacy_label": "lab_chain_ci_passed",
+        "skill_assertion_status": "requires_independent_audit"
+      }
+    ],
+    "ssti.expression": [
+      {
+        "lab": "bike",
+        "legacy_label": "partial_or_unverified",
+        "skill_assertion_status": "requires_independent_audit"
+      }
+    ],
+    "ssti.object-access": [
+      {
+        "lab": "bike",
+        "legacy_label": "partial_or_unverified",
+        "skill_assertion_status": "requires_independent_audit"
+      },
+      {
+        "lab": "goodgames",
+        "legacy_label": "partial_or_unverified",
+        "skill_assertion_status": "requires_independent_audit"
+      }
+    ],
+    "xxe.file-read": [
+      {
+        "lab": "bountyhunter",
+        "legacy_label": "lab_chain_ci_passed",
+        "skill_assertion_status": "requires_independent_audit"
+      }
+    ],
+    "idor.direct-object-access": [
+      {
+        "lab": "cap",
+        "legacy_label": "lab_chain_ci_passed",
+        "skill_assertion_status": "requires_independent_audit"
+      }
+    ],
+    "xss.csp-bypass": [
+      {
+        "lab": "cursed-stale-policy",
+        "legacy_label": "partial_or_unverified",
+        "skill_assertion_status": "requires_independent_audit"
+      }
+    ],
+    "ssrf.basic": [
+      {
+        "lab": "editorial",
+        "legacy_label": "lab_chain_ci_passed",
+        "skill_assertion_status": "requires_independent_audit"
+      }
+    ],
+    "ssrf.internal-enumeration": [
+      {
+        "lab": "editorial",
+        "legacy_label": "lab_chain_ci_passed",
+        "skill_assertion_status": "requires_independent_audit"
+      }
+    ],
+    "sqli.auth-bypass": [
+      {
+        "lab": "goodgames",
+        "legacy_label": "partial_or_unverified",
+        "skill_assertion_status": "requires_independent_audit"
+      }
+    ],
+    "command_injection.basic-rce": [
+      {
+        "lab": "openadmin",
+        "legacy_label": "lab_chain_ci_passed",
+        "skill_assertion_status": "requires_independent_audit"
+      },
+      {
+        "lab": "photobomb",
+        "legacy_label": "lab_chain_ci_passed",
+        "skill_assertion_status": "requires_independent_audit"
+      },
+      {
+        "lab": "union",
+        "legacy_label": "lab_chain_ci_passed",
+        "skill_assertion_status": "requires_independent_audit"
+      }
+    ],
+    "sqli.file-operations": [
+      {
+        "lab": "pebbles",
+        "legacy_label": "lab_chain_ci_passed",
+        "skill_assertion_status": "requires_independent_audit"
+      },
+      {
+        "lab": "union",
+        "legacy_label": "lab_chain_ci_passed",
+        "skill_assertion_status": "requires_independent_audit"
+      },
+      {
+        "lab": "validation",
+        "legacy_label": "lab_chain_ci_passed",
+        "skill_assertion_status": "requires_independent_audit"
+      }
+    ],
+    "command_injection.environment-manipulation": [
+      {
+        "lab": "photobomb",
+        "legacy_label": "lab_chain_ci_passed",
+        "skill_assertion_status": "requires_independent_audit"
+      }
+    ],
+    "command_injection.shellshock": [
+      {
+        "lab": "shocker",
+        "legacy_label": "lab_chain_ci_passed",
+        "skill_assertion_status": "requires_independent_audit"
+      }
+    ],
+    "sqli.union": [
+      {
+        "lab": "union",
+        "legacy_label": "lab_chain_ci_passed",
+        "skill_assertion_status": "requires_independent_audit"
+      },
+      {
+        "lab": "validation",
+        "legacy_label": "lab_chain_ci_passed",
+        "skill_assertion_status": "requires_independent_audit"
+      }
+    ],
+    "sqli.second-order": [
+      {
+        "lab": "validation",
+        "legacy_label": "lab_chain_ci_passed",
+        "skill_assertion_status": "requires_independent_audit"
+      }
+    ]
+  },
+  "supplemental_tags": [
+    {
+      "id": "cms_vulnerability",
+      "name": "CMS / third-party component exploits",
+      "relationship": "cross-cutting environment tags, not one of Academy 31 topics"
+    },
+    {
+      "id": "exposed_interface",
+      "name": "Exposed administrative and Web shell interfaces",
+      "relationship": "cross-cutting reconnaissance tag"
+    },
+    {
+      "id": "service_pivot",
+      "name": "Non-Web service pivoting",
+      "relationship": "Out of core Web Academy scope"
+    },
+    {
+      "id": "http_protocol",
+      "name": "Legacy protocol umbrella",
+      "relationship": "Legacy compatibility; new topics should use websockets/request_smuggling/cache categories"
+    }
+  ]
+}
