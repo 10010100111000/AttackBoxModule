@@ -11,7 +11,7 @@
       "unverified": "尚无可信独立完整验收证据"
     },
     "worker_status": {
-      "not_verified": "未完成实际平台 Worker 的多用户网络、Flag 判题与资源验收"
+      "not_verified": "尚未完成实际平台 Worker 的镜像启动、实例私网隔离与多用户资源调度验收；不包含 Flag 判题"
     },
     "release_status": {
       "blocked_by_marker": "仓库存在 .release-blocked 标记，禁止发布",
@@ -1552,7 +1552,7 @@
     "repetition_rule": "重复同一知识点的机器可以同时保留，必须明确至少一个有实质教学增量的场景差异，不因数量重复直接排除",
     "difficulty_rule": "初级/中级/高级按完整玩家发现与利用路径评级，不照搬上游机器评级；单项技术在不同限制下可跨三级",
     "coverage_rule": "legacy validated_skills 仅关联历史靶机与 CI；细分技能独立验收后才可计入细颗粒度 verified_scenario",
-    "release_rule": "靶机源码已合并 != 靶机完整攻击链CI通过 != Worker批准发布；区分三类状态",
+    "release_rule": "源码进入 main != 独立靶机攻击链 CI 通过 != Worker 对实例调度/网络/资源验证通过；Flag 由靶机获取，Web 后端判题，Worker 不判题",
     "no_fixed_quota": true
   },
   "academy_index": {
@@ -1784,5 +1784,12 @@
     "sources_distinction": "VulnHub=完整下载 VM；Vulhub=按 CVE 构建的 Docker 复现环境；不要混为一谈",
     "performance": "须经 CI 实测镜像字节数、启动内存与浏览器 Bot 额外资源；未构建不得宣称实际镜像大小",
     "fidelity": "XSS 必须在真实浏览器中执行，不能仅通过 HTTP 响应包含脚本证明"
+  },
+  "platform_contract": {
+    "reference": "docs/PLATFORM_FLAG_BOUNDARIES.md",
+    "worker": "只负责镜像、网络、隔离与实例启动停止；部署变量只透明转交，不解释或判定 Flag",
+    "web": "challengeStages.flag/attemptChallenge 校验答案与记录完成阶段",
+    "target": "真实漏洞、玩家获取 Flag 的自然路径；管理员浏览器若需要属于靶机环境而非 Worker",
+    "dynamic_flags": "实例注入变量不等于服务器端动态判题功能已实现；Web 需要关联实例正确答案，Worker 不判题"
   }
 }
