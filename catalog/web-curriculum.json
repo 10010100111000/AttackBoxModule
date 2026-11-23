@@ -227,16 +227,12 @@
       "track": "web",
       "provisional_difficulty": "beginner",
       "primary_category": "exposed_interface",
-      "secondary_categories": [
-        "command_injection"
-      ],
+      "secondary_categories": [],
       "validated_skills": [
-        "exposed_interface.webshell-discovery",
-        "command_injection.environment-manipulation"
+        "exposed_interface.webshell-discovery"
       ],
       "implemented_skills": [
-        "exposed_interface.webshell-discovery",
-        "command_injection.environment-manipulation"
+        "exposed_interface.webshell-discovery"
       ],
       "lab_ci_status": "full_chain_ci",
       "worker_status": "not_verified",
@@ -268,16 +264,12 @@
       "track": "web",
       "provisional_difficulty": "intermediate",
       "primary_category": "xxe",
-      "secondary_categories": [
-        "deserialization"
-      ],
+      "secondary_categories": [],
       "validated_skills": [
-        "xxe.file-read",
-        "deserialization.unsafe-parse"
+        "xxe.file-read"
       ],
       "implemented_skills": [
-        "xxe.file-read",
-        "deserialization.unsafe-parse"
+        "xxe.file-read"
       ],
       "lab_ci_status": "full_chain_ci",
       "worker_status": "not_verified",
@@ -351,9 +343,7 @@
       "track": "web",
       "provisional_difficulty": "intermediate",
       "primary_category": "ssrf",
-      "secondary_categories": [
-        "cms_vulnerability"
-      ],
+      "secondary_categories": [],
       "validated_skills": [
         "ssrf.basic",
         "ssrf.internal-enumeration"
@@ -445,12 +435,10 @@
         "cms_vulnerability"
       ],
       "validated_skills": [
-        "sqli.union",
         "sqli.file-operations",
         "cms_vulnerability.versioned-cve"
       ],
       "implemented_skills": [
-        "sqli.union",
         "sqli.file-operations",
         "cms_vulnerability.versioned-cve"
       ],
