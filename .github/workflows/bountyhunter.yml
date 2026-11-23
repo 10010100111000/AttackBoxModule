@@ -89,6 +89,11 @@ jobs:
           docker exec -u development "$target" sh -c \
             'printf "/home/development/invalid-ticket.md\n" | /usr/bin/python3 /opt/skytrain_inc/ticketValidator.py' \
             | grep -F 'Invalid ticket.'
+          docker run --rm --network "$net" \
+            -v "$PWD/labs/bountyhunter/tests:/tests:ro" \
+            ttp-bountyhunter-attacker:ci python3 /tests/root_chain.py
+          docker exec "$target" sh -c \
+            'test "$(stat -c %u /tmp/bountyhunter-root-proof)" = 0; grep -Fq "uid=0(root)" /tmp/bountyhunter-root-proof; grep -Fxq "TTP{bountyhunter_ci_root_0123456789}" /tmp/bountyhunter-root-flag-proof'
           docker exec "$target" sh -c \
             'test "$(cat /home/development/user.txt)" = "TTP{bountyhunter_ci_user_0123456789}"; test "$(cat /root/root.txt)" = "TTP{bountyhunter_ci_root_0123456789}"'
           docker stats --no-stream --format 'Target memory: {{.MemUsage}}, PIDs: {{.PIDs}}' "$target"
