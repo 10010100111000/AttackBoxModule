@@ -58,7 +58,7 @@ The independent attacker container must:
 4. Receive the private per-instance Flag at its own listener after the target-local admin bot visits the URL. The attacker container must never receive the admin password or read target files.
 5. Repeat after destroying/recreating the target with a different admin password and Flag.
 
-The browser is part of the **target image**, not the CI-only tester. Chromium increases the runtime image and memory requirement; the CI reports the measured image size and memory snapshot rather than assuming it is small.
+The browser is part of the **target image**, not the CI-only tester. Chromium materially increases the image size; the CI reports the measured image size and memory snapshot rather than assuming it is small.
 
 ## Release boundary
 
