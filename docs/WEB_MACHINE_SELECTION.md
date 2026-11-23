@@ -105,3 +105,16 @@
 5. 再单独通过正式 Worker 的网络、权限、动态 Flag 判题与多用户资源验收。两个层次不混淆。
 
 **选题优先级 = 缺少的知识训练价值 + 与已有靶机的有意义差异 + 真实可复现性，不是“这个漏洞已有 1 台所以禁止再选”。**
+
+## 6. 小型 XSS 靶机候选（2026-11-23 增补）
+
+优先使用小型、真实受影响的软件，**不推荐为单一 XSS 技能打包整个 Juice Shop**。这里区分两个易混名称：VulnHub 是可下载的完整虚拟机库；Vulhub 是按 CVE 提供 Docker 漏洞复现的项目。
+
+| 选题优先 | 上游与可核实漏洞 | 预期训练能力 | 工程与教学限制 |
+| --- | --- | --- | --- |
+| 1：[Vulhub Django CVE-2017-12794](https://github.com/vulhub/vulhub/blob/master/django/CVE-2017-12794/README.md) | Django 1.11.4 在 DEBUG 500 页的真实 XSS；[官方依赖安全公告](https://github.com/advisories/GHSA-9r8w-6x8c-6jr9) | **初级**：反射型 XSS 与错误页的浏览器 HTML 上下文 | 仅复现原版 Django 错误页的特定触发条件，不伪装成普通搜索页漏洞；镜像体积须实测 |
+| 2：[WonderCMS 3.4.2](https://github.com/WonderCMS/wondercms/releases/tag/3.4.2) | PHP/JSON 平面文件 CMS、真实 [CVE-2023-41425](https://github.com/advisories/GHSA-58rr-37rr-r6h5)，3.4.3 已修复 | **中级**：真实 XSS + 管理员操作 + 插件权限边界 | 不需数据库服务；必须证实原版输入上下文与实际管理员浏览器交互，不能只验证 JS 字符串 |
+| 3：[HTB Alert](https://0xdf.gitlab.io/2025/03/22/htb-alert.html) | Markdown → 浏览器 XSS → 敏感文件读取 → SSH → Cron Root 的公开真实链 | **中级综合靶机**：跨用户浏览器行为与多阶段侦察 | 原站点源码未公开，重建时如实标明；需要管理员浏览器，Bot 运行资源单独测量 |
+| 可选：[OWASP DSVW](https://vwad.owasp.org/app/damn-small-vulnerable-web-dsvw/) | 少于 100 行 Python 的教学源码 | **初级微型专项**：XSS/DOM 入门 | 尽管极小，但界面直接展示漏洞，不符合偏好自然侦察的综合靶机要求，不能硬称真实产品 CVE |
+
+**默认第一步**：审查并复现 Vulhub 的 Django CVE-2017-12794，同时对 WonderCMS 3.4.2 进行可移植性与实际版本核验。完整源代码/版本、浏览器执行和资源数据确认后才可开发。未构建前绝不宣称最终镜像 MiB 数值。
