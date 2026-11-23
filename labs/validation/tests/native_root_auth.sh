@@ -13,6 +13,9 @@ result=$?
 set -e
 if [ "$result" -ne 0 ]; then
   printf 'Native password authentication failed with exit code %s\n' "$result" >&2
+  printf 'su output: %s\n' "$output" >&2
+  id >&2
+  ls -l "$(command -v su)" >&2
   exit "$result"
 fi
 normalized=$(printf '%s\n' "$output" | tr -d '\r')
