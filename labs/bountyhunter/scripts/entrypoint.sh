@@ -22,6 +22,8 @@ chown root:root /root/root.txt
 chmod 0600 /root/root.txt
 unset user_flag root_flag required
 unset BOUNTYHUNTER_STATIC_USER_FLAG BOUNTYHUNTER_STATIC_ROOT_FLAG BOUNTYHUNTER_REQUIRE_PRIVATE_FLAGS
+# Restore the normal process umask after protected flags are initialized.
+umask 022
 
 mkdir -p /run/apache2 /run/php /run/sshd
 ssh-keygen -A >/dev/null 2>&1
