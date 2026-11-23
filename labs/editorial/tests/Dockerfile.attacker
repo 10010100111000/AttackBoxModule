@@ -1,0 +1,4 @@
+FROM python:3.11-slim-bookworm
+WORKDIR /tests
+COPY smoke.py /tests/smoke.py
+CMD ["python3", "/tests/smoke.py"]

@@ -1,0 +1,75 @@
+name: Editorial isolated SSRF services
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "labs/editorial/**"
+      - ".github/workflows/editorial.yml"
+  pull_request:
+    paths:
+      - "labs/editorial/**"
+      - ".github/workflows/editorial.yml"
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build target using original GitPython version
+        run: docker build --progress=plain -f labs/editorial/Dockerfile -t editorial:ci labs/editorial
+      - name: Build independent tester
+        run: docker build -f labs/editorial/tests/Dockerfile.attacker -t editorial-attacker:ci labs/editorial/tests
+      - name: Measure runtime image
+        run: docker image inspect editorial:ci --format 'Image bytes {{.Size}}'
+      - name: Test SSRF, native services and reset in isolated network
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker network create --internal editorial-ci
+          cleanup() {
+            docker logs editorial-target 2>/dev/null || true
+            docker rm -f editorial-target 2>/dev/null || true
+            docker network rm editorial-ci 2>/dev/null || true
+          }
+          trap cleanup EXIT
+          start_target() {
+            docker run -d --name editorial-target --network editorial-ci \
+              --memory 256m --pids-limit 128 \
+              -e EDITORIAL_REQUIRE_PRIVATE_FLAGS=1 \
+              -e EDITORIAL_STATIC_USER_FLAG="$1" \
+              -e EDITORIAL_STATIC_ROOT_FLAG="$2" editorial:ci
+          }
+          wait_healthy() {
+            for n in $(seq 1 50); do
+              status=$(docker inspect -f '{{.State.Health.Status}}' editorial-target)
+              if [ "$status" = healthy ]; then return 0; fi
+              if [ "$status" = unhealthy ]; then docker logs editorial-target; return 1; fi
+              sleep 2
+            done
+            docker logs editorial-target
+            return 1
+          }
+          start_target 'TTP{ci_user_first_instance}' 'TTP{ci_root_first_instance}'
+          wait_healthy
+          docker run --rm --network editorial-ci editorial-attacker:ci
+          docker exec editorial-target /usr/local/bin/python3 -c \
+            'import git; assert git.__version__ == "3.1.29"'
+          docker exec editorial-target sh -c \
+            'test "$(git -C /home/dev/apps rev-list --count HEAD)" = 2; visudo -cf /etc/sudoers.d/editorial-prod'
+          docker exec editorial-target sh -c \
+            'test "$(cat /home/dev/user.txt)" = "TTP{ci_user_first_instance}"'
+          docker exec editorial-target sh -c \
+            'test "$(cat /root/root.txt)" = "TTP{ci_root_first_instance}"'
+          docker rm -f editorial-target
+          start_target 'TTP{ci_user_new_instance}' 'TTP{ci_root_new_instance}'
+          wait_healthy
+          docker exec editorial-target sh -c \
+            'test "$(cat /home/dev/user.txt)" = "TTP{ci_user_new_instance}"'
+          docker exec editorial-target sh -c \
+            'test "$(cat /root/root.txt)" = "TTP{ci_root_new_instance}"'
+          docker exec editorial-target sh -c \
+            'test -z "$(find /var/www/editorial/uploads -type f -print -quit)"'
+          echo 'PASS: real SSRF, service isolation, vulnerable dependency and fresh-container reset'
