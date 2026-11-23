@@ -16,6 +16,10 @@ RUN set -eux; \
 
 FROM ubuntu:18.04 AS runtime
 ENV DEBIAN_FRONTEND=noninteractive TERM=xterm
+# Bootstrapping TLS trust from the already CA-verified Alpine source stage.
+# Ubuntu 18.04 base images do not carry ca-certificates by default.
+COPY --from=ona-source /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+RUN test -s /etc/ssl/certs/ca-certificates.crt
 RUN sed -ri 's#http://(archive|security)\.ubuntu\.com/ubuntu#https://archive.ubuntu.com/ubuntu#g' /etc/apt/sources.list \
  && grep -Fq 'https://archive.ubuntu.com/ubuntu' /etc/apt/sources.list \
  && apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 update && apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 install -y --no-install-recommends \
