@@ -12,7 +12,7 @@
 
 **同一 SQLi、XSS、SSRF 可以安排任意多台靶机。** 不以“已有 SQLi 4 台”否决新的 SQLi。真正要回答的是：
 
-1. **教什么**：对应哪个 §topic_id§ 和 §skill_id§？玩家做完能独立完成的操作是什么？
+1. **教什么**：对应哪个 `topic_id` 和 `skill_id`？玩家做完能独立完成的操作是什么？
 2. **如何发现**：玩家最先看到什么页面/服务？必须经过哪些侦察与枚举，不能直接在首页标注漏洞位置。
 3. **与已有机器有何区别**：以下至少存在一项**有学习意义、且验收可证明**的差异，而不仅是换 UI/Flag/名字：
    - 输入面：GET / POST / Cookie / JSON / XML / 上传 / HTTP header / WebSocket / API；
@@ -25,7 +25,7 @@
 4. **是否真实**：是否有可信历史 Writeup，是否能固定上游真实受影响版本和漏洞执行路径？
 5. **能否工程化**：Docker Linux 私网可运行、小镜像、健康检查、隔离、实例重置、独立 CI、Worker 兼容。
 
-同一个 §skill_id§ 的第二台机器应具有 §variant_id§ 和上述差异说明；同一技能可以有多个 §variant_id§，绝不设“一个点最多一题”或“每类最多三台”。
+同一个 `skill_id` 的第二台机器应具有 `variant_id` 和上述差异说明；同一技能可以有多个 `variant_id`，绝不设“一个点最多一题”或“每类最多三台”。
 
 ## 2. “专项”与“综合”分别挑选
 
@@ -65,17 +65,17 @@
 
 **硬性否决项**：模拟漏洞处理器替代真漏洞、伪造 Root/Flag 成功、需要主机逃逸、不可靠的依赖或非法素材、唯一攻击链无法在隔离环境复现。硬性否决无论评分多少都不能放行。
 
-### 评审时必须写的 §candidate_review§
+### 评审时必须写的 `candidate_review`
 
-- §source§：HTB/OffSec 原题 URL、Writeup、公开代码 URL；是否原版源码？
-- §upstream§：软件/依赖/协议的具体受影响版本；补丁前后的差异。
-- §route§：侦察 → 漏洞 → 获取能力 → 目标 Flag 的完整玩家路径。
-- §knowledge§：主 §skill_id§、次要 §skill_id§、难度、先修技能。
-- §variant§：和现有机器相比具体新增什么；输入面/反馈/约束/栈至少一项有意义的不同。
-- §container§：真实需要的服务、典型 RAM/镜像目标、端口、capability、禁止 host 权限的实现。
-- §acceptance§：独立容器看到的 HTTP/浏览器/协议证据、真实 UID、Flag 与重置。
-- §risk§：未公开的源代码需要重建哪些可观察行为？哪些细节尚未证实？
-- §decision§：§researching§ → §source_verified§ → §feasible§ → §in_progress§ → §lab_ci_verified§ → §worker_verified§。
+- `source`：HTB/OffSec 原题 URL、Writeup、公开代码 URL；是否原版源码？
+- `upstream`：软件/依赖/协议的具体受影响版本；补丁前后的差异。
+- `route`：侦察 → 漏洞 → 获取能力 → 目标 Flag 的完整玩家路径。
+- `knowledge`：主 `skill_id`、次要 `skill_id`、难度、先修技能。
+- `variant`：和现有机器相比具体新增什么；输入面/反馈/约束/栈至少一项有意义的不同。
+- `container`：真实需要的服务、典型 RAM/镜像目标、端口、capability、禁止 host 权限的实现。
+- `acceptance`：独立容器看到的 HTTP/浏览器/协议证据、真实 UID、Flag 与重置。
+- `risk`：未公开的源代码需要重建哪些可观察行为？哪些细节尚未证实？
+- `decision`：`researching` → `source_verified` → `feasible` → `in_progress` → `lab_ci_verified` → `worker_verified`。
 
 ## 4. 已有公开证据的真实机器候选（不是制作承诺）
 
@@ -83,13 +83,13 @@
 
 | 候选机器（官方/历史资料） | 适合补的知识点变体 | 需要保留的真实链 | 选题备注 |
 | --- | --- | --- | --- |
-| [HTB Headless](https://www.hackthebox.com/machines/headless) | §xss.blind§，管理员浏览器；HTTP User-Agent 输入面 | 支持表单 → Blind XSS → 管理员会话 → 命令注入 | **中高优先**；必须有真实管理员浏览器，不可硬编码 cookie |
-| [HTB Trick](https://www.hackthebox.com/machines/trick) | §file_read.nested-traversal§，§sqli.file-operations§ | DNS/vhost → SQLi/读取配置 → LFI → SSH → fail2ban | **高优先**；多服务内存/时间成本需审查 |
-| [HTB NodeBlog](https://www.hackthebox.com/machines/nodeblog) | §nosql.operator-auth-bypass§，§deserialization.unsafe-parse§ | Express + MongoDB 操作符、真实 XML 解析与 node-serialize | **高优先**；必须使用原始危险依赖及真实 DB |
-| [HTB Precious](https://www.hackthebox.com/machines/precious) | §deserialization.unsafe-parse§，Ruby/YAML | PDFKit 文件转换 → Ruby 凭据 → YAML 反序列化 | **高优先**；保留真实 PDF 转换而非模拟返回 |
-| [HTB Soccer](https://www.hackthebox.com/machines/Soccer) | §websockets.blind-sqli§，§sqli.boolean-blind§ | Tiny File Manager → WS 盲注 → SSH → doas/dstat | **高优先**；不是普通 PHP UNION 的重复 |
-| [HTB Inject](https://www.hackthebox.com/machines/inject) | §file_read.lfi§，Java 组件漏洞 | 上传功能的 LFI → 真实 Spring Cloud Function → SSH/Ansible | Java 内存、漏洞版本与原版环境必须核实 |
-| [HTB Zipping](https://www.hackthebox.com/machines/zipping) | §file_read.path-traversal§，§file_read.file-to-rce§ | ZIP 符号链接文件读取 → SQLi → LFI/执行 | 与普通 PHP 文件上传区别明显 |
+| [HTB Headless](https://www.hackthebox.com/machines/headless) | `xss.blind`，管理员浏览器；HTTP User-Agent 输入面 | 支持表单 → Blind XSS → 管理员会话 → 命令注入 | **中高优先**；必须有真实管理员浏览器，不可硬编码 cookie |
+| [HTB Trick](https://www.hackthebox.com/machines/trick) | `file_read.nested-traversal`，`sqli.file-operations` | DNS/vhost → SQLi/读取配置 → LFI → SSH → fail2ban | **高优先**；多服务内存/时间成本需审查 |
+| [HTB NodeBlog](https://www.hackthebox.com/machines/nodeblog) | `nosql.operator-auth-bypass`，`deserialization.unsafe-parse` | Express + MongoDB 操作符、真实 XML 解析与 node-serialize | **高优先**；必须使用原始危险依赖及真实 DB |
+| [HTB Precious](https://www.hackthebox.com/machines/precious) | `deserialization.unsafe-parse`，Ruby/YAML | PDFKit 文件转换 → Ruby 凭据 → YAML 反序列化 | **高优先**；保留真实 PDF 转换而非模拟返回 |
+| [HTB Soccer](https://www.hackthebox.com/machines/Soccer) | `websockets.blind-sqli`，`sqli.boolean-blind` | Tiny File Manager → WS 盲注 → SSH → doas/dstat | **高优先**；不是普通 PHP UNION 的重复 |
+| [HTB Inject](https://www.hackthebox.com/machines/inject) | `file_read.lfi`，Java 组件漏洞 | 上传功能的 LFI → 真实 Spring Cloud Function → SSH/Ansible | Java 内存、漏洞版本与原版环境必须核实 |
+| [HTB Zipping](https://www.hackthebox.com/machines/zipping) | `file_read.path-traversal`，`file_read.file-to-rce` | ZIP 符号链接文件读取 → SQLi → LFI/执行 | 与普通 PHP 文件上传区别明显 |
 | [HTB Codify](https://www.hackthebox.com/machines/codify) | **补充专题** JavaScript vm2 沙箱逃逸 | JS 测试器 → 真实 vm2 → SQLite → Bash | 属于应用沙箱，不是 Docker 容器逃逸；不是 XSS |
 | [HTB Shared](https://www.hackthebox.com/machines/shared) | Cookie 输入面 SQLi | Cookie SQLi → 真实后续服务利用 | 与常规表单 SQLi 场景不同；后续细节待核对 |
 | [HTB Gavel](https://www.hackthebox.com/machines/gavel) | PHP PDO SQLi 与 YAML 解析链 | PDO 错用 → PHP 代码执行 → YAML/后台工作流 | 中高级候选，重点审查版本与 Worker 隔离 |
@@ -100,7 +100,7 @@
 
 1. 先检查 [细分知识目录](../catalog/web-competencies.json) 中尚无独立测试的目标，并确定场景变体；**优先补薄弱基础，但不限制重复数量**。
 2. 对比上表的公开候选，选择最容易核实真实技术、侦察真实且 Docker 可行的一台；必要时对同一知识点选多台不同复杂度。
-3. 只为选中的机器创建开发 PR；更新 [主清单](../catalog/web-curriculum.json) 的 §backlog§，在 PR 中放入 §candidate_review§。
+3. 只为选中的机器创建开发 PR；更新 [主清单](../catalog/web-curriculum.json) 的 `backlog`，在 PR 中放入 `candidate_review`。
 4. 先通过靶机专属的外部入口 → 利用 → 目标 Flag/权限 CI；记录运行镜像字节数、内存、隔离和重置。
 5. 再单独通过正式 Worker 的网络、权限、动态 Flag 判题与多用户资源验收。两个层次不混淆。
 
