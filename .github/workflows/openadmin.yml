@@ -88,12 +88,15 @@ jobs:
                 -i /tmp/joanna_id_rsa -o StrictHostKeyChecking=no \
                 -o UserKnownHostsFile=/dev/null joanna@openadmin-target "id -un; cat /home/joanna/user.txt" \
                 | grep -E "^(joanna|TTP\\{openadmin_ci_private_user_0123456789\\})$"
-              expect /tests/nano-root.exp
-              sshpass -P "Enter passphrase for key" -p bloodninjas ssh \
+              # Nano 2.9 closes the SSH channel immediately after exiting.
+              # A nonzero Expect EOF is acceptable ONLY if independent root proofs both validate.
+              expect /tests/nano-root.exp || echo "Nano Expect ended after SSH close; checking both root proofs"
+              root_proof=$(sshpass -P "Enter passphrase for key" -p bloodninjas ssh \
                 -i /tmp/joanna_id_rsa -o StrictHostKeyChecking=no \
                 -o UserKnownHostsFile=/dev/null joanna@openadmin-target \
-                "cat /tmp/openadmin-root-proof; cat /tmp/openadmin-root-flag-proof" \
-                | grep -E "uid=0\\(root\\)|TTP\\{openadmin_ci_private_root_0123456789\\}"
+                "cat /tmp/openadmin-root-proof; cat /tmp/openadmin-root-flag-proof")
+              printf "%s\n" "$root_proof" | grep -F "uid=0(root)"
+              printf "%s\n" "$root_proof" | grep -Fx "TTP{openadmin_ci_private_root_0123456789}"
             '
           docker exec "$target" sh -c \
             'test "$(cat /home/joanna/user.txt)" = "TTP{openadmin_ci_private_user_0123456789}"; test "$(cat /root/root.txt)" = "TTP{openadmin_ci_private_root_0123456789}"'
