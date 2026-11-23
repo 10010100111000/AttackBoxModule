@@ -95,7 +95,7 @@ jobs:
             docker run -d --name django-target --network django-chain-ci --network-alias target \
               --memory 512m --cpus 1 --pids-limit 256 \
               -e DJANGO_EDITOR_PASSWORD="private-editor-password-ci-123!" \
-              -e DJANGO_XSS_FLAG="TTP{real_django_xss_${{ matrix.mode }}_flag}" django-target:test
+              -e DJANGO_XSS_FLAG="$1" django-target:test
             for i in $(seq 1 90); do
               state=$(docker inspect -f '{{.State.Status}}' django-target)
               if [ "$state" != running ]; then docker logs django-target; return 1; fi
@@ -106,16 +106,16 @@ jobs:
             docker logs django-target
             return 1
           }
-          start_target
+          start_target "TTP{real_django_xss_${{ matrix.mode }}_first}"
           docker run --rm --network django-chain-ci --network-alias a \
             -e TEST_MODE=${{ matrix.mode }} \
-            -e EXPECTED_FLAG="TTP{real_django_xss_${{ matrix.mode }}_flag}" django-attacker:test
+            -e EXPECTED_FLAG="TTP{real_django_xss_${{ matrix.mode }}_first}" django-attacker:test
           docker stats --no-stream --format 'Target memory: {{.MemUsage}}; PIDs: {{.PIDs}}' django-target
           docker rm -f django-target
-          start_target
+          start_target "TTP{real_django_xss_${{ matrix.mode }}_second}"
           docker run --rm --network django-chain-ci --network-alias a \
             -e TEST_MODE=${{ matrix.mode }} \
-            -e EXPECTED_FLAG="TTP{real_django_xss_${{ matrix.mode }}_flag}" django-attacker:test
+            -e EXPECTED_FLAG="TTP{real_django_xss_${{ matrix.mode }}_second}" django-attacker:test
           echo 'PASS: rebuilt instance reproduces expected vulnerable/patched behavior'
   validate:
     runs-on: ubuntu-latest
