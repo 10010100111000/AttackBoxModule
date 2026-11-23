@@ -24,9 +24,9 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 BASE_URL = "http://127.0.0.1:8080"
 QUEUE = Path("/run/wcms/reports")
-PROFILE_ROOT = Path("/run/wcms/profiles")
+PROFILE_ROOT = Path("/run/wcms/bot-state/profiles")
 CONFIG = Path("/run/wcms/bot-config.json")
-READY = Path("/run/wcms/bot.ready")
+READY = Path("/run/wcms/bot-state/bot.ready")
 POLL_SECONDS = 2.0
 VISIT_SECONDS = 4.0
 
