@@ -19,11 +19,11 @@ RUN set -eux; \
     addgroup -S wcmsbot; \
     adduser -S -D -h /home/wcmsbot -G wcmsbot wcmsbot; \
     addgroup www-data wcmsbot; \
-    mkdir -p /home/wcmsbot /run/wcms/reports /run/wcms/profiles /opt/wcms-bot; \
-    chown -R wcmsbot:wcmsbot /home/wcmsbot /run/wcms/profiles; \
+    mkdir -p /home/wcmsbot /run/wcms/reports /run/wcms/bot-state/profiles /opt/wcms-bot; \
+    chown -R wcmsbot:wcmsbot /home/wcmsbot /run/wcms/bot-state; \
     chown www-data:wcmsbot /run/wcms/reports; \
     chmod 2770 /run/wcms/reports; \
-    chmod 0700 /run/wcms/profiles
+    chmod 0700 /run/wcms/bot-state /run/wcms/bot-state/profiles
 ENV PYTHONPATH=/opt/wcms-bot-deps HOME=/home/wcmsbot
 WORKDIR /srv/wcms
 COPY --from=upstream /src/index.php /srv/wcms/index.php
