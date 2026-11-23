@@ -1,26 +1,16 @@
-WonderCMS 3.4.2 is still a browser-confirmed XSS proof, not a
-standalone learner-to-Flag challenge. DO NOT PUBLISH.
+WonderCMS 3.4.2 now includes its own target-local administrator review bot.
+Worker is only the scheduler and is not expected to implement browser or Flag logic.
 
-Completed:
-- Upstream 3.4.2 reflected XSS executes real JavaScript in Chromium.
-- Native administrator session can access the challenge Flag, visitor cannot.
-- Fresh-container Flag and session reset has been smoke-tested.
+Do not publish until:
+1. Full black-box CI proves an ordinary attacker submits a URL through contact.php.
+2. The bot in the target image logs into the real WonderCMS 3.4.2 admin session,
+   visits that URL in sandboxed Chromium, and the reflected XSS retrieves the
+   admin-only per-instance Flag to the attacker's private listener.
+3. A fresh target instance uses a different Flag and admin password and the
+   previous queue/profile/session are gone.
+4. A smoke test on the actual Worker target network proves the target bot can
+   reach only the same user's AttackBox callback path and runs within the
+   configured target resource budget.
 
-Outstanding CHALLENGE DESIGN (not Worker functionality):
-1. Design a complete player-accessible path through the REAL XSS to a Flag.
-   The current test logs in as CMS administrator first; regular students do
-   not possess this session.
-2. If this particular admin-context XSS is retained, the target challenge
-   must supply its OWN victim/browser visit workflow and direct Flag reward.
-   Worker must not implement a generic admin bot.
-   OR choose a different authentically vulnerable public XSS application
-   for the basic, direct-Flag exercise.
-3. Independently test the actual ordinary-student path; do not simply expose
-   the admin-only /review-proof.php route to anonymous visitors.
-4. Web backend holds and checks the answer through attemptChallenge().
-   Worker only schedules, isolates, starts and stops the container and may
-   transparently forward deployment variables. It DOES NOT judge Flags.
-5. Independently validate target isolation, restart and source integrity.
-
-The release marker remains because the LAB's player path is incomplete,
-NOT because Worker lacks Flag handling or browser-review functionality.
+No Worker-side bot, browser orchestration, Flag handling or Flag judging is
+required. The Web backend checks the Flag submitted by the learner.
