@@ -6,7 +6,7 @@ on:
     paths:
       - "catalog/web-competencies.json"
       - "catalog/web-curriculum.json"
-      - "docs/WEB_*.md"
+      - "docs/LAB_DESIGN.md"
       - "README.md"
       - "scripts/validate_web_curriculum.py"
       - ".github/workflows/web-curriculum.yml"
@@ -15,7 +15,7 @@ on:
     paths:
       - "catalog/web-competencies.json"
       - "catalog/web-curriculum.json"
-      - "docs/WEB_*.md"
+      - "docs/LAB_DESIGN.md"
       - "README.md"
       - "scripts/validate_web_curriculum.py"
       - ".github/workflows/web-curriculum.yml"
