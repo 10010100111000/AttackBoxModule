@@ -20,6 +20,8 @@ if [ -n "$root_flag" ]; then
   chmod 0600 /root/root.txt
 fi
 unset private user_flag root_flag OPENADMIN_REQUIRE_PRIVATE_FLAGS OPENADMIN_STATIC_USER_FLAG OPENADMIN_STATIC_ROOT_FLAG
+# The restrictive umask above protects flags; services need their normal umask.
+umask 022
 mkdir -p /run/sshd /var/run/mysqld
 chown mysql:mysql /var/run/mysqld
 ssh-keygen -A >/dev/null 2>&1
