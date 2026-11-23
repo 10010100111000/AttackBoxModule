@@ -1,10 +1,26 @@
-WonderCMS XSS (CVE-2023-41425) is an authenticated-browser security lab.
-Publishing is blocked until all of the following are accepted:
-1. Genuine original upstream 3.4.2 XSS browser execution validated.
-2. Browser under the legitimate administrator session obtains per-instance
-   admin-only challenge objective through the original injection context.
-3. The Worker provides an independently isolated administrator URL-review bot
-   so a learner can trigger the challenge without knowing the admin password.
-4. Worker verifies private flag lifecycle, network isolation, no unwanted
-   internal network access, concurrent resource limits, and session reset.
-The browser CI runner is TEST INFRASTRUCTURE, not part of the small runtime image.
+WonderCMS 3.4.2 is still a browser-confirmed XSS proof, not a
+standalone learner-to-Flag challenge. DO NOT PUBLISH.
+
+Completed:
+- Upstream 3.4.2 reflected XSS executes real JavaScript in Chromium.
+- Native administrator session can access the challenge Flag, visitor cannot.
+- Fresh-container Flag and session reset has been smoke-tested.
+
+Outstanding CHALLENGE DESIGN (not Worker functionality):
+1. Design a complete player-accessible path through the REAL XSS to a Flag.
+   The current test logs in as CMS administrator first; regular students do
+   not possess this session.
+2. If this particular admin-context XSS is retained, the target challenge
+   must supply its OWN victim/browser visit workflow and direct Flag reward.
+   Worker must not implement a generic admin bot.
+   OR choose a different authentically vulnerable public XSS application
+   for the basic, direct-Flag exercise.
+3. Independently test the actual ordinary-student path; do not simply expose
+   the admin-only /review-proof.php route to anonymous visitors.
+4. Web backend holds and checks the answer through attemptChallenge().
+   Worker only schedules, isolates, starts and stops the container and may
+   transparently forward deployment variables. It DOES NOT judge Flags.
+5. Independently validate target isolation, restart and source integrity.
+
+The release marker remains because the LAB's player path is incomplete,
+NOT because Worker lacks Flag handling or browser-review functionality.
