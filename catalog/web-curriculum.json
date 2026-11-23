@@ -957,16 +957,16 @@
       "worker_status": "not_verified",
       "release_status": "blocked_by_marker",
       "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45203163868",
-      "note": "原版 WonderCMS 3.4.2 反射型 XSS 已在管理员 Chromium 中验证；CI 事先登录管理员，尚未实现普通玩家获得单 Flag 的真实闭环。这是靶机玩法缺口，不是 Worker Bot/Flag 功能缺口；Web 后端判题，Worker 只调度。",
+      "note": "WonderCMS 3.4.2 原版反射型属性 XSS；靶机镜像内置独立 wcmsbot 用户与 Chromium，巡查 Contact 表单提交的 URL。CI 正在验证普通玩家提交→管理员 Bot 访问→XSS 读取 Flag→AttackBox 回连。Worker 只启动单一镜像，不负责 Bot/Flag。",
       "variant_profile": {
-        "technology": "WonderCMS 3.4.2, PHP 8.2 Alpine, JSON datastore",
-        "initial_discovery": "自然 CMS 页面、管理员登录与原版页面/表单上下文",
-        "key_constraint_or_mechanism": "真实原版 WonderCMS 管理端 HTML form action 属性上下文反射型 XSS",
-        "attack_path": "普通站点侦察 → 真实 WonderCMS 管理端属性 XSS（管理员 CI 已验证）→ 普通玩家到 Flag 的路径仍待设计与验收；不可冒充完成",
-        "incremental_learning_value": "较现有 Cursed Stale Policy 增加轻量真实 CMS 与管理员点击/HTML 属性边界场景",
-        "confidence": "original_upstream_342_and_browser_marker_ci_verified"
+        "technology": "WonderCMS 3.4.2, PHP 8.2 Alpine, JSON datastore, in-container Python/Chromium admin review bot",
+        "initial_discovery": "正常出版网站 → Contact 表单 Website 字段 → 站点技术识别",
+        "key_constraint_or_mechanism": "CVE-2023-41425 原版 loginURL 表单 action 属性反射型 XSS，需要管理员真实浏览器访问",
+        "attack_path": "侦察 → 提交带 XSS 的 Website URL → 同一靶机容器内 admin bot 登录并巡查 → XSS 读取管理员 Flag → 回连玩家私网监听",
+        "incremental_learning_value": "真实反射型 XSS + 管理员受害者浏览器 + 私网数据外带；不同于单人浏览器 alert 练习",
+        "confidence": "upstream_source_confirmed; target-local bot implementation committed; black-box CI pending"
       },
-      "skill_mapping_stage": "chromium_admin_browser_executed; player_flag_path_unverified"
+      "skill_mapping_stage": "bot_based_admin_context_xss_ci_pending"
     }
   ],
   "backlog": [
@@ -1160,7 +1160,7 @@
       "candidate_status": "research_required",
       "scope": "repeatable_skill_variant_requirement",
       "one_to_many_allowed": true,
-      "scenario_variant_focus": "WonderCMS 真实属性反射型 XSS 已由管理员浏览器验证，但玩家并未拥有管理员会话；若做直接返 Flag 的基础 XSS，应优先另选公开可触发的真实漏洞，不能直接暴露 admin Flag",
+      "scenario_variant_focus": "反射型 XSS + 联系表单提交 + Docker 内管理员 Chromium 巡查 + 私网回连取 Flag；不依赖 Worker Bot",
       "candidate_options": [
         "wondercms-xss"
       ],
