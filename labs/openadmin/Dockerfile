@@ -3,7 +3,7 @@
 FROM alpine:3.20 AS ona-source
 RUN apk add --no-cache ca-certificates curl tar
 RUN set -eux; \
-    curl -fL --retry 4 --connect-timeout 20 \
+    curl -fL --retry 4 --connect-timeout 20 --max-time 120 \
       "https://codeload.github.com/opennetadmin/ona/tar.gz/refs/tags/v18.1.1" \
       -o /tmp/ona.tar.gz; \
     mkdir -p /tmp/src /opt/ona; \
@@ -16,7 +16,7 @@ RUN set -eux; \
 
 FROM ubuntu:18.04 AS runtime
 ENV DEBIAN_FRONTEND=noninteractive TERM=xterm
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 update && apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 install -y --no-install-recommends \
       apache2 mysql-server \
       php7.2 php7.2-cli libapache2-mod-php7.2 php7.2-mysql php7.2-gmp \
       php7.2-xml php7.2-mbstring php7.2-gd php7.2-curl php7.2-zip \
@@ -57,8 +57,8 @@ RUN set -eux; \
     printf '%s\n' 'Listen 127.0.0.1:52846' >> /etc/apache2/ports.conf; \
     a2enmod rewrite; a2enconf ona; a2ensite internal; \
     php -r 'if (hash("sha512", "Revealed") !== "00e302ccdcf1c60b8ad50ea50cf72b939705f49f40f0dc658801b4680b7d758eebdc2e9f9ba8ba3ef8a8bb9a796d34ba2e856838ee9bdde852b8ec3b3a0523b1") exit(1);'; \
-    service mysql start; \
-    printf '\n\n\n\n\nn1nj4W4rri0R!\n\ndefault\nopenadmin.htb\n' | php /opt/ona/install/installcli.php >/tmp/ona-install.log 2>&1; \
+    timeout 90s service mysql start; \
+    printf '\n\n\n\n\nn1nj4W4rri0R!\n\ndefault\nopenadmin.htb\n' | timeout 120s php /opt/ona/install/installcli.php >/tmp/ona-install.log 2>&1; \
     test -s /opt/ona/www/local/config/database_settings.inc.php; \
     grep -Fq "n1nj4W4rri0R!" /opt/ona/www/local/config/database_settings.inc.php; \
     test -s /tmp/ona-install.log; \

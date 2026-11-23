@@ -22,7 +22,7 @@ concurrency:
 jobs:
   openadmin:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - name: Build authentic OpenNetAdmin 18.1.1 and MySQL runtime
