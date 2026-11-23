@@ -13,6 +13,7 @@ chmod 2770 /run/django/reports
 chown -R reviewbot:reviewbot /run/django/bot-state
 chmod 0700 /run/django/bot-state/profiles
 python /usr/local/bin/seed-lab.py
+unset DJANGO_EDITOR_PASSWORD DJANGO_XSS_FLAG
 python /app/app.py migrate --noinput
 # Do not use public/host network. Worker maps this service only into the lab network.
 su-exec reviewbot python /opt/review/bot.py &
