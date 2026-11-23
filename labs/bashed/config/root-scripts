@@ -1,0 +1,1 @@
+* * * * * root /usr/bin/date -Is >> /tmp/bashed-cron-runs; cd /scripts; for f in *.py; do /usr/bin/python3 "$f"; done
