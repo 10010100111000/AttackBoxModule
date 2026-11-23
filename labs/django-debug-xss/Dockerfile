@@ -2,16 +2,20 @@
 # PostgreSQL must generate the original duplicate-key exception; SQLite does not.
 FROM python:3.9-alpine3.16
 ARG DJANGO_VERSION=1.11.4
-RUN apk add --no-cache postgresql postgresql-client su-exec libpq \
- && pip install --no-cache-dir "Django==${DJANGO_VERSION}" "psycopg2-binary==2.9.9" \
+RUN apk add --no-cache postgresql postgresql-client su-exec libpq chromium-headless-shell \
+ && pip install --no-cache-dir "Django==${DJANGO_VERSION}" "psycopg2-binary==2.9.9" "pyppeteer==2.0.0" \
  && addgroup -S lab && adduser -S -D -G lab lab \
- && mkdir -p /app /run/postgresql /var/lib/postgresql/data \
+ && addgroup -S reviewbot && adduser -S -D -G reviewbot reviewbot \
+ && addgroup lab reviewbot \
+ && mkdir -p /app /run/postgresql /var/lib/postgresql/data /run/django/reports /run/django/bot-state/profiles /opt/review \
  && chown -R postgres:postgres /run/postgresql /var/lib/postgresql \
  && chmod 0700 /var/lib/postgresql/data
 WORKDIR /app
 COPY app.py /app/app.py
 COPY xss /app/xss
 COPY start.sh /usr/local/bin/start-lab
+COPY seed.py /usr/local/bin/seed-lab.py
+COPY bot.py /opt/review/bot.py
 RUN chmod 0755 /usr/local/bin/start-lab \
  && python -m py_compile /app/app.py
 ENV PYTHONUNBUFFERED=1
