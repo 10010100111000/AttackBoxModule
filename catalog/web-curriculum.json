@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "updated_on": "2026-11-23",
   "main_snapshot_commit": "45c2e88165342dca8ce3583c33659651f5c3c7f2",
   "purpose": "trytopwn Web 题库选题、覆盖率与验收状态的唯一结构化索引；每次新增靶机时维护本文件与 docs/WEB_ROADMAP.md",
@@ -198,6 +198,230 @@
         "ssh-tunneling",
         "db-service"
       ]
+    },
+    {
+      "id": "information_disclosure",
+      "title": "Information disclosure",
+      "topics": [
+        "verbose-errors",
+        "backup-files",
+        "config-leak",
+        "source-maps",
+        "api-metadata",
+        "chain-credential"
+      ],
+      "academy_group": "server"
+    },
+    {
+      "id": "api_testing",
+      "title": "API testing",
+      "topics": [
+        "api-recon",
+        "docs-discovery",
+        "hidden-methods",
+        "hidden-parameters",
+        "mass-assignment",
+        "server-parameter-pollution",
+        "api-authz"
+      ],
+      "academy_group": "server"
+    },
+    {
+      "id": "cache_deception",
+      "title": "Web cache deception",
+      "topics": [
+        "path-extension",
+        "delimiter-confusion",
+        "normalization",
+        "sensitive-response",
+        "multi-user"
+      ],
+      "academy_group": "server"
+    },
+    {
+      "id": "csrf",
+      "title": "Cross-site request forgery (CSRF)",
+      "topics": [
+        "no-defenses",
+        "token-method",
+        "token-missing",
+        "token-session",
+        "samesite",
+        "samesite-gadget",
+        "referer",
+        "xss-combination"
+      ],
+      "academy_group": "client"
+    },
+    {
+      "id": "cors",
+      "title": "Cross-origin resource sharing (CORS)",
+      "topics": [
+        "origin-reflection",
+        "null-origin",
+        "trusted-subdomain",
+        "credentialed-cors",
+        "cache-interaction"
+      ],
+      "academy_group": "client"
+    },
+    {
+      "id": "clickjacking",
+      "title": "Clickjacking",
+      "topics": [
+        "unprotected-frame",
+        "ui-redress",
+        "multi-step",
+        "csrf-combination"
+      ],
+      "academy_group": "client"
+    },
+    {
+      "id": "dom_vulnerabilities",
+      "title": "DOM-based vulnerabilities",
+      "topics": [
+        "source-sink",
+        "open-redirect",
+        "message-origin",
+        "storage",
+        "cookie",
+        "dom-clobbering",
+        "websocket-url",
+        "client-template"
+      ],
+      "academy_group": "client"
+    },
+    {
+      "id": "websockets",
+      "title": "WebSockets",
+      "topics": [
+        "ws-recon",
+        "cross-site-hijack",
+        "message-injection",
+        "origin-auth",
+        "blind-sqli"
+      ],
+      "academy_group": "client"
+    },
+    {
+      "id": "web_llm",
+      "title": "Web LLM attacks",
+      "topics": [
+        "prompt-injection",
+        "indirect-prompt",
+        "excessive-agency",
+        "api-tool-abuse",
+        "rag-data-leak",
+        "scanner-secondary"
+      ],
+      "academy_group": "advanced"
+    },
+    {
+      "id": "graphql",
+      "title": "GraphQL API vulnerabilities",
+      "topics": [
+        "introspection",
+        "suggestions",
+        "idor",
+        "alias-batching",
+        "mutation-auth",
+        "resource-exhaustion"
+      ],
+      "academy_group": "advanced"
+    },
+    {
+      "id": "cache_poisoning",
+      "title": "Web cache poisoning",
+      "topics": [
+        "cache-key-recon",
+        "unkeyed-headers",
+        "unkeyed-params",
+        "normalization",
+        "cache-key-confusion",
+        "cross-user-poison"
+      ],
+      "academy_group": "advanced"
+    },
+    {
+      "id": "http_host",
+      "title": "HTTP Host header attacks",
+      "topics": [
+        "host-recon",
+        "password-reset-poisoning",
+        "routing-bypass",
+        "duplicate-host",
+        "cache-interaction"
+      ],
+      "academy_group": "advanced"
+    },
+    {
+      "id": "request_smuggling",
+      "title": "HTTP request smuggling",
+      "topics": [
+        "frontend-backend",
+        "cl-te",
+        "te-cl",
+        "te-obfuscation",
+        "http2-downgrade",
+        "cl0",
+        "response-queue",
+        "request-tunneling",
+        "browser-desync"
+      ],
+      "academy_group": "advanced"
+    },
+    {
+      "id": "oauth",
+      "title": "OAuth authentication",
+      "topics": [
+        "auth-code-flow",
+        "state-csrf",
+        "redirect-uri",
+        "account-linking",
+        "code-token-leak",
+        "openid-connect"
+      ],
+      "academy_group": "advanced"
+    },
+    {
+      "id": "jwt",
+      "title": "JWT attacks",
+      "topics": [
+        "claim-validation",
+        "none-alg",
+        "weak-secret",
+        "algorithm-confusion",
+        "kid-injection",
+        "jwk-jku"
+      ],
+      "academy_group": "advanced"
+    },
+    {
+      "id": "prototype_pollution",
+      "title": "Prototype pollution",
+      "topics": [
+        "prototype-chain",
+        "url-source",
+        "json-source",
+        "client-gadget",
+        "server-side",
+        "constructor-prototype",
+        "sanitizer-bypass"
+      ],
+      "academy_group": "advanced"
+    },
+    {
+      "id": "essential_skills",
+      "title": "Essential skills",
+      "topics": [
+        "proxy-repeater",
+        "http-recon",
+        "encoding",
+        "intruder",
+        "oast-tooling",
+        "methodical-testing"
+      ],
+      "academy_group": "advanced"
     }
   ],
   "machines": [
@@ -219,7 +443,16 @@
       "worker_status": "not_verified",
       "release_status": "not_assessed",
       "evidence": "",
-      "note": "PHP 7.2 strcmp 认证逻辑及上传；缺独立完整验收"
+      "note": "PHP 7.2 strcmp 认证逻辑及上传；缺独立完整验收",
+      "variant_profile": {
+        "technology": "PHP 7.2",
+        "initial_discovery": "登录请求里的 PHP 类型/字符串处理",
+        "key_constraint_or_mechanism": "原生文件上传",
+        "attack_path": "登录→上传",
+        "incremental_learning_value": "相同栈其他例子可比较 JSON/数组输入",
+        "confidence": "from_repository_readme_or_existing_tests"
+      },
+      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review"
     },
     {
       "id": "bashed",
@@ -238,7 +471,16 @@
       "worker_status": "not_verified",
       "release_status": "not_assessed",
       "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45073735584",
-      "note": "原版 phpbash → sudo scriptmanager → root cron；独立 CI"
+      "note": "原版 phpbash → sudo scriptmanager → root cron；独立 CI",
+      "variant_profile": {
+        "technology": "PHP, Apache, cron",
+        "initial_discovery": "通过目录枚举找到真实 phpbash",
+        "key_constraint_or_mechanism": "Web shell",
+        "attack_path": "Web shell→低权限用户→root cron",
+        "incremental_learning_value": "主要训练 Web 暴露入口，而非普通命令注入表单",
+        "confidence": "from_repository_readme_or_existing_tests"
+      },
+      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review"
     },
     {
       "id": "bike",
@@ -256,7 +498,16 @@
       "worker_status": "not_verified",
       "release_status": "not_assessed",
       "evidence": "",
-      "note": "真实 Handlebars 4.1.2，尚缺独立 CI 充分证明"
+      "note": "真实 Handlebars 4.1.2，尚缺独立 CI 充分证明",
+      "variant_profile": {
+        "technology": "Node.js, Handlebars",
+        "initial_discovery": "POST email",
+        "key_constraint_or_mechanism": "模板上下文",
+        "attack_path": "表达式→服务端能力",
+        "incremental_learning_value": "需要补原版 Handlebars 利用的独立验收",
+        "confidence": "from_repository_readme_or_existing_tests"
+      },
+      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review"
     },
     {
       "id": "bountyhunter",
@@ -275,7 +526,16 @@
       "worker_status": "not_verified",
       "release_status": "not_assessed",
       "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45166657846",
-      "note": "真实 SimpleXML/XXE、SSH、Skytrain Python eval；源码重建"
+      "note": "真实 SimpleXML/XXE、SSH、Skytrain Python eval；源码重建",
+      "variant_profile": {
+        "technology": "Apache, PHP SimpleXML",
+        "initial_discovery": "表单的 Base64 XML",
+        "key_constraint_or_mechanism": "真实外部实体",
+        "attack_path": "XML 解析→本地配置→SSH→Python eval",
+        "incremental_learning_value": "与反序列化不同，不以 eval 当反序列化覆盖",
+        "confidence": "from_repository_readme_or_existing_tests"
+      },
+      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review"
     },
     {
       "id": "cap",
@@ -296,7 +556,16 @@
       "worker_status": "not_verified",
       "release_status": "not_assessed",
       "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45073735596",
-      "note": "IDOR → PCAP → FTP/SSH 密码复用 → Python capability Root"
+      "note": "IDOR → PCAP → FTP/SSH 密码复用 → Python capability Root",
+      "variant_profile": {
+        "technology": "Flask, FTP, SSH",
+        "initial_discovery": "数值对象 ID 与 PCAP",
+        "key_constraint_or_mechanism": "越权获取其他人的网络流量",
+        "attack_path": "对象读取→凭据复用→file capability",
+        "incremental_learning_value": "IDOR 对象授权场景",
+        "confidence": "from_repository_readme_or_existing_tests"
+      },
+      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review"
     },
     {
       "id": "cursed-stale-policy",
@@ -315,7 +584,16 @@
       "worker_status": "not_verified",
       "release_status": "not_assessed",
       "evidence": "",
-      "note": "有 CSP/XSS/WebSocket 代码；尚无可确认的浏览器攻击链验收，不能算高级 XSS 已覆盖"
+      "note": "有 CSP/XSS/WebSocket 代码；尚无可确认的浏览器攻击链验收，不能算高级 XSS 已覆盖",
+      "variant_profile": {
+        "technology": "Fastify, Redis, Chromium",
+        "initial_discovery": "浏览器消息、CSP 环境",
+        "key_constraint_or_mechanism": "管理员浏览器 / CSP",
+        "attack_path": "攻击链待实证",
+        "incremental_learning_value": "不将存在 CSP 代码当成功绕过",
+        "confidence": "from_repository_readme_or_existing_tests"
+      },
+      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review"
     },
     {
       "id": "devvortex",
@@ -335,7 +613,16 @@
       "worker_status": "not_verified",
       "release_status": "not_assessed",
       "evidence": "",
-      "note": "Joomla 4.2.6 信息泄露；真实 Apport Root 交互链未通过端到端验收"
+      "note": "Joomla 4.2.6 信息泄露；真实 Apport Root 交互链未通过端到端验收",
+      "variant_profile": {
+        "technology": "Joomla 4.2.6",
+        "initial_discovery": "虚拟主机/公开接口",
+        "key_constraint_or_mechanism": "CVE 信息泄露",
+        "attack_path": "信息泄露→CMS后台→SSH，Apport Root 仍未完整验收",
+        "incremental_learning_value": "旧版本 CMS 真实实现",
+        "confidence": "from_repository_readme_or_existing_tests"
+      },
+      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review"
     },
     {
       "id": "editorial",
@@ -356,7 +643,16 @@
       "worker_status": "not_verified",
       "release_status": "blocked_by_marker",
       "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45180593763",
-      "note": "独立 CI 验证 SSRF → dev/prod SSH → GitPython UID0/Root；Worker 发布仍被 .release-blocked 阻止"
+      "note": "独立 CI 验证 SSRF → dev/prod SSH → GitPython UID0/Root；Worker 发布仍被 .release-blocked 阻止",
+      "variant_profile": {
+        "technology": "Flask, Nginx, OpenSSH, GitPython",
+        "initial_discovery": "投稿封面 URL",
+        "key_constraint_or_mechanism": "服务端 HTTP 请求到回环 API",
+        "attack_path": "SSRF→dev→Git历史→prod→GitPython Root",
+        "incremental_learning_value": "与 URL 校验绕过或 Blind SSRF 不同",
+        "confidence": "from_repository_readme_or_existing_tests"
+      },
+      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review"
     },
     {
       "id": "goodgames",
@@ -377,7 +673,16 @@
       "worker_status": "not_verified",
       "release_status": "not_assessed",
       "evidence": "",
-      "note": "登录 SQLi → MD5 凭据 → 存储型 Jinja2 SSTI；刻意只有 User Flag，完整独立验收待补"
+      "note": "登录 SQLi → MD5 凭据 → 存储型 Jinja2 SSTI；刻意只有 User Flag，完整独立验收待补",
+      "variant_profile": {
+        "technology": "Flask, SQLite, Jinja2",
+        "initial_discovery": "登录表单",
+        "key_constraint_or_mechanism": "SQLi 与存储模板上下文",
+        "attack_path": "凭据→后台模板执行（User）",
+        "incremental_learning_value": "不强行增加容器逃逸/root",
+        "confidence": "from_repository_readme_or_existing_tests"
+      },
+      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review"
     },
     {
       "id": "nibbles",
@@ -400,7 +705,16 @@
       "worker_status": "not_verified",
       "release_status": "not_assessed",
       "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/44954697830",
-      "note": "原版 Nibbleblog 4.0.3 插件上传 → sudo Root"
+      "note": "原版 Nibbleblog 4.0.3 插件上传 → sudo Root",
+      "variant_profile": {
+        "technology": "Apache/PHP, Nibbleblog",
+        "initial_discovery": "CMS 插件后台文件上传",
+        "key_constraint_or_mechanism": "真实原版上传文件处理",
+        "attack_path": "插件→User→native sudo Root",
+        "incremental_learning_value": "与 Base 的无限制上传处于不同授权边界",
+        "confidence": "from_repository_readme_or_existing_tests"
+      },
+      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review"
     },
     {
       "id": "openadmin",
@@ -423,7 +737,16 @@
       "worker_status": "not_verified",
       "release_status": "not_assessed",
       "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45166657718",
-      "note": "ONA 18.1.1 xajax RCE → 内网服务 → SSH → nano Root"
+      "note": "ONA 18.1.1 xajax RCE → 内网服务 → SSH → nano Root",
+      "variant_profile": {
+        "technology": "Apache/PHP, ONA",
+        "initial_discovery": "xajax 自然暴露接口",
+        "key_constraint_or_mechanism": "旧版本原生命令执行",
+        "attack_path": "RCE→内网系统→nano Root",
+        "incremental_learning_value": "依赖原始 ONA 受影响版本",
+        "confidence": "from_repository_readme_or_existing_tests"
+      },
+      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review"
     },
     {
       "id": "pebbles",
@@ -446,7 +769,16 @@
       "worker_status": "not_verified",
       "release_status": "not_assessed",
       "evidence": ".github/workflows/pebbles-full.yml",
-      "note": "原版 ZoneMinder SQLi、FILE/UDF、Root；复杂历史栈，注意 CI 与 Worker 各自验收"
+      "note": "原版 ZoneMinder SQLi、FILE/UDF、Root；复杂历史栈，注意 CI 与 Worker 各自验收",
+      "variant_profile": {
+        "technology": "ZoneMinder 1.29, MySQL, Tomcat",
+        "initial_discovery": "目录枚举发现 CMS",
+        "key_constraint_or_mechanism": "真实数据库文件操作",
+        "attack_path": "SQLi→DB文件写入/UDF→Root",
+        "incremental_learning_value": "历史版本栈与普通 UNION 不同",
+        "confidence": "from_repository_readme_or_existing_tests"
+      },
+      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review"
     },
     {
       "id": "photobomb",
@@ -469,7 +801,16 @@
       "worker_status": "not_verified",
       "release_status": "not_assessed",
       "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45073735570",
-      "note": "Sinatra/ImageMagick 命令注入 → sudo PATH 劫持"
+      "note": "Sinatra/ImageMagick 命令注入 → sudo PATH 劫持",
+      "variant_profile": {
+        "technology": "Ruby Sinatra, ImageMagick",
+        "initial_discovery": "图片格式参数",
+        "key_constraint_or_mechanism": "真实命令拼接及执行",
+        "attack_path": "文件转换→shell→sudo PATH Root",
+        "incremental_learning_value": "文件处理输入面的命令注入",
+        "confidence": "from_repository_readme_or_existing_tests"
+      },
+      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review"
     },
     {
       "id": "shocker",
@@ -490,7 +831,16 @@
       "worker_status": "not_verified",
       "release_status": "not_assessed",
       "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/44955028484",
-      "note": "真实 GNU Bash 4.3 Apache CGI Shellshock → sudo Perl Root"
+      "note": "真实 GNU Bash 4.3 Apache CGI Shellshock → sudo Perl Root",
+      "variant_profile": {
+        "technology": "Bash 4.3, Apache CGI",
+        "initial_discovery": "cgi-bin 用户脚本",
+        "key_constraint_or_mechanism": "旧 Bash 环境函数解析",
+        "attack_path": "Shellshock→User→sudo Perl Root",
+        "incremental_learning_value": "与 CGI 之外的命令参数注入不同",
+        "confidence": "from_repository_readme_or_existing_tests"
+      },
+      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review"
     },
     {
       "id": "union",
@@ -515,7 +865,16 @@
       "worker_status": "not_verified",
       "release_status": "not_assessed",
       "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45166660910",
-      "note": "真实 MariaDB UNION 与 LOAD_FILE → iptables / SSH → HTTP 头 sudo UID0；Worker 需专用 NET_ADMIN"
+      "note": "真实 MariaDB UNION 与 LOAD_FILE → iptables / SSH → HTTP 头 sudo UID0；Worker 需专用 NET_ADMIN",
+      "variant_profile": {
+        "technology": "PHP, MariaDB, Nginx, iptables",
+        "initial_discovery": "资格查询、HEADER",
+        "key_constraint_or_mechanism": "UNION/LOAD_FILE与请求头 shell",
+        "attack_path": "数据库→SSH放行→sudo UID0",
+        "incremental_learning_value": "Web/内网边界与特殊 NET_ADMIN 能力",
+        "confidence": "from_repository_readme_or_existing_tests"
+      },
+      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review"
     },
     {
       "id": "validation",
@@ -540,7 +899,16 @@
       "worker_status": "not_verified",
       "release_status": "not_assessed",
       "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45166657712",
-      "note": "真实二阶 SQLi → MariaDB FILE → PHP → Unix su Root"
+      "note": "真实二阶 SQLi → MariaDB FILE → PHP → Unix su Root",
+      "variant_profile": {
+        "technology": "PHP, MariaDB",
+        "initial_discovery": "先提交国家字段、后面 Cookie 引用",
+        "key_constraint_or_mechanism": "真实二阶 SQLi",
+        "attack_path": "持久字段→后续查询→FILE→su Root",
+        "incremental_learning_value": "二阶与普通即时 UNION 的时间/状态不同",
+        "confidence": "from_repository_readme_or_existing_tests"
+      },
+      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review"
     },
     {
       "id": "funnel",
@@ -559,7 +927,16 @@
       "worker_status": "not_verified",
       "release_status": "not_assessed",
       "evidence": "",
-      "note": "FTP/SSH/PostgreSQL 数据库隧道；并非主要 Web 题，单枚数据库 Flag"
+      "note": "FTP/SSH/PostgreSQL 数据库隧道；并非主要 Web 题，单枚数据库 Flag",
+      "variant_profile": {
+        "technology": "vsftpd, OpenSSH, PostgreSQL",
+        "initial_discovery": "FTP 邮件/策略",
+        "key_constraint_or_mechanism": "非 Web 网络服务",
+        "attack_path": "FTP→SSH隧道→数据库",
+        "incremental_learning_value": "不计入 Web 覆盖",
+        "confidence": "from_repository_readme_or_existing_tests"
+      },
+      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review"
     }
   ],
   "backlog": [
@@ -574,7 +951,10 @@
       ],
       "status": "planned",
       "candidate_status": "source_not_selected",
-      "objective": "Web 专项：在真实页面输出上下文中复现反射型 XSS，并证明浏览器实际执行"
+      "objective": "Web 专项：在真实页面输出上下文中复现反射型 XSS，并证明浏览器实际执行",
+      "scope": "repeatable_skill_variant_requirement",
+      "one_to_many_allowed": true,
+      "scenario_variant_focus": "至少 HTML 正文与属性/JavaScript 上下文；后续可分别做多台"
     },
     {
       "id": "file-read-basic",
@@ -587,7 +967,14 @@
       ],
       "status": "planned",
       "candidate_status": "source_not_selected",
-      "objective": "Web 专项：真实下载/附件功能，路径遍历与文件读取；不得硬编码 Flag 返回"
+      "objective": "Web 专项：真实下载/附件功能，路径遍历与文件读取；不得硬编码 Flag 返回",
+      "scope": "repeatable_skill_variant_requirement",
+      "one_to_many_allowed": true,
+      "scenario_variant_focus": "相对路径、嵌套遍历和完整 LFI 可拆成不同难度",
+      "candidate_options": [
+        "trick",
+        "inject"
+      ]
     },
     {
       "id": "nosql-basic",
@@ -600,7 +987,13 @@
       ],
       "status": "planned",
       "candidate_status": "source_not_selected",
-      "objective": "Web 专项：真实 MongoDB/驱动查询，操作符绕过；可参考 NodeBlog 技术栈但须核实细节"
+      "objective": "Web 专项：真实 MongoDB/驱动查询，操作符绕过；可参考 NodeBlog 技术栈但须核实细节",
+      "scope": "repeatable_skill_variant_requirement",
+      "one_to_many_allowed": true,
+      "scenario_variant_focus": "Express/MongoDB 的 JSON 操作符；其他语言/输入结构可继续重复",
+      "candidate_options": [
+        "nodeblog"
+      ]
     },
     {
       "id": "sqli-blind",
@@ -614,7 +1007,10 @@
       ],
       "status": "planned",
       "candidate_status": "source_not_selected",
-      "objective": "真实数据库盲注：独立测试布尔差异、时间差异及数据提取；不再重复 UNION"
+      "objective": "真实数据库盲注：独立测试布尔差异、时间差异及数据提取；不再重复 UNION",
+      "scope": "repeatable_skill_variant_requirement",
+      "one_to_many_allowed": true,
+      "scenario_variant_focus": "布尔和时间盲注分开证明，可按不同数据库/输入面复现多次"
     },
     {
       "id": "xss-stored-admin",
@@ -627,7 +1023,13 @@
       ],
       "status": "planned",
       "candidate_status": "source_not_selected",
-      "objective": "真实持久化输入 + 管理员浏览器访问，验证会话/权限边界而非 alert 字符串"
+      "objective": "真实持久化输入 + 管理员浏览器访问，验证会话/权限边界而非 alert 字符串",
+      "scope": "repeatable_skill_variant_requirement",
+      "one_to_many_allowed": true,
+      "scenario_variant_focus": "真实管理员浏览器访问与权限影响，不能用返回 HTML 文本代替",
+      "candidate_options": [
+        "headless"
+      ]
     },
     {
       "id": "deserialize-component",
@@ -641,7 +1043,14 @@
       ],
       "status": "planned",
       "candidate_status": "source_not_selected",
-      "objective": "使用受影响版本与真实组件，完整反序列化利用链；可对照 NodeBlog/Precious"
+      "objective": "使用受影响版本与真实组件，完整反序列化利用链；可对照 NodeBlog/Precious",
+      "scope": "repeatable_skill_variant_requirement",
+      "one_to_many_allowed": true,
+      "scenario_variant_focus": "PHP/Ruby/Node 不同真实反序列化依赖可有多台",
+      "candidate_options": [
+        "precious",
+        "nodeblog"
+      ]
     },
     {
       "id": "xss-csp-blind",
@@ -655,21 +1064,33 @@
       ],
       "status": "planned",
       "candidate_status": "source_not_selected",
-      "objective": "真实浏览器 Bot、CSP 和跨请求影响；先评估现有 Cursed Stale Policy 是否可升级验收"
+      "objective": "真实浏览器 Bot、CSP 和跨请求影响；先评估现有 Cursed Stale Policy 是否可升级验收",
+      "scope": "repeatable_skill_variant_requirement",
+      "one_to_many_allowed": true,
+      "scenario_variant_focus": "先验证原有 Cursed Stale Policy，再考虑新增不同 CSP 场景",
+      "candidate_options": [
+        "cursed-stale-policy"
+      ]
     },
     {
       "id": "sqli-websocket",
       "priority": 8,
       "difficulty": "advanced",
       "track": "advanced_web",
-      "primary_category": "http_protocol",
+      "primary_category": "websockets",
       "required_skill_coverage": [
-        "http_protocol.websocket-attack",
+        "websockets.blind-sqli",
         "sqli.boolean-blind"
       ],
       "status": "planned",
       "candidate_status": "source_not_selected",
-      "objective": "WebSocket 真实盲注与跨服务枚举；Soccer 仅作为候选，核实原始漏洞与运行条件"
+      "objective": "WebSocket 真实盲注与跨服务枚举；Soccer 仅作为候选，核实原始漏洞与运行条件",
+      "scope": "repeatable_skill_variant_requirement",
+      "one_to_many_allowed": true,
+      "scenario_variant_focus": "真实 WS 通道和盲注反馈，不是 HTTP 表单的同一题换皮",
+      "candidate_options": [
+        "soccer"
+      ]
     },
     {
       "id": "ssrf-restricted",
@@ -684,7 +1105,610 @@
       ],
       "status": "planned",
       "candidate_status": "source_not_selected",
-      "objective": "在真实 URL 检查、重定向或解析器差异下完成 SSRF 内部服务链；不要复制 Editorial 的基本入口"
+      "objective": "在真实 URL 检查、重定向或解析器差异下完成 SSRF 内部服务链；不要复制 Editorial 的基本入口",
+      "scope": "repeatable_skill_variant_requirement",
+      "one_to_many_allowed": true,
+      "scenario_variant_focus": "重定向、URL 解析差异、Blind SSRF 可各自独立成题"
+    },
+    {
+      "id": "xss-reflected-attribute",
+      "priority": 10,
+      "difficulty": "intermediate",
+      "track": "web_focus_or_integrated",
+      "primary_category": "xss",
+      "required_skill_coverage": [
+        "xss.reflected-attribute"
+      ],
+      "status": "planned",
+      "candidate_status": "research_required",
+      "scope": "repeatable_skill_variant_requirement",
+      "one_to_many_allowed": true,
+      "scenario_variant_focus": "属性/事件/引用符上下文；区别于 HTML 正文反射型 XSS",
+      "candidate_options": [],
+      "objective": "属性/事件/引用符上下文；区别于 HTML 正文反射型 XSS"
+    },
+    {
+      "id": "xss-dom-source",
+      "priority": 11,
+      "difficulty": "intermediate",
+      "track": "web_focus_or_integrated",
+      "primary_category": "xss",
+      "required_skill_coverage": [
+        "xss.dom"
+      ],
+      "status": "planned",
+      "candidate_status": "research_required",
+      "scope": "repeatable_skill_variant_requirement",
+      "one_to_many_allowed": true,
+      "scenario_variant_focus": "hash、postMessage、存储数据等 DOM sources/sinks",
+      "candidate_options": [],
+      "objective": "hash、postMessage、存储数据等 DOM sources/sinks"
+    },
+    {
+      "id": "xss-blind-victim",
+      "priority": 12,
+      "difficulty": "advanced",
+      "track": "web_focus_or_integrated",
+      "primary_category": "xss",
+      "required_skill_coverage": [
+        "xss.blind",
+        "xss.cross-user-action"
+      ],
+      "status": "planned",
+      "candidate_status": "research_required",
+      "scope": "repeatable_skill_variant_requirement",
+      "one_to_many_allowed": true,
+      "scenario_variant_focus": "真实管理员浏览器的异步执行与权限变化",
+      "candidate_options": [
+        "headless"
+      ],
+      "objective": "真实管理员浏览器的异步执行与权限变化"
+    },
+    {
+      "id": "sqli-union-alt-stack",
+      "priority": 13,
+      "difficulty": "intermediate",
+      "track": "web_focus_or_integrated",
+      "primary_category": "sqli",
+      "required_skill_coverage": [
+        "sqli.union",
+        "sqli.union-type"
+      ],
+      "status": "planned",
+      "candidate_status": "research_required",
+      "scope": "repeatable_skill_variant_requirement",
+      "one_to_many_allowed": true,
+      "scenario_variant_focus": "同样 UNION 在第二种数据库语法/响应结构下再练习",
+      "candidate_options": [],
+      "objective": "同样 UNION 在第二种数据库语法/响应结构下再练习"
+    },
+    {
+      "id": "sqli-cookie-boolean",
+      "priority": 14,
+      "difficulty": "intermediate",
+      "track": "web_focus_or_integrated",
+      "primary_category": "sqli",
+      "required_skill_coverage": [
+        "sqli.boolean-blind"
+      ],
+      "status": "planned",
+      "candidate_status": "research_required",
+      "scope": "repeatable_skill_variant_requirement",
+      "one_to_many_allowed": true,
+      "scenario_variant_focus": "Cookie 或隐藏 API 入口上的实际布尔盲注",
+      "candidate_options": [
+        "shared",
+        "trick"
+      ],
+      "objective": "Cookie 或隐藏 API 入口上的实际布尔盲注"
+    },
+    {
+      "id": "sqli-time-blind",
+      "priority": 15,
+      "difficulty": "intermediate",
+      "track": "web_focus_or_integrated",
+      "primary_category": "sqli",
+      "required_skill_coverage": [
+        "sqli.time-blind"
+      ],
+      "status": "planned",
+      "candidate_status": "research_required",
+      "scope": "repeatable_skill_variant_requirement",
+      "one_to_many_allowed": true,
+      "scenario_variant_focus": "独立计时观测、延时噪声、真实 DB 提取",
+      "candidate_options": [],
+      "objective": "独立计时观测、延时噪声、真实 DB 提取"
+    },
+    {
+      "id": "sqli-oast",
+      "priority": 16,
+      "difficulty": "advanced",
+      "track": "web_focus_or_integrated",
+      "primary_category": "sqli",
+      "required_skill_coverage": [
+        "sqli.oast"
+      ],
+      "status": "planned",
+      "candidate_status": "research_required",
+      "scope": "repeatable_skill_variant_requirement",
+      "one_to_many_allowed": true,
+      "scenario_variant_focus": "受限网络内的独立 OAST 证明",
+      "candidate_options": [],
+      "objective": "受限网络内的独立 OAST 证明"
+    },
+    {
+      "id": "csrf-token-validation",
+      "priority": 17,
+      "difficulty": "intermediate",
+      "track": "web_focus_or_integrated",
+      "primary_category": "csrf",
+      "required_skill_coverage": [
+        "csrf.token-session"
+      ],
+      "status": "planned",
+      "candidate_status": "research_required",
+      "scope": "repeatable_skill_variant_requirement",
+      "one_to_many_allowed": true,
+      "scenario_variant_focus": "令牌与会话绑定缺陷，真实受害浏览器操作",
+      "candidate_options": [],
+      "objective": "令牌与会话绑定缺陷，真实受害浏览器操作"
+    },
+    {
+      "id": "cors-credentialed",
+      "priority": 18,
+      "difficulty": "intermediate",
+      "track": "web_focus_or_integrated",
+      "primary_category": "cors",
+      "required_skill_coverage": [
+        "cors.credentialed-cors"
+      ],
+      "status": "planned",
+      "candidate_status": "research_required",
+      "scope": "repeatable_skill_variant_requirement",
+      "one_to_many_allowed": true,
+      "scenario_variant_focus": "凭据跨域读取与 Origin 校验",
+      "candidate_options": [],
+      "objective": "凭据跨域读取与 Origin 校验"
+    },
+    {
+      "id": "jwt-algorithm",
+      "priority": 19,
+      "difficulty": "advanced",
+      "track": "web_focus_or_integrated",
+      "primary_category": "jwt",
+      "required_skill_coverage": [
+        "jwt.algorithm-confusion"
+      ],
+      "status": "planned",
+      "candidate_status": "research_required",
+      "scope": "repeatable_skill_variant_requirement",
+      "one_to_many_allowed": true,
+      "scenario_variant_focus": "真实 JWT 验签库与算法混淆",
+      "candidate_options": [],
+      "objective": "真实 JWT 验签库与算法混淆"
+    },
+    {
+      "id": "auth-reset",
+      "priority": 20,
+      "difficulty": "intermediate",
+      "track": "web_focus_or_integrated",
+      "primary_category": "auth_session",
+      "required_skill_coverage": [
+        "auth_session.password-reset"
+      ],
+      "status": "planned",
+      "candidate_status": "research_required",
+      "scope": "repeatable_skill_variant_requirement",
+      "one_to_many_allowed": true,
+      "scenario_variant_focus": "密码重置流程与令牌有效期/关联",
+      "candidate_options": [],
+      "objective": "密码重置流程与令牌有效期/关联"
+    },
+    {
+      "id": "api-mass-assignment",
+      "priority": 21,
+      "difficulty": "intermediate",
+      "track": "web_focus_or_integrated",
+      "primary_category": "api_testing",
+      "required_skill_coverage": [
+        "api_testing.mass-assignment"
+      ],
+      "status": "planned",
+      "candidate_status": "research_required",
+      "scope": "repeatable_skill_variant_requirement",
+      "one_to_many_allowed": true,
+      "scenario_variant_focus": "真实 REST API 不应可写的敏感字段",
+      "candidate_options": [],
+      "objective": "真实 REST API 不应可写的敏感字段"
+    },
+    {
+      "id": "graphql-authz",
+      "priority": 22,
+      "difficulty": "intermediate",
+      "track": "web_focus_or_integrated",
+      "primary_category": "graphql",
+      "required_skill_coverage": [
+        "graphql.idor"
+      ],
+      "status": "planned",
+      "candidate_status": "research_required",
+      "scope": "repeatable_skill_variant_requirement",
+      "one_to_many_allowed": true,
+      "scenario_variant_focus": "真实 Resolver 对对象和角色的校验",
+      "candidate_options": [],
+      "objective": "真实 Resolver 对对象和角色的校验"
+    },
+    {
+      "id": "web-cache-poisoning",
+      "priority": 23,
+      "difficulty": "advanced",
+      "track": "web_focus_or_integrated",
+      "primary_category": "cache_poisoning",
+      "required_skill_coverage": [
+        "cache_poisoning.unkeyed-headers"
+      ],
+      "status": "planned",
+      "candidate_status": "research_required",
+      "scope": "repeatable_skill_variant_requirement",
+      "one_to_many_allowed": true,
+      "scenario_variant_focus": "独立缓存代理与真实跨用户响应",
+      "candidate_options": [],
+      "objective": "独立缓存代理与真实跨用户响应"
+    },
+    {
+      "id": "web-cache-deception",
+      "priority": 24,
+      "difficulty": "intermediate",
+      "track": "web_focus_or_integrated",
+      "primary_category": "cache_deception",
+      "required_skill_coverage": [
+        "cache_deception.normalization"
+      ],
+      "status": "planned",
+      "candidate_status": "research_required",
+      "scope": "repeatable_skill_variant_requirement",
+      "one_to_many_allowed": true,
+      "scenario_variant_focus": "缓存路径规范化/动态响应泄漏",
+      "candidate_options": [],
+      "objective": "缓存路径规范化/动态响应泄漏"
+    },
+    {
+      "id": "request-smuggling-basic",
+      "priority": 25,
+      "difficulty": "advanced",
+      "track": "web_focus_or_integrated",
+      "primary_category": "request_smuggling",
+      "required_skill_coverage": [
+        "request_smuggling.cl-te"
+      ],
+      "status": "planned",
+      "candidate_status": "research_required",
+      "scope": "repeatable_skill_variant_requirement",
+      "one_to_many_allowed": true,
+      "scenario_variant_focus": "双真实解析器的 CL/TE 歧义，禁用外部攻击网络",
+      "candidate_options": [],
+      "objective": "双真实解析器的 CL/TE 歧义，禁用外部攻击网络"
+    },
+    {
+      "id": "race-state-limit",
+      "priority": 26,
+      "difficulty": "intermediate",
+      "track": "web_focus_or_integrated",
+      "primary_category": "race_conditions",
+      "required_skill_coverage": [
+        "race_conditions.limit-overrun"
+      ],
+      "status": "planned",
+      "candidate_status": "research_required",
+      "scope": "repeatable_skill_variant_requirement",
+      "one_to_many_allowed": true,
+      "scenario_variant_focus": "并发额度/库存限制与对照测试",
+      "candidate_options": [],
+      "objective": "并发额度/库存限制与对照测试"
+    },
+    {
+      "id": "oauth-account-link",
+      "priority": 27,
+      "difficulty": "intermediate",
+      "track": "web_focus_or_integrated",
+      "primary_category": "oauth",
+      "required_skill_coverage": [
+        "oauth.account-linking"
+      ],
+      "status": "planned",
+      "candidate_status": "research_required",
+      "scope": "repeatable_skill_variant_requirement",
+      "one_to_many_allowed": true,
+      "scenario_variant_focus": "真实 OAuth 回调和 state/账户绑定",
+      "candidate_options": [],
+      "objective": "真实 OAuth 回调和 state/账户绑定"
+    },
+    {
+      "id": "prototype-pollution-json",
+      "priority": 28,
+      "difficulty": "intermediate",
+      "track": "web_focus_or_integrated",
+      "primary_category": "prototype_pollution",
+      "required_skill_coverage": [
+        "prototype_pollution.json-source"
+      ],
+      "status": "planned",
+      "candidate_status": "research_required",
+      "scope": "repeatable_skill_variant_requirement",
+      "one_to_many_allowed": true,
+      "scenario_variant_focus": "Node/浏览器对象合并，真实原型链影响",
+      "candidate_options": [],
+      "objective": "Node/浏览器对象合并，真实原型链影响"
+    },
+    {
+      "id": "blind-xxe",
+      "priority": 29,
+      "difficulty": "advanced",
+      "track": "web_focus_or_integrated",
+      "primary_category": "xxe",
+      "required_skill_coverage": [
+        "xxe.blind-oob"
+      ],
+      "status": "planned",
+      "candidate_status": "research_required",
+      "scope": "repeatable_skill_variant_requirement",
+      "one_to_many_allowed": true,
+      "scenario_variant_focus": "独立回调的真实 XML 参数实体链",
+      "candidate_options": [],
+      "objective": "独立回调的真实 XML 参数实体链"
+    },
+    {
+      "id": "file-upload-parser",
+      "priority": 30,
+      "difficulty": "advanced",
+      "track": "web_focus_or_integrated",
+      "primary_category": "file_upload",
+      "required_skill_coverage": [
+        "file_upload.parser-mismatch"
+      ],
+      "status": "planned",
+      "candidate_status": "research_required",
+      "scope": "repeatable_skill_variant_requirement",
+      "one_to_many_allowed": true,
+      "scenario_variant_focus": "真实 Web 服务/解析器文件扩展名边界",
+      "candidate_options": [],
+      "objective": "真实 Web 服务/解析器文件扩展名边界"
+    },
+    {
+      "id": "idor-multi-tenant",
+      "priority": 31,
+      "difficulty": "advanced",
+      "track": "web_focus_or_integrated",
+      "primary_category": "idor",
+      "required_skill_coverage": [
+        "idor.tenant-boundary"
+      ],
+      "status": "planned",
+      "candidate_status": "research_required",
+      "scope": "repeatable_skill_variant_requirement",
+      "one_to_many_allowed": true,
+      "scenario_variant_focus": "多租户真实对象授权边界",
+      "candidate_options": [],
+      "objective": "多租户真实对象授权边界"
+    },
+    {
+      "id": "web-llm-excessive-agency",
+      "priority": 32,
+      "difficulty": "advanced",
+      "track": "web_focus_or_integrated",
+      "primary_category": "web_llm",
+      "required_skill_coverage": [
+        "web_llm.excessive-agency"
+      ],
+      "status": "planned",
+      "candidate_status": "research_required",
+      "scope": "repeatable_skill_variant_requirement",
+      "one_to_many_allowed": true,
+      "scenario_variant_focus": "有权限分离的真实 LLM 工具调用环境",
+      "candidate_options": [],
+      "objective": "有权限分离的真实 LLM 工具调用环境"
+    },
+    {
+      "id": "dom-clobbering",
+      "priority": 33,
+      "difficulty": "advanced",
+      "track": "web_focus_or_integrated",
+      "primary_category": "dom_vulnerabilities",
+      "required_skill_coverage": [
+        "dom_vulnerabilities.dom-clobbering"
+      ],
+      "status": "planned",
+      "candidate_status": "research_required",
+      "scope": "repeatable_skill_variant_requirement",
+      "one_to_many_allowed": true,
+      "scenario_variant_focus": "浏览器 DOM clobbering 与真实 JS sink",
+      "candidate_options": [],
+      "objective": "浏览器 DOM clobbering 与真实 JS sink"
+    }
+  ],
+  "skills_catalog": "catalog/web-competencies.json",
+  "selection_guide": "docs/WEB_MACHINE_SELECTION.md",
+  "backlog_semantics": "滚动知识点需求与场景变体队列；不是最多九台或必须一条队列只制作一台靶机",
+  "learning_policy": {
+    "allow_repeated_topic": true,
+    "allow_repeated_skill": true,
+    "catalogue_granularity": "topic -> skill -> scenario_variant -> lab -> evidence",
+    "meaningful_variant_dimension": [
+      "input_surface",
+      "response_feedback",
+      "technology",
+      "discovery",
+      "constraint",
+      "outcome"
+    ],
+    "repetition_rule": "重复同一知识点的机器可以同时保留，必须明确至少一个有实质教学增量的场景差异，不因数量重复直接排除",
+    "difficulty_rule": "初级/中级/高级按完整玩家发现与利用路径评级，不照搬上游机器评级；单项技术在不同限制下可跨三级",
+    "coverage_rule": "legacy validated_skills 仅关联历史靶机与 CI；细分技能独立验收后才可计入细颗粒度 verified_scenario",
+    "release_rule": "靶机源码已合并 != 靶机完整攻击链CI通过 != Worker批准发布；区分三类状态",
+    "no_fixed_quota": true
+  },
+  "academy_index": {
+    "source": "https://portswigger.net/web-security/all-topics",
+    "official_topics": 31,
+    "learning_objectives": 219,
+    "groups": {
+      "server": 14,
+      "client": 6,
+      "advanced": 11
+    },
+    "topic_ids": [
+      "sqli",
+      "auth_session",
+      "file_read",
+      "command_injection",
+      "business_logic",
+      "information_disclosure",
+      "idor",
+      "file_upload",
+      "race_conditions",
+      "ssrf",
+      "xxe",
+      "nosql",
+      "api_testing",
+      "cache_deception",
+      "xss",
+      "csrf",
+      "cors",
+      "clickjacking",
+      "dom_vulnerabilities",
+      "websockets",
+      "deserialization",
+      "web_llm",
+      "graphql",
+      "ssti",
+      "cache_poisoning",
+      "http_host",
+      "request_smuggling",
+      "oauth",
+      "jwt",
+      "prototype_pollution",
+      "essential_skills"
+    ],
+    "detailed_file": "catalog/web-competencies.json"
+  },
+  "candidate_shortlist": [
+    {
+      "id": "headless",
+      "platform": "HTB",
+      "url": "https://www.hackthebox.com/machines/headless",
+      "skills": [
+        "xss.blind",
+        "command_injection.basic-rce"
+      ],
+      "signature": "User-Agent blind XSS -> admin browser/session -> OS command injection",
+      "source_status": "official_synopsis_verified",
+      "review_status": "research_required"
+    },
+    {
+      "id": "trick",
+      "platform": "HTB",
+      "url": "https://www.hackthebox.com/machines/trick",
+      "skills": [
+        "file_read.nested-traversal",
+        "sqli.file-operations"
+      ],
+      "signature": "DNS/vhost -> SQLi FILE -> LFI -> SSH -> fail2ban",
+      "source_status": "public_writeup_observed",
+      "review_status": "research_required"
+    },
+    {
+      "id": "nodeblog",
+      "platform": "HTB",
+      "url": "https://www.hackthebox.com/machines/nodeblog",
+      "skills": [
+        "nosql.operator-auth-bypass",
+        "deserialization.unsafe-parse"
+      ],
+      "signature": "Express/MongoDB JSON operator -> XML/source -> node-serialize",
+      "source_status": "official_machine_plus_public_writeup",
+      "review_status": "research_required"
+    },
+    {
+      "id": "precious",
+      "platform": "HTB",
+      "url": "https://www.hackthebox.com/machines/precious",
+      "skills": [
+        "deserialization.dependency-gadget",
+        "command_injection.basic-rce"
+      ],
+      "signature": "genuine Ruby PDFKit -> Ruby YAML deserialization",
+      "source_status": "official_synopsis_verified",
+      "review_status": "research_required"
+    },
+    {
+      "id": "soccer",
+      "platform": "HTB",
+      "url": "https://www.hackthebox.com/machines/Soccer",
+      "skills": [
+        "websockets.blind-sqli",
+        "sqli.boolean-blind"
+      ],
+      "signature": "Tiny File Manager -> WebSocket blind SQLi -> SSH -> doas/dstat",
+      "source_status": "official_synopsis_verified",
+      "review_status": "research_required"
+    },
+    {
+      "id": "inject",
+      "platform": "HTB",
+      "url": "https://www.hackthebox.com/machines/inject",
+      "skills": [
+        "file_read.lfi",
+        "cms_vulnerability.versioned-cve"
+      ],
+      "signature": "file upload LFI -> real Spring-Cloud-Function CVE -> privileged Ansible",
+      "source_status": "official_synopsis_verified",
+      "review_status": "research_required"
+    },
+    {
+      "id": "zipping",
+      "platform": "HTB",
+      "url": "https://www.hackthebox.com/machines/zipping",
+      "skills": [
+        "file_read.file-to-rce",
+        "sqli.file-operations"
+      ],
+      "signature": "ZIP symlink read -> SQLi file write -> LFI -> sudo",
+      "source_status": "official_synopsis_verified",
+      "review_status": "research_required"
+    },
+    {
+      "id": "codify",
+      "platform": "HTB",
+      "url": "https://www.hackthebox.com/machines/codify",
+      "skills": [
+        "command_injection.basic-rce"
+      ],
+      "signature": "real vm2 JS application sandbox escape (NOT Docker escape) -> SQLite -> Bash",
+      "source_status": "official_synopsis_verified",
+      "review_status": "research_required"
+    },
+    {
+      "id": "shared",
+      "platform": "HTB",
+      "url": "https://www.hackthebox.com/machines/shared",
+      "skills": [
+        "sqli.auth-bypass"
+      ],
+      "signature": "Cookie SQLi, user pivot through Golang binary",
+      "source_status": "official_synopsis_verified",
+      "review_status": "research_required"
+    },
+    {
+      "id": "gavel",
+      "platform": "HTB",
+      "url": "https://www.hackthebox.com/machines/gavel",
+      "skills": [
+        "sqli.union",
+        "deserialization.unsafe-parse"
+      ],
+      "signature": "PHP PDO SQLi -> command execution -> YAML worker chain",
+      "source_status": "official_synopsis_verified",
+      "review_status": "research_required"
     }
   ]
 }
