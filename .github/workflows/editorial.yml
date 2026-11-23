@@ -57,8 +57,13 @@ jobs:
           docker run --rm --network editorial-ci editorial-attacker:ci
           docker exec editorial-target /usr/local/bin/python3 -c \
             'import git; assert git.__version__ == "3.1.29"'
-          docker exec editorial-target sh -c \
-            'test "$(git -C /home/dev/apps rev-list --count HEAD)" = 2; visudo -cf /etc/sudoers.d/editorial-prod'
+          docker exec -u dev editorial-target sh -c \
+            'set -eu; test "$(git -C /home/dev/apps rev-list --count HEAD)" = 2; git -C /home/dev/apps show HEAD~1:api_notes.py | grep -Fq production_password'
+          docker exec editorial-target visudo -cf /etc/sudoers.d/editorial-prod
+          if docker exec -u dev editorial-target cat /root/root.txt >/dev/null 2>&1; then
+            echo "FAIL: unprivileged user can read root answer" >&2
+            exit 1
+          fi
           docker exec editorial-target sh -c \
             'test "$(cat /home/dev/user.txt)" = "TTP{ci_user_first_instance}"'
           docker exec editorial-target sh -c \
