@@ -13,7 +13,7 @@ from django.conf.urls import url
 from django.http import HttpResponse
 from django.core.management import execute_from_command_line
 
-SECRET_KEY = "local-educational-django-debug-secret"
+SECRET_KEY = pathlib.Path("/run/django/django-secret").read_text(encoding="utf-8").strip()
 DEBUG = True
 ALLOWED_HOSTS = ["*"]
 ROOT_URLCONF = __name__
