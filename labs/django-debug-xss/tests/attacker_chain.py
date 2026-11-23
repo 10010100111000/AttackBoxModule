@@ -64,7 +64,7 @@ while time.monotonic() < deadline and not received:
 
 if MODE == "vulnerable":
     assert received, "no authenticated XSS callback received"
-    assert EXPECTED.strip() in received, ("wrong callback", received)
+    assert EXPECTED.strip() in [item.strip() for item in received], ("wrong callback", received)
     print("PASS: real editor browser XSS fetched protected per-instance Flag and sent callback", flush=True)
 else:
     assert not received, ("patched Django unexpectedly executed XSS", received)
