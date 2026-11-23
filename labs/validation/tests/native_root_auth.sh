@@ -6,7 +6,7 @@ test ! -r /root/root.txt
 test -n "$VALIDATION_CI_ROOT_PASSWORD"
 set +e
 output=$(
-  printf '%s\n' "$VALIDATION_CI_ROOT_PASSWORD" |
+  ( sleep 2; printf '%s\n' "$VALIDATION_CI_ROOT_PASSWORD" ) |
     script -q -e -c 'su -c "id; cat /root/root.txt" root' /dev/null
 )
 result=$?
