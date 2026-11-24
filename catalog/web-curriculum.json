@@ -1068,6 +1068,43 @@
         "confidence": "independent_full_web_chain_ci_verified"
       },
       "skill_mapping_stage": "independent_full_web_chain_ci_verified"
+    },
+    {
+      "id": "zipping",
+      "path": "labs/zipping",
+      "track": "web",
+      "provisional_difficulty": "intermediate",
+      "primary_category": "file_read",
+      "secondary_categories": [
+        "sqli",
+        "file_upload"
+      ],
+      "validated_skills": [
+        "file_read.file-to-rce",
+        "sqli.union",
+        "sqli.filter-bypass",
+        "sqli.file-operations"
+      ],
+      "implemented_skills": [
+        "file_read.file-to-rce",
+        "sqli.union",
+        "sqli.filter-bypass",
+        "sqli.file-operations"
+      ],
+      "lab_ci_status": "full_chain_ci",
+      "worker_status": "not_verified",
+      "release_status": "blocked_by_marker",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45471673982",
+      "note": "HTB Zipping Web-only reconstruction: real PHP ZipArchive and Info-ZIP symlink extraction (different from original 7z), genuine MariaDB UNION/FILE plus PHP LFI. Two isolated fresh HTTP attack chains passed with distinct Web Flags. No SSH, sudo, Linux root or added Capability. Worker integration unverified.",
+      "variant_profile": {
+        "technology": "Debian Bookworm, Apache 2.4, PHP 8.2, Info-ZIP unzip, MariaDB 10.11",
+        "initial_discovery": "Watch shop and job resume ZIP uploader",
+        "key_constraint_or_mechanism": "Real Info-ZIP extracts Unix ZIP symlink (original p7zip differs); PHP regex newline bypass -> real MariaDB FILE INTO OUTFILE -> PHP LFI include",
+        "attack_path": "Recon -> ZIP symlink read source -> newline SQLi -> MariaDB FILE into /dev/shm -> LFI PHP execution -> Web flag",
+        "incremental_learning_value": "Intermediate archive symlink read combined with SQLi and LFI; original Linux privilege escalation intentionally removed",
+        "confidence": "independent_full_web_chain_ci_verified"
+      },
+      "skill_mapping_stage": "independent_full_web_chain_ci_verified"
     }
   ],
   "backlog": [
@@ -1101,16 +1138,18 @@
       "required_skill_coverage": [
         "file_read.path-traversal"
       ],
-      "status": "planned",
-      "candidate_status": "source_not_selected",
+      "status": "in_progress",
+      "candidate_status": "source_verified",
       "objective": "Web 专项：真实下载/附件功能，路径遍历与文件读取；不得硬编码 Flag 返回",
       "scope": "repeatable_skill_variant_requirement",
       "one_to_many_allowed": true,
       "scenario_variant_focus": "相对路径、嵌套遍历和完整 LFI 可拆成不同难度",
       "candidate_options": [
         "trick",
-        "inject"
-      ]
+        "inject",
+        "zipping"
+      ],
+      "note": "Zipping is intermediate ZIP symlink file-read plus SQLi + LFI, not a substitute for a separate basic dot-dot traversal lab"
     },
     {
       "id": "nosql-basic",
@@ -1814,11 +1853,12 @@
       "url": "https://www.hackthebox.com/machines/zipping",
       "skills": [
         "file_read.file-to-rce",
-        "file_read.path-traversal"
+        "sqli.file-operations"
       ],
       "signature": "ZIP symlink file read -> SQLi file write -> LFI; archive symlink is not automatically a server parser-mismatch bug",
-      "source_status": "official_synopsis_verified",
-      "review_status": "research_required"
+      "source_status": "official_synopsis_and_public_writeups_verified",
+      "review_status": "lab_ci_verified",
+      "extractor_variance": "Original HTB p7zip differs from the actual Info-ZIP extractor in reconstruction"
     },
     {
       "id": "codify",
