@@ -7,7 +7,7 @@ banaction = iptables-multiport
 
 [sshd]
 enabled = true
-filter = sshd
+filter = trick-sshd
 port = 22
 logpath = /var/log/messages
 maxretry = 3
