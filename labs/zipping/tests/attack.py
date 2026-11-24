@@ -87,7 +87,7 @@ try:
     }))
 except urllib.error.HTTPError as err:
     ordinary = err.read().decode()
-assert "Classic Leather" not in ordinary, "Obvious injection unexpectedly succeeds"
+assert "TIME IS EVERYTHING." in ordinary and "COLLECTION / WATCHES" not in ordinary, "Obvious injection unexpectedly succeeds"
 
 print("[7/10] Real multiline regex bypass with UNION query")
 injection = "\n100' UNION SELECT 1,0x5a495050494e475f554e494f4e,3,4,5,6,7,8-- -1"
