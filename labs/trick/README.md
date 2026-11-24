@@ -58,7 +58,7 @@ Do not publish the container ports to the public Internet. The platform's privat
 
 ## Flag and reset contract
 
-The Worker passes TRICK_STATIC_USER_FLAG and TRICK_STATIC_ROOT_FLAG as opaque per-instance values. The target writes them to:
+The Worker passes TRICK_STATIC_USER_FLAG and TRICK_STATIC_ROOT_FLAG as opaque per-instance values. The target runs with NET_ADMIN explicitly dropped: the tested root-action command copies the protected Flag and does not need to alter firewall rules. The target writes them to:
 
 - /home/michael/user.txt — michael can read the User Flag.
 - /root/root.txt — root-only, mode 0600.
