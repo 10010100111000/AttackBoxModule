@@ -16,3 +16,4 @@ pidof named >/dev/null
 pidof nginx >/dev/null
 pidof php-fpm84 >/dev/null
 pidof sshd >/dev/null
+pidof syslog-ng >/dev/null
