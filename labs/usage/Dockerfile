@@ -2,7 +2,7 @@
 # Real MySQL 8.0, Laravel 10.18.0, encore/laravel-admin 1.8.19, nginx,
 # OpenSSH, Monit and p7zip 16.02. The custom main-site source is reconstructed
 # from public writeups; it is not claimed to be HTB's private source.
-FROM container-registry.oracle.com/os/oraclelinux:9-slim AS app-build
+FROM oraclelinux:9-slim AS app-build
 RUN microdnf module enable -y php:8.1 \
  && microdnf install -y php php-cli php-common php-pdo php-mysqlnd php-mbstring \
       php-xml php-curl php-bcmath php-zip php-gd php-intl php-opcache \
@@ -28,7 +28,7 @@ RUN composer dump-autoload --no-dev --optimize \
  && php -l app/Http/Controllers/UsageController.php \
  && php -l app/Admin/routes.php
 
-FROM container-registry.oracle.com/os/oraclelinux:9-slim AS runtime
+FROM oraclelinux:9-slim AS runtime
 RUN set -eux; \
     curl -fsSL https://repo.mysql.com/RPM-GPG-KEY-mysql-2023 -o /etc/pki/rpm-gpg/RPM-GPG-KEY-mysql; \
     rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-mysql; \
