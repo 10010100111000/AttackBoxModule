@@ -14,6 +14,7 @@ RUN apk add --no-cache \
       openssh-server sudo \
       fail2ban fail2ban-openrc iptables iproute2 \
       shadow openssl curl \
+    && rm -f /etc/nginx/http.d/default.conf \\
     && addgroup -S security \
     && adduser -D -u 1001 -h /home/michael -s /bin/bash michael \
     && addgroup michael security \
