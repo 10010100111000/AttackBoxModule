@@ -1,6 +1,6 @@
 # NodeBlog — Web-only authentic attack-chain reconstruction
 
-**Status:** implementation pending independent full-chain CI. Not an official Hack The Box image. Do not deploy to the public Internet.
+**Status:** independent black-box full Web chain CI **PASS** on two fresh isolated instances; Worker release not yet assessed. Not an official Hack The Box image. Do not deploy to the public Internet.
 
 ## Scope and source fidelity
 
@@ -57,4 +57,8 @@ docker run --rm --network nodeblog-ci \
   -e EXPECTED_USER_FLAG='TTP{example_web_flag}' nodeblog-attacker
 ```
 
-**Acceptance gate:** a successful GitHub Actions run (including reset, resource metrics and no extra capability) is necessary before claiming verified and removing the release block. This README is not evidence of successful execution.
+**Verified independent CI:** [NodeBlog real Web full-chain CI — successful run 45466022851](https://github.com/10010100111000/AttackBoxModule/actions/runs/45466022851). GitHub Actions completed the nine-step HTTP chain twice, against two freshly created target containers with distinct flags. Assertions include native MongoDB operator behavior, XXE disclosure, native `node-serialize` command execution as UID 10001, and reading the Web-only goal Flag; no shortcuts via `docker exec`.
+
+**Measured resources:** target image **165,215,162 bytes** (~157.6 MiB), memory **136.2 MiB** and **135.4 MiB** respectively during the two CI runs, ~65 PIDs. Both instances used `--cap-drop ALL` and `--security-opt no-new-privileges`; no privileged mode, extra Linux capabilities, or volume mounts.
+
+**Release boundary:** successful lab CI confirms a working standalone Web target, **not** a production Worker deployment or flag-judging integration. Keep the explicit release block until the separate platform checks are completed.
