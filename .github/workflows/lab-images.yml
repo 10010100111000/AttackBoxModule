@@ -174,6 +174,12 @@ jobs:
           # Only the explicitly selected lab receives its required capability.
           args=(--network none)
           case "$LAB_SLUG" in
+            trick)
+              args+=(--cap-add NET_ADMIN
+                -e TRICK_STATIC_USER_FLAG="TTP{ci_trick_user_not_production}"
+                -e TRICK_STATIC_ROOT_FLAG="TTP{ci_trick_root_not_production}"
+                -e TRICK_TARGET_IPV4="192.0.2.10")
+              ;;
             union)
               args+=(--cap-add NET_ADMIN
                 -e UNION_REQUIRE_PRIVATE_FLAGS=1

@@ -1,0 +1,1 @@
+michael ALL=(root) NOPASSWD: /etc/init.d/fail2ban restart
