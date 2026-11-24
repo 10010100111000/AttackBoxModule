@@ -1,1 +1,9 @@
-Release blocked only for production integration: source-level black-box CI verifies actual Django 1.11.4 PostgreSQL error-page XSS, authenticated editor browser Flag callback, patched Django 1.11.5 negative control, and per-instance Flag rotation. Before publishing, verify actual Worker resource/network isolation and platform Flag answer validation. Worker must not implement a bot or Flag logic.
+Release remains blocked.
+
+Current policy (2026-11-25): CI only checks build, startup, health and ordinary smoke behavior.
+No automated exploitation, Flag-retrieval or privilege-chain CI is required.
+Historical CI evidence stays in the catalog; it does not become manual acceptance.
+
+当前待验收事项：实际 Worker 的资源、私网隔离和 Web 后端答案校验尚需验收；Bot 与 Flag 逻辑属于靶机/Web，不属于 Worker。
+
+需先补实际人工验收和平台证据，再经明确批准解除限制；不得将脆弱服务暴露到公网。

@@ -1,15 +1,9 @@
-Editorial has passed genuine Web-to-Root lab acceptance on an isolated CI network.
-Evidence: https://github.com/10010100111000/AttackBoxModule/actions/runs/45180129255
+Release remains blocked.
 
-This marker remains ONLY because production Worker deployment has not been accepted.
-Before removing it:
-1. Verify dedicated network isolation between users, targets, platform APIs,
-   and host services under the actual Worker implementation.
-2. Verify per-instance private flag injection, server-side validation and
-   invalidation of previous answers after a reset.
-3. Validate effective resource limits and concurrency on the target Worker,
-   including SSH availability and least-privilege container capabilities.
-4. Confirm all full-chain acceptance tests still pass on the final image
-   candidate and formally review the rollout.
+Current policy (2026-11-25): CI only checks build, startup, health and ordinary smoke behavior.
+No automated exploitation, Flag-retrieval or privilege-chain CI is required.
+Historical CI evidence stays in the catalog; it does not become manual acceptance.
 
-The shared manual GHCR publishing workflow must refuse this lab meanwhile.
+当前待验收事项：实际 Worker 下的用户/平台/宿主网络隔离、有效资源与并发限制、SSH 服务、最小 Capability、实例私密答案注入、Web 校验与重置失效尚需验收。
+
+需先补实际人工验收和平台证据，再经明确批准解除限制；不得将脆弱服务暴露到公网。

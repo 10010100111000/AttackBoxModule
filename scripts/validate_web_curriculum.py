@@ -51,6 +51,14 @@ def main() -> None:
     need(set(catalog["academy_index"]["topic_ids"]) == set(topic_names),
          "catalog Academy topic ID mismatch")
 
+    policy = catalog.get("verification_policy", {})
+    need(policy.get("automation") == "build_startup_health_and_structure_only",
+         "CI policy must stay limited to engineering smoke checks")
+    need(policy.get("automated_exploitation") is False,
+         "automated exploitation is not part of CI acceptance")
+    need(policy.get("full_flow") == "manual_acceptance",
+         "full lab flow needs separately recorded manual acceptance")
+
     category_ids = {x["id"] for x in catalog["categories"]}
     need(set(topic_names) <= category_ids, "missing Academy topic from machine categories")
     machine_ids: set[str] = set()
@@ -58,6 +66,15 @@ def main() -> None:
         name = machine["id"]
         need(name not in machine_ids, f"duplicate machine: {name}")
         machine_ids.add(name)
+        manual = machine.get("manual_validation", {})
+        need(manual.get("status") in {"not_reviewed", "in_progress", "passed", "failed"},
+             f"{name}: invalid manual acceptance status")
+        if manual["status"] == "passed":
+            need(all(manual.get(k) for k in ("commit", "reviewer", "reviewed_at", "scope", "evidence")),
+                 f"{name}: manual pass needs actual acceptance evidence")
+        if manual["status"] == "failed":
+            need(bool(manual.get("failure_reason")),
+                 f"{name}: failed manual acceptance needs a reason")
         need(machine["primary_category"] in category_ids,
              f"{name}: unknown primary category")
         need(all(c in category_ids for c in machine["secondary_categories"]),

@@ -1,1 +1,9 @@
-Production release blocked: independent full-chain CI must pass, then actual Worker private-network, resource, host-isolation and platform static-answer validation must be completed. Do not expose the vulnerable image publicly.
+Release remains blocked.
+
+Current policy (2026-11-25): CI only checks build, startup, health and ordinary smoke behavior.
+No automated exploitation, Flag-retrieval or privilege-chain CI is required.
+Historical CI evidence stays in the catalog; it does not become manual acceptance.
+
+当前待验收事项：实际 Worker 私网、资源与宿主隔离，以及 Web 答案校验尚需验收。
+
+需先补实际人工验收和平台证据，再经明确批准解除限制；不得将脆弱服务暴露到公网。
