@@ -1764,7 +1764,7 @@
       ],
       "signature": "Express/MongoDB JSON operator -> XML/source -> node-serialize",
       "source_status": "official_machine_plus_2022_public_writeups_and_CVE_advisory",
-      "review_status": "implementation_in_pr"
+      "review_status": "in_progress"
     },
     {
       "id": "precious",
