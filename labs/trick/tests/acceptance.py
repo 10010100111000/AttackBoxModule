@@ -127,7 +127,7 @@ def main():
     print(permissions.stdout)
     assert "DIR_WRITABLE" in permissions.stdout, "michael cannot write to the action directory"
     assert "FILE_NOT_WRITABLE" in permissions.stdout, "the existing action file must remain root-owned"
-    assert re.search(r"^\\s*actionban\\s*=", permissions.stdout, re.M), "real actionban directive missing"
+    assert re.search(r"^\s*actionban\s*=", permissions.stdout, re.M), "real actionban directive missing"
     print("PASS: SSH as michael, User Flag, group-writable action directory and narrowly scoped sudo rule")
 
     print("== Real Fail2ban action execution as root ==")
