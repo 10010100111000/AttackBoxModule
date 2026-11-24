@@ -63,10 +63,14 @@ jobs:
             test "$(docker inspect -f '{{.HostConfig.Privileged}}' zipping-target)" = false
             test "$(docker inspect -f '{{len .HostConfig.CapAdd}}' zipping-target)" = 0
             test "$(docker inspect -f '{{len .Mounts}}' zipping-target)" = 0
-            docker run --rm --network zipping-ci \
+            if ! docker run --rm --network zipping-ci \
               -e TARGET_URL=http://zipping-target:8080 \
               -e "EXPECTED_USER_FLAG=$flag" \
-              ttp-zipping-attacker:ci
+              ttp-zipping-attacker:ci; then
+              echo 'Diagnostic only: Apache errors and extracted ZIP entries' >&2
+              docker exec zipping-target sh -c 'tail -n 30 /var/log/apache2/error.log; ls -la /tmp/zipping-* 2>/dev/null || true' || true
+              exit 1
+            fi
             docker stats --no-stream --format 'Target memory: {{.MemUsage}}; PIDs: {{.PIDs}}' zipping-target
             docker rm -f zipping-target
           done
