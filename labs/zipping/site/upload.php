@@ -28,6 +28,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['zip_file'])) {
                 // combined with publishing them to the web-readable directory.
                 exec('7z e -y '.escapeshellarg($zipFile).' -o'.escapeshellarg($tmpDir).' >/dev/null 2>&1', $ignored, $rc);
                 $extracted = $tmpDir.'/'.$fileName;
+                if ($rc !== 0 || !file_exists($extracted)) {
+                    error_log('zipping upload 7z rc='.$rc.' file='.$fileName.' exists='.(file_exists($extracted) ? 'yes' : 'no').' symlink='.(is_link($extracted) ? 'yes' : 'no'));
+                }
                 if ($rc === 0 && file_exists($extracted)) {
                     if (!is_dir($targetDir)) mkdir($targetDir, 0755, true);
                     rename($extracted, $targetDir.'/'.$fileName);
