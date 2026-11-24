@@ -21,7 +21,6 @@ RUN php artisan vendor:publish --provider="Encore\\Admin\\AdminServiceProvider" 
 COPY app/ /var/www/usage/app/
 COPY routes/web.php /var/www/usage/routes/web.php
 COPY resources/views/ /var/www/usage/resources/views/
-COPY config/admin.php /var/www/usage/config/admin.php
 COPY database/seeders/UsageSeeder.php /var/www/usage/database/seeders/UsageSeeder.php
 COPY app/Admin/ /var/www/usage/app/Admin/
 RUN composer dump-autoload --no-dev --optimize \
