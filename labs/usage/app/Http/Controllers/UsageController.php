@@ -25,7 +25,7 @@ class UsageController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:80'],
-            'email' => ['required', 'email', 'max:190', 'unique:users,email'],
+            'email' => ['required', 'email', 'max:512', 'unique:users,email'],
             'password' => ['required', 'confirmed', 'min:8'],
         ]);
 
