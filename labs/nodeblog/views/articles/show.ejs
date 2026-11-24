@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Blog</title><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/style.css"></head>
+<body>
+  <main class="container">
+    <p><a href="/">All Articles</a></p>
+    <article class="card">
+      <h1><%= article.title %></h1>
+      <p class="date"><%= new Date(article.createdAt).toLocaleDateString('en-US') %></p>
+      <p><%= article.description %></p>
+      <div class="article-body"><%= article.markdown %></div>
+      <% if (authenticated) { %><a href="/articles/<%= article.slug %>/edit" class="btn cyan">Edit</a><% } %>
+    </article>
+  </main>
+</body>
+</html>

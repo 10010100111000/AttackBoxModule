@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "updated_on": "2026-11-23",
+  "updated_on": "2026-11-25",
   "main_snapshot_commit": "45c2e88165342dca8ce3583c33659651f5c3c7f2",
   "purpose": "trytopwn Web 题库选题、覆盖率与验收状态的唯一结构化索引；每次新增靶机时维护本文件与 docs/WEB_ROADMAP.md",
   "difficulty_is_provisional": true,
@@ -1031,6 +1031,43 @@
         "confidence": "independent_full_chain_ci_verified"
       },
       "skill_mapping_stage": "independent_full_chain_ci_verified"
+    },
+    {
+      "id": "nodeblog",
+      "path": "labs/nodeblog",
+      "track": "web",
+      "provisional_difficulty": "intermediate",
+      "primary_category": "nosql",
+      "secondary_categories": [
+        "xxe",
+        "deserialization"
+      ],
+      "validated_skills": [
+        "nosql.operator-auth-bypass",
+        "xxe.file-read",
+        "deserialization.unsafe-parse",
+        "deserialization.dependency-gadget"
+      ],
+      "implemented_skills": [
+        "nosql.operator-auth-bypass",
+        "xxe.file-read",
+        "deserialization.unsafe-parse",
+        "deserialization.dependency-gadget"
+      ],
+      "lab_ci_status": "full_chain_ci",
+      "worker_status": "not_verified",
+      "release_status": "blocked_by_marker",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45466022851",
+      "note": "HTB NodeBlog Web-only reconstruction; native MongoDB operator NoSQLi, real libxml2 XXE, vulnerable node-serialize 0.0.4 Cookie RCE and Web-only flag passed two fresh-instance independent HTTP attack-chain CI. Real source based on 2022 writeups, not original HTB private app. No root/sudo/SSH, no additional capabilities. Build image 165215162 bytes; runtime ~135-137 MiB. Worker integration not verified.",
+      "variant_profile": {
+        "technology": "Node.js 20, Express 4, MongoDB 8, Mongoose 8, libxmljs2 0.37.0, node-serialize 0.0.4",
+        "initial_discovery": "Plain blog index with login; admin-only article creation and XML upload exposed after JSON NoSQLi",
+        "key_constraint_or_mechanism": "JSON nested MongoDB operators bypass auth; libxml2 external entity reveals server.js; node-serialize IIFE executes before signed cookie check",
+        "attack_path": "recon -> JSON $ne auth bypass -> authenticated XML XXE source disclosure -> unsafe cookie deserialization RCE -> Web user flag",
+        "incremental_learning_value": "First real MongoDB NoSQLi scenario and native Node XML/deserialization full Web chain; no unrelated Linux escalation",
+        "confidence": "independent_full_web_chain_ci_verified"
+      },
+      "skill_mapping_stage": "independent_full_web_chain_ci_verified"
     }
   ],
   "backlog": [
@@ -1084,15 +1121,17 @@
       "required_skill_coverage": [
         "nosql.operator-auth-bypass"
       ],
-      "status": "planned",
-      "candidate_status": "source_not_selected",
-      "objective": "Web 专项：真实 MongoDB/驱动查询，操作符绕过；可参考 NodeBlog 技术栈但须核实细节",
+      "status": "done",
+      "candidate_status": "lab_ci_verified",
+      "objective": "Web-only NodeBlog: real MongoDB operator auth bypass -> libxml2 XXE file read -> vulnerable node-serialize CVE-2017-5941 command execution; no Linux root stage",
       "scope": "repeatable_skill_variant_requirement",
       "one_to_many_allowed": true,
       "scenario_variant_focus": "Express/MongoDB 的 JSON 操作符；其他语言/输入结构可继续重复",
       "candidate_options": [
         "nodeblog"
-      ]
+      ],
+      "selected_candidate": "nodeblog",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45466022851"
     },
     {
       "id": "sqli-blind",
@@ -1730,8 +1769,8 @@
         "deserialization.unsafe-parse"
       ],
       "signature": "Express/MongoDB JSON operator -> XML/source -> node-serialize",
-      "source_status": "official_machine_plus_public_writeup",
-      "review_status": "research_required"
+      "source_status": "official_machine_plus_2022_public_writeups_and_CVE_advisory",
+      "review_status": "lab_ci_verified"
     },
     {
       "id": "precious",

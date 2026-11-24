@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Blog</title><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/style.css"></head>
+<body>
+  <main class="container login-container">
+    <h1>Login</h1>
+    <form method="post" action="/login" class="card login-card">
+      <% if (error) { %><p class="error"><%= error %></p><% } %>
+      <label for="user">Username</label>
+      <input id="user" name="user" type="text" autocomplete="username" required>
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required>
+      <button class="btn green" type="submit">Login</button>
+    </form>
+    <p><a href="/">Back to articles</a></p>
+  </main>
+</body>
+</html>

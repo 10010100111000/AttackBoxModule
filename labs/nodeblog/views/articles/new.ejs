@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Blog</title><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/style.css"></head>
+<body>
+  <main class="container">
+    <h1>New Article</h1>
+    <a href="/">Back to articles</a>
+    <form method="post" action="/articles" class="card editor">
+      <label for="title">Title</label>
+      <input id="title" name="title" value="<%= prefill.title %>" required>
+      <label for="description">Description</label>
+      <textarea id="description" name="description" rows="5"><%= prefill.description %></textarea>
+      <label for="markdown">Markdown</label>
+      <textarea id="markdown" name="markdown" rows="12"><%= prefill.markdown %></textarea>
+      <button class="btn green" type="submit">Save Article</button>
+    </form>
+  </main>
+</body>
+</html>

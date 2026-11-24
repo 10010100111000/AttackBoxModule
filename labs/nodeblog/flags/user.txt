@@ -1,0 +1,1 @@
+TTP{nodeblog_default_web_foothold_flag}
