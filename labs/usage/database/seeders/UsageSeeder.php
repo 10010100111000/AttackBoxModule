@@ -13,7 +13,7 @@ class UsageSeeder extends Seeder
     {
         // This well-known bcrypt hash corresponds to "password". The player
         // must obtain it through the genuine blind SQLi and crack it offline.
-        $adminHash = '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.';
+        $adminHash = '$2y$10$irkWuvMbCYgAzMFXgCa7MerOhNRwEw.PKNjup3puiylVKRmo3BEXC';
         if (!Hash::check('password', $adminHash)) {
             throw new \RuntimeException('Admin hash fixture failed verification');
         }
