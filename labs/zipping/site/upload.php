@@ -24,12 +24,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['zip_file'])) {
                 $tmpDir = sys_get_temp_dir().'/zipping-'.$hash;
                 $targetDir = __DIR__.'/uploads/'.$hash;
                 if (!is_dir($tmpDir)) mkdir($tmpDir, 0700, true);
-                // The security flaw is native 7z extraction preserving symlinks
+                // Real Info-ZIP extraction preserves ZIP Unix symlinks on Debian.
                 // combined with publishing them to the web-readable directory.
-                exec('7z e -y '.escapeshellarg($zipFile).' -o'.escapeshellarg($tmpDir).' >/dev/null 2>&1', $ignored, $rc);
+                exec('unzip -j -o -q '.escapeshellarg($zipFile).' -d '.escapeshellarg($tmpDir).' >/dev/null 2>&1', $ignored, $rc);
                 $extracted = $tmpDir.'/'.$fileName;
                 if ($rc !== 0 || !file_exists($extracted)) {
-                    error_log('zipping upload 7z rc='.$rc.' file='.$fileName.' exists='.(file_exists($extracted) ? 'yes' : 'no').' symlink='.(is_link($extracted) ? 'yes' : 'no'));
+                    error_log('zipping upload unzip rc='.$rc.' file='.$fileName.' exists='.(file_exists($extracted) ? 'yes' : 'no').' symlink='.(is_link($extracted) ? 'yes' : 'no'));
                 }
                 if ($rc === 0 && file_exists($extracted)) {
                     if (!is_dir($targetDir)) mkdir($targetDir, 0755, true);

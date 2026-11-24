@@ -21,7 +21,7 @@ jobs:
     timeout-minutes: 50
     steps:
       - uses: actions/checkout@v4
-      - name: Build single-container real Apache PHP MariaDB 7z target
+      - name: Build single-container real Apache PHP MariaDB unzip target
         run: docker build --progress=plain -t ttp-zipping:ci -f labs/zipping/Dockerfile labs/zipping
       - name: Build independent HTTP attacker
         run: docker build -t ttp-zipping-attacker:ci -f labs/zipping/tests/Dockerfile.attacker labs/zipping/tests
