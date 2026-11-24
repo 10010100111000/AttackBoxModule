@@ -12,3 +12,9 @@ AllowUsers dash xander
 AuthorizedKeysFile .ssh/authorized_keys
 Subsystem sftp /usr/libexec/openssh/sftp-server
 PidFile /run/sshd.pid
+
+LogLevel VERBOSE
+
+Match User dash
+    PasswordAuthentication no
+    AuthenticationMethods publickey

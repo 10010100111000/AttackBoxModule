@@ -8,6 +8,8 @@ fi
 USER_FLAG="${USAGE_STATIC_USER_FLAG:-TTP{usage_demo_user_only}}"
 ROOT_FLAG="${USAGE_STATIC_ROOT_FLAG:-TTP{usage_demo_root_only}}"
 [[ "$USER_FLAG" != "$ROOT_FLAG" ]] || { echo "User and Root flags must differ" >&2; exit 1; }
+# Keep instance answers out of all child-process environments.
+unset USAGE_STATIC_USER_FLAG USAGE_STATIC_ROOT_FLAG
 
 install -d -o mysql -g mysql -m 0750 /var/lib/mysql /var/run/mysqld
 install -d -o root -g root -m 0755 /run/usage /var/backups
@@ -15,6 +17,10 @@ install -d -o dash -g xander -m 2775 /var/www/usage/public/uploads/images
 install -d -o dash -g xander -m 0775 /var/www/usage/storage /var/www/usage/bootstrap/cache
 install -d -o dash -g dash -m 0700 /home/dash/.ssh
 chown -R dash:dash /home/dash
+chmod 0750 /home/dash
+# With UsePAM=no, OpenSSH rejects a locked shadow account even for keys.
+# Set an independent high-entropy password; SSH permits only public keys for dash.
+printf 'dash:%s\n' "$(openssl rand -hex 32)" | chpasswd
 
 if [[ ! -d /var/lib/mysql/mysql ]]; then
   echo "[usage] Initializing genuine MySQL 8.0 datadir"
@@ -143,6 +149,7 @@ chmod 0640 /home/dash/user.txt
 printf '%s\n' "$ROOT_FLAG" > /root/root.txt
 chown root:root /root/root.txt
 chmod 0600 /root/root.txt
+unset USER_FLAG ROOT_FLAG
 
 # The real p7zip 16.02 binary is invoked directly through sudo. No helper
 # binary or fake privilege-escalation result is inserted into the chain.
@@ -155,7 +162,7 @@ nginx -t
 sshd -t
 
 su -s /bin/bash dash -c 'monit -c /home/dash/.monitrc' || true
-/usr/sbin/sshd
+/usr/sbin/sshd -E /var/log/usage-sshd.log
 php-fpm -F &
 PHP_PID=$!
 nginx -g 'daemon off;' &
