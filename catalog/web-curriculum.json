@@ -974,6 +974,41 @@
       }
     },
     {
+      "id": "precious",
+      "path": "labs/precious",
+      "track": "web",
+      "provisional_difficulty": "beginner",
+      "primary_category": "command_injection",
+      "secondary_categories": [],
+      "validated_skills": [],
+      "implemented_skills": [
+        "command_injection.basic-rce"
+      ],
+      "lab_ci_status": "unverified",
+      "worker_status": "not_verified",
+      "release_status": "blocked_by_marker",
+      "evidence": "pending native PDFKit command-injection CI",
+      "note": "HTB Precious Web-only reconstruction using actual pdfkit 0.8.6 and wkhtmltopdf; excludes post-Web SSH/YAML/sudo Root escalation. Not full-chain verified.",
+      "variant_profile": {
+        "technology": "Ruby 3.1, Sinatra 2.2.4, pdfkit 0.8.6, wkhtmltopdf, Debian Bookworm",
+        "initial_discovery": "URL to PDF converter; generated PDF metadata reveals pdfkit 0.8.6",
+        "key_constraint_or_mechanism": "CVE-2022-25765 native PDFKit URL shell metacharacter interpolation",
+        "attack_path": "Recon -> generate PDF -> metadata -> native PDFKit command injection -> Web service user flag",
+        "incremental_learning_value": "Real third-party Ruby PDF generator command injection, not generic synthetic shell endpoint",
+        "confidence": "pending_independent_ci"
+      },
+      "skill_mapping_stage": "pending_independent_full_web_chain_ci",
+      "manual_validation": {
+        "status": "not_reviewed",
+        "commit": null,
+        "reviewer": null,
+        "reviewed_at": null,
+        "scope": null,
+        "evidence": [],
+        "failure_reason": null
+      }
+    },
+    {
       "id": "shocker",
       "path": "labs/shocker",
       "track": "web",
@@ -2171,8 +2206,9 @@
         "command_injection.basic-rce"
       ],
       "signature": "genuine Ruby PDFKit -> Ruby YAML deserialization",
-      "source_status": "official_synopsis_verified",
-      "review_status": "research_required"
+      "source_status": "official_and_public_writeups_verified",
+      "review_status": "in_progress",
+      "scope": "web_only_pdfkit_rce_excludes_yaml_root"
     },
     {
       "id": "soccer",
