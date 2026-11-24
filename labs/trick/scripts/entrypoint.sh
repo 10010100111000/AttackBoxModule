@@ -136,7 +136,9 @@ unset db_pass
 
 # OpenSSH logs authentication failures to the local syslog socket.
 touch /var/log/messages
-syslogd -O /var/log/messages
+printf 'rc_sys="docker"\n' > /etc/rc.conf
+touch /run/openrc/softlevel
+rc-service syslog-ng start
 
 /usr/sbin/named -u named -g -c /etc/bind/named.conf &
 named_pid=$!
@@ -148,8 +150,6 @@ nginx_pid=$!
 sshd_pid=$!
 
 # Use the distribution's real OpenRC Fail2ban service.
-printf 'rc_sys="docker"\n' > /etc/rc.conf
-touch /run/openrc/softlevel
 rc-service fail2ban start
 
 for attempt in $(seq 1 30); do
@@ -163,6 +163,7 @@ fail2ban-client status sshd >/dev/null
 
 cleanup() {
   rc-service fail2ban stop >/dev/null 2>&1 || true
+  rc-service syslog-ng stop >/dev/null 2>&1 || true
   for pid in "${sshd_pid:-}" "${nginx_pid:-}" "${php_pid:-}" "${named_pid:-}" "${db_pid:-}"; do
     if [[ -n "$pid" ]]; then kill "$pid" 2>/dev/null || true; fi
   done
