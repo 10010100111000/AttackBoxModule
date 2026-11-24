@@ -1,6 +1,6 @@
 # Usage — Laravel password recovery SQLi and admin upload reconstruction
 
-**Status:** implementation under CI verification; not a released HTB image and not HTB's official/private source code.
+**Status:** independent full-chain lab CI passed on 2026-11-24 ([evidence](https://github.com/10010100111000/AttackBoxModule/actions/runs/45386437038)). Production release remains blocked pending actual platform deployment and isolation checks. This is an independent training reconstruction, not the original HTB source or image.
 
 ## Learning goals
 
@@ -11,7 +11,7 @@
 - Linux foothold and credential reuse: obtain the real `dash` shell, inspect Monit configuration, authenticate as `xander`.
 - Root objective: use the genuine p7zip 16.02 `@listfile` behavior through a sudo rule to read the protected Root Flag.
 
-## Source fidelity and known deviations
+## Training fidelity and documented differences
 
 The original Usage application source was not published. The main Laravel application routes and UI in this reconstruction are therefore **independently rebuilt from public writeups and observed request shapes**, not represented as the original source. The vulnerable query uses the real Laravel 10.18.0 framework and genuine MySQL 8.0; it is not a mock SQL parser or a payload-matching endpoint.
 
@@ -95,4 +95,4 @@ The independent attacker container must prove:
 9. real sudo p7zip 16.02 `@listfile` behavior discloses the protected Root Flag;
 10. a second fresh container has a different Flag pair and no prior state.
 
-A passing lab CI does not prove the real Worker deployment or platform answer configuration. Keep `.release-blocked` until those are separately checked.
+Acceptance requires real components, genuine vulnerability behavior and a verified end-to-end learning path, not identical private source code. A passing lab CI does not prove the real Worker deployment or platform answer configuration. Keep `.release-blocked` until those are separately checked.

@@ -1002,7 +1002,12 @@
         "file_upload",
         "auth_session"
       ],
-      "validated_skills": [],
+      "validated_skills": [
+        "sqli.boolean-blind",
+        "sqli.time-blind",
+        "sqli.db-enumeration",
+        "file_upload.unrestricted-upload"
+      ],
       "implemented_skills": [
         "sqli.boolean-blind",
         "sqli.time-blind",
@@ -1012,10 +1017,10 @@
         "file_upload.polyglot",
         "file_upload.extension-bypass"
       ],
-      "lab_ci_status": "unverified",
+      "lab_ci_status": "full_chain_ci",
       "worker_status": "not_verified",
       "release_status": "blocked_by_marker",
-      "evidence": "",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45386437038",
       "note": "HTB Usage-inspired single-container reconstruction. Real MySQL 8.0.46 + Laravel 10.18.0 + vulnerable Laravel-admin 1.8.19; main password-recovery source reconstructed from public writeups, not original private source. Root stage uses real p7zip 16.02 directly through sudo instead of the unavailable original usage_management helper; this difference is explicit.",
       "variant_profile": {
         "technology": "PHP 8.1, Laravel 10.18.0, MySQL 8.0.46, Laravel-admin 1.8.19, nginx, OpenSSH, Monit, p7zip 16.02",
@@ -1023,9 +1028,9 @@
         "key_constraint_or_mechanism": "POST /forget-password email parameter, Laravel CSRF/session, genuine MySQL boolean and time conditions; real vulnerable Laravel-admin Image upload polyglot",
         "attack_path": "register -> blind SQLi -> extract admin bcrypt -> crack -> admin Laravel-admin login -> avatar upload PHP execution as dash -> SSH key -> Monit credential reuse -> xander -> sudo 7za @listfile root flag read",
         "incremental_learning_value": "First dedicated blind SQLi lab in the Web catalog; independently proves boolean and time oracles, then connects to an actual vulnerable upstream upload package and a real Linux privilege boundary",
-        "confidence": "implementation_under_independent_black_box_ci"
+        "confidence": "independent_full_chain_ci_verified"
       },
-      "skill_mapping_stage": "implementation_under_ci"
+      "skill_mapping_stage": "independent_full_chain_ci_verified"
     }
   ],
   "backlog": [
@@ -1879,11 +1884,12 @@
       ],
       "signature": "Laravel password recovery POST email boolean-based blind SQLi -> genuine MySQL admin_users -> Laravel-Admin avatar upload -> dash shell -> monit creds -> xander -> sudo 7za wildcard file read",
       "source_status": "original_HTB_writeups_and_IppSec_video_reviewed_not_original_private_app_source",
-      "review_status": "in_progress",
+      "review_status": "lab_ci_verified",
       "evidence_urls": [
         "https://www.youtube.com/watch?v=cx9Da-PoXG4",
         "https://www.cipherbuu.net/posts/Usage-Walkthrough/",
-        "https://www.brunorochamoura.com/posts/usage/"
+        "https://www.brunorochamoura.com/posts/usage/",
+        "https://github.com/10010100111000/AttackBoxModule/actions/runs/45386437038"
       ],
       "origin_notes": "Writeups identify /forget-password email POST and boolean-based blind SQLi; some observed Laravel-Admin version strings differ among reports (1.8.17 versus 1.8.19). Confirm exact vulnerable upstream Laravel-Admin release and CVE-2023-24249 before implementation. Password reset SQLi is in target-specific application code, not a general Laravel framework CVE.",
       "reconstruction_gate": "Do not invent a password-recovery SQLi endpoint and call it authentic HTB Usage. Obtain credible application/DB behavior evidence, preserve CSRF/session and genuine database blind-response distinction; original private code cannot be claimed. Upstream Laravel-Admin must be an actual vulnerable version and tested with real upload handling. Preserve later Unix escalation only if reproducible under Docker without privileged/host access.",
