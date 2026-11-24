@@ -1,0 +1,1 @@
+Production release blocked: independent full-chain CI must pass, then actual Worker private-network, resource, host-isolation and platform static-answer validation must be completed. Do not expose the vulnerable image publicly.
