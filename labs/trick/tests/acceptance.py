@@ -121,21 +121,23 @@ def main():
         "id; ls -ld /etc/fail2ban/action.d; ls -l /etc/fail2ban/action.d/iptables-multiport.conf; "
         "if test -w /etc/fail2ban/action.d; then echo DIR_WRITABLE; else echo DIR_NOT_WRITABLE; fi; "
         "if test -w /etc/fail2ban/action.d/iptables-multiport.conf; then echo FILE_WRITABLE; else echo FILE_NOT_WRITABLE; fi; "
-        "grep -n 'actionban' /etc/fail2ban/action.d/iptables-multiport.conf",
+        "grep -n 'before = iptables.conf' /etc/fail2ban/action.d/iptables-multiport.conf; "
+        "grep -n 'type = multiport' /etc/fail2ban/action.d/iptables-multiport.conf",
         check=False,
     )
     print(permissions.stdout)
     assert "DIR_WRITABLE" in permissions.stdout, "michael cannot write to the action directory"
     assert "FILE_NOT_WRITABLE" in permissions.stdout, "the existing action file must remain root-owned"
-    assert re.search(r"^\s*actionban\s*=", permissions.stdout, re.M), "real actionban directive missing"
+    assert "before = iptables.conf" in permissions.stdout and "type = multiport" in permissions.stdout, "real Fail2ban multiport include missing"
     print("PASS: SSH as michael, User Flag, group-writable action directory and narrowly scoped sudo rule")
 
     print("== Real Fail2ban action execution as root ==")
     replace_action = (
         "set -eu; "
-        "cp /etc/fail2ban/action.d/iptables-multiport.conf /tmp/iptables-multiport.conf; "
-        "sed -i '/^actionban[[:space:]]*=/c\\actionban = cp /root/root.txt /tmp/root.txt; chmod 0644 /tmp/root.txt' "
-        "/tmp/iptables-multiport.conf; "
+        "printf '%s\\n' '[INCLUDES]' 'before = iptables.conf' '' '[Definition]' "
+        "'type = multiport' "
+        "'actionban = cp /root/root.txt /tmp/root.txt; chmod 0644 /tmp/root.txt' "
+        "> /tmp/iptables-multiport.conf; "
         "rm /etc/fail2ban/action.d/iptables-multiport.conf; "
         "cp /tmp/iptables-multiport.conf /etc/fail2ban/action.d/iptables-multiport.conf; "
         "sudo /etc/init.d/fail2ban restart"
