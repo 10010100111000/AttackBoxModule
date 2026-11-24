@@ -15,7 +15,15 @@ SOCKET = os.environ.get('TARGET_WS', 'ws://soccer-target:9091')
 FLAG = os.environ['EXPECTED_USER_FLAG']
 assert re.fullmatch(r'TTP\{[A-Za-z0-9_]+\}', FLAG)
 jar = http.cookiejar.CookieJar()
-client = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar))
+class TargetRedirect(urllib.request.HTTPRedirectHandler):
+    """Follow the original app's absolute redirects within the isolated target's port."""
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        dest = urllib.parse.urlsplit(newurl)
+        origin = urllib.parse.urlsplit(BASE)
+        rewritten = urllib.parse.urlunsplit((origin.scheme, origin.netloc, dest.path, dest.query, dest.fragment))
+        return super().redirect_request(req, fp, code, msg, headers, rewritten)
+
+client = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar), TargetRedirect())
 
 def get(path, host='soccer-target:8080'):
     req = urllib.request.Request(BASE + path, headers={'Host': host})
