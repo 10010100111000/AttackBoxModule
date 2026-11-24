@@ -75,7 +75,7 @@ if [[ ! -d /var/lib/mysql/mysql ]]; then
 fi
 mariadbd --user=mysql --datadir=/var/lib/mysql \
   --socket=/run/mysqld/mysqld.sock --pid-file=/run/mysqld/mysqld.pid \
-  --bind-address=127.0.0.1 &
+  --bind-address=127.0.0.1 --skip-networking=0 --console &
 db_pid=$!
 
 for attempt in $(seq 1 75); do
