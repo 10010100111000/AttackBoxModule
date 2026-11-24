@@ -21,7 +21,7 @@ if [[ ! -d /var/lib/mysql/mysql ]]; then
   mysqld --initialize-insecure --user=mysql --datadir=/var/lib/mysql
 fi
 
-MYSQL_SOCKET=/var/run/mysqld/mysqld.sock
+MYSQL_SOCKET=/var/lib/mysql/mysql.sock
 mysqld --user=mysql --datadir=/var/lib/mysql --socket="$MYSQL_SOCKET" \
   --pid-file=/var/run/mysqld/mysqld.pid --bind-address=127.0.0.1 \
   --innodb-buffer-pool-size=96M --performance-schema=OFF &
