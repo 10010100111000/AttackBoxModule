@@ -1079,27 +1079,32 @@
         "sqli",
         "file_upload"
       ],
-      "validated_skills": [],
+      "validated_skills": [
+        "file_read.file-to-rce",
+        "sqli.union",
+        "sqli.filter-bypass",
+        "sqli.file-operations"
+      ],
       "implemented_skills": [
         "file_read.file-to-rce",
         "sqli.union",
         "sqli.filter-bypass",
         "sqli.file-operations"
       ],
-      "lab_ci_status": "partial",
+      "lab_ci_status": "full_chain_ci",
       "worker_status": "not_verified",
       "release_status": "blocked_by_marker",
-      "evidence": "pending independent CI",
-      "note": "Web-only HTB Zipping reconstruction, genuine PHP ZipArchive, 7z, PDO MariaDB, FILE privilege and LFI. No Linux root, SSH or sudo.",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45471673982",
+      "note": "HTB Zipping Web-only reconstruction: real PHP ZipArchive and Info-ZIP symlink extraction (different from original 7z), genuine MariaDB UNION/FILE plus PHP LFI. Two isolated fresh HTTP attack chains passed with distinct Web Flags. No SSH, sudo, Linux root or added Capability. Worker integration unverified.",
       "variant_profile": {
-        "technology": "Debian Bookworm, Apache, PHP 8.2, p7zip, MariaDB 10.11",
+        "technology": "Debian Bookworm, Apache 2.4, PHP 8.2, Info-ZIP unzip, MariaDB 10.11",
         "initial_discovery": "Watch shop and job resume ZIP uploader",
-        "key_constraint_or_mechanism": "Native ZIP symlink preserved by 7z; newline bypass of PHP regex; MariaDB SQL UNION FILE OUTFILE; PHP file_exists include",
+        "key_constraint_or_mechanism": "Real Info-ZIP extracts Unix ZIP symlink (original p7zip differs); PHP regex newline bypass -> real MariaDB FILE INTO OUTFILE -> PHP LFI include",
         "attack_path": "Recon -> ZIP symlink read source -> newline SQLi -> MariaDB FILE into /dev/shm -> LFI PHP execution -> Web flag",
         "incremental_learning_value": "Intermediate archive symlink read combined with SQLi and LFI; original Linux privilege escalation intentionally removed",
-        "confidence": "code_written_full_chain_ci_pending"
+        "confidence": "independent_full_web_chain_ci_verified"
       },
-      "skill_mapping_stage": "pending_black_box_verification"
+      "skill_mapping_stage": "independent_full_web_chain_ci_verified"
     }
   ],
   "backlog": [
@@ -1848,11 +1853,12 @@
       "url": "https://www.hackthebox.com/machines/zipping",
       "skills": [
         "file_read.file-to-rce",
-        "file_read.path-traversal"
+        "sqli.file-operations"
       ],
       "signature": "ZIP symlink file read -> SQLi file write -> LFI; archive symlink is not automatically a server parser-mismatch bug",
       "source_status": "official_synopsis_and_public_writeups_verified",
-      "review_status": "in_progress"
+      "review_status": "lab_ci_verified",
+      "extractor_variance": "Original HTB p7zip differs from the actual Info-ZIP extractor in reconstruction"
     },
     {
       "id": "codify",

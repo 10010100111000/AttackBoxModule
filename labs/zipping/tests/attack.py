@@ -121,4 +121,4 @@ url = "/shop/index.php?" + urllib.parse.urlencode({
 _, flag_body = get(url)
 assert FLAG in flag_body, "Web-stage user Flag mismatch"
 
-print("PASS: real 7z ZIP symlink -> PHP source -> filter-bypass MariaDB UNION/FILE -> real LFI -> Web Flag")
+print("PASS: real Info-ZIP ZIP symlink -> PHP source -> filter-bypass MariaDB UNION/FILE -> real LFI -> Web Flag")

@@ -1,6 +1,6 @@
 # Zipping — Web-only reconstruction
 
-**Status: implementation pending independent full-chain CI.** This is not an official Hack The Box image or a copy of the unavailable original private source.
+**Status: independently verified full Web attack-chain CI PASS** on two fresh isolated instances. This is not an official Hack The Box image or a copy of the unavailable original private source.
 
 ## Exploit route and source fidelity
 
@@ -28,7 +28,7 @@ The image contains real Apache mod_php, MariaDB and Info-ZIP unzip in one Debian
 
 ## Test gate
 
-The separate Python attacker container only communicates through HTTP, builds a true Unix symlink ZIP, reads real PHP source, validates regular SQLi rejection and newline bypass, proves native database FILE write, includes the resulting PHP using the actual LFI and retrieves a per-instance Flag. GitHub Actions should run two fresh isolated targets with different flags. Until all steps are green, this is not a verified playable target and the release block stays.
+The separate Python attacker container only communicates through HTTP, builds a true Unix symlink ZIP, reads real PHP source, validates regular SQLi rejection and newline bypass, proves native database FILE write, includes the resulting PHP using the actual LFI and retrieves a per-instance Flag. GitHub Actions should run two fresh isolated targets with different flags. The Web-only lab CI has passed on two newly initialized targets. Worker integration and platform publishing are separately unverified, so the release block remains.
 
 References:
 - https://www.hackthebox.com/machines/zipping
@@ -38,3 +38,10 @@ References:
 ## Extractor divergence from the original
 
 The 2023 HTB machine used the native p7zip `7z e` extractor. Debian Bookworm's p7zip rewrites absolute symlink targets under the extraction directory; it therefore does **not** reproduce the same file-disclosure behavior with that ZIP payload. This reconstruction instead uses genuine Info-ZIP `unzip -j -o`, which demonstrably restores the archived absolute Unix symlink, combined with the same PHP `ZipArchive` single-PDF check and Apache-served upload. The flaw is an authentic unsafe archive extraction, not a hand-written file-read endpoint, but the extractor is **different from the original machine**. This divergence must be shown in all release notes.
+
+## Verified CI evidence
+
+- [Independent Web full-chain CI: PASS](https://github.com/10010100111000/AttackBoxModule/actions/runs/45471673982)
+- Both fresh target instances were solved by a separate HTTP-only Python attacker. Proven route: native ZIP symlink extraction, source disclosure, regex rejection and newline bypass, real MariaDB UNION with FILE, PHP LFI executing `id` as `www-data`, and per-instance Web Flag recovery.
+- Target image measured **123,275,493 bytes** (about 117.6 MiB); instance memory **92.38 MiB** and **92.29 MiB** respectively. Default Docker capabilities only, no CapAdd, no privileged mode or host mounts.
+- Successful lab CI does not imply production Worker deployment or Web scoring integration.
