@@ -1,1 +1,9 @@
-NodeBlog is not released until independent full-chain CI passes and platform integration is assessed.
+Release remains blocked.
+
+Current policy (2026-11-25): CI only checks build, startup, health and ordinary smoke behavior.
+No automated exploitation, Flag-retrieval or privilege-chain CI is required.
+Historical CI evidence stays in the catalog; it does not become manual acceptance.
+
+当前待验收事项：实际平台集成尚需验收；题目完整目标流程的人工记录尚需复核。
+
+需先补实际人工验收和平台证据，再经明确批准解除限制；不得将脆弱服务暴露到公网。

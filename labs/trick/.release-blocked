@@ -1,1 +1,9 @@
-Production release is blocked until the real Worker is verified to grant CAP_NET_ADMIN only to this Trick target inside its isolated network namespace, with no host network, privileged mode, host mounts or Docker socket. The platform's static-answer configuration must also be checked. Do not publish this vulnerable image to a public network.
+Release remains blocked.
+
+Current policy (2026-11-25): CI only checks build, startup, health and ordinary smoke behavior.
+No automated exploitation, Flag-retrieval or privilege-chain CI is required.
+Historical CI evidence stays in the catalog; it does not become manual acceptance.
+
+当前待验收事项：实际 Worker 仅可在本靶机隔离网络命名空间中授予 NET_ADMIN；禁止 host 网络、privileged、宿主挂载或 Docker socket。平台答案配置尚需验收。
+
+需先补实际人工验收和平台证据，再经明确批准解除限制；不得将脆弱服务暴露到公网。

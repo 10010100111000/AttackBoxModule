@@ -452,7 +452,16 @@
         "incremental_learning_value": "相同栈其他例子可比较 JSON/数组输入",
         "confidence": "from_repository_readme_or_existing_tests"
       },
-      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review"
+      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review",
+      "manual_validation": {
+        "status": "not_reviewed",
+        "commit": null,
+        "reviewer": null,
+        "reviewed_at": null,
+        "scope": null,
+        "evidence": [],
+        "failure_reason": null
+      }
     },
     {
       "id": "bashed",
@@ -480,7 +489,16 @@
         "incremental_learning_value": "主要训练 Web 暴露入口，而非普通命令注入表单",
         "confidence": "from_repository_readme_or_existing_tests"
       },
-      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review"
+      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review",
+      "manual_validation": {
+        "status": "not_reviewed",
+        "commit": null,
+        "reviewer": null,
+        "reviewed_at": null,
+        "scope": null,
+        "evidence": [],
+        "failure_reason": null
+      }
     },
     {
       "id": "bike",
@@ -507,7 +525,16 @@
         "incremental_learning_value": "需要补原版 Handlebars 利用的独立验收",
         "confidence": "from_repository_readme_or_existing_tests"
       },
-      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review"
+      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review",
+      "manual_validation": {
+        "status": "not_reviewed",
+        "commit": null,
+        "reviewer": null,
+        "reviewed_at": null,
+        "scope": null,
+        "evidence": [],
+        "failure_reason": null
+      }
     },
     {
       "id": "bountyhunter",
@@ -535,7 +562,16 @@
         "incremental_learning_value": "与反序列化不同，不以 eval 当反序列化覆盖",
         "confidence": "from_repository_readme_or_existing_tests"
       },
-      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review"
+      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review",
+      "manual_validation": {
+        "status": "not_reviewed",
+        "commit": null,
+        "reviewer": null,
+        "reviewed_at": null,
+        "scope": null,
+        "evidence": [],
+        "failure_reason": null
+      }
     },
     {
       "id": "cap",
@@ -565,7 +601,16 @@
         "incremental_learning_value": "IDOR 对象授权场景",
         "confidence": "from_repository_readme_or_existing_tests"
       },
-      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review"
+      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review",
+      "manual_validation": {
+        "status": "not_reviewed",
+        "commit": null,
+        "reviewer": null,
+        "reviewed_at": null,
+        "scope": null,
+        "evidence": [],
+        "failure_reason": null
+      }
     },
     {
       "id": "cursed-stale-policy",
@@ -593,7 +638,16 @@
         "incremental_learning_value": "不将存在 CSP 代码当成功绕过",
         "confidence": "from_repository_readme_or_existing_tests"
       },
-      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review"
+      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review",
+      "manual_validation": {
+        "status": "not_reviewed",
+        "commit": null,
+        "reviewer": null,
+        "reviewed_at": null,
+        "scope": null,
+        "evidence": [],
+        "failure_reason": null
+      }
     },
     {
       "id": "devvortex",
@@ -622,7 +676,16 @@
         "incremental_learning_value": "旧版本 CMS 真实实现",
         "confidence": "from_repository_readme_or_existing_tests"
       },
-      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review"
+      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review",
+      "manual_validation": {
+        "status": "not_reviewed",
+        "commit": null,
+        "reviewer": null,
+        "reviewed_at": null,
+        "scope": null,
+        "evidence": [],
+        "failure_reason": null
+      }
     },
     {
       "id": "editorial",
@@ -652,7 +715,16 @@
         "incremental_learning_value": "与 URL 校验绕过或 Blind SSRF 不同",
         "confidence": "from_repository_readme_or_existing_tests"
       },
-      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review"
+      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review",
+      "manual_validation": {
+        "status": "not_reviewed",
+        "commit": null,
+        "reviewer": null,
+        "reviewed_at": null,
+        "scope": null,
+        "evidence": [],
+        "failure_reason": null
+      }
     },
     {
       "id": "goodgames",
@@ -682,7 +754,16 @@
         "incremental_learning_value": "不强行增加容器逃逸/root",
         "confidence": "from_repository_readme_or_existing_tests"
       },
-      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review"
+      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review",
+      "manual_validation": {
+        "status": "not_reviewed",
+        "commit": null,
+        "reviewer": null,
+        "reviewed_at": null,
+        "scope": null,
+        "evidence": [],
+        "failure_reason": null
+      }
     },
     {
       "id": "nibbles",
@@ -714,7 +795,16 @@
         "incremental_learning_value": "与 Base 的无限制上传处于不同授权边界",
         "confidence": "from_repository_readme_or_existing_tests"
       },
-      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review"
+      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review",
+      "manual_validation": {
+        "status": "not_reviewed",
+        "commit": null,
+        "reviewer": null,
+        "reviewed_at": null,
+        "scope": null,
+        "evidence": [],
+        "failure_reason": null
+      }
     },
     {
       "id": "openadmin",
@@ -746,7 +836,16 @@
         "incremental_learning_value": "依赖原始 ONA 受影响版本",
         "confidence": "from_repository_readme_or_existing_tests"
       },
-      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review"
+      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review",
+      "manual_validation": {
+        "status": "not_reviewed",
+        "commit": null,
+        "reviewer": null,
+        "reviewed_at": null,
+        "scope": null,
+        "evidence": [],
+        "failure_reason": null
+      }
     },
     {
       "id": "pebbles",
@@ -778,7 +877,16 @@
         "incremental_learning_value": "历史版本栈与普通 UNION 不同",
         "confidence": "from_repository_readme_or_existing_tests"
       },
-      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review"
+      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review",
+      "manual_validation": {
+        "status": "not_reviewed",
+        "commit": null,
+        "reviewer": null,
+        "reviewed_at": null,
+        "scope": null,
+        "evidence": [],
+        "failure_reason": null
+      }
     },
     {
       "id": "photobomb",
@@ -810,7 +918,16 @@
         "incremental_learning_value": "文件处理输入面的命令注入",
         "confidence": "from_repository_readme_or_existing_tests"
       },
-      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review"
+      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review",
+      "manual_validation": {
+        "status": "not_reviewed",
+        "commit": null,
+        "reviewer": null,
+        "reviewed_at": null,
+        "scope": null,
+        "evidence": [],
+        "failure_reason": null
+      }
     },
     {
       "id": "shocker",
@@ -840,7 +957,16 @@
         "incremental_learning_value": "与 CGI 之外的命令参数注入不同",
         "confidence": "from_repository_readme_or_existing_tests"
       },
-      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review"
+      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review",
+      "manual_validation": {
+        "status": "not_reviewed",
+        "commit": null,
+        "reviewer": null,
+        "reviewed_at": null,
+        "scope": null,
+        "evidence": [],
+        "failure_reason": null
+      }
     },
     {
       "id": "union",
@@ -874,7 +1000,16 @@
         "incremental_learning_value": "Web/内网边界与特殊 NET_ADMIN 能力",
         "confidence": "from_repository_readme_or_existing_tests"
       },
-      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review"
+      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review",
+      "manual_validation": {
+        "status": "not_reviewed",
+        "commit": null,
+        "reviewer": null,
+        "reviewed_at": null,
+        "scope": null,
+        "evidence": [],
+        "failure_reason": null
+      }
     },
     {
       "id": "validation",
@@ -908,7 +1043,16 @@
         "incremental_learning_value": "二阶与普通即时 UNION 的时间/状态不同",
         "confidence": "from_repository_readme_or_existing_tests"
       },
-      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review"
+      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review",
+      "manual_validation": {
+        "status": "not_reviewed",
+        "commit": null,
+        "reviewer": null,
+        "reviewed_at": null,
+        "scope": null,
+        "evidence": [],
+        "failure_reason": null
+      }
     },
     {
       "id": "funnel",
@@ -936,7 +1080,16 @@
         "incremental_learning_value": "不计入 Web 覆盖",
         "confidence": "from_repository_readme_or_existing_tests"
       },
-      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review"
+      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review",
+      "manual_validation": {
+        "status": "not_reviewed",
+        "commit": null,
+        "reviewer": null,
+        "reviewed_at": null,
+        "scope": null,
+        "evidence": [],
+        "failure_reason": null
+      }
     },
     {
       "id": "django-debug-xss",
@@ -960,7 +1113,16 @@
         "incremental_learning_value": "Contrasts WonderCMS admin-session XSS by exercising Django's framework error-page context without an admin bot",
         "confidence": "verified_by_independent_black_box_ci"
       },
-      "skill_mapping_stage": "browser_and_full_chain_ci_verified"
+      "skill_mapping_stage": "browser_and_full_chain_ci_verified",
+      "manual_validation": {
+        "status": "not_reviewed",
+        "commit": null,
+        "reviewer": null,
+        "reviewed_at": null,
+        "scope": null,
+        "evidence": [],
+        "failure_reason": null
+      }
     },
     {
       "id": "wondercms-xss",
@@ -990,7 +1152,16 @@
         "incremental_learning_value": "真实反射型 XSS + 管理员受害者浏览器 + 私网数据外带；不同于单人浏览器 alert 练习",
         "confidence": "real_browser_and_black_box_player_to_flag_ci_verified"
       },
-      "skill_mapping_stage": "browser_and_full_chain_ci_verified"
+      "skill_mapping_stage": "browser_and_full_chain_ci_verified",
+      "manual_validation": {
+        "status": "not_reviewed",
+        "commit": null,
+        "reviewer": null,
+        "reviewed_at": null,
+        "scope": null,
+        "evidence": [],
+        "failure_reason": null
+      }
     },
     {
       "id": "usage",
@@ -1030,7 +1201,16 @@
         "incremental_learning_value": "First dedicated blind SQLi lab in the Web catalog; independently proves boolean and time oracles, then connects to an actual vulnerable upstream upload package and a real Linux privilege boundary",
         "confidence": "independent_full_chain_ci_verified"
       },
-      "skill_mapping_stage": "independent_full_chain_ci_verified"
+      "skill_mapping_stage": "independent_full_chain_ci_verified",
+      "manual_validation": {
+        "status": "not_reviewed",
+        "commit": null,
+        "reviewer": null,
+        "reviewed_at": null,
+        "scope": null,
+        "evidence": [],
+        "failure_reason": null
+      }
     },
     {
       "id": "nodeblog",
@@ -1067,7 +1247,16 @@
         "incremental_learning_value": "First real MongoDB NoSQLi scenario and native Node XML/deserialization full Web chain; no unrelated Linux escalation",
         "confidence": "independent_full_web_chain_ci_verified"
       },
-      "skill_mapping_stage": "independent_full_web_chain_ci_verified"
+      "skill_mapping_stage": "independent_full_web_chain_ci_verified",
+      "manual_validation": {
+        "status": "not_reviewed",
+        "commit": null,
+        "reviewer": null,
+        "reviewed_at": null,
+        "scope": null,
+        "evidence": [],
+        "failure_reason": null
+      }
     },
     {
       "id": "zipping",
@@ -1104,7 +1293,16 @@
         "incremental_learning_value": "Intermediate archive symlink read combined with SQLi and LFI; original Linux privilege escalation intentionally removed",
         "confidence": "independent_full_web_chain_ci_verified"
       },
-      "skill_mapping_stage": "independent_full_web_chain_ci_verified"
+      "skill_mapping_stage": "independent_full_web_chain_ci_verified",
+      "manual_validation": {
+        "status": "not_reviewed",
+        "commit": null,
+        "reviewer": null,
+        "reviewed_at": null,
+        "scope": null,
+        "evidence": [],
+        "failure_reason": null
+      }
     },
     {
       "id": "soccer",
@@ -1139,7 +1337,16 @@
         "incremental_learning_value": "First genuine WebSocket SQLi target with independent ws protocol instead of normal HTTP-only SQLi",
         "confidence": "independent_black_box_two_fresh_instance_ci_verified"
       },
-      "skill_mapping_stage": "independent_web_chain_ci_verified"
+      "skill_mapping_stage": "independent_web_chain_ci_verified",
+      "manual_validation": {
+        "status": "not_reviewed",
+        "commit": null,
+        "reviewer": null,
+        "reviewed_at": null,
+        "scope": null,
+        "evidence": [],
+        "failure_reason": null
+      }
     },
     {
       "id": "trick",
@@ -1170,7 +1377,16 @@
         "incremental_learning_value": "Adds a file-read/LFI path with a real Unix service-account boundary, nested traversal filter bypass, DNS reconnaissance and a genuine Fail2ban root action; SQLi is a discovery mechanism rather than the main learning objective",
         "confidence": "implementation_under_independent_ci"
       },
-      "skill_mapping_stage": "implementation_under_independent_ci"
+      "skill_mapping_stage": "implementation_under_independent_ci",
+      "manual_validation": {
+        "status": "not_reviewed",
+        "commit": null,
+        "reviewer": null,
+        "reviewed_at": null,
+        "scope": null,
+        "evidence": [],
+        "failure_reason": null
+      }
     }
   ],
   "backlog": [
@@ -2087,5 +2303,20 @@
     "web": "challengeStages.flag/attemptChallenge 校验答案与记录完成阶段",
     "target": "真实漏洞、玩家获取 Flag 的自然路径；管理员浏览器若需要属于靶机环境而非 Worker",
     "dynamic_flags": "实例注入变量不等于服务器端动态判题功能已实现；Web 需要关联实例正确答案，Worker 不判题"
+  },
+  "verification_policy": {
+    "updated_on": "2026-11-25",
+    "automation": "build_startup_health_and_structure_only",
+    "full_flow": "manual_acceptance",
+    "automated_exploitation": false,
+    "historical_ci": "retain_original_evidence_without_promoting_manual_status",
+    "manual_statuses": [
+      "not_reviewed",
+      "in_progress",
+      "passed",
+      "failed"
+    ],
+    "release": "manual_acceptance_and_platform_checks_separate_from_ci",
+    "pr_approval": "show_exact_diff_and_actual_checks_then_explicit_user_approval"
   }
 }

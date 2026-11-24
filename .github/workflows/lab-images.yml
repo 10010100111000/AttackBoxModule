@@ -1,4 +1,5 @@
 name: Build and publish lab images
+# CI validates build/startup/health only. Full lab flow is reviewed manually.
 
 on:
   pull_request:
