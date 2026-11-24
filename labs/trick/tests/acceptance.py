@@ -117,12 +117,17 @@ def main():
     assert actual_user_flag == USER_FLAG
     sudo_list = ssh("sudo -n -l").stdout
     assert "/etc/init.d/fail2ban restart" in sudo_list
-    writable = ssh(
-        "test -w /etc/fail2ban/action.d && "
-        "test ! -w /etc/fail2ban/action.d/iptables-multiport.conf && "
-        "grep -q '^actionban[[:space:]]*=' /etc/fail2ban/action.d/iptables-multiport.conf"
+    permissions = ssh(
+        "id; ls -ld /etc/fail2ban/action.d; ls -l /etc/fail2ban/action.d/iptables-multiport.conf; "
+        "if test -w /etc/fail2ban/action.d; then echo DIR_WRITABLE; else echo DIR_NOT_WRITABLE; fi; "
+        "if test -w /etc/fail2ban/action.d/iptables-multiport.conf; then echo FILE_WRITABLE; else echo FILE_NOT_WRITABLE; fi; "
+        "grep -n 'actionban' /etc/fail2ban/action.d/iptables-multiport.conf",
+        check=False,
     )
-    assert writable.returncode == 0
+    print(permissions.stdout)
+    assert "DIR_WRITABLE" in permissions.stdout, "michael cannot write to the action directory"
+    assert "FILE_NOT_WRITABLE" in permissions.stdout, "the existing action file must remain root-owned"
+    assert re.search(r"^\\s*actionban\\s*=", permissions.stdout, re.M), "real actionban directive missing"
     print("PASS: SSH as michael, User Flag, group-writable action directory and narrowly scoped sudo rule")
 
     print("== Real Fail2ban action execution as root ==")
