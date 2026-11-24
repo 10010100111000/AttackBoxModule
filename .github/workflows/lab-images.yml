@@ -180,6 +180,11 @@ jobs:
                 -e UNION_STATIC_USER_FLAG="TTP{ci_union_user_not_production}"
                 -e UNION_STATIC_ROOT_FLAG="TTP{ci_union_root_not_production}")
               ;;
+            usage)
+              args+=(-e USAGE_REQUIRE_PRIVATE_FLAGS=1
+                -e USAGE_STATIC_USER_FLAG="TTP{ci_usage_user_not_production}"
+                -e USAGE_STATIC_ROOT_FLAG="TTP{ci_usage_root_not_production}")
+              ;;
             validation)
               args+=(-e VALIDATION_REQUIRE_PRIVATE_FLAGS=1
                 -e VALIDATION_STATIC_USER_FLAG="TTP{ci_validation_user_not_production}"

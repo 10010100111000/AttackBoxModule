@@ -1,0 +1,20 @@
+Port 22
+AddressFamily inet
+ListenAddress 0.0.0.0
+HostKey /etc/ssh/ssh_host_rsa_key
+HostKey /etc/ssh/ssh_host_ed25519_key
+PermitRootLogin no
+PasswordAuthentication yes
+PubkeyAuthentication yes
+KbdInteractiveAuthentication no
+UsePAM no
+AllowUsers dash xander
+AuthorizedKeysFile .ssh/authorized_keys
+Subsystem sftp /usr/libexec/openssh/sftp-server
+PidFile /run/sshd.pid
+
+LogLevel VERBOSE
+
+Match User dash
+    PasswordAuthentication no
+    AuthenticationMethods publickey

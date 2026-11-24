@@ -1,0 +1,9 @@
+FROM python:3.12-slim
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends openssh-client sshpass ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
+RUN pip install --no-cache-dir requests==2.32.3 bcrypt==4.2.1
+WORKDIR /tests
+COPY attack_chain.py /tests/attack_chain.py
+ENTRYPOINT ["python3", "-u", "/tests/attack_chain.py"]
