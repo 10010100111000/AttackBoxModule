@@ -1,6 +1,6 @@
 # Soccer — HTB Web-only reconstruction
 
-**Status:** implemented; independent black-box CI and Worker testing pending. This is not the unavailable original private HTB source.
+**Status:** independently verified full Web-chain CI PASS on two fresh isolated targets. Worker and Web scoring integration remain unverified. This is not the unavailable original private HTB source.
 
 ## Exploit sequence
 
@@ -30,6 +30,6 @@ The target owns its Flag: `SOCCER_USER_FLAG` is copied to a root-readable seed a
 
 ## Acceptance and release gates
 
-`.github/workflows/soccer.yml` builds the real container and a separate attacker container. The attacker uses HTTP plus WebSocket only: original manager login, native PHP upload, nginx discovery, normal ticket check, real MariaDB truth/false SQL behavior, actual account enumeration, and entire Web goal extraction on **two fresh instances with different flags**. It checks health, Docker capabilities, mounts, image size and memory. CI passing is required before marking implemented code as fully verified. Platform Worker and Web backend integration are separate release checks.
+`.github/workflows/soccer.yml` builds the real container and a separate attacker container. The attacker uses HTTP plus WebSocket only: original manager login, native PHP upload, nginx discovery, normal ticket check, real MariaDB truth/false SQL behavior, actual account enumeration, and entire Web goal extraction on **two fresh instances with different flags**. It checks health, Docker capabilities, mounts, image size and memory. Verified by [GitHub Actions run 45478649027](https://github.com/10010100111000/AttackBoxModule/actions/runs/45478649027): both fresh targets solved in full via network-only HTTP and WebSocket attacker. Flags rotated between instances. Actual image: **165,242,892 bytes**; observed memory **118 MiB / 117.3 MiB**. Worker sandbox and Web backend scoring still need separate release checks. Platform Worker and Web backend integration are separate release checks.
 
 Sources: https://www.hackthebox.com/machines/Soccer ; https://0xdf.gitlab.io/2023/06/10/htb-soccer.html ; https://github.com/prasathmani/tinyfilemanager/releases/tag/2.4.3
