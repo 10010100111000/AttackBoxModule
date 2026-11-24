@@ -11,6 +11,7 @@ RUN set -eux; \
     mkdir -p /run/mysqld /data/mysql /var/www/html/uploads /home/rektsu; \
     chown mysql:mysql /run/mysqld /data/mysql; \
     chown www-data:www-data /var/www/html/uploads /home/rektsu
+RUN rm -f /var/www/html/index.html
 COPY site/ /var/www/html/
 COPY db/init.sql /opt/zipping/init.sql
 COPY scripts/start.sh /usr/local/bin/zipping-start
