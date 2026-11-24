@@ -14,6 +14,7 @@ install -d -o root -g root -m 0755 /run/usage /var/backups
 install -d -o dash -g xander -m 2775 /var/www/usage/public/uploads/images
 install -d -o dash -g xander -m 0775 /var/www/usage/storage /var/www/usage/bootstrap/cache
 install -d -o dash -g dash -m 0700 /home/dash/.ssh
+chown -R dash:dash /home/dash
 
 if [[ ! -d /var/lib/mysql/mysql ]]; then
   echo "[usage] Initializing genuine MySQL 8.0 datadir"
