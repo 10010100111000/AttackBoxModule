@@ -46,9 +46,9 @@ RUN microdnf module enable -y php:8.1 \
       /var/run/nginx /var/backups /etc/my.cnf.d /etc/sudoers.d \
  && groupadd -r dash \
  && useradd -r -u 1000 -g dash -d /home/dash -s /bin/bash dash \
- && useradd -r -u 1001 -m -s /bin/bash xander \
- && usermod -aG xander dash \
- && useradd -r -g nginx -s /sbin/nologin nginx 2>/dev/null || true
+ && groupadd -r xander \
+ && useradd -r -u 1001 -g xander -m -s /bin/bash xander \
+ && usermod -aG xander dash
 COPY --from=app-build /var/www/usage /var/www/usage
 COPY config/nginx.conf /etc/nginx/nginx.conf
 COPY config/php-fpm.conf /etc/php-fpm.d/www.conf
