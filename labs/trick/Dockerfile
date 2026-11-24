@@ -36,6 +36,7 @@ COPY config/php-pool-payroll.conf /etc/php84/php-fpm.d/payroll.conf
 COPY config/php-pool-marketing.conf /etc/php84/php-fpm.d/marketing.conf
 COPY config/sshd_config /etc/ssh/sshd_config
 COPY config/jail.local /etc/fail2ban/jail.local
+COPY config/trick-sshd.conf /etc/fail2ban/filter.d/trick-sshd.conf
 COPY config/syslog-ng.conf /etc/syslog-ng/syslog-ng.conf
 COPY config/sudoers-michael /etc/sudoers.d/michael
 COPY scripts/entrypoint.sh /usr/local/bin/trick-entrypoint
