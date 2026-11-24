@@ -175,7 +175,7 @@ jobs:
           args=(--network none)
           case "$LAB_SLUG" in
             trick)
-              args+=(--cap-add NET_ADMIN
+              args+=(--cap-drop NET_ADMIN
                 -e TRICK_STATIC_USER_FLAG="TTP{ci_trick_user_not_production}"
                 -e TRICK_STATIC_ROOT_FLAG="TTP{ci_trick_root_not_production}"
                 -e TRICK_TARGET_IPV4="192.0.2.10")
