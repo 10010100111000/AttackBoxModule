@@ -1122,7 +1122,7 @@
         "sqli.boolean-blind",
         "file_upload.unrestricted-upload"
       ],
-      "lab_ci_status": "not_verified",
+      "lab_ci_status": "unverified",
       "worker_status": "not_verified",
       "release_status": "blocked_by_marker",
       "evidence": "",
