@@ -110,6 +110,9 @@ MONIT_PASSWORD="$(openssl rand -hex 8)"
 printf 'xander:%s\n' "$MONIT_PASSWORD" | chpasswd
 cat > /home/dash/.monitrc <<MONIT
 set daemon 60
+set pidfile /home/dash/.monit.pid
+set statefile /home/dash/.monit.state
+set logfile /home/dash/.monit.log
 set httpd port 2812
     use address 127.0.0.1
     allow admin:$MONIT_PASSWORD
