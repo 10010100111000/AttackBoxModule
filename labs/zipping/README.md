@@ -20,7 +20,7 @@ The original private PHP source and theme assets are not available. Functionalit
 
 ```bash
 docker build -t ttp-zipping:local -f labs/zipping/Dockerfile labs/zipping
-docker run -d --name zipping-local --cap-drop ALL --security-opt no-new-privileges --memory 1g --cpus 1.5 --pids-limit 240 -e ZIPPING_USER_FLAG='TTP{example_web_flag}' -p 127.0.0.1:8080:8080 ttp-zipping:local
+docker run -d --name zipping-local --security-opt no-new-privileges --memory 1g --cpus 1.5 --pids-limit 240 -e ZIPPING_USER_FLAG='TTP{example_web_flag}' -p 127.0.0.1:8080:8080 ttp-zipping:local
 docker inspect -f '{{.State.Health.Status}}' zipping-local
 ```
 
