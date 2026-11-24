@@ -961,6 +961,36 @@
         "confidence": "verified_by_independent_black_box_ci"
       },
       "skill_mapping_stage": "browser_and_full_chain_ci_verified"
+    },
+    {
+      "id": "wondercms-xss",
+      "path": "labs/wondercms-xss",
+      "track": "web",
+      "provisional_difficulty": "intermediate",
+      "primary_category": "xss",
+      "secondary_categories": [
+        "auth_session"
+      ],
+      "validated_skills": [
+        "xss.reflected-attribute"
+      ],
+      "implemented_skills": [
+        "xss.reflected-attribute"
+      ],
+      "lab_ci_status": "full_chain_ci",
+      "worker_status": "not_verified",
+      "release_status": "blocked_by_marker",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45229393592",
+      "note": "真实 WonderCMS 3.4.2 属性上下文 XSS；容器内非特权 Bot、独立玩家提交表单、真实管理员浏览器访问、受保护 Flag 经 XSS 回传完整链 CI 通过。生产 Worker 网络/资源仍待验证。",
+      "variant_profile": {
+        "technology": "WonderCMS 3.4.2, PHP 8.2 Alpine, JSON datastore, in-container Python/Chromium admin review bot",
+        "initial_discovery": "正常出版网站 → Contact 表单 Website 字段 → 站点技术识别",
+        "key_constraint_or_mechanism": "CVE-2023-41425 原版 loginURL 表单 action 属性反射型 XSS，需要管理员真实浏览器访问",
+        "attack_path": "侦察 → 提交带 XSS 的 Website URL → 同一靶机容器内 admin bot 登录并巡查 → XSS 读取管理员 Flag → 回连玩家私网监听",
+        "incremental_learning_value": "真实反射型 XSS + 管理员受害者浏览器 + 私网数据外带；不同于单人浏览器 alert 练习",
+        "confidence": "real_browser_and_black_box_player_to_flag_ci_verified"
+      },
+      "skill_mapping_stage": "browser_and_full_chain_ci_verified"
     }
   ],
   "backlog": [

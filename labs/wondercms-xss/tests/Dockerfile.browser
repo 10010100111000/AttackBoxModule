@@ -1,0 +1,7 @@
+# Browser verification is test-only. Chromium is NOT in the vulnerable target.
+FROM python:3.12-alpine
+RUN apk add --no-cache chromium chromium-chromedriver \
+ && pip install --no-cache-dir selenium==4.33.0
+WORKDIR /tests
+COPY browser_acceptance.py /tests/browser_acceptance.py
+CMD ["python3", "/tests/browser_acceptance.py"]

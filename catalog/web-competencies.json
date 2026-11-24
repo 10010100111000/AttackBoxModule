@@ -959,7 +959,20 @@
           "id": "xss.reflected-attribute",
           "title": "HTML 属性上下文",
           "first_target_level": "intermediate",
-          "status": "not_audited"
+          "status": "lab_ci_verified",
+          "validated_scenarios": [
+            {
+              "variant_id": "wondercms-342-admin-form-action",
+              "source_lab": "labs/wondercms-xss",
+              "level": "intermediate",
+              "input_surface": "URL page query",
+              "output_context": "native CMS admin form action HTML attribute",
+              "environment": "real WonderCMS 3.4.2 and Chromium",
+              "proof": "Independent attacker submitted normal Contact form; unprivileged in-target admin Chromium visited original reflected XSS and delivered admin-only Flag via callback",
+              "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45229393592",
+              "production_worker_status": "not_verified"
+            }
+          ]
         },
         {
           "id": "xss.reflected-js",

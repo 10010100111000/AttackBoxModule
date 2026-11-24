@@ -1,0 +1,16 @@
+WonderCMS 3.4.2 now includes its own target-local administrator review bot.
+Worker is only the scheduler and is not expected to implement browser or Flag logic.
+
+Do not publish until:
+1. Full black-box CI proves an ordinary attacker submits a URL through contact.php.
+2. The bot in the target image logs into the real WonderCMS 3.4.2 admin session,
+   visits that URL in sandboxed Chromium, and the reflected XSS retrieves the
+   admin-only per-instance Flag to the attacker's private listener.
+3. A fresh target instance uses a different Flag and admin password and the
+   previous queue/profile/session are gone.
+4. A smoke test on the actual Worker target network proves the target bot can
+   reach only the same user's AttackBox callback path and runs within the
+   configured target resource budget.
+
+No Worker-side bot, browser orchestration, Flag handling or Flag judging is
+required. The Web backend checks the Flag submitted by the learner.

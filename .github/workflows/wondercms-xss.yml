@@ -1,0 +1,102 @@
+name: WonderCMS 3.4.2 reflected XSS with in-container admin bot
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "labs/wondercms-xss/**"
+      - ".github/workflows/wondercms-xss.yml"
+  pull_request:
+    paths:
+      - "labs/wondercms-xss/**"
+      - ".github/workflows/wondercms-xss.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  reflected-xss-admin-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build real WonderCMS 3.4.2 and its target-local Chromium bot
+        run: docker build --progress=plain -t wcms-xss:ci -f labs/wondercms-xss/Dockerfile labs/wondercms-xss
+      - name: Build ordinary learner callback/listener container
+        run: docker build -t wcms-attacker:ci -f labs/wondercms-xss/tests/Dockerfile.attacker labs/wondercms-xss/tests
+      - name: Measure the actual target image
+        run: |
+          docker image inspect wcms-xss:ci --format 'Target image bytes: {{.Size}}'
+      - name: Verify ordinary learner -> contact form -> in-container admin bot -> XSS Flag
+        shell: bash
+        run: |
+          set -euo pipefail
+          network=wcms-xss-ci
+          target=wondercms-target
+          attacker=wondercms-attacker
+          cleanup() {
+            docker logs "$attacker" 2>/dev/null || true
+            docker rm -f "$attacker" 2>/dev/null || true
+            docker logs "$target" 2>/dev/null || true
+            docker rm -f "$target" 2>/dev/null || true
+            docker network rm "$network" 2>/dev/null || true
+          }
+          docker network create --internal "$network"
+          trap cleanup EXIT
+          run_target() {
+            docker run -d --name "$target" --network "$network" \
+              --memory 512m --pids-limit 256 --cpus 1 \
+              -e WONDERCMS_REQUIRE_PRIVATE_FLAGS=1 \
+              -e WONDERCMS_ADMIN_PASSWORD="$1" \
+              -e WONDERCMS_STATIC_XSS_FLAG="$2" wcms-xss:ci
+          }
+          wait_healthy() {
+            for n in $(seq 1 60); do
+              state=$(docker inspect -f '{{.State.Status}}' "$target")
+              if [ "$state" != running ]; then docker logs "$target"; return 1; fi
+              health=$(docker inspect -f '{{.State.Health.Status}}' "$target")
+              if [ "$health" = healthy ]; then return 0; fi
+              if [ "$health" = unhealthy ]; then docker logs "$target"; return 1; fi
+              sleep 2
+            done
+            docker logs "$target"
+            return 1
+          }
+          run_attacker() {
+            echo "Starting independent attacker container"
+            docker rm -f "$attacker" >/dev/null 2>&1 || true
+            docker run -d --network "$network" --name "$attacker" \
+              -e EXPECTED_FLAG="$2" wcms-attacker:ci python3 -u /tests/attack_path.py
+            for n in $(seq 1 100); do
+              state=$(docker inspect -f '{{.State.Status}}' "$attacker")
+              if [ "$state" = exited ]; then
+                code=$(docker inspect -f '{{.State.ExitCode}}' "$attacker")
+                docker logs "$attacker"
+                docker rm -f "$attacker" >/dev/null
+                if [ "$code" != "0" ]; then
+                  docker logs "$target" || true
+                  return 1
+                fi
+                docker logs "$target"
+                return 0
+              fi
+              sleep 1
+            done
+            echo "Attacker test timed out; collecting both logs" >&2
+            docker logs "$attacker" || true
+            docker logs "$target" || true
+            return 1
+          }
+
+          run_target 'wcms-ci-admin-first-instance!' 'TTP{wcms_ci_admin_bot_first}'
+          wait_healthy
+          run_attacker 'unused' 'TTP{wcms_ci_admin_bot_first}'
+          docker stats --no-stream --format 'Target memory: {{.MemUsage}}; PIDs: {{.PIDs}}' "$target"
+          docker rm -f "$target"
+
+          run_target 'wcms-ci-admin-second-instance!' 'TTP{wcms_ci_admin_bot_second}'
+          wait_healthy
+          run_attacker 'unused' 'TTP{wcms_ci_admin_bot_second}'
+          docker logs "$target"
+          echo 'PASS: ordinary attacker obtained the admin-only per-instance Flag only after target-local Chromium visited the reflected-XSS URL'

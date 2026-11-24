@@ -1,0 +1,4 @@
+FROM python:3.12-alpine
+WORKDIR /tests
+COPY attack_path.py /tests/attack_path.py
+CMD ["python3", "/tests/attack_path.py"]

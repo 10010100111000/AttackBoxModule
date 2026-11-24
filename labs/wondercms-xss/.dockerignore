@@ -1,0 +1,5 @@
+.git
+tests/
+README.md
+.release-blocked
+*.log
