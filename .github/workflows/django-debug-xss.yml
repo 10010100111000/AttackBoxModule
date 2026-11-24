@@ -32,7 +32,8 @@ jobs:
       - name: Build independent browser acceptance container
         run: docker build --progress=plain -t django-debug-browser -f labs/django-debug-xss/tests/Dockerfile.browser labs/django-debug-xss/tests
       - name: Measure exact target image size
-        run: docker image inspect django-debug:${{ matrix.mode }} --format 'Target image bytes: {{.Size}}'
+        run: |
+          docker image inspect django-debug:${{ matrix.mode }} --format 'Target image bytes: {{.Size}}'
       - name: Run isolated target and prove database error and browser execution
         shell: bash
         run: |
