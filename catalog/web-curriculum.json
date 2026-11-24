@@ -1033,6 +1033,115 @@
       "skill_mapping_stage": "independent_full_chain_ci_verified"
     },
     {
+      "id": "nodeblog",
+      "path": "labs/nodeblog",
+      "track": "web",
+      "provisional_difficulty": "intermediate",
+      "primary_category": "nosql",
+      "secondary_categories": [
+        "xxe",
+        "deserialization"
+      ],
+      "validated_skills": [
+        "nosql.operator-auth-bypass",
+        "xxe.file-read",
+        "deserialization.unsafe-parse",
+        "deserialization.dependency-gadget"
+      ],
+      "implemented_skills": [
+        "nosql.operator-auth-bypass",
+        "xxe.file-read",
+        "deserialization.unsafe-parse",
+        "deserialization.dependency-gadget"
+      ],
+      "lab_ci_status": "full_chain_ci",
+      "worker_status": "not_verified",
+      "release_status": "blocked_by_marker",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45466022851",
+      "note": "HTB NodeBlog Web-only reconstruction; native MongoDB operator NoSQLi, real libxml2 XXE, vulnerable node-serialize 0.0.4 Cookie RCE and Web-only flag passed two fresh-instance independent HTTP attack-chain CI. Real source based on 2022 writeups, not original HTB private app. No root/sudo/SSH, no additional capabilities. Build image 165215162 bytes; runtime ~135-137 MiB. Worker integration not verified.",
+      "variant_profile": {
+        "technology": "Node.js 20, Express 4, MongoDB 8, Mongoose 8, libxmljs2 0.37.0, node-serialize 0.0.4",
+        "initial_discovery": "Plain blog index with login; admin-only article creation and XML upload exposed after JSON NoSQLi",
+        "key_constraint_or_mechanism": "JSON nested MongoDB operators bypass auth; libxml2 external entity reveals server.js; node-serialize IIFE executes before signed cookie check",
+        "attack_path": "recon -> JSON $ne auth bypass -> authenticated XML XXE source disclosure -> unsafe cookie deserialization RCE -> Web user flag",
+        "incremental_learning_value": "First real MongoDB NoSQLi scenario and native Node XML/deserialization full Web chain; no unrelated Linux escalation",
+        "confidence": "independent_full_web_chain_ci_verified"
+      },
+      "skill_mapping_stage": "independent_full_web_chain_ci_verified"
+    },
+    {
+      "id": "zipping",
+      "path": "labs/zipping",
+      "track": "web",
+      "provisional_difficulty": "intermediate",
+      "primary_category": "file_read",
+      "secondary_categories": [
+        "sqli",
+        "file_upload"
+      ],
+      "validated_skills": [
+        "file_read.file-to-rce",
+        "sqli.union",
+        "sqli.filter-bypass",
+        "sqli.file-operations"
+      ],
+      "implemented_skills": [
+        "file_read.file-to-rce",
+        "sqli.union",
+        "sqli.filter-bypass",
+        "sqli.file-operations"
+      ],
+      "lab_ci_status": "full_chain_ci",
+      "worker_status": "not_verified",
+      "release_status": "blocked_by_marker",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45471673982",
+      "note": "HTB Zipping Web-only reconstruction: real PHP ZipArchive and Info-ZIP symlink extraction (different from original 7z), genuine MariaDB UNION/FILE plus PHP LFI. Two isolated fresh HTTP attack chains passed with distinct Web Flags. No SSH, sudo, Linux root or added Capability. Worker integration unverified.",
+      "variant_profile": {
+        "technology": "Debian Bookworm, Apache 2.4, PHP 8.2, Info-ZIP unzip, MariaDB 10.11",
+        "initial_discovery": "Watch shop and job resume ZIP uploader",
+        "key_constraint_or_mechanism": "Real Info-ZIP extracts Unix ZIP symlink (original p7zip differs); PHP regex newline bypass -> real MariaDB FILE INTO OUTFILE -> PHP LFI include",
+        "attack_path": "Recon -> ZIP symlink read source -> newline SQLi -> MariaDB FILE into /dev/shm -> LFI PHP execution -> Web flag",
+        "incremental_learning_value": "Intermediate archive symlink read combined with SQLi and LFI; original Linux privilege escalation intentionally removed",
+        "confidence": "independent_full_web_chain_ci_verified"
+      },
+      "skill_mapping_stage": "independent_full_web_chain_ci_verified"
+    },
+    {
+      "id": "soccer",
+      "path": "labs/soccer",
+      "track": "web",
+      "provisional_difficulty": "advanced",
+      "primary_category": "websockets",
+      "secondary_categories": [
+        "sqli",
+        "file_upload"
+      ],
+      "validated_skills": [
+        "websockets.blind-sqli",
+        "sqli.boolean-blind",
+        "file_upload.unrestricted-upload"
+      ],
+      "implemented_skills": [
+        "websockets.blind-sqli",
+        "sqli.boolean-blind",
+        "file_upload.unrestricted-upload"
+      ],
+      "lab_ci_status": "full_chain_ci",
+      "worker_status": "not_verified",
+      "release_status": "blocked_by_marker",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45478649027",
+      "note": "Web-only Soccer reconstruction CI PASS: original TFM 2.4.3 native PHP upload -> real nginx vhost discovery -> WebSocket and MariaDB boolean blind SQLi -> per-instance Web Flag. Two separate fresh instances solved by network-only attacker. Image 165242892 bytes, memory 118 MiB / 117.3 MiB; Worker and scoring integration unverified.",
+      "variant_profile": {
+        "technology": "PHP 8.2, original Tiny File Manager 2.4.3, nginx, Node.js 20, ws 8, MariaDB 10.11",
+        "initial_discovery": "Soccer community home -> /tiny/ manager -> PHP upload -> second vhost ticket portal",
+        "key_constraint_or_mechanism": "Real upstream move_uploaded_file, distinct nginx virtual hosts, MySQL boolean oracle via WebSocket JSON id",
+        "attack_path": "HTTP recon -> real PHP upload foothold -> vhost discovery -> WebSocket boolean SQLi -> MariaDB per-instance Web Flag",
+        "incremental_learning_value": "First genuine WebSocket SQLi target with independent ws protocol instead of normal HTTP-only SQLi",
+        "confidence": "independent_black_box_two_fresh_instance_ci_verified"
+      },
+      "skill_mapping_stage": "independent_web_chain_ci_verified"
+    },
+    {
       "id": "trick",
       "path": "labs/trick",
       "track": "web",
@@ -1095,15 +1204,18 @@
       "required_skill_coverage": [
         "file_read.path-traversal"
       ],
-      "status": "planned",
-      "candidate_status": "source_not_selected",
+      "status": "in_progress",
+      "candidate_status": "source_verified",
       "objective": "Web 专项：真实下载/附件功能，路径遍历与文件读取；不得硬编码 Flag 返回",
       "scope": "repeatable_skill_variant_requirement",
       "one_to_many_allowed": true,
       "scenario_variant_focus": "相对路径、嵌套遍历和完整 LFI 可拆成不同难度",
       "candidate_options": [
-        "inject"
-      ]
+        "trick",
+        "inject",
+        "zipping"
+      ],
+      "note": "Zipping is intermediate ZIP symlink file-read plus SQLi + LFI, not a substitute for a separate basic dot-dot traversal lab"
     },
     {
       "id": "nosql-basic",
@@ -1114,15 +1226,17 @@
       "required_skill_coverage": [
         "nosql.operator-auth-bypass"
       ],
-      "status": "planned",
-      "candidate_status": "source_not_selected",
-      "objective": "Web 专项：真实 MongoDB/驱动查询，操作符绕过；可参考 NodeBlog 技术栈但须核实细节",
+      "status": "done",
+      "candidate_status": "lab_ci_verified",
+      "objective": "Web-only NodeBlog: real MongoDB operator auth bypass -> libxml2 XXE file read -> vulnerable node-serialize CVE-2017-5941 command execution; no Linux root stage",
       "scope": "repeatable_skill_variant_requirement",
       "one_to_many_allowed": true,
       "scenario_variant_focus": "Express/MongoDB 的 JSON 操作符；其他语言/输入结构可继续重复",
       "candidate_options": [
         "nodeblog"
-      ]
+      ],
+      "selected_candidate": "nodeblog",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45466022851"
     },
     {
       "id": "sqli-blind",
@@ -1216,15 +1330,18 @@
         "websockets.blind-sqli",
         "sqli.boolean-blind"
       ],
-      "status": "planned",
-      "candidate_status": "source_not_selected",
+      "status": "done",
+      "candidate_status": "lab_ci_verified",
       "objective": "WebSocket 真实盲注与跨服务枚举；Soccer 仅作为候选，核实原始漏洞与运行条件",
       "scope": "repeatable_skill_variant_requirement",
       "one_to_many_allowed": true,
       "scenario_variant_focus": "真实 WS 通道和盲注反馈，不是 HTTP 表单的同一题换皮",
       "candidate_options": [
         "soccer"
-      ]
+      ],
+      "selected_candidate": "soccer",
+      "note": "Actual upstream Tiny File Manager and native ws/MariaDB SQL interpolation; two fresh black-box CI runs required before marking done",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45478649027"
     },
     {
       "id": "ssrf-restricted",
@@ -1780,8 +1897,8 @@
         "deserialization.unsafe-parse"
       ],
       "signature": "Express/MongoDB JSON operator -> XML/source -> node-serialize",
-      "source_status": "official_machine_plus_public_writeup",
-      "review_status": "research_required"
+      "source_status": "official_machine_plus_2022_public_writeups_and_CVE_advisory",
+      "review_status": "lab_ci_verified"
     },
     {
       "id": "precious",
@@ -1805,7 +1922,12 @@
       ],
       "signature": "Tiny File Manager -> WebSocket blind SQLi -> SSH -> doas/dstat",
       "source_status": "official_synopsis_verified",
-      "review_status": "research_required"
+      "review_status": "lab_ci_verified",
+      "evidence_urls": [
+        "https://github.com/10010100111000/AttackBoxModule/actions/runs/45478649027",
+        "https://github.com/10010100111000/AttackBoxModule/pull/23"
+      ],
+      "training_scope": "Web-only PHP upload -> vhost -> real WebSocket boolean SQLi; OS root stages intentionally out of scope"
     },
     {
       "id": "inject",
@@ -1825,11 +1947,12 @@
       "url": "https://www.hackthebox.com/machines/zipping",
       "skills": [
         "file_read.file-to-rce",
-        "file_read.path-traversal"
+        "sqli.file-operations"
       ],
       "signature": "ZIP symlink file read -> SQLi file write -> LFI; archive symlink is not automatically a server parser-mismatch bug",
-      "source_status": "official_synopsis_verified",
-      "review_status": "research_required"
+      "source_status": "official_synopsis_and_public_writeups_verified",
+      "review_status": "lab_ci_verified",
+      "extractor_variance": "Original HTB p7zip differs from the actual Info-ZIP extractor in reconstruction"
     },
     {
       "id": "codify",

@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main class="container">
+    <h1>Blog Articles</h1>
+    <div class="toolbar">
+      <% if (authenticated) { %>
+        <a class="btn green" href="/articles/new">New Article</a>
+        <form method="post" action="/articles/xml" enctype="multipart/form-data" class="upload-form">
+          <input id="article-upload" name="file" type="file" onchange="this.form.submit()" hidden>
+          <label class="btn yellow" for="article-upload">Upload</label>
+        </form>
+      <% } else { %>
+        <a class="btn green" href="/login">Login</a>
+      <% } %>
+    </div>
+    <% articles.forEach(function(article) { %>
+      <article class="card">
+        <h2><%= article.title %></h2>
+        <p class="date"><%= new Date(article.createdAt).toLocaleDateString('en-US') %></p>
+        <p class="snippet"><%= article.description %></p>
+        <a class="btn blue" href="/articles/<%= article.slug %>">Read More</a>
+        <% if (authenticated) { %>
+          <a class="btn cyan" href="/articles/<%= article.slug %>/edit">Edit</a>
+        <% } %>
+      </article>
+    <% }) %>
+  </main>
+</body>
+</html>

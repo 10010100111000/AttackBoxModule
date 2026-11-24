@@ -1,0 +1,75 @@
+name: NodeBlog real Web full-chain CI
+
+on:
+  pull_request:
+    paths:
+      - "labs/nodeblog/**"
+      - ".github/workflows/nodeblog.yml"
+      - "catalog/web-curriculum.json"
+  push:
+    branches: [main]
+    paths:
+      - "labs/nodeblog/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  nodeblog-web-chain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build real single-container NodeBlog target
+        run: docker build --progress=plain -t ttp-nodeblog:ci -f labs/nodeblog/Dockerfile labs/nodeblog
+      - name: Build independent attacker
+        run: docker build -t ttp-nodeblog-attacker:ci -f labs/nodeblog/tests/Dockerfile.attacker labs/nodeblog/tests
+      - name: Test full Web chain on two isolated fresh instances
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker image inspect ttp-nodeblog:ci --format 'Target image bytes: {{.Size}}'
+          docker network create --internal nodeblog-ci
+          cleanup() {
+            docker logs nodeblog-target 2>/dev/null || true
+            docker rm -f nodeblog-target 2>/dev/null || true
+            docker network rm nodeblog-ci 2>/dev/null || true
+          }
+          trap cleanup EXIT
+          wait_healthy() {
+            for i in $(seq 1 120); do
+              state=$(docker inspect -f '{{.State.Status}}' nodeblog-target)
+              health=$(docker inspect -f '{{.State.Health.Status}}' nodeblog-target)
+              if [ "$state" != running ] || [ "$health" = unhealthy ]; then
+                docker logs nodeblog-target
+                exit 1
+              fi
+              if [ "$health" = healthy ]; then return 0; fi
+              sleep 2
+            done
+            docker logs nodeblog-target
+            exit 1
+          }
+          for suffix in one two; do
+            if [ "$suffix" = one ]; then
+              flag='TTP{nodeblog_one_web_flag}'
+            else
+              flag='TTP{nodeblog_two_web_flag}'
+            fi
+            docker run -d --name nodeblog-target \
+              --network nodeblog-ci --network-alias nodeblog-target \
+              --memory 1024m --cpus 1.5 --pids-limit 192 \
+              --cap-drop ALL --security-opt no-new-privileges \
+              -e "NODEBLOG_USER_FLAG=$flag" ttp-nodeblog:ci
+            wait_healthy
+            test "$(docker inspect -f '{{.HostConfig.Privileged}}' nodeblog-target)" = false
+            test "$(docker inspect -f '{{len .HostConfig.CapAdd}}' nodeblog-target)" = 0
+            test "$(docker inspect -f '{{len .Mounts}}' nodeblog-target)" = 0
+            docker run --rm --network nodeblog-ci --memory 128m --cpus 1 \
+              -e TARGET_URL=http://nodeblog-target:5000 \
+              -e "EXPECTED_USER_FLAG=$flag" ttp-nodeblog-attacker:ci
+            docker stats --no-stream --format 'Target memory: {{.MemUsage}}; PIDs: {{.PIDs}}' nodeblog-target
+            docker rm -f nodeblog-target
+          done
+          echo 'PASS: two fresh NodeBlog instances solved independently'
