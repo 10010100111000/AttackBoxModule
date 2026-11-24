@@ -95,7 +95,7 @@ jobs:
           assert host["NetworkMode"] == "trick-ci", host["NetworkMode"]
           assert host["Privileged"] is False
           assert "NET_ADMIN" not in {cap.removeprefix("CAP_") for cap in (host.get("CapAdd") or [])}, host.get("CapAdd")
-          assert "NET_ADMIN" in host.get("CapDrop", []), host.get("CapDrop")
+          assert "NET_ADMIN" in {cap.removeprefix("CAP_") for cap in (host.get("CapDrop") or [])}, host.get("CapDrop")
           assert not state.get("Mounts"), state.get("Mounts")
           assert not host.get("PortBindings"), host.get("PortBindings")
           print("PASS: private network, NET_ADMIN explicitly dropped, no privileged mode, host mounts or published ports")
