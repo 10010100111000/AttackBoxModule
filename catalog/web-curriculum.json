@@ -1296,7 +1296,7 @@
         "sqli.boolean-blind"
       ],
       "status": "in_progress",
-      "candidate_status": "implemented_ci_pending",
+      "candidate_status": "in_progress",
       "objective": "WebSocket 真实盲注与跨服务枚举；Soccer 仅作为候选，核实原始漏洞与运行条件",
       "scope": "repeatable_skill_variant_requirement",
       "one_to_many_allowed": true,
@@ -1866,7 +1866,7 @@
       ],
       "signature": "Tiny File Manager -> WebSocket blind SQLi -> SSH -> doas/dstat",
       "source_status": "official_synopsis_verified",
-      "review_status": "implemented_ci_pending",
+      "review_status": "in_progress",
       "evidence_urls": [
         "https://github.com/10010100111000/AttackBoxModule/pull/23"
       ],
