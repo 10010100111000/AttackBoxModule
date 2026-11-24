@@ -29,12 +29,17 @@ RUN composer dump-autoload --no-dev --optimize \
  && php -l app/Admin/routes.php
 
 FROM container-registry.oracle.com/os/oraclelinux:9-slim AS runtime
+RUN set -eux; \
+    curl -fsSL https://repo.mysql.com/RPM-GPG-KEY-mysql-2023 -o /etc/pki/rpm-gpg/RPM-GPG-KEY-mysql; \
+    rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-mysql; \
+    printf '%s\\n' '[mysql8.0-server-minimal]' 'name=MySQL 8.0 Server Minimal' 'enabled=1' 'baseurl=https://repo.mysql.com/yum/mysql-8.0-community/docker/el/9/$basearch/' 'gpgcheck=1' 'gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-mysql' 'module_hotfixes=true' > /etc/yum.repos.d/mysql-community.repo
 RUN microdnf module enable -y php:8.1 \
  && microdnf install -y oracle-epel-release-el9 \
+ && microdnf install -y mysql-community-server-minimal-8.0.46-1.el9 mysql-community-client-minimal-8.0.46-1.el9 \
  && microdnf install -y \
       php php-cli php-common php-fpm php-pdo php-mysqlnd php-mbstring php-xml \
       php-curl php-bcmath php-zip php-gd php-intl php-opcache \
-      nginx openssh-server sudo shadow-utils procps-ng curl tar gzip unzip \
+      nginx openssh-server openssh-clients sudo shadow-utils procps-ng curl tar gzip unzip \
       p7zip monit openssl hostname findutils \
  && microdnf clean all \
  && mkdir -p /var/www/usage /var/lib/mysql /var/run/mysqld /var/run/php-fpm \
