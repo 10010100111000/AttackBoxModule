@@ -39,7 +39,10 @@ def archive_with_symlink(target):
         info = zipfile.ZipInfo("portfolio.pdf")
         info.create_system = 3
         info.external_attr = (stat.S_IFLNK | 0o777) << 16
-        archive.writestr(info, target)
+        # On Debian p7zip, absolute ZIP link destinations are rebased under
+        # the extraction directory. A relative symlink resolves correctly both
+        # in the temporary extraction directory and after publishing.
+        archive.writestr(info, '../../../../..' + target)
     return out.getvalue()
 
 def leak(target):
