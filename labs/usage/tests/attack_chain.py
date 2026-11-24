@@ -17,6 +17,16 @@ EXPECTED_USER = os.environ["EXPECTED_USER_FLAG"]
 EXPECTED_ROOT = os.environ["EXPECTED_ROOT_FLAG"]
 session = requests.Session()
 session.trust_env = False
+# Player network must not reach database, X Protocol, PHP-FPM or Monit.
+import socket
+for blocked_port in (3306, 33060, 9000, 2812):
+    try:
+        socket.create_connection(("usage.htb", blocked_port), timeout=1).close()
+    except OSError:
+        pass
+    else:
+        raise AssertionError("internal service port %d is reachable from player network" % blocked_port)
+
 
 def token(html):
     match = re.search(r'name="_token"\s+value="([^"]+)"', html)
