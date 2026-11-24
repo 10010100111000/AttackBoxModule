@@ -59,7 +59,7 @@ jobs:
           start_target() {
             docker run -d --name trick-target --network "$network" \
               --network-alias trick-target \
-              --cap-drop NET_ADMIN \
+              --cap-add NET_ADMIN \
               --memory 512m --cpus 2 --pids-limit 256 \
               -e TRICK_STATIC_USER_FLAG="$1" \
               -e TRICK_STATIC_ROOT_FLAG="$2" \
@@ -94,11 +94,11 @@ jobs:
           host = state["HostConfig"]
           assert host["NetworkMode"] == "trick-ci", host["NetworkMode"]
           assert host["Privileged"] is False
-          assert "NET_ADMIN" not in {cap.removeprefix("CAP_") for cap in (host.get("CapAdd") or [])}, host.get("CapAdd")
-          assert "NET_ADMIN" in {cap.removeprefix("CAP_") for cap in (host.get("CapDrop") or [])}, host.get("CapDrop")
+          assert "NET_ADMIN" in {cap.removeprefix("CAP_") for cap in (host.get("CapAdd") or [])}, host.get("CapAdd")
+          assert "NET_ADMIN" not in {cap.removeprefix("CAP_") for cap in (host.get("CapDrop") or [])}, host.get("CapDrop")
           assert not state.get("Mounts"), state.get("Mounts")
           assert not host.get("PortBindings"), host.get("PortBindings")
-          print("PASS: private network, NET_ADMIN explicitly dropped, no privileged mode, host mounts or published ports")
+          print("PASS: private network, target-only NET_ADMIN, no privileged mode, host mounts or published ports")
           PY
 
           if ! docker run --rm --network "$network" --memory 256m --cpus 1 \
