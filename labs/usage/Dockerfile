@@ -32,7 +32,7 @@ FROM container-registry.oracle.com/os/oraclelinux:9-slim AS runtime
 RUN set -eux; \
     curl -fsSL https://repo.mysql.com/RPM-GPG-KEY-mysql-2023 -o /etc/pki/rpm-gpg/RPM-GPG-KEY-mysql; \
     rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-mysql; \
-    printf '%s\\n' '[mysql8.0-server-minimal]' 'name=MySQL 8.0 Server Minimal' 'enabled=1' 'baseurl=https://repo.mysql.com/yum/mysql-8.0-community/docker/el/9/$basearch/' 'gpgcheck=1' 'gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-mysql' 'module_hotfixes=true' > /etc/yum.repos.d/mysql-community.repo
+    printf '%s\n' '[mysql8.0-server-minimal]' 'name=MySQL 8.0 Server Minimal' 'enabled=1' 'baseurl=https://repo.mysql.com/yum/mysql-8.0-community/docker/el/9/$basearch/' 'gpgcheck=1' 'gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-mysql' 'module_hotfixes=true' > /etc/yum.repos.d/mysql-community.repo
 RUN microdnf module enable -y php:8.1 \
  && microdnf install -y oracle-epel-release-el9 \
  && microdnf install -y mysql-community-server-minimal-8.0.46-1.el9 mysql-community-client-minimal-8.0.46-1.el9 \
