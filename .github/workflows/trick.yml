@@ -100,10 +100,20 @@ jobs:
           print("PASS: private network, NET_ADMIN only, no privileged mode, host mounts or published ports")
           PY
 
-          docker run --rm --network "$network" --memory 256m --cpus 1 \
+          if ! docker run --rm --network "$network" --memory 256m --cpus 1 \
             -e EXPECTED_USER_FLAG="$USER_FLAG" \
             -e EXPECTED_ROOT_FLAG="$ROOT_FLAG" \
-            ttp-trick-attacker:ci
+            ttp-trick-attacker:ci; then
+            echo "=== Fail2ban status ==="
+            docker exec trick-target fail2ban-client status sshd || true
+            echo "=== Fail2ban log ==="
+            docker exec trick-target sh -c 'tail -n 100 /var/log/fail2ban.log 2>/dev/null || true'
+            echo "=== system auth log ==="
+            docker exec trick-target sh -c 'tail -n 100 /var/log/messages 2>/dev/null || true'
+            echo "=== iptables rules ==="
+            docker exec trick-target iptables -S || true
+            exit 1
+          fi
 
           docker exec trick-target fail2ban-client status sshd | grep -F "Total banned: 1"
           docker stats --no-stream --format 'Trick target memory: {{.MemUsage}}; PIDs: {{.PIDs}}' trick-target
