@@ -1,0 +1,54 @@
+name: Alert Web application and browser startup CI
+on:
+  pull_request:
+    paths:
+      - "labs/alert/**"
+      - ".github/workflows/alert.yml"
+      - "catalog/web-curriculum.json"
+  push:
+    branches: [main]
+    paths:
+      - "labs/alert/**"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  alert-startup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build PHP Markdown + genuine headless Chromium container
+        run: docker build --progress=plain -t ttp-alert:ci -f labs/alert/Dockerfile labs/alert
+      - name: Start one isolated target and check basic Web behavior
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker image inspect ttp-alert:ci --format 'Target image bytes: {{.Size}}'
+          docker run -d --name alert-ci --memory 1100m --cpus 2 --pids-limit 256 --security-opt no-new-privileges \
+            -e ALERT_USER_FLAG='TTP{alert_ci_web_flag}' -p 127.0.0.1:18080:8080 ttp-alert:ci
+          cleanup() { docker logs alert-ci || true; docker rm -f alert-ci || true; }
+          trap cleanup EXIT
+          ready=0
+          for i in $(seq 1 70); do
+            status=$(docker inspect -f '{{.State.Status}}' alert-ci)
+            health=$(docker inspect -f '{{.State.Health.Status}}' alert-ci)
+            if [ "$status" != running ] || [ "$health" = unhealthy ]; then
+              docker logs alert-ci
+              exit 1
+            fi
+            if [ "$health" = healthy ]; then ready=1; break; fi
+            sleep 2
+          done
+          test "$ready" = 1
+          curl -fsS http://127.0.0.1:18080/index.php?page=alert | grep -q 'Visualize your Markdown'
+          curl -fsS http://127.0.0.1:18080/index.php?page=contact | grep -q 'name="message"'
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:18080/messages.php)" = 403
+          printf '# Example\n\n**Real markdown rendering**\n' > /tmp/alert-ci.md
+          curl -fsS -F file=@/tmp/alert-ci.md http://127.0.0.1:18080/visualizer.php | grep -q '<strong>Real markdown rendering</strong>'
+          test "$(docker inspect -f '{{.HostConfig.Privileged}}' alert-ci)" = false
+          test "$(docker inspect -f '{{len .HostConfig.CapAdd}}' alert-ci)" = 0
+          docker stats --no-stream --format 'Target memory: {{.MemUsage}}, PIDs: {{.PIDs}}' alert-ci
+          echo 'PASS: ordinary Markdown rendering and public access control; reviewer flow is not validated'
+      - name: Record verification scope
+        run: echo 'CI smoke passed; full lab flow requires separate manual acceptance.' >> "$GITHUB_STEP_SUMMARY"

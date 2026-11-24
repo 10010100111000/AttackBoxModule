@@ -1,0 +1,9 @@
+Release remains blocked.
+
+Current policy (2026-11-25): CI only checks build, startup, health and ordinary smoke behavior.
+No automated exploitation, Flag-retrieval or privilege-chain CI is required.
+Historical CI evidence stays in the catalog; it does not become manual acceptance.
+
+当前待验收事项：人工题目流程与重置记录、实际 Worker/Web 集成尚需验收；靶机内 Bot 不交由 Worker 管理。
+
+需先补实际人工验收和平台证据，再经明确批准解除限制；不得将脆弱服务暴露到公网。
