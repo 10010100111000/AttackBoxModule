@@ -47,7 +47,7 @@ There are no mock SQL parsers, fake file-read endpoints, simulated shell outputs
     docker network create --internal trick-lab
     docker run -d --name trick-target --network trick-lab \
       --network-alias trick.htb --network-alias preprod-payroll.trick.htb \
-      --cap-add NET_ADMIN --memory 512m --cpus 2 --pids-limit 256 \
+      --cap-drop NET_ADMIN --memory 512m --cpus 2 --pids-limit 256 \
       -e TRICK_STATIC_USER_FLAG='TTP{private_user_flag}' \
       -e TRICK_STATIC_ROOT_FLAG='TTP{private_root_flag}' \
       ttp-trick:dev
