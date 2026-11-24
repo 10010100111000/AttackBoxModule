@@ -20,7 +20,7 @@
 5. Browse the Marketing site and inspect its page parameter. The PHP application removes ../ once, so a nested ....// path reaches real files.
 6. Read the actual michael SSH private key through PHP-FPM, then authenticate to the target's real OpenSSH server.
 7. Inspect the security group, the Fail2ban action directory and the exact sudo command.
-8. Replace the real iptables-multiport action's actionban command, restart Fail2ban, trigger the SSH jail and read the Root Flag after the temporary ban expires.
+8. Replace the active iptables-multiport wrapper's inherited actionban command, restart Fail2ban, trigger the SSH jail and read the Root Flag after the temporary ban expires.
 
 The root-stage behavior follows the public Trick writeup's Fail2ban action misconfiguration. The action copies the protected Root Flag to a temporary path while running as root; this reconstruction proves the Root Flag read rather than claiming that the player receives a persistent root shell.
 
@@ -34,7 +34,7 @@ The root-stage behavior follows the public Trick writeup's Fail2ban action misco
 | Database | MariaDB; the remo account has SELECT on the application schema and the genuine global FILE privilege |
 | Marketing | PHP-FPM pool runs as the real michael Unix account |
 | SSH | OpenSSH; a real per-instance keypair is generated for michael |
-| Privilege boundary | Fail2ban 1.1, iptables, a real group-writable action directory and a real sudo service restart |
+| Privilege boundary | Fail2ban 1.1, an OpenSSH-session-aware Fail2ban filter, iptables, a real group-writable action directory and a real sudo service restart |
 
 The original machine used an older Linux/web stack. This reconstruction uses a small supported Alpine 3.22 base and current packaged services while preserving the vulnerable behaviors and the OS identity/permission boundaries. The SMTP/mail-spool alternate route is intentionally omitted; the main DNS → SQLi/FILE → PHP include → SSH → Fail2ban path is retained.
 
