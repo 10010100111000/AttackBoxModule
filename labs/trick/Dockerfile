@@ -13,6 +13,7 @@ RUN apk add --no-cache \
       mariadb mariadb-client \
       openssh-server sudo \
       fail2ban fail2ban-openrc iptables iproute2 \
+      syslog-ng syslog-ng-openrc \
       shadow openssl curl \
     && rm -f /etc/nginx/http.d/default.conf \
     && addgroup -S security \
@@ -35,6 +36,7 @@ COPY config/php-pool-payroll.conf /etc/php84/php-fpm.d/payroll.conf
 COPY config/php-pool-marketing.conf /etc/php84/php-fpm.d/marketing.conf
 COPY config/sshd_config /etc/ssh/sshd_config
 COPY config/jail.local /etc/fail2ban/jail.local
+COPY config/syslog-ng.conf /etc/syslog-ng/syslog-ng.conf
 COPY config/sudoers-michael /etc/sudoers.d/michael
 COPY scripts/entrypoint.sh /usr/local/bin/trick-entrypoint
 COPY scripts/healthcheck.sh /usr/local/bin/trick-healthcheck
