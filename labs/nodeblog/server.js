@@ -17,14 +17,14 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(express.static('/opt/blog/public', { index: false }));
 
-// Actual vulnerable node-serialize <=0.0.4: functions evaluate during
+// Actual vulnerable node-serialize version 0.0.4: functions evaluate during
 // unserialize(), before the application performs its subsequent signature check.
 function authenticated(c) {
   if (typeof c === 'undefined') return false;
   try {
     c = serialize.unserialize(c);
-    return Boolean(c && c.sign === crypto.createHash('md5')
-      .update(cookie_secret + c.user).digest('hex'));
+    return Boolean(c ? c.sign === crypto.createHash('md5')
+      .update(cookie_secret + c.user).digest('hex') : false);
   } catch (_err) {
     return false;
   }
