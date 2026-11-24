@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "updated_on": "2026-11-23",
+  "updated_on": "2026-11-25",
   "main_snapshot_commit": "45c2e88165342dca8ce3583c33659651f5c3c7f2",
   "purpose": "trytopwn Web 题库选题、覆盖率与验收状态的唯一结构化索引；每次新增靶机时维护本文件与 docs/WEB_ROADMAP.md",
   "difficulty_is_provisional": true,
@@ -1031,6 +1031,37 @@
         "confidence": "independent_full_chain_ci_verified"
       },
       "skill_mapping_stage": "independent_full_chain_ci_verified"
+    },
+    {
+      "id": "trick",
+      "path": "labs/trick",
+      "track": "web",
+      "provisional_difficulty": "intermediate",
+      "primary_category": "file_read",
+      "secondary_categories": [
+        "sqli"
+      ],
+      "validated_skills": [],
+      "implemented_skills": [
+        "file_read.nested-traversal",
+        "file_read.lfi",
+        "sqli.auth-bypass",
+        "sqli.file-operations"
+      ],
+      "lab_ci_status": "unverified",
+      "worker_status": "not_verified",
+      "release_status": "blocked_by_marker",
+      "evidence": "",
+      "note": "HTB Trick independent reconstruction. Real BIND AXFR/PTR, PHP/MariaDB SQLi and FILE privilege, PHP-FPM LFI under michael, OpenSSH key foothold and real Fail2ban action misconfiguration. NET_ADMIN is required only inside this target's private network namespace. Awaiting independent CI and Worker verification.",
+      "variant_profile": {
+        "technology": "Alpine 3.22, Nginx, PHP 8.4, MariaDB, BIND, OpenSSH, Fail2ban, iptables",
+        "initial_discovery": "Reverse DNS and AXFR reveal the Payroll virtual host; the Marketing vhost is discovered from the real Nginx configuration",
+        "key_constraint_or_mechanism": "MariaDB FILE access is limited by the mysql Unix identity; Marketing PHP-FPM runs as michael; a one-pass ../ removal is bypassed with nested ....//; Fail2ban action directory is group-writable and service restart is narrowly allowed by sudo",
+        "attack_path": "PTR/AXFR -> Payroll login SQLi -> MariaDB LOAD_FILE of Nginx config -> Marketing vhost -> nested PHP include -> michael SSH key -> Fail2ban action replacement -> root-run action discloses Root Flag",
+        "incremental_learning_value": "Adds a file-read/LFI path with a real Unix service-account boundary, nested traversal filter bypass, DNS reconnaissance and a genuine Fail2ban root action; SQLi is a discovery mechanism rather than the main learning objective",
+        "confidence": "implementation_under_independent_ci"
+      },
+      "skill_mapping_stage": "implementation_under_independent_ci"
     }
   ],
   "backlog": [
@@ -1071,7 +1102,6 @@
       "one_to_many_allowed": true,
       "scenario_variant_focus": "相对路径、嵌套遍历和完整 LFI 可拆成不同难度",
       "candidate_options": [
-        "trick",
         "inject"
       ]
     },
@@ -1629,6 +1659,26 @@
       "scenario_variant_focus": "浏览器 DOM clobbering 与真实 JS sink",
       "candidate_options": [],
       "objective": "浏览器 DOM clobbering 与真实 JS sink"
+    },
+    {
+      "id": "file-read-nested",
+      "priority": 34,
+      "difficulty": "intermediate",
+      "track": "web_focus",
+      "primary_category": "file_read",
+      "required_skill_coverage": [
+        "file_read.nested-traversal",
+        "file_read.lfi"
+      ],
+      "status": "in_progress",
+      "candidate_status": "in_progress",
+      "objective": "HTB Trick reconstruction: real PHP nested traversal and local file inclusion, discovered through DNS, SQLi FILE and virtual-host enumeration",
+      "scope": "repeatable_skill_variant_requirement",
+      "one_to_many_allowed": true,
+      "scenario_variant_focus": "PHP str_replace('../','', path normalization; nested ....// traversal; PHP-FPM worker identity determines which files can be read",
+      "candidate_options": [
+        "trick"
+      ]
     }
   ],
   "skills_catalog": "catalog/web-competencies.json",
@@ -1717,9 +1767,9 @@
         "file_read.nested-traversal",
         "sqli.file-operations"
       ],
-      "signature": "DNS/vhost -> SQLi FILE -> LFI -> SSH -> fail2ban",
+      "signature": "PTR/AXFR -> payroll SQLi/LOAD_FILE -> marketing nested LFI -> SSH -> Fail2ban action",
       "source_status": "public_writeup_observed",
-      "review_status": "research_required"
+      "review_status": "in_progress"
     },
     {
       "id": "nodeblog",

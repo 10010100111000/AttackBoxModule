@@ -1,0 +1,12 @@
+$TTL 604800
+@ IN SOA trick.htb. root.trick.htb. (
+    2026112501
+    604800
+    86400
+    2419200
+    604800
+)
+@ IN NS trick.htb.
+@ IN A 127.0.0.1
+@ IN AAAA ::1
+preprod-payroll IN CNAME trick.htb.

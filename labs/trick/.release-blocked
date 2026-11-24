@@ -1,0 +1,1 @@
+Production release is blocked until the real Worker is verified to grant NET_ADMIN only to this target in its own isolated network namespace, with no host network, privileged mode, host mounts or Docker socket. The platform's static-answer configuration must also be checked. Do not publish this vulnerable image to a public network.
