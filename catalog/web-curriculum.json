@@ -1105,6 +1105,37 @@
         "confidence": "independent_full_web_chain_ci_verified"
       },
       "skill_mapping_stage": "independent_full_web_chain_ci_verified"
+    },
+    {
+      "id": "soccer",
+      "path": "labs/soccer",
+      "track": "web",
+      "provisional_difficulty": "advanced",
+      "primary_category": "websockets",
+      "secondary_categories": [
+        "sqli",
+        "file_upload"
+      ],
+      "validated_skills": [],
+      "implemented_skills": [
+        "websockets.blind-sqli",
+        "sqli.boolean-blind",
+        "file_upload.unrestricted-upload"
+      ],
+      "lab_ci_status": "not_verified",
+      "worker_status": "not_verified",
+      "release_status": "blocked_by_marker",
+      "evidence": "",
+      "note": "HTB Soccer Web-only reconstruction: pinned upstream Tiny File Manager 2.4.3 native PHP upload, dual nginx vhosts and real Node ws/MariaDB boolean blind SQLi; independent dual-instance CI pending. Original private app source unavailable; no SSH/doas/root chain.",
+      "variant_profile": {
+        "technology": "PHP 8.2, original Tiny File Manager 2.4.3, nginx, Node.js 20, ws 8, MariaDB 10.11",
+        "initial_discovery": "Soccer community home -> /tiny/ manager -> PHP upload -> second vhost ticket portal",
+        "key_constraint_or_mechanism": "Real upstream move_uploaded_file, distinct nginx virtual hosts, MySQL boolean oracle via WebSocket JSON id",
+        "attack_path": "HTTP recon -> real PHP upload foothold -> vhost discovery -> WebSocket boolean SQLi -> MariaDB per-instance Web Flag",
+        "incremental_learning_value": "First genuine WebSocket SQLi target with independent ws protocol instead of normal HTTP-only SQLi",
+        "confidence": "source_and_static_checks_only_pending_full_chain_ci"
+      },
+      "skill_mapping_stage": "implementation_requires_ci"
     }
   ],
   "backlog": [
@@ -1264,15 +1295,17 @@
         "websockets.blind-sqli",
         "sqli.boolean-blind"
       ],
-      "status": "planned",
-      "candidate_status": "source_not_selected",
+      "status": "in_progress",
+      "candidate_status": "implemented_ci_pending",
       "objective": "WebSocket 真实盲注与跨服务枚举；Soccer 仅作为候选，核实原始漏洞与运行条件",
       "scope": "repeatable_skill_variant_requirement",
       "one_to_many_allowed": true,
       "scenario_variant_focus": "真实 WS 通道和盲注反馈，不是 HTTP 表单的同一题换皮",
       "candidate_options": [
         "soccer"
-      ]
+      ],
+      "selected_candidate": "soccer",
+      "note": "Actual upstream Tiny File Manager and native ws/MariaDB SQL interpolation; two fresh black-box CI runs required before marking done"
     },
     {
       "id": "ssrf-restricted",
@@ -1833,7 +1866,11 @@
       ],
       "signature": "Tiny File Manager -> WebSocket blind SQLi -> SSH -> doas/dstat",
       "source_status": "official_synopsis_verified",
-      "review_status": "research_required"
+      "review_status": "implemented_ci_pending",
+      "evidence_urls": [
+        "https://github.com/10010100111000/AttackBoxModule/pull/23"
+      ],
+      "training_scope": "Web-only PHP upload -> vhost -> real WebSocket boolean SQLi; OS root stages intentionally out of scope"
     },
     {
       "id": "inject",
