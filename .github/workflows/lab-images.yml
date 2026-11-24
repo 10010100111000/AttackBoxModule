@@ -1,6 +1,10 @@
 name: Build and publish lab images
 
 on:
+  pull_request:
+    paths:
+      - "labs/**"
+      - ".github/workflows/lab-images.yml"
   push:
     branches: [main]
     paths:
@@ -163,9 +167,26 @@ jobs:
       - name: Check startup and health
         env:
           IMAGE: ${{ matrix.image }}
+          LAB_SLUG: ${{ matrix.slug }}
         run: |
           set -euo pipefail
-          test_container=$(docker run -d --network none "$IMAGE")
+          # Keep all smoke-test containers disconnected from external networks.
+          # Only the explicitly selected lab receives its required capability.
+          args=(--network none)
+          case "$LAB_SLUG" in
+            union)
+              args+=(--cap-add NET_ADMIN
+                -e UNION_REQUIRE_PRIVATE_FLAGS=1
+                -e UNION_STATIC_USER_FLAG="TTP{ci_union_user_not_production}"
+                -e UNION_STATIC_ROOT_FLAG="TTP{ci_union_root_not_production}")
+              ;;
+            validation)
+              args+=(-e VALIDATION_REQUIRE_PRIVATE_FLAGS=1
+                -e VALIDATION_STATIC_USER_FLAG="TTP{ci_validation_user_not_production}"
+                -e VALIDATION_STATIC_ROOT_FLAG="TTP{ci_validation_root_not_production}")
+              ;;
+          esac
+          test_container=$(docker run -d "${args[@]}" "$IMAGE")
           cleanup() { docker logs "$test_container"; docker rm -f "$test_container"; }
           trap cleanup EXIT
           export TEST_CONTAINER="$test_container"
