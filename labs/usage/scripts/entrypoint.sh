@@ -98,7 +98,7 @@ chmod 0640 /var/www/usage/.env
 cd /var/www/usage
 php artisan key:generate --force --no-interaction
 php artisan config:clear
-php artisan admin:install --no-interaction
+APP_ENV=local php artisan admin:install --no-interaction
 php artisan db:seed --class=Database\\Seeders\\UsageSeeder --force --no-interaction
 php artisan config:cache
 php artisan route:cache
