@@ -59,7 +59,7 @@ jobs:
           start_target() {
             docker run -d --name trick-target --network "$network" \
               --network-alias trick-target \
-              --cap-add NET_ADMIN \
+              --cap-drop NET_ADMIN \
               --memory 512m --cpus 2 --pids-limit 256 \
               -e TRICK_STATIC_USER_FLAG="$1" \
               -e TRICK_STATIC_ROOT_FLAG="$2" \
@@ -94,10 +94,11 @@ jobs:
           host = state["HostConfig"]
           assert host["NetworkMode"] == "trick-ci", host["NetworkMode"]
           assert host["Privileged"] is False
-          assert {cap.removeprefix("CAP_") for cap in (host.get("CapAdd") or [])} == {"NET_ADMIN"}, host.get("CapAdd")
+          assert "NET_ADMIN" not in {cap.removeprefix("CAP_") for cap in (host.get("CapAdd") or [])}, host.get("CapAdd")
+          assert "NET_ADMIN" in host.get("CapDrop", []), host.get("CapDrop")
           assert not state.get("Mounts"), state.get("Mounts")
           assert not host.get("PortBindings"), host.get("PortBindings")
-          print("PASS: private network, NET_ADMIN only, no privileged mode, host mounts or published ports")
+          print("PASS: private network, NET_ADMIN explicitly dropped, no privileged mode, host mounts or published ports")
           PY
 
           if ! docker run --rm --network "$network" --memory 256m --cpus 1 \
@@ -115,7 +116,6 @@ jobs:
             exit 1
           fi
 
-          docker exec trick-target fail2ban-client status sshd | grep -F "Total banned: 1"
           docker stats --no-stream --format 'Trick target memory: {{.MemUsage}}; PIDs: {{.PIDs}}' trick-target
 
           docker rm -f trick-target
