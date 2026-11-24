@@ -45,7 +45,7 @@ jobs:
             fi
             docker run -d --name zipping-target \
               --network zipping-ci --network-alias zipping-target \
-              --cap-drop ALL --security-opt no-new-privileges \
+              --security-opt no-new-privileges \
               --memory 1g --cpus 1.5 --pids-limit 240 \
               -e "ZIPPING_USER_FLAG=$flag" ttp-zipping:ci
             ready=0
