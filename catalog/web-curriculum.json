@@ -1068,6 +1068,38 @@
         "confidence": "independent_full_web_chain_ci_verified"
       },
       "skill_mapping_stage": "independent_full_web_chain_ci_verified"
+    },
+    {
+      "id": "zipping",
+      "path": "labs/zipping",
+      "track": "web",
+      "provisional_difficulty": "intermediate",
+      "primary_category": "file_read",
+      "secondary_categories": [
+        "sqli",
+        "file_upload"
+      ],
+      "validated_skills": [],
+      "implemented_skills": [
+        "file_read.file-to-rce",
+        "sqli.union",
+        "sqli.filter-bypass",
+        "sqli.file-operations"
+      ],
+      "lab_ci_status": "partial",
+      "worker_status": "not_verified",
+      "release_status": "blocked_by_marker",
+      "evidence": "pending independent CI",
+      "note": "Web-only HTB Zipping reconstruction, genuine PHP ZipArchive, 7z, PDO MariaDB, FILE privilege and LFI. No Linux root, SSH or sudo.",
+      "variant_profile": {
+        "technology": "Debian Bookworm, Apache, PHP 8.2, p7zip, MariaDB 10.11",
+        "initial_discovery": "Watch shop and job resume ZIP uploader",
+        "key_constraint_or_mechanism": "Native ZIP symlink preserved by 7z; newline bypass of PHP regex; MariaDB SQL UNION FILE OUTFILE; PHP file_exists include",
+        "attack_path": "Recon -> ZIP symlink read source -> newline SQLi -> MariaDB FILE into /dev/shm -> LFI PHP execution -> Web flag",
+        "incremental_learning_value": "Intermediate archive symlink read combined with SQLi and LFI; original Linux privilege escalation intentionally removed",
+        "confidence": "code_written_full_chain_ci_pending"
+      },
+      "skill_mapping_stage": "pending_black_box_verification"
     }
   ],
   "backlog": [
@@ -1101,16 +1133,18 @@
       "required_skill_coverage": [
         "file_read.path-traversal"
       ],
-      "status": "planned",
-      "candidate_status": "source_not_selected",
+      "status": "in_progress",
+      "candidate_status": "source_verified",
       "objective": "Web 专项：真实下载/附件功能，路径遍历与文件读取；不得硬编码 Flag 返回",
       "scope": "repeatable_skill_variant_requirement",
       "one_to_many_allowed": true,
       "scenario_variant_focus": "相对路径、嵌套遍历和完整 LFI 可拆成不同难度",
       "candidate_options": [
         "trick",
-        "inject"
-      ]
+        "inject",
+        "zipping"
+      ],
+      "note": "Zipping is intermediate ZIP symlink file-read plus SQLi + LFI, not a substitute for a separate basic dot-dot traversal lab"
     },
     {
       "id": "nosql-basic",
@@ -1817,8 +1851,8 @@
         "file_read.path-traversal"
       ],
       "signature": "ZIP symlink file read -> SQLi file write -> LFI; archive symlink is not automatically a server parser-mismatch bug",
-      "source_status": "official_synopsis_verified",
-      "review_status": "research_required"
+      "source_status": "official_synopsis_and_public_writeups_verified",
+      "review_status": "in_progress"
     },
     {
       "id": "codify",
