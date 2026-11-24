@@ -1,0 +1,54 @@
+{
+  "name": "trytopwn/usage-reconstruction",
+  "type": "project",
+  "description": "HTB Usage-inspired real Laravel/MySQL blind SQL injection and Laravel-admin upload lab",
+  "license": "UNLICENSED",
+  "require": {
+    "php": "^8.1",
+    "ext-bcmath": "*",
+    "ext-curl": "*",
+    "ext-fileinfo": "*",
+    "ext-json": "*",
+    "ext-mbstring": "*",
+    "ext-openssl": "*",
+    "ext-pdo": "*",
+    "ext-tokenizer": "*",
+    "ext-xml": "*",
+    "encore/laravel-admin": "1.8.19",
+    "guzzlehttp/guzzle": "7.8.1",
+    "laravel/framework": "10.18.0",
+    "laravel/sanctum": "3.3.3",
+    "laravel/tinker": "2.8.2"
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "app/",
+      "Database\\Factories\\": "database/factories/",
+      "Database\\Seeders\\": "database/seeders/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\": "tests/"
+    }
+  },
+  "scripts": {
+    "post-autoload-dump": [
+      "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
+      "@php artisan package:discover --ansi"
+    ]
+  },
+  "config": {
+    "optimize-autoloader": true,
+    "preferred-install": "dist",
+    "sort-packages": true,
+    "allow-plugins": {
+      "php-http/discovery": true
+    },
+    "platform": {
+      "php": "8.1.2"
+    }
+  },
+  "minimum-stability": "stable",
+  "prefer-stable": true
+}
