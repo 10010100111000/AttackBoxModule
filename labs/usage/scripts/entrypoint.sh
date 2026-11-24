@@ -24,7 +24,8 @@ fi
 MYSQL_SOCKET=/var/lib/mysql/mysql.sock
 mysqld --user=mysql --datadir=/var/lib/mysql --socket="$MYSQL_SOCKET" \
   --pid-file=/var/run/mysqld/mysqld.pid --bind-address=127.0.0.1 \
-  --innodb-buffer-pool-size=96M --performance-schema=OFF &
+  --innodb-buffer-pool-size=96M --performance-schema=OFF \
+  --mysqlx=OFF --mysqlx-bind-address=127.0.0.1 &
 MYSQL_PID=$!
 
 for i in $(seq 1 90); do
