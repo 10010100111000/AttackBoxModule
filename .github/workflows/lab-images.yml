@@ -247,6 +247,10 @@ jobs:
             intense)
               args+=(-e INTENSE_WEB_FLAG="TTP{ci_intense_smoke_only}")
               ;;
+            impresscms)
+              args+=(-p 127.0.0.1:18082:80
+                -e IMPCMS_ADMIN_PASSWORD="CI-Admin-Only-2026")
+              ;;
           esac
           test_container=$(docker run -d "${args[@]}" "$IMAGE")
           cleanup() { docker logs "$test_container"; docker rm -f "$test_container"; }
@@ -281,6 +285,16 @@ jobs:
               test "$code" = "403"
             '
             echo "PASS: Intense homepage, login form, source archive, guest login, normal message submission and guest admin access control"
+          fi
+          if [ "$LAB_SLUG" = "impresscms" ]; then
+            base="http://127.0.0.1:18082"
+            curl -fsS "$base/" | grep -qi "impresscms"
+            curl -fsS "$base/user.php" | grep -q 'name="uname"'
+            curl -fsS -c /tmp/impresscms-cookies -b /tmp/impresscms-cookies \
+              -d 'uname=admin&pass=CI-Admin-Only-2026&op=login' "$base/user.php" -o /tmp/impresscms-login
+            curl -fsS -b /tmp/impresscms-cookies "$base/modules/system/admin.php" | grep -qi "admin"
+            curl -fsS "$base/modules/content/" -o /tmp/impresscms-content
+            echo "PASS: ImpressCMS homepage, login form, administrator login, system admin page and Content module page"
           fi
       - name: Publish tested image
         if: github.event_name == 'workflow_dispatch'
