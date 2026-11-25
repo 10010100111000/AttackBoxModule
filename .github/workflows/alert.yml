@@ -3,7 +3,6 @@ on:
   pull_request:
     paths:
       - "labs/alert/**"
-      - ".github/workflows/alert.yml"
   push:
     branches: [main]
     paths:
