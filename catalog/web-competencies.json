@@ -268,6 +268,12 @@
           "title": "会话固定与登录状态切换",
           "first_target_level": "intermediate",
           "status": "not_audited"
+        },
+        {
+          "id": "auth_session.type-confusion",
+          "title": "认证流程中的类型混淆与比较语义",
+          "first_target_level": "advanced",
+          "status": "not_audited"
         }
       ]
     },
@@ -390,6 +396,12 @@
         {
           "id": "command_injection.escape-context",
           "title": "引号/转义/过滤环境下的上下文突破",
+          "first_target_level": "advanced",
+          "status": "not_audited"
+        },
+        {
+          "id": "command_injection.server-side-code-evaluation",
+          "title": "服务器端动态代码执行（PHP eval）",
           "first_target_level": "advanced",
           "status": "not_audited"
         }
@@ -1038,6 +1050,12 @@
           "id": "xss.cross-user-action",
           "title": "由浏览器脚本完成跨用户权限操作",
           "first_target_level": "advanced",
+          "status": "not_audited"
+        },
+        {
+          "id": "xss.output-context",
+          "title": "用户可控数据输出上下文与编码缺陷",
+          "first_target_level": "intermediate",
           "status": "not_audited"
         },
         {
