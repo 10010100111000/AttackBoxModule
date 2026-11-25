@@ -36,58 +36,102 @@ jobs:
       matrix: ${{ steps.plan.outputs.matrix }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - id: plan
         env:
-          SELECTED_DIRECTORY: ${{ inputs.directory }}
-          RELEASE_VERSION: ${{ inputs.version }}
-          EVENT_NAME: ${{ github.event_name }}
+          SELECTED_DIRECTORY: \${{ inputs.directory }}
+          RELEASE_VERSION: \${{ inputs.version }}
+          EVENT_NAME: \${{ github.event_name }}
+          PR_BASE_SHA: \${{ github.event.pull_request.base.sha }}
+          PUSH_BEFORE_SHA: \${{ github.event.before }}
+          HEAD_SHA: \${{ github.sha }}
         run: |
           python3 <<'PY'
-          import json, os, re
+          import json, os, re, subprocess
           from pathlib import Path
+
           repo = Path.cwd().resolve()
           root = (repo / os.environ['IMAGE_ROOT']).resolve()
           root.relative_to(repo)
           if not root.is_dir():
               raise SystemExit('IMAGE_ROOT 目录不存在，请修改工作流中的 IMAGE_ROOT')
+
+          event = os.environ['EVENT_NAME']
           selected = os.environ.get('SELECTED_DIRECTORY', '').strip()
           selected_path = (repo / selected).resolve() if selected else None
           if selected_path:
               selected_path.relative_to(root)
+
           owner = os.environ['GITHUB_REPOSITORY_OWNER'].lower()
-          publishing = os.environ['EVENT_NAME'] == 'workflow_dispatch'
+          publishing = event == 'workflow_dispatch'
           version = os.environ.get('RELEASE_VERSION', '').strip()
-          # A lab may be merged for development but explicitly blocked from release.
-          # Only manual GHCR publishing is gated; pull-request builds still run.
-          if publishing and selected_path and (selected_path / ".release-blocked").is_file():
-              raise SystemExit(f'{selected}: release blocked; see {selected}/.release-blocked')
+
           if publishing:
-              if not selected:
-                  raise SystemExit('发布时必须指定一个靶机目录')
+              if not selected_path or not (selected_path / 'Dockerfile').is_file():
+                  raise SystemExit('发布时必须指定包含 Dockerfile 的靶机目录')
+              if (selected_path / '.release-blocked').is_file():
+                  raise SystemExit(f'{selected}: release blocked; see {selected}/.release-blocked')
               if len(version) > 32 or not re.fullmatch(r'(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)', version):
                   raise SystemExit('版本号使用三段数字，例如 1.0.0，不含 v 前缀')
+              selected_dirs = {selected_path}
+          else:
+              if event == 'pull_request':
+                  base = os.environ.get('PR_BASE_SHA', '')
+                  head = os.environ['HEAD_SHA']
+              elif event == 'push':
+                  base = os.environ.get('PUSH_BEFORE_SHA', '')
+                  head = os.environ['HEAD_SHA']
+                  if not base or set(base) == {'0'}:
+                      base = subprocess.check_output(['git', 'rev-parse', f'{head}^'], text=True).strip()
+              else:
+                  raise SystemExit(f'不支持的事件类型: {event}')
+
+              changed = subprocess.check_output(
+                  ['git', 'diff', '--name-only', '--diff-filter=ACMRT', f'{base}...{head}'],
+                  text=True
+              ).splitlines()
+              selected_dirs = set()
+              root_rel = root.relative_to(repo)
+              for name in changed:
+                  path = Path(name)
+                  try:
+                      rel = path.relative_to(root_rel)
+                  except ValueError:
+                      continue
+                  candidate = root / rel
+                  if candidate.is_file():
+                      candidate = candidate.parent
+                  while candidate != root and root in candidate.parents:
+                      if (candidate / 'Dockerfile').is_file():
+                          selected_dirs.add(candidate.resolve())
+                          break
+                      candidate = candidate.parent
+                  if candidate == root and (root / 'Dockerfile').is_file():
+                      selected_dirs.add(root)
+
           items, slugs = [], set()
-          for dockerfile in sorted(root.rglob('Dockerfile')):
-              if dockerfile.is_symlink():
-                  raise SystemExit('Dockerfile 必须为普通文件')
-              directory = dockerfile.parent.resolve()
+          for directory in sorted(selected_dirs):
+              directory = directory.resolve()
               directory.relative_to(root)
+              dockerfile = directory / 'Dockerfile'
+              if not dockerfile.is_file() or dockerfile.is_symlink():
+                  continue
               relative = directory.relative_to(root).as_posix()
               slug = relative.replace('/', '-') if relative != '.' else root.name
               if not re.fullmatch(r'[a-z0-9]+(?:-[a-z0-9]+)*', slug) or len(slug) > 64:
                   raise SystemExit(f'{directory}: 靶机目录使用小写英文、数字和连字符，最多 64 字符')
               if slug in slugs:
-                  raise SystemExit(f'靶机目录标识重复: {slug}')
+                  raise SystemExit(f'靶机标识重复: {slug}')
               slugs.add(slug)
-              if selected_path and directory != selected_path:
-                  continue
               image = f'ghcr.io/{owner}/attackbox-labs:{slug}-v{version}' if publishing else f'attackbox-lab-check:{slug}'
               items.append({'context': directory.relative_to(repo).as_posix(), 'slug': slug,
                   'image': image, 'version': version if publishing else ''})
-          if not items or len(items) > 256:
-              raise SystemExit('需要 1–256 个靶机目录；请检查 IMAGE_ROOT 或手动指定 directory')
+
           with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
               output.write('matrix=' + json.dumps({'include': items}) + '\n')
+              output.write('has_labs=' + ('true' if items else 'false') + '\n')
+          print('Selected lab builds:', ', '.join(item['context'] for item in items) or '(none)')
           PY
 
   build:
