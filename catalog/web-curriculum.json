@@ -1478,8 +1478,8 @@
       "required_skill_coverage": [
         "xss.reflected"
       ],
-      "status": "planned",
-      "candidate_status": "source_not_selected",
+      "status": "done",
+      "candidate_status": "lab_ci_verified",
       "objective": "Web 专项：在真实页面输出上下文中复现反射型 XSS，并证明浏览器实际执行",
       "scope": "repeatable_skill_variant_requirement",
       "one_to_many_allowed": true,
@@ -1488,7 +1488,10 @@
         "django-debug-xss",
         "dsvw",
         "wondercms-xss"
-      ]
+      ],
+      "selected_candidate": "django-debug-xss",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45474730425",
+      "note": "Django 1.11.4 DEBUG technical-500 reflected XSS is implemented and its target-local authenticated browser callback / per-instance Flag flow passed CI. Manual acceptance remains not_reviewed; production Worker remains not_verified."
     },
     {
       "id": "file-read-basic",
@@ -1543,15 +1546,18 @@
         "sqli.boolean-blind",
         "sqli.time-blind"
       ],
-      "status": "in_progress",
-      "candidate_status": "in_progress",
+      "status": "done",
+      "candidate_status": "lab_ci_verified",
       "objective": "HTB Usage reconstruction: real MySQL boolean and time-based blind SQLi through Laravel password recovery; independent CI must extract the actual admin hash and measure SLEEP() separately",
       "scope": "repeatable_skill_variant_requirement",
       "one_to_many_allowed": true,
       "scenario_variant_focus": "POST email + CSRF/session + MySQL; boolean extraction and time-based delay each have separate black-box assertions",
       "candidate_options": [
         "usage"
-      ]
+      ],
+      "selected_candidate": "usage",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45386437038",
+      "note": "Usage reconstruction covers real MySQL boolean and time-based blind SQLi in the password-recovery flow with separate black-box assertions. Manual acceptance remains not_reviewed; production Worker remains not_verified."
     },
     {
       "id": "xss-stored-admin",
@@ -2237,7 +2243,8 @@
       "signature": "file upload LFI -> real Spring-Cloud-Function CVE -> privileged Ansible",
       "source_status": "official_synopsis_verified",
       "review_status": "research_required",
-      "supplemental_objective": "真实 Spring Cloud Function CVE 组件链；保留上游版本验证，而不是误记为 CMS 漏洞"
+      "supplemental_objective": "Recommended next candidate for focused review. Web-only scope: discover image-viewer path traversal, use file reads to identify the real Spring Cloud Function dependency/version, then reproduce CVE-2022-22963 through the actual /functionRouter endpoint to obtain the Web goal. Exclude SSH lateral movement, phil credential pivot and Ansible/root stages.",
+      "review_note": "HTB official synopsis confirms upload-related LFI revealing the vulnerable Spring-Cloud-Function-Web version and CVE-2022-22963 RCE. Public writeups independently identify the LFI file-read path, pom.xml dependency and routing-expression header. Before implementation pin the exact vulnerable upstream dependency version and compatible Spring Boot/JDK build, reproduce the actual HTTP behavior, then measure image size and runtime. Do not copy any source-specific claim as an original HTB app source."
     },
     {
       "id": "zipping",
@@ -2294,9 +2301,12 @@
       ],
       "signature": "Django 1.11.4 DEBUG 500 error page reflected XSS, CVE-2017-12794; real template/error handling, no MySQL service needed for actual app deployment design to be checked",
       "source_status": "upstream_advisory_and_vulhub_repro_verified",
-      "review_status": "research_required",
+      "review_status": "lab_ci_verified",
       "size_policy": "small_docker_candidate_build_measurement_required",
-      "priority_hint": "beginner_xss_first"
+      "priority_hint": "beginner_xss_first",
+      "evidence_urls": [
+        "https://github.com/10010100111000/AttackBoxModule/actions/runs/45474730425"
+      ]
     },
     {
       "id": "wondercms-xss",
@@ -2308,9 +2318,12 @@
       ],
       "signature": "WonderCMS 3.4.2 CVE-2023-41425: real CMS XSS with administrator action and module installer privilege boundary; confirm exact injection context in original version",
       "source_status": "upstream_342_and_patched_343_confirmed",
-      "review_status": "research_required",
+      "review_status": "lab_ci_verified",
       "size_policy": "flat_file_php_cms_no_database_server_measure_runtime",
-      "priority_hint": "intermediate_xss_second"
+      "priority_hint": "intermediate_xss_second",
+      "evidence_urls": [
+        "https://github.com/10010100111000/AttackBoxModule/actions/runs/45474730425"
+      ]
     },
     {
       "id": "alert",
@@ -2326,7 +2339,8 @@
       "review_status": "in_progress",
       "size_policy": "php_http_ssh_cron_plus_attacker_browser_measure_runtime",
       "priority_hint": "integrated_xss_third",
-      "ci_browser_evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45474730425"
+      "ci_browser_evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45474730425",
+      "note": "Real Chromium execution and localhost traversal have CI evidence; end-to-end Web Flag extraction remains pending. Manual acceptance and Worker verification remain separate."
     },
     {
       "id": "dsvw",
@@ -2401,5 +2415,14 @@
     ],
     "release": "manual_acceptance_and_platform_checks_separate_from_ci",
     "pr_approval": "show_exact_diff_and_actual_checks_then_explicit_user_approval"
+  },
+  "selection_policy": {
+    "preferred_start": "completed: django-debug-xss and wondercms-xss are implemented; do not restart the XSS-first sequence",
+    "next_candidates": [
+      "inject",
+      "headless"
+    ],
+    "next_review": "Inject is the recommended next candidate for source/version/Docker feasibility review. It is not yet authorized for implementation. Headless follows as a browser-driven blind-XSS candidate.",
+    "selection_reason": "Inject adds a distinct Java/Spring real-component path from file-read reconnaissance to CVE-2022-22963 Web RCE, while staying within the agreed Web-only objective. The SSH/Ansible root stages are out of scope."
   }
 }
