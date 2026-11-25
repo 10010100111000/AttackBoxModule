@@ -4,7 +4,6 @@ on:
     paths:
       - "labs/alert/**"
       - ".github/workflows/alert.yml"
-      - "catalog/web-curriculum.json"
   push:
     branches: [main]
     paths:
