@@ -70,7 +70,9 @@ Core files inspected directly from the pinned tag:
 - The Content Manager is a separate ImpressCMS add-on, not present in the pinned core \`v1.4.2\` Git tree.
 - The official add-on listing identifies **Content 1.2.1 Final**, published 2017-04-24, download item ID 5:
   https://www.impresscms.org/modules/downloads/index.php?category_id=3
-- Before implementing the XSS Challenge, obtain the exact official Content 1.2.1 archive, record its SHA-256, inspect the vulnerable Display Name field and confirm the actual output context and persistence behavior.
+- A public source repository exists at https://github.com/IPFModules/content. Its tag `v1.2.1` resolves to commit `1a6395e6d5f85f39ee241987bc0de89a1dc9117e`, but that commit's `icms_version.php` declares module version `1.3`, status `Beta`, date `20 Aug 2016`. This does **not** yet prove it is the exact official 1.2.1 Final package listed on the website.
+- The current repository `master` reports module version 1.4.0. The old tag's `admin/content.php` uses the Content object form and its `content_title` field, but the report's phrase "Display Name" does not map unambiguously to a visible field label in the inspected source.
+- Before implementing the XSS Challenge, obtain the exact official Content 1.2.1 archive, record its SHA-256, inspect `modules/content/admin/content.php`, and reconcile the report's "Display Name" parameter with the actual request field and output context.
 - Do not label it stored XSS until the report and source prove that the value is persisted.
 
 ### F. Autologin type confusion — CVE-2021-26600
