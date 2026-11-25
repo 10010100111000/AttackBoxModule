@@ -476,7 +476,7 @@ Editorial 已对 SSRF 基本与内网 API 访问做了完整攻击链 CI，但**
 | 3：[HTB Alert](https://0xdf.gitlab.io/2025/03/22/htb-alert.html) | Markdown → 浏览器 XSS → 敏感文件读取 → SSH → Cron Root 的公开真实链 | **中级综合靶机**：跨用户浏览器行为与多阶段侦察 | 原站点源码未公开，重建时如实标明；需要管理员浏览器，Bot 运行资源单独测量 |
 | 可选：[OWASP DSVW](https://vwad.owasp.org/app/damn-small-vulnerable-web-dsvw/) | 少于 100 行 Python 的教学源码 | **初级微型专项**：XSS/DOM 入门 | 尽管极小，但界面直接展示漏洞，不符合偏好自然侦察的综合靶机要求，不能硬称真实产品 CVE |
 
-**选题顺序更新（2026-11-25）**：Django Debug XSS 与 WonderCMS 3.4.2 均已实现，目标浏览器链 CI 通过，不再作为下一台新题。下一候选转为 HTB Inject，先核实真实 Spring Cloud Function 受影响版本、Spring Boot/JDK 组合、LFI 读取路径及 Web-only CVE-2022-22963 触发；不复刻 SSH/Ansible/root 阶段。Inject 尚处于研究评审，未获准进入实现。Headless 是其后的浏览器型 Blind XSS 候选。
+**选题顺序更新（2026-11-25）**：SQLi 分类下一台已选 HTB Intense，正在 `feat/web-intense-sqli-error-lwt-lfi` 开发分支进行 Web-only 重建。目标为 SQLite 条件错误 Oracle → 管理员 Secret → SHA-256 LWT 长度扩展 → 管理员日志路径遍历 → Web Flag。Inject 保留为后续独立 LFI / Spring Cloud Function CVE 候选，不是当前下一台。
 
 ## 平台 Flag 与管理员 Bot 责任边界
 
