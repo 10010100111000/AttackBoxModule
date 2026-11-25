@@ -26,7 +26,7 @@ if [ "$ready" -ne 1 ]; then
     exit 1
 fi
 if [ ! -f /var/www/html/mainfile.php ]; then
-    DB_PASS="$IMPCMS_DB_PASSWORD"
+    DB_PASS="${IMPCMS_DB_PASSWORD:-}"
     if [ -z "$DB_PASS" ]; then
         DB_PASS="$(head -c 16 /dev/urandom | od -An -tx1 | tr -d ' \n')"
     fi
