@@ -603,11 +603,11 @@ The next category after Intense is **XSS**, but the next lab should not be artif
 
 | Finding | Public disclosure | Affected component |
 |---|---|---|
-| Stored XSS through Display Name | [HackerOne #1119296](https://hackerone.com/reports/1119296), CVE-2021-28088 | \`modules/content/admin/content.php\` |
+| Display Name XSS | [HackerOne #1119296](https://hackerone.com/reports/1119296), CVE-2021-28088 | \`modules/content/admin/content.php\` |
 | SQL injection through \`groups\` | [HackerOne #1081145](https://hackerone.com/reports/1081145), CVE-2021-26599 | \`include/findusers.php\` |
 | Function-level access control flaw | [HackerOne #1081137](https://hackerone.com/reports/1081137), CVE-2021-26598 | \`include/findusers.php\` |
 
-The SQLi and access-control disclosures affect the same \`findusers.php\` feature but are distinct vulnerabilities. The XSS is a separate profile/content path. Do not claim they form a single linear exploit chain unless the original reports and source prove that dependency.
+The SQLi and access-control disclosures affect the same \`findusers.php\` feature but are distinct vulnerabilities. The XSS is a separate profile/content path; do not label it stored until persistence is confirmed from the report and source. Do not claim they form a single linear exploit chain unless the original reports and source prove that dependency.
 
 ### Important version and scope caveats
 
@@ -624,8 +624,8 @@ The SQLi and access-control disclosures affect the same \`findusers.php\` featur
 4. Verify whether Display Name XSS is stored and identify its actual viewing context.
 5. Verify how an unauthenticated visitor obtains a valid token for the \`findusers.php\` access-control issue.
 6. Verify the \`groups\` SQLi independently and document the real database impact.
-7. Choose whether to preserve all three findings in one CMS instance; no forced linear chain and no requirement for a Flag per vulnerability.
-8. CI remains limited to build, startup, healthcheck and ordinary CMS functionality. Do not add automated XSS, SQLi, authorization-bypass, exploit-chain or Flag-extraction tests.
+8. Choose whether to preserve all three findings in one CMS instance; no forced linear chain and no requirement for a Flag per vulnerability.
+9. CI remains limited to build, startup, healthcheck and ordinary CMS functionality. Do not add automated XSS, SQLi, authorization-bypass, exploit-chain or Flag-extraction tests.
 
 ### Intended teaching value
 
