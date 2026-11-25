@@ -1466,6 +1466,51 @@
         "evidence": [],
         "failure_reason": null
       }
+    },
+    {
+      "id": "intense",
+      "path": "labs/intense",
+      "track": "web",
+      "provisional_difficulty": "advanced",
+      "primary_category": "sqli",
+      "secondary_categories": [
+        "auth_session",
+        "file_read"
+      ],
+      "validated_skills": [],
+      "implemented_skills": [
+        "sqli.error-based",
+        "sqli.conditional-error",
+        "auth_session.login-bypass",
+        "file_read.path-traversal"
+      ],
+      "lab_ci_status": "unverified",
+      "worker_status": "not_verified",
+      "release_status": "blocked_by_marker",
+      "evidence": [
+        "https://romanh.de/writeup/htb-intense",
+        "https://www.willsroot.io/2020/11/intense-hackthebox-writeup.html",
+        "https://github.com/zweilosec/htb-writeups/blob/master/linux-machines/hard/intense-write-up.md"
+      ],
+      "note": "Independent Web-only reconstruction based on multiple public HTB Intense writeups. Real Flask + SQLite; reflected SQLite errors and a conditional error oracle extract the administrator secret; SHA-256 secret-prefix LWT signature length extension plus duplicate-key parsing for admin session; unchecked admin log path join reads the per-instance Web Flag. Original private source is not copied; observable route and exploit path are preserved. SNMP, SSH pivot and native pwn/root stages are intentionally excluded. Initial implementation only: no Docker build, manual acceptance, Worker verification or release yet.",
+      "variant_profile": {
+        "technology": "Python 3.12, Flask 3.1.1, Gunicorn 23.0.0, SQLite",
+        "initial_discovery": "Community message board, guest login, public src.zip source archive and 140-character message submission",
+        "key_constraint_or_mechanism": "SQLite INSERT interpolation with direct native error feedback; conditional CASE oracle using a genuine SQLite error; SHA-256 secret-prefix MAC length extension; duplicate session-key overwrite; admin log path traversal",
+        "attack_path": "Recon/source review -> guest login -> message SQLi -> extract admin secret -> forge admin LWT cookie -> admin log viewer -> path traversal -> Web Flag",
+        "incremental_learning_value": "Combines SQL error-based extraction and conditional-error blind inference with a separate cryptographic session-forgery step and final authenticated file read in one coherent Web application",
+        "confidence": "public writeups cross-checked; implementation written; runtime and exploit path not yet verified"
+      },
+      "skill_mapping_stage": "implementation_added_manual_skill_validation_pending",
+      "manual_validation": {
+        "status": "not_reviewed",
+        "commit": null,
+        "reviewer": null,
+        "reviewed_at": null,
+        "scope": null,
+        "evidence": [],
+        "failure_reason": null
+      }
     }
   ],
   "backlog": [
@@ -2099,6 +2144,30 @@
       "candidate_options": [
         "trick"
       ]
+    },
+    {
+      "id": "sqli-error-conditional-intense",
+      "priority": 35,
+      "difficulty": "advanced",
+      "track": "web_focus",
+      "primary_category": "sqli",
+      "required_skill_coverage": [
+        "sqli.error-based",
+        "sqli.conditional-error",
+        "auth_session.login-bypass",
+        "file_read.path-traversal"
+      ],
+      "status": "in_progress",
+      "candidate_status": "implementation_started",
+      "objective": "HTB Intense Web-only reconstruction: SQLite INSERT error feedback and conditional-error oracle -> administrator secret extraction -> SHA-256 secret-prefix MAC length-extension session forgery -> admin log path traversal -> one Web Flag",
+      "scope": "single_application_composite_lab",
+      "one_to_many_allowed": true,
+      "scenario_variant_focus": "SQLite-specific conditional error oracle, no multi-statement execution, source-disclosed app, custom LWT cookie and authenticated path traversal; distinguish direct DB error reflection from conditional error inference",
+      "candidate_options": [
+        "intense"
+      ],
+      "selected_candidate": "intense",
+      "note": "Based on multiple public writeups. Original private Flask source is unavailable and will not be copied. Recreate the same observable routes, request behavior, SQLite error oracle, weak cookie signature and final LFI path. Web-only: exclude SNMP, SSH, binary exploitation and Linux Root. One final Flag is sufficient; intermediate skills are learned through the path rather than forced into separate flags."
     }
   ],
   "skills_catalog": "catalog/web-competencies.json",
@@ -2381,6 +2450,27 @@
       "reconstruction_gate": "Do not invent a password-recovery SQLi endpoint and call it authentic HTB Usage. Obtain credible application/DB behavior evidence, preserve CSRF/session and genuine database blind-response distinction; original private code cannot be claimed. Upstream Laravel-Admin must be an actual vulnerable version and tested with real upload handling. Preserve later Unix escalation only if reproducible under Docker without privileged/host access.",
       "training_scope": "Separate CI assertions for boolean and time-based blind SQLi; actual Laravel-admin upload package and p7zip root-read chain; main app source and root helper deviation explicitly documented.",
       "worker_status": "not_verified"
+    },
+    {
+      "id": "intense",
+      "platform": "HTB",
+      "url": "https://www.hackthebox.com/machines/intense",
+      "skills": [
+        "sqli.error-based",
+        "sqli.conditional-error",
+        "auth_session.login-bypass",
+        "file_read.path-traversal"
+      ],
+      "signature": "SQLite INSERT error oracle -> admin secret -> SHA-256 secret-prefix LWT length extension -> admin log path traversal",
+      "source_status": "multiple_public_writeups_cross_checked",
+      "review_status": "in_progress",
+      "training_scope": "Web-only Flask/SQLite reconstruction; preserve public source archive, guest message form, native SQLite errors, conditional error oracle, forged admin cookie and authenticated log file read. Omit SNMP, SSH, binary pwn and Root.",
+      "evidence_urls": [
+        "https://romanh.de/writeup/htb-intense",
+        "https://www.willsroot.io/2020/11/intense-hackthebox-writeup.html",
+        "https://github.com/zweilosec/htb-writeups/blob/master/linux-machines/hard/intense-write-up.md"
+      ],
+      "reconstruction_note": "Do not copy original private source. Recreate observable behavior and attack path using genuine Flask, SQLite and SHA-256; verify all stages manually after container build."
     }
   ],
   "lightweight_selection_policy": {
@@ -2417,12 +2507,11 @@
     "pr_approval": "show_exact_diff_and_actual_checks_then_explicit_user_approval"
   },
   "selection_policy": {
-    "preferred_start": "completed: django-debug-xss and wondercms-xss are implemented; do not restart the XSS-first sequence",
+    "preferred_start": "HTB Intense Web-only reconstruction is now the active SQL Injection composite candidate",
     "next_candidates": [
-      "inject",
-      "headless"
+      "intense"
     ],
-    "next_review": "Inject is the recommended next candidate for source/version/Docker feasibility review. It is not yet authorized for implementation. Headless follows as a browser-driven blind-XSS candidate.",
-    "selection_reason": "Inject adds a distinct Java/Spring real-component path from file-read reconnaissance to CVE-2022-22963 Web RCE, while staying within the agreed Web-only objective. The SSH/Ansible root stages are out of scope."
+    "next_review": "Finish the Intense build and manually verify the original Web attack path before selecting another SQLi candidate. Inject remains a later path-traversal / Spring RCE research candidate.",
+    "selection_reason": "The existing curriculum already covers UNION, Boolean/Time Blind, second-order, FILE operations and WebSocket blind SQLi. Intense adds a distinct SQLite conditional-error oracle plus cryptographic session forgery and authenticated path traversal, creating a coherent composite Web exercise without a JVM."
   }
 }

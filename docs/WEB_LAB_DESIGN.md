@@ -564,3 +564,34 @@ WonderCMS 3.4.2 **原版反射型属性 XSS 已通过真实 Chromium CI**。但�
 - 不将未验证环境、正式 Flag、真实凭据、未授权原题素材直接发布到公开仓库。开发期可使用明确标识的演示 Flag，但发布时必须有正确的私密初始化流程。
 
 参考内容编写规范：`attackbox/docs/content-authoring.md`（另一个仓库）；本仓库已有 `challenges/startpoint/` 与 `labs/` 结构可作样例。
+
+
+## 2026-11-25 — Active SQLi composite: HTB Intense
+
+**Selected for implementation:** [HTB Intense](https://www.hackthebox.com/machines/intense). The current inventory already contains UNION, Boolean/Time Blind, second-order, database FILE operations and WebSocket blind SQLi. Intense adds a distinct SQLite conditional-error oracle, followed by a cryptographic session-forgery step and authenticated path traversal.
+
+### Public source review
+
+The Web attack path was cross-checked against multiple independent writeups:
+
+- https://romanh.de/writeup/htb-intense
+- https://www.willsroot.io/2020/11/intense-hackthebox-writeup.html
+- https://github.com/zweilosec/htb-writeups/blob/master/linux-machines/hard/intense-write-up.md
+
+The common observable sequence is: guest login → public Flask source archive → 140-character message form → SQLite INSERT injection with native error feedback → extract the administrator's stored secret using a conditional error oracle → exploit the custom SHA-256 secret-prefix LWT signature with a length-extension attack → duplicate session keys make the appended administrator identity take precedence → admin log view/list → path traversal to read the Web Flag.
+
+### Reconstruction boundary
+
+The original private application source is not copied. Rebuild the observable route and exploit path with a small independently written Flask application and a real SQLite database. Preserve the normal guest workflow, source archive, message length and filter behavior, direct SQLite errors, conditional error distinction, weak LWT MAC, duplicate-key parsing and unchecked log path join.
+
+The target does **not** include the original SNMP command execution, SSH pivot, custom native note-server binary or Linux Root stages. Those are outside the current Web-only objective. A single final Web Flag is sufficient; do not create a Flag for every intermediate technique.
+
+### Difficulty and engineering
+
+- **Trytopwn difficulty:** Advanced. The Web portion combines SQLi, character-by-character extraction, hash length extension, session parsing behavior and authenticated file traversal.
+- **Runtime:** Python / Flask + embedded SQLite. No separate database service, JVM, SSH, SNMP, compiler or privileged capability.
+- **Container:** Multi-stage Alpine build, unprivileged web process, per-instance flag file injected at startup, healthcheck, no host mounts or added capabilities.
+- **Verification:** CI is limited to build, startup, healthcheck and ordinary page smoke checks. The SQLi oracle, secret extraction, forged session and final file read remain separate manual acceptance tasks.
+- **Current status:** implementation branch created; Docker build, measured image/resource usage, manual acceptance and Worker integration are still pending.
+
+The structured machine entry and rolling backlog are maintained in [web-curriculum.json](../catalog/web-curriculum.json).
