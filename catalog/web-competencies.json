@@ -194,6 +194,12 @@
           "title": "多语句执行与权限边界",
           "first_target_level": "advanced",
           "status": "not_audited"
+        },
+        {
+          "id": "sqli.parameter-injection",
+          "title": "请求参数进入 SQL 查询的注入与数据影响",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
         }
       ]
     },
@@ -541,6 +547,12 @@
           "id": "idor.tenant-boundary",
           "title": "跨租户/组织级对象隔离",
           "first_target_level": "advanced",
+          "status": "not_audited"
+        },
+        {
+          "id": "idor.function-level-authorization",
+          "title": "功能级访问控制与未授权接口访问",
+          "first_target_level": "intermediate",
           "status": "not_audited"
         }
       ]
