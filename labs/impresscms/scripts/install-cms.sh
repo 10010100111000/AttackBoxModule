@@ -14,7 +14,7 @@ request_get() {
 request_post() {
     page="$1"
     shift
-    curl -sS -c "$COOKIE" -b "$COOKIE" -o /tmp/impresscms-installer-response \
+    curl -fsS -c "$COOKIE" -b "$COOKIE" -o /tmp/impresscms-installer-response \
         -X POST "$@" "$BASE/install/$page"
 }
 
