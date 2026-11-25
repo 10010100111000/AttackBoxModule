@@ -597,7 +597,28 @@ The target does **not** include the original SNMP command execution, SSH pivot, 
 The structured machine entry and rolling backlog are maintained in [web-curriculum.json](../catalog/web-curriculum.json).
 
 
-## 2026-11-26 — Next category candidate: ImpressCMS composite XSS / SQLi / access control
+## 2026-11-26 — ImpressCMS: one target image, multiple Challenges
+
+ImpressCMS 1.4.2 is being evaluated as **one reusable target template**, not one monolithic Challenge. The same target slug/template should be associated with several independent Challenge records:
+
+1. XSS — Display Name output-context issue (persistence/reflection still to be verified).
+2. SQL Injection — \`findusers.php\` groups parameter, initially Boolean-based only.
+3. Access Control — token-gated function-level authorization flaw in \`findusers.php\`.
+4. Optional composite Challenge — correlate findings and application behavior, only if it adds genuine learning value.
+
+Each Challenge has its own title, Markdown brief, difficulty, hints, answer/Flag stages and learner progress, while all bind to the same target template. Prefer one meaningful Flag per Challenge; use multiple stages only where they add value.
+
+### Platform behavior and caveats
+
+The current AttackBox content model allows each Challenge to bind a target template independently. The target runtime derives the per-user target scope from the target template ID (\`target:<templateId>\`), not the Challenge ID. Therefore multiple Challenges bound to the same template reuse the same per-user target instance. The Challenge stage answers/completions remain Challenge-specific.
+
+This saves image builds and runtime duplication, but means the application state is shared. Ensure solving one Challenge does not alter or remove data needed by another. If a challenge requires a clean state, document reset expectations or design it so the tasks remain independently usable. Do not assume each Challenge gets a fresh container.
+
+The three HackerOne findings remain separate disclosures and do not need to form a linear exploit chain. Audit coexisting vulnerabilities in the selected CMS release before implementation.
+
+CI is limited to image build, container startup, healthcheck and ordinary application functionality. Do not add automated XSS, SQLi, authorization-bypass, exploit-chain or Flag-extraction tests.
+
+
 
 The next category after Intense is **XSS**, but the next lab should not be artificially limited to XSS. Research ImpressCMS 1.4.2 as one authentic CMS target with several independently discoverable findings:
 
