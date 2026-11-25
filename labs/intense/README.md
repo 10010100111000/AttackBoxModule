@@ -63,8 +63,9 @@ The target writes the injected value to a real file readable by the web process.
 - Multi-stage build; only Flask/Gunicorn, Python and curl/su-exec are in the runtime image.
 - Healthcheck verifies the actual HTTP health endpoint and a SQLite query.
 - CI should perform build, startup, healthcheck and ordinary page smoke checks only. Do not add automated SQLi, hash-extension, authentication bypass or Flag extraction scripts.
-- Manual acceptance must separately confirm the SQLite error oracle, administrator-secret extraction, length-extension session, admin authorization and final path traversal.
-- Worker network isolation, per-instance flag injection and Web backend scoring remain unverified.
+- Functional acceptance is limited to ordinary application behavior: homepage and login page render, source archive downloads, the disclosed guest account can sign in, a normal message can be submitted, guest access to the admin page is denied, and the container remains healthy.
+- Do not add automated exploit-chain scripts, SQLi payload tests, cookie-forgery tests, or Flag-extraction tests. The purpose of CI is to ensure the target starts and its ordinary application functions work.
+- Worker network isolation, per-instance Flag injection and Web backend scoring remain separate deployment checks.
 
 ## Public references
 
