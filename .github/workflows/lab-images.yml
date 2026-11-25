@@ -34,18 +34,19 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.plan.outputs.matrix }}
+      has_labs: ${{ steps.plan.outputs.has_labs }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - id: plan
         env:
-          SELECTED_DIRECTORY: \${{ inputs.directory }}
-          RELEASE_VERSION: \${{ inputs.version }}
-          EVENT_NAME: \${{ github.event_name }}
-          PR_BASE_SHA: \${{ github.event.pull_request.base.sha }}
-          PUSH_BEFORE_SHA: \${{ github.event.before }}
-          HEAD_SHA: \${{ github.sha }}
+          SELECTED_DIRECTORY: ${{ inputs.directory }}
+          RELEASE_VERSION: ${{ inputs.version }}
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PUSH_BEFORE_SHA: ${{ github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
         run: |
           python3 <<'PY'
           import json, os, re, subprocess
@@ -129,13 +130,15 @@ jobs:
                   'image': image, 'version': version if publishing else ''})
 
           with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
-              output.write('matrix=' + json.dumps({'include': items}) + '\n')
+              matrix_items = items or [{'context': '', 'slug': 'none', 'image': 'none', 'version': ''}]
+              output.write('matrix=' + json.dumps({'include': matrix_items}) + '\n')
               output.write('has_labs=' + ('true' if items else 'false') + '\n')
           print('Selected lab builds:', ', '.join(item['context'] for item in items) or '(none)')
           PY
 
   build:
     needs: plan
+    if: needs.plan.outputs.has_labs == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
