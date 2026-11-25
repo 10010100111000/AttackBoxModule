@@ -1,0 +1,3 @@
+Do not publish this image yet.
+
+The Content add-on source is a provisional GitHub tag candidate and has not been reconciled with the official Content 1.2.1 Final package. The installer automation and runtime topology have not been built or smoke-checked. Remove this marker only after source provenance, ordinary CMS functionality and image/resource checks are complete.
