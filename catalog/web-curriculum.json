@@ -422,6 +422,11 @@
         "methodical-testing"
       ],
       "academy_group": "advanced"
+    },
+    {
+      "id": "code_injection",
+      "name": "Server-side Code Injection",
+      "source": "additional vulnerability family"
     }
   ],
   "machines": [
@@ -2174,29 +2179,35 @@
       "priority": 36,
       "difficulty": "intermediate",
       "track": "web_focus",
-      "primary_category": "xss",
+      "primary_category": "cms_vulnerability",
       "secondary_categories": [
+        "xss",
         "sqli",
         "idor",
-        "cms_vulnerability"
+        "file_read",
+        "auth_session",
+        "code_injection"
       ],
       "required_skill_coverage": [
         "xss.output-context",
         "sqli.boolean-blind",
         "sqli.parameter-injection",
-        "idor.function-level-authorization"
+        "idor.function-level-authorization",
+        "file_read.path-traversal",
+        "auth_session.type-confusion",
+        "command_injection.server-side-code-evaluation"
       ],
-      "status": "planned",
+      "status": "in_progress",
       "candidate_status": "research_required",
-      "objective": "Research one ImpressCMS 1.4.2 Docker target image/template that can serve multiple independent Challenges: XSS, findusers.php SQLi, function-level access control, and optionally a composite exercise.",
+      "objective": "Build one real ImpressCMS 1.4.2 target (core plus the official Content module add-on) that supports multiple independent Challenges for every verified, useful vulnerability in this release, across XSS, SQLi, access control, path traversal, authentication and server-side code injection.",
       "scope": "one_target_many_challenges",
       "one_to_many_allowed": true,
-      "scenario_variant_focus": "One authentic CMS instance and Docker image, several independent Challenge records, each bound to the same target slug. Each Challenge has its own prompt, difficulty, hints, Flag/answer and progress. No forced linear chain; maintain shared application state so completing one does not invalidate others.",
+      "scenario_variant_focus": "One target slug impresscms and one per-user target instance, with separate Challenge entries and Flags. Findings remain independently discoverable; each Challenge has its own goal and category. Add more Challenges when a distinct real issue is verified.",
       "candidate_options": [
         "impresscms-composite"
       ],
       "selected_candidate": "impresscms-composite",
-      "note": "Next action is source/version and disclosure mapping, not implementation. Once approved, build one target template and bind separate XSS, SQLi and function-level access-control Challenge records to lab: impresscms. The AttackBox runtime scope is template-based (target:<templateId>), so a learner reuses one per-user instance across those Challenges; Challenge answers/progress remain independent. Verify reset and shared-state behavior before authoring the Challenge set."
+      "note": "Core source pinned to upstream v1.4.2 tag commit 56caca0356646ad29497ce877589326a4a76123b. Confirmed source paths: findusers.php token check; groups SQLi in member Handler.php; image-edit.php image_temp; autotasks sat_code eval. Display Name XSS requires separate official Content 1.2.1 add-on archive. Autologin and mimetype SQLi need source/report reconciliation. No Docker build until the core + addon source set and installer requirements are fixed."
     }
   ],
   "skills_catalog": "catalog/web-competencies.json",
@@ -2223,7 +2234,7 @@
   "academy_index": {
     "source": "https://portswigger.net/web-security/all-topics",
     "official_topics": 31,
-    "learning_objectives": 222,
+    "learning_objectives": 225,
     "groups": {
       "server": 14,
       "client": 6,
@@ -2505,56 +2516,92 @@
       "id": "impresscms-composite",
       "platform": "HackerOne disclosure + upstream OSS",
       "url": "https://github.com/ImpressCMS/impresscms",
-      "version": "1.4.2",
+      "version": "1.4.2 core + Content module 1.2.1 (separate official add-on; archive/source pin pending)",
       "skills": [
         "xss.output-context",
         "sqli.boolean-blind",
         "sqli.parameter-injection",
-        "idor.function-level-authorization"
+        "idor.function-level-authorization",
+        "file_read.path-traversal",
+        "auth_session.type-confusion",
+        "command_injection.server-side-code-evaluation"
       ],
-      "signature": "ImpressCMS 1.4.2: Display Name XSS (CVE-2021-28088 / H1 #1119296) + findusers.php groups Boolean-based SQLi (CVE-2021-26599 / H1 #1081145) + token-gated function-level access control flaw (CVE-2021-26598 / H1 #1081137)",
-      "source_status": "public_HackerOne_reports_and_CVEs_cross_checked; upstream_source_version_pin_pending",
-      "review_status": "research_required",
-      "training_scope": "One real ImpressCMS 1.4.2 target image/template, associated with multiple independent AttackBox Challenges. Proposed entries: XSS challenge, findusers.php SQLi challenge, function-level access-control challenge, and optionally a final composite challenge. Each challenge has its own Markdown, difficulty, hints, answer/Flag stages and progress, while all bind to the same target slug/template and shared per-user target instance. The three original findings remain independently discoverable; do not force a linear exploit dependency.",
+      "signature": "One ImpressCMS 1.4.2 target with independent Challenges for Content module Display Name XSS, findusers.php token-gated access control, findusers.php groups SQLi, image-editor image_temp path traversal, autologin type confusion, and autotasks sat_code PHP code execution. Mimetype SQLi is a candidate pending exact source confirmation.",
+      "source_status": "core_git_tag_pinned; content_addon_version_identified_archive_pin_pending",
+      "review_status": "in_progress",
+      "training_scope": "One real ImpressCMS 1.4.2 core target image/template plus the official Content 1.2.1 add-on, serving multiple independent AttackBox Challenges. Each Challenge has its own Markdown, category, difficulty, hint, answer/Flag and progress, all bound to the same target slug impresscms and shared per-user instance. Include any additional verified findings from the same version as separate Challenges; do not force a single linear exploit chain.",
       "difficulty_hint": "intermediate_composite",
       "evidence_urls": [
         "https://hackerone.com/reports/1119296",
         "https://hackerone.com/reports/1081145",
         "https://hackerone.com/reports/1081137",
+        "https://hackerone.com/reports/1081878",
+        "https://hackerone.com/reports/1081986",
         "https://nvd.nist.gov/vuln/detail/CVE-2021-28088",
-        "https://www.incibe.es/en/incibe-cert/early-warning/vulnerabilities/cve-2021-26599",
-        "https://karmainsecurity.com/KIS-2022-03",
-        "https://karmainsecurity.com/KIS-2022-04"
+        "https://nvd.nist.gov/vuln/detail/CVE-2021-26599",
+        "https://nvd.nist.gov/vuln/detail/CVE-2021-26598",
+        "https://nvd.nist.gov/vuln/detail/CVE-2021-26601",
+        "https://nvd.nist.gov/vuln/detail/CVE-2021-26600",
+        "https://nvd.nist.gov/vuln/detail/CVE-2021-47938",
+        "https://nvd.nist.gov/vuln/detail/CVE-2022-26986",
+        "https://sourceforge.net/projects/impresscms/files/v1.4.2/",
+        "https://www.impresscms.org/modules/downloads/index.php?category_id=3"
       ],
       "research_questions": [
-        "Pin the exact upstream 1.4.2 release commit and determine the PHP/MySQL versions and installation prerequisites.",
-        "Reproduce the Display Name XSS in the original output context, and determine whether the value is persisted or reflected and which viewer role triggers it. Do not classify it as stored XSS until source/report behavior confirms persistence.",
-        "Reproduce the public-token source and findusers.php access-control check from the original report.",
-        "Reproduce the groups parameter SQLi from H1 #1081145 / CVE-2021-26599. Public technical analysis describes Boolean-based extraction and also stacked-query capability; initially scope only the Boolean-based behavior and keep stacked queries deferred.",
-        "Audit other vulnerabilities present in the same 1.4.2 release (including autologin type confusion, path traversal and administrative code execution); exclude or safely neutralize unrelated paths without breaking the three selected findings.",
-        "Measure a single-container Linux Docker build and identify which services and dependencies are actually required.",
-        "Confirm that one target template can be bound to multiple Challenge records and that target runtime scope is shared as intended; document reset/state implications for independent challenges.",
-        "Define the reset contract: confirm whether a stop/start recreates the same target template instance and which data is ephemeral or volume-backed. Make each Challenge independently usable and document when learners should reset."
+        "Core is pinned to tag v1.4.2 commit 56caca0356646ad29497ce877589326a4a76123b. Confirm the official source package corresponds to this commit and record SHA-256 of the archive.",
+        "The Content module is a separate official add-on listed as version 1.2.1 Final (download item 5). Obtain and hash the exact archive; inspect modules/content/admin/content.php and map H1 #1119296 / CVE-2021-28088 to the exact Display Name output context and role.",
+        "Map H1 #1081137 / CVE-2021-26598 to the findusers.php token-only authorization check and identify the normal public workflow that exposes a valid token.",
+        "Map H1 #1081145 / CVE-2021-26599 to $_POST['groups'] flowing into getUserCountByGroupLink/getUsersByGroupLink; verify the database behavior and intended Boolean-based exercise.",
+        "Map H1 #1081878 / CVE-2021-26601 to image-edit.php image_temp and define the exact authenticated image-editor workflow.",
+        "Map H1 #1081986 / CVE-2021-26600 to the pinned autologin.php source. The file currently contains is_numeric($pass) and loose comparison logic; reconcile the exact type-confusion condition with the report before authoring the Challenge.",
+        "Inspect autotasks sat_code in modules/system/admin/autotasks/class/autotasks.php. The real code calls eval($code); reproduce the admin-only workflow and determine the least confusing Challenge objective for CVE-2021-47938.",
+        "Investigate CVE-2022-26986 mimetypeid SQLi. The pinned mimetype main.php casts the GET ID to int and the class declares mimetypeid as integer, so locate the actual vulnerable request path before including it.",
+        "Audit other CVEs and report-backed findings in 1.4.2; add every verified, teachable issue as a separate Challenge, regardless of category.",
+        "Determine PHP 7.4 compatibility, required PHP extensions, MariaDB version, installer flow, file permissions and all persistent directories.",
+        "Determine whether a single container can reliably run Apache/PHP and MariaDB under a lightweight supervisor. Measure image size and steady-state memory; do not assume.",
+        "Confirm all Challenges bound to target template impresscms reuse the same per-user runtime and document the effects of stopping/restarting the target on CMS data."
       ],
-      "design_rule": "One application/container, many Challenge entries. Bind every Challenge to the same target template slug; each Challenge retains its own stages, answer/Flag and learner progress. Prefer one meaningful Flag per Challenge; multiple stages only where useful. Keep the shared application state coherent and ensure completing one Challenge does not make another unusable. Functional CI only: build, startup, health and ordinary CMS flows; no automated exploit-chain tests.",
+      "design_rule": "One pinned ImpressCMS 1.4.2 target template, multiple independent Challenges. Keep the genuine upstream core and the exact official Content add-on where required. Every Challenge gets its own answer/Flag and progress; one Flag is enough unless a task benefits from stages. Preserve unrelated real vulnerabilities as separate Challenges when their preconditions and impact are confirmed. Do not force a linear chain. CI only checks image build, startup, health and ordinary application functions; no automated exploit-chain tests.",
       "source_references": [
         {
           "id": "CVE-2021-28088",
           "kind": "xss",
           "hackerone": "https://hackerone.com/reports/1119296",
-          "summary": "Display Name XSS in modules/content/admin/content.php; ImpressCMS 1.4.2"
+          "summary": "Content module Display Name XSS; separate Content 1.2.1 add-on, not present in core v1.4.2 tree."
         },
         {
           "id": "CVE-2021-26599",
           "kind": "sqli",
           "hackerone": "https://hackerone.com/reports/1081145",
-          "summary": "groups SQL injection in include/findusers.php; Boolean-based extraction documented; stacked queries deferred; before 1.4.3"
+          "summary": "findusers.php groups SQL injection; getUserCountByGroupLink/getUsersByGroupLink interpolate group IDs into IN (...)."
         },
         {
           "id": "CVE-2021-26598",
           "kind": "access-control",
           "hackerone": "https://hackerone.com/reports/1081137",
-          "summary": "token-based access to findusers.php without required authentication; before 1.4.3"
+          "summary": "findusers.php accepts a valid security token without requiring an authenticated user."
+        },
+        {
+          "id": "CVE-2021-26601",
+          "kind": "path-traversal",
+          "hackerone": "https://hackerone.com/reports/1081878",
+          "summary": "image-editor image_temp path traversal."
+        },
+        {
+          "id": "CVE-2021-26600",
+          "kind": "type-confusion",
+          "hackerone": "https://hackerone.com/reports/1081986",
+          "summary": "Autologin type confusion; exact vulnerable comparison in pinned source still to be reconciled."
+        },
+        {
+          "id": "CVE-2021-47938",
+          "kind": "code-injection",
+          "summary": "Autotasks sat_code reaches PHP eval in the administrative autotasks class; source path htdocs/modules/system/admin/autotasks/class/autotasks.php."
+        },
+        {
+          "id": "CVE-2022-26986",
+          "kind": "sqli",
+          "summary": "Mimetype SQLi requiring admin privileges; candidate only until exact vulnerable parameter flow is identified in v1.4.2."
         }
       ],
       "research_plan": [
