@@ -2181,7 +2181,7 @@
         "cms_vulnerability"
       ],
       "required_skill_coverage": [
-        "xss.stored",
+        "xss.output-context",
         "sqli.boolean-blind",
         "sqli.parameter-injection",
         "idor.function-level-authorization"
@@ -2223,7 +2223,7 @@
   "academy_index": {
     "source": "https://portswigger.net/web-security/all-topics",
     "official_topics": 31,
-    "learning_objectives": 221,
+    "learning_objectives": 222,
     "groups": {
       "server": 14,
       "client": 6,
@@ -2507,7 +2507,7 @@
       "url": "https://github.com/ImpressCMS/impresscms",
       "version": "1.4.2",
       "skills": [
-        "xss.stored",
+        "xss.output-context",
         "sqli.boolean-blind",
         "sqli.parameter-injection",
         "idor.function-level-authorization"
@@ -2528,7 +2528,7 @@
       ],
       "research_questions": [
         "Pin the exact upstream 1.4.2 release commit and determine the PHP/MySQL versions and installation prerequisites.",
-        "Reproduce the Display Name XSS in the original output context, and determine whether it is stored and which viewer role triggers it.",
+        "Reproduce the Display Name XSS in the original output context, and determine whether the value is persisted or reflected and which viewer role triggers it. Do not classify it as stored XSS until source/report behavior confirms persistence.",
         "Reproduce the public-token source and findusers.php access-control check from the original report.",
         "Reproduce the groups parameter SQLi from H1 #1081145 / CVE-2021-26599. Public technical analysis describes Boolean-based extraction and also stacked-query capability; initially scope only the Boolean-based behavior and keep stacked queries deferred.",
         "Audit other vulnerabilities present in the same 1.4.2 release (including autologin type confusion, path traversal and administrative code execution); exclude or safely neutralize unrelated paths without breaking the three selected findings.",
