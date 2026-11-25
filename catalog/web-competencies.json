@@ -1057,12 +1057,6 @@
           "title": "用户可控数据输出上下文与编码缺陷",
           "first_target_level": "intermediate",
           "status": "not_audited"
-        },
-        {
-          "id": "xss.output-context",
-          "title": "用户可控数据输出上下文与编码缺陷",
-          "first_target_level": "intermediate",
-          "status": "not_audited"
         }
       ]
     },
