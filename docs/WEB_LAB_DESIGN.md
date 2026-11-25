@@ -595,3 +595,40 @@ The target does **not** include the original SNMP command execution, SSH pivot, 
 - **Current status:** implementation branch created; Docker build, measured image/resource usage, manual acceptance and Worker integration are still pending.
 
 The structured machine entry and rolling backlog are maintained in [web-curriculum.json](../catalog/web-curriculum.json).
+
+
+## 2026-11-26 — Next category candidate: ImpressCMS composite XSS / SQLi / access control
+
+The next category after Intense is **XSS**, but the next lab should not be artificially limited to XSS. Research ImpressCMS 1.4.2 as one authentic CMS target with several independently discoverable findings:
+
+| Finding | Public disclosure | Affected component |
+|---|---|---|
+| Stored XSS through Display Name | [HackerOne #1119296](https://hackerone.com/reports/1119296), CVE-2021-28088 | \`modules/content/admin/content.php\` |
+| SQL injection through \`groups\` | [HackerOne #1081145](https://hackerone.com/reports/1081145), CVE-2021-26599 | \`include/findusers.php\` |
+| Function-level access control flaw | [HackerOne #1081137](https://hackerone.com/reports/1081137), CVE-2021-26598 | \`include/findusers.php\` |
+
+The SQLi and access-control disclosures affect the same \`findusers.php\` feature but are distinct vulnerabilities. The XSS is a separate profile/content path. Do not claim they form a single linear exploit chain unless the original reports and source prove that dependency.
+
+### Important version and scope caveats
+
+- CVE-2021-28088 explicitly identifies ImpressCMS 1.4.2.
+- CVE-2021-26598 and CVE-2021-26599 affect versions before 1.4.3, so 1.4.2 is within the affected range.
+- Other serious issues also exist in nearby versions, including autologin type confusion, path traversal, administrative code execution and the later \`mimetypeid\` SQLi. Do not accidentally include these as extra objectives. Audit them and decide whether unrelated vulnerable surfaces can be safely excluded or neutralized without breaking the selected original behaviors.
+- CVE-2022-26986 is an additional admin-permission SQLi candidate, not part of the initial required scope.
+
+### Research before implementation
+
+1. Pin the exact upstream 1.4.2 source release/commit.
+2. Reconstruct the original PHP/MySQL/PHP-extension prerequisites and Docker footprint.
+3. Read the three HackerOne reports separately and map each to the exact request, parameter, role, and response behavior.
+4. Verify whether Display Name XSS is stored and identify its actual viewing context.
+5. Verify how an unauthenticated visitor obtains a valid token for the \`findusers.php\` access-control issue.
+6. Verify the \`groups\` SQLi independently and document the real database impact.
+7. Choose whether to preserve all three findings in one CMS instance; no forced linear chain and no requirement for a Flag per vulnerability.
+8. CI remains limited to build, startup, healthcheck and ordinary CMS functionality. Do not add automated XSS, SQLi, authorization-bypass, exploit-chain or Flag-extraction tests.
+
+### Intended teaching value
+
+This is a cross-category composite lab: students perform normal CMS reconnaissance, discover multiple routes and role boundaries, and understand how XSS, SQL injection and function-level authorization failures can coexist in one real product. The final task can be a single meaningful objective; intermediate discoveries do not need individual Flags.
+
+The candidate is research-only. No Dockerfile, challenge implementation branch, or image release is authorized until source/version, dependency and unrelated-vulnerability scope are reviewed.
