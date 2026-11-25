@@ -2549,7 +2549,7 @@
       ],
       "research_questions": [
         "Core is pinned to tag v1.4.2 commit 56caca0356646ad29497ce877589326a4a76123b. Confirm the official source package corresponds to this commit and record SHA-256 of the archive.",
-        "The Content module is a separate official add-on listed as version 1.2.1 Final (download item 5). Obtain and hash the exact archive; inspect modules/content/admin/content.php and map H1 #1119296 / CVE-2021-28088 to the exact Display Name output context and role.",
+        "The official site lists Content 1.2.1 Final (download item 5). The public IPFModules/content v1.2.1 tag resolves to commit 1a6395e6d5f85f39ee241987bc0de89a1dc9117e, but its icms_version.php says 1.3 Beta dated 2016-08-20. Obtain the exact official 1.2.1 Final archive and reconcile the 'Display Name' field in H1 #1119296 with the actual request parameter and output context.",
         "Map H1 #1081137 / CVE-2021-26598 to the findusers.php token-only authorization check and identify the normal public workflow that exposes a valid token.",
         "Map H1 #1081145 / CVE-2021-26599 to $_POST['groups'] flowing into getUserCountByGroupLink/getUsersByGroupLink; verify the database behavior and intended Boolean-based exercise.",
         "Map H1 #1081878 / CVE-2021-26601 to image-edit.php image_temp and define the exact authenticated image-editor workflow.",
@@ -2567,7 +2567,7 @@
           "id": "CVE-2021-28088",
           "kind": "xss",
           "hackerone": "https://hackerone.com/reports/1119296",
-          "summary": "Content module Display Name XSS; separate Content 1.2.1 add-on, not present in core v1.4.2 tree."
+          "summary": "Content Manager Display Name XSS. Core v1.4.2 does not contain the module. Official site lists Content 1.2.1 Final, but the public GitHub v1.2.1 tag metadata mismatches; exact official archive/source must be pinned before implementation."
         },
         {
           "id": "CVE-2021-26599",
