@@ -2188,15 +2188,15 @@
       ],
       "status": "planned",
       "candidate_status": "research_required",
-      "objective": "Research a real ImpressCMS 1.4.2 composite Web target combining the disclosed Display Name XSS, findusers.php groups SQLi and token-gated function-level access-control flaw.",
-      "scope": "single_application_multi_vulnerability_lab",
+      "objective": "Research one ImpressCMS 1.4.2 Docker target image/template that can serve multiple independent Challenges: XSS, findusers.php SQLi, function-level access control, and optionally a composite exercise.",
+      "scope": "one_target_many_challenges",
       "one_to_many_allowed": true,
-      "scenario_variant_focus": "One authentic CMS and version with three separate discovery paths; preserve original routes, request parameters, output contexts and role boundaries. Do not invent a forced linear exploit chain.",
+      "scenario_variant_focus": "One authentic CMS instance and Docker image, several independent Challenge records, each bound to the same target slug. Each Challenge has its own prompt, difficulty, hints, Flag/answer and progress. No forced linear chain; maintain shared application state so completing one does not invalidate others.",
       "candidate_options": [
         "impresscms-composite"
       ],
       "selected_candidate": "impresscms-composite",
-      "note": "HackerOne reports #1119296 (XSS), #1081145 (SQLi) and #1081137 (access control) are distinct disclosures. SQLi and access-control issues both touch include/findusers.php. Public technical analysis describes Boolean-based extraction and stacked-query capability; keep stacked queries deferred. XSS persistence/output context must be confirmed from the original report/source."
+      "note": "One target image/template is intended to serve multiple independent Challenge entries. Candidate disclosures: H1 #1119296 (Display Name XSS), #1081145 (findusers groups SQLi), #1081137 (findusers function-level access control). Keep the findings separate; stacked queries deferred. Verify same-template target scope and reset/state implications."
     }
   ],
   "skills_catalog": "catalog/web-competencies.json",
@@ -2515,7 +2515,7 @@
       "signature": "ImpressCMS 1.4.2: Display Name XSS (CVE-2021-28088 / H1 #1119296) + findusers.php groups Boolean-based SQLi (CVE-2021-26599 / H1 #1081145) + token-gated function-level access control flaw (CVE-2021-26598 / H1 #1081137)",
       "source_status": "public_HackerOne_reports_and_CVEs_cross_checked; upstream_source_version_pin_pending",
       "review_status": "research_required",
-      "training_scope": "One real CMS application with three independent but related discovery paths: profile data stored XSS, unauthenticated findusers function access through a token exposed in a public flow, and SQL injection in the groups parameter of the same findusers endpoint. Treat these as separate findings, not as one exploit dependency unless original reports establish that chain. Do not add the unrelated autologin type confusion, admin RCE, path traversal, or mimetypeid SQLi to the target by default.",
+      "training_scope": "One real ImpressCMS 1.4.2 target image/template, associated with multiple independent AttackBox Challenges. Proposed entries: XSS challenge, findusers.php SQLi challenge, function-level access-control challenge, and optionally a final composite challenge. Each challenge has its own Markdown, difficulty, hints, answer/Flag stages and progress, while all bind to the same target slug/template and shared per-user target instance. The three original findings remain independently discoverable; do not force a linear exploit dependency.",
       "difficulty_hint": "intermediate_composite",
       "evidence_urls": [
         "https://hackerone.com/reports/1119296",
@@ -2532,9 +2532,10 @@
         "Reproduce the public-token source and findusers.php access-control check from the original report.",
         "Reproduce the groups parameter SQLi from H1 #1081145 / CVE-2021-26599. Public technical analysis describes Boolean-based extraction and also stacked-query capability; initially scope only the Boolean-based behavior and keep stacked queries deferred.",
         "Audit other vulnerabilities present in the same 1.4.2 release (including autologin type confusion, path traversal and administrative code execution); exclude or safely neutralize unrelated paths without breaking the three selected findings.",
-        "Measure a single-container Linux Docker build and identify which services and dependencies are actually required."
+        "Measure a single-container Linux Docker build and identify which services and dependencies are actually required.",
+        "Confirm that one target template can be bound to multiple Challenge records and that target runtime scope is shared as intended; document reset/state implications for independent challenges."
       ],
-      "design_rule": "Do not force the three vulnerabilities into one linear chain. Preserve natural CMS discovery; each finding may be an independent branch, and one final objective is sufficient. Keep stacked-query execution out of the initial scope. Functional CI only: build, startup, health, and normal CMS flows; no automated exploit-chain tests.",
+      "design_rule": "One application/container, many Challenge entries. Bind every Challenge to the same target template slug; each Challenge retains its own stages, answer/Flag and learner progress. Prefer one meaningful Flag per Challenge; multiple stages only where useful. Keep the shared application state coherent and ensure completing one Challenge does not make another unusable. Functional CI only: build, startup, health and ordinary CMS flows; no automated exploit-chain tests.",
       "source_references": [
         {
           "id": "CVE-2021-28088",
