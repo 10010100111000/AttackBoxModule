@@ -1,0 +1,1 @@
+Worker deployment and per-instance flag injection have not been verified. Keep this lab blocked from image publication until platform integration is reviewed.

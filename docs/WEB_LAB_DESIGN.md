@@ -476,7 +476,7 @@ Editorial 已对 SSRF 基本与内网 API 访问做了完整攻击链 CI，但**
 | 3：[HTB Alert](https://0xdf.gitlab.io/2025/03/22/htb-alert.html) | Markdown → 浏览器 XSS → 敏感文件读取 → SSH → Cron Root 的公开真实链 | **中级综合靶机**：跨用户浏览器行为与多阶段侦察 | 原站点源码未公开，重建时如实标明；需要管理员浏览器，Bot 运行资源单独测量 |
 | 可选：[OWASP DSVW](https://vwad.owasp.org/app/damn-small-vulnerable-web-dsvw/) | 少于 100 行 Python 的教学源码 | **初级微型专项**：XSS/DOM 入门 | 尽管极小，但界面直接展示漏洞，不符合偏好自然侦察的综合靶机要求，不能硬称真实产品 CVE |
 
-**选题顺序更新（2026-11-25）**：Django Debug XSS 与 WonderCMS 3.4.2 均已实现，目标浏览器链 CI 通过，不再作为下一台新题。下一候选转为 HTB Inject，先核实真实 Spring Cloud Function 受影响版本、Spring Boot/JDK 组合、LFI 读取路径及 Web-only CVE-2022-22963 触发；不复刻 SSH/Ansible/root 阶段。Inject 尚处于研究评审，未获准进入实现。Headless 是其后的浏览器型 Blind XSS 候选。
+**选题顺序更新（2026-11-25）**：SQLi 分类下一台已选 HTB Intense，正在 `feat/web-intense-sqli-error-lwt-lfi` 开发分支进行 Web-only 重建。目标为 SQLite 条件错误 Oracle → 管理员 Secret → SHA-256 LWT 长度扩展 → 管理员日志路径遍历 → Web Flag。Inject 保留为后续独立 LFI / Spring Cloud Function CVE 候选，不是当前下一台。
 
 ## 平台 Flag 与管理员 Bot 责任边界
 
@@ -564,3 +564,34 @@ WonderCMS 3.4.2 **原版反射型属性 XSS 已通过真实 Chromium CI**。但�
 - 不将未验证环境、正式 Flag、真实凭据、未授权原题素材直接发布到公开仓库。开发期可使用明确标识的演示 Flag，但发布时必须有正确的私密初始化流程。
 
 参考内容编写规范：`attackbox/docs/content-authoring.md`（另一个仓库）；本仓库已有 `challenges/startpoint/` 与 `labs/` 结构可作样例。
+
+
+## 2026-11-25 — Active SQLi composite: HTB Intense
+
+**Selected for implementation:** [HTB Intense](https://www.hackthebox.com/machines/intense). The current inventory already contains UNION, Boolean/Time Blind, second-order, database FILE operations and WebSocket blind SQLi. Intense adds a distinct SQLite conditional-error oracle, followed by a cryptographic session-forgery step and authenticated path traversal.
+
+### Public source review
+
+The Web attack path was cross-checked against multiple independent writeups:
+
+- https://romanh.de/writeup/htb-intense
+- https://www.willsroot.io/2020/11/intense-hackthebox-writeup.html
+- https://github.com/zweilosec/htb-writeups/blob/master/linux-machines/hard/intense-write-up.md
+
+The common observable sequence is: guest login → public Flask source archive → 140-character message form → SQLite INSERT injection with native error feedback → extract the administrator's stored secret using a conditional error oracle → exploit the custom SHA-256 secret-prefix LWT signature with a length-extension attack → duplicate session keys make the appended administrator identity take precedence → admin log view/list → path traversal to read the Web Flag.
+
+### Reconstruction boundary
+
+The original private application source is not copied. Rebuild the observable route and exploit path with a small independently written Flask application and a real SQLite database. Preserve the normal guest workflow, source archive, message length and filter behavior, direct SQLite errors, conditional error distinction, weak LWT MAC, duplicate-key parsing and unchecked log path join.
+
+The target does **not** include the original SNMP command execution, SSH pivot, custom native note-server binary or Linux Root stages. Those are outside the current Web-only objective. A single final Web Flag is sufficient; do not create a Flag for every intermediate technique.
+
+### Difficulty and engineering
+
+- **Trytopwn difficulty:** Advanced. The Web portion combines SQLi, character-by-character extraction, hash length extension, session parsing behavior and authenticated file traversal.
+- **Runtime:** Python / Flask + embedded SQLite. No separate database service, JVM, SSH, SNMP, compiler or privileged capability.
+- **Container:** Multi-stage Alpine build, unprivileged web process, per-instance flag file injected at startup, healthcheck, no host mounts or added capabilities.
+- **Verification:** CI is limited to build, startup, healthcheck and ordinary page smoke checks. The SQLi oracle, secret extraction, forged session and final file read remain separate manual acceptance tasks.
+- **Current status:** implementation branch created; Docker build, measured image/resource usage, manual acceptance and Worker integration are still pending.
+
+The structured machine entry and rolling backlog are maintained in [web-curriculum.json](../catalog/web-curriculum.json).
