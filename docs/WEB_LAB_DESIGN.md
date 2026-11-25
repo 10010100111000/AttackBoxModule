@@ -653,3 +653,16 @@ The SQLi and access-control disclosures affect the same \`findusers.php\` featur
 This is a cross-category composite lab: students perform normal CMS reconnaissance, discover multiple routes and role boundaries, and understand how XSS, SQL injection and function-level authorization failures can coexist in one real product. The final task can be a single meaningful objective; intermediate discoveries do not need individual Flags.
 
 The candidate is research-only. No Dockerfile, challenge implementation branch, or image release is authorized until source/version, dependency and unrelated-vulnerability scope are reviewed.
+
+
+### Next execution plan (research only)
+
+1. **Pin upstream source:** locate the exact 1.4.2 release archive/tag/commit; record PHP/MySQL versions, PHP extensions, installer prerequisites and licensing.
+2. **Map each disclosure independently:** extract exact file, route, parameter, required role/token, vulnerable code and observable behavior from the original HackerOne report and source. Do not infer stored XSS until persistence is proven.
+3. **Audit coexisting vulnerabilities:** inventory all known 1.4.2 issues and identify which could interfere with the three selected exercises. Do not silently modify the vulnerable code being taught.
+4. **Check container feasibility:** decide whether PHP and MySQL can run reliably in one lightweight container or whether the original app genuinely requires separate services. Measure rather than assume image size.
+5. **Define the target reset contract:** all Challenges use the same \`lab: impresscms\` target template. The current AttackBox runtime scopes a per-user target by target-template ID, so Challenges bound to that template reuse the same running target instance. Their answer stages and completion records remain independent. Confirm stop/start persistence and shared CMS state before writing challenge docs.
+6. **Author separate Challenges:** create XSS, SQLi and access-control challenge documents, each with its own difficulty, prompt, hint and one meaningful Flag/answer. Add a composite Challenge only if it offers a genuinely different learning outcome.
+7. **Implement after review:** one Docker image and one build. CI checks only image build, startup, health and ordinary CMS functions; no automated exploit or Flag extraction.
+
+**No Docker implementation starts until steps 1–5 are complete and the candidate is approved.**
