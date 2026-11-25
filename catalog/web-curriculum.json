@@ -2234,7 +2234,7 @@
   "academy_index": {
     "source": "https://portswigger.net/web-security/all-topics",
     "official_topics": 31,
-    "learning_objectives": 224,
+    "learning_objectives": 225,
     "groups": {
       "server": 14,
       "client": 6,
