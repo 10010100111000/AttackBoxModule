@@ -1,0 +1,6 @@
+*.log
+*.sql.gz
+.git
+.gitignore
+README.md
+.release-blocked
