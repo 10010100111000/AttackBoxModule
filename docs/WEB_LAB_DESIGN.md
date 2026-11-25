@@ -26,7 +26,7 @@ PR 创建、更新或提交之前，先展示具体代码差异和实际检查�
 
 main 目录记录 23 台：17 台完整目标 CI、4 台部分验证、2 台未验证；6 台有发布限制标记，23 台均未记录 Worker 实机验收。知识点目录共 219 项，其中 1 项记录独立验收、218 项尚未审核。滚动队列 33 项：2 项完成、2 项进行中、29 项计划中。
 
-开放 PR：[#18](https://github.com/10010100111000/AttackBoxModule/pull/18) Trick 专项检查通过；[#21](https://github.com/10010100111000/AttackBoxModule/pull/21) Alert 构建及启动检查通过，完整目标未确认；[#22](https://github.com/10010100111000/AttackBoxModule/pull/22) Precious 构建通过、专项检查失败。三项均不计入 main，合并条件尚未确认。
+**2026-11-25 状态更新**：PR #18 Trick、#21 Alert、#22 Precious、#23 Soccer、#24 状态盘点、#25 CI 策略均已关闭；其中 #21–#25 对应改动已合并。Trick 分支仍有未合并实现，不能因 PR 关闭而视为进入 main。Alert 与 Precious 的 Web 专项目标仍需按人工验收状态分别核对；Soccer 的 WebSocket 盲注 CI 已通过。当前没有开放 PR。
 
 以下 17 台清单为历史快照，不作为当前统计。发布限制不得仅凭构建成功解除。
 
@@ -476,7 +476,7 @@ Editorial 已对 SSRF 基本与内网 API 访问做了完整攻击链 CI，但**
 | 3：[HTB Alert](https://0xdf.gitlab.io/2025/03/22/htb-alert.html) | Markdown → 浏览器 XSS → 敏感文件读取 → SSH → Cron Root 的公开真实链 | **中级综合靶机**：跨用户浏览器行为与多阶段侦察 | 原站点源码未公开，重建时如实标明；需要管理员浏览器，Bot 运行资源单独测量 |
 | 可选：[OWASP DSVW](https://vwad.owasp.org/app/damn-small-vulnerable-web-dsvw/) | 少于 100 行 Python 的教学源码 | **初级微型专项**：XSS/DOM 入门 | 尽管极小，但界面直接展示漏洞，不符合偏好自然侦察的综合靶机要求，不能硬称真实产品 CVE |
 
-**默认第一步**：审查并复现 Vulhub 的 Django CVE-2017-12794，同时对 WonderCMS 3.4.2 进行可移植性与实际版本核验。完整源代码/版本、浏览器执行和资源数据确认后才可开发。未构建前绝不宣称最终镜像 MiB 数值。
+**选题顺序更新（2026-11-25）**：Django Debug XSS 与 WonderCMS 3.4.2 均已实现，目标浏览器链 CI 通过，不再作为下一台新题。下一候选转为 HTB Inject，先核实真实 Spring Cloud Function 受影响版本、Spring Boot/JDK 组合、LFI 读取路径及 Web-only CVE-2022-22963 触发；不复刻 SSH/Ansible/root 阶段。Inject 尚处于研究评审，未获准进入实现。Headless 是其后的浏览器型 Blind XSS 候选。
 
 ## 平台 Flag 与管理员 Bot 责任边界
 
