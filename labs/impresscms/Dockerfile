@@ -20,7 +20,9 @@ RUN apk add --no-cache curl iproute2 mariadb mariadb-client nginx supervisor \
       $PHPIZE_DEPS curl-dev freetype-dev icu-dev libjpeg-turbo-dev \
       libpng-dev libxml2-dev libzip-dev oniguruma-dev zlib-dev \
  && docker-php-ext-configure gd --with-freetype --with-jpeg \
- && docker-php-ext-install -j"$(nproc)" curl dom exif gd intl mbstring mysqli opcache pdo_mysql simplexml xml xmlreader xmlwriter zip \
+ && docker-php-ext-install -j"$(nproc)" xml dom \
+ && docker-php-ext-install -j"$(nproc)" simplexml xmlreader xmlwriter \
+ && docker-php-ext-install -j"$(nproc)" curl exif gd intl mbstring mysqli opcache pdo_mysql zip \
  && apk del .php-build-deps \
  && mkdir -p /run/mysqld /run/nginx /var/www/trust /var/www/html/uploads /var/www/html/cache /var/www/html/templates_c /var/lib/mysql \
  && chown -R mysql:mysql /run/mysqld /var/lib/mysql \
