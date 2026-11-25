@@ -19,7 +19,10 @@ def hash_password(password: str) -> str:
 
 
 def query_db(query, args=(), one=False):
-    cursor = g._database.execute(query, args)
+    # Ensure ordinary login and session lookups open the request-scoped DB connection.
+    from app import get_db
+
+    cursor = get_db().execute(query, args)
     rows = cursor.fetchall()
     cursor.close()
     return (rows[0] if rows else None) if one else rows
