@@ -2182,6 +2182,7 @@
       ],
       "required_skill_coverage": [
         "xss.stored",
+        "sqli.boolean-blind",
         "sqli.parameter-injection",
         "idor.function-level-authorization"
       ],
@@ -2195,7 +2196,7 @@
         "impresscms-composite"
       ],
       "selected_candidate": "impresscms-composite",
-      "note": "HackerOne reports #1119296 (XSS), #1081145 (SQLi) and #1081137 (access control) are distinct disclosures. SQLi and access-control issues both touch include/findusers.php, while XSS is in the content module's Display Name handling. Research exact upstream source/version, prerequisites, other coexisting vulnerabilities and safe Docker scope before implementation."
+      "note": "HackerOne reports #1119296 (XSS), #1081145 (SQLi) and #1081137 (access control) are distinct disclosures. SQLi and access-control issues both touch include/findusers.php. Public technical analysis describes Boolean-based extraction and stacked-query capability; keep stacked queries deferred. XSS persistence/output context must be confirmed from the original report/source."
     }
   ],
   "skills_catalog": "catalog/web-competencies.json",
@@ -2507,10 +2508,11 @@
       "version": "1.4.2",
       "skills": [
         "xss.stored",
+        "sqli.boolean-blind",
         "sqli.parameter-injection",
         "idor.function-level-authorization"
       ],
-      "signature": "ImpressCMS 1.4.2: profile Display Name stored XSS (CVE-2021-28088 / H1 #1119296) + include/findusers.php groups SQLi (CVE-2021-26599 / H1 #1081145) + token-gated function-level access control flaw (CVE-2021-26598 / H1 #1081137)",
+      "signature": "ImpressCMS 1.4.2: Display Name XSS (CVE-2021-28088 / H1 #1119296) + findusers.php groups Boolean-based SQLi (CVE-2021-26599 / H1 #1081145) + token-gated function-level access control flaw (CVE-2021-26598 / H1 #1081137)",
       "source_status": "public_HackerOne_reports_and_CVEs_cross_checked; upstream_source_version_pin_pending",
       "review_status": "research_required",
       "training_scope": "One real CMS application with three independent but related discovery paths: profile data stored XSS, unauthenticated findusers function access through a token exposed in a public flow, and SQL injection in the groups parameter of the same findusers endpoint. Treat these as separate findings, not as one exploit dependency unless original reports establish that chain. Do not add the unrelated autologin type confusion, admin RCE, path traversal, or mimetypeid SQLi to the target by default.",
@@ -2528,11 +2530,11 @@
         "Pin the exact upstream 1.4.2 release commit and determine the PHP/MySQL versions and installation prerequisites.",
         "Reproduce the Display Name XSS in the original output context, and determine whether it is stored and which viewer role triggers it.",
         "Reproduce the public-token source and findusers.php access-control check from the original report.",
-        "Reproduce the groups parameter SQLi from H1 #1081145 / CVE-2021-26599 and determine its actual data impact.",
+        "Reproduce the groups parameter SQLi from H1 #1081145 / CVE-2021-26599. Public technical analysis describes Boolean-based extraction and also stacked-query capability; initially scope only the Boolean-based behavior and keep stacked queries deferred.",
         "Audit other vulnerabilities present in the same 1.4.2 release (including autologin type confusion, path traversal and administrative code execution); exclude or safely neutralize unrelated paths without breaking the three selected findings.",
         "Measure a single-container Linux Docker build and identify which services and dependencies are actually required."
       ],
-      "design_rule": "Do not force the three vulnerabilities into one linear chain. Preserve natural CMS discovery; each finding may be an independent branch, and one final objective is sufficient. Functional CI only: build, startup, health, and normal CMS flows; no automated exploit-chain tests.",
+      "design_rule": "Do not force the three vulnerabilities into one linear chain. Preserve natural CMS discovery; each finding may be an independent branch, and one final objective is sufficient. Keep stacked-query execution out of the initial scope. Functional CI only: build, startup, health, and normal CMS flows; no automated exploit-chain tests.",
       "source_references": [
         {
           "id": "CVE-2021-28088",
@@ -2544,7 +2546,7 @@
           "id": "CVE-2021-26599",
           "kind": "sqli",
           "hackerone": "https://hackerone.com/reports/1081145",
-          "summary": "groups SQL injection in include/findusers.php; before 1.4.3"
+          "summary": "groups SQL injection in include/findusers.php; Boolean-based extraction documented; stacked queries deferred; before 1.4.3"
         },
         {
           "id": "CVE-2021-26598",
