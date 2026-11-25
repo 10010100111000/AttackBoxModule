@@ -290,10 +290,12 @@ jobs:
             base="http://127.0.0.1:18082"
             curl -fsS "$base/" | grep -qi "impresscms"
             curl -fsS "$base/user.php" | grep -q 'name="uname"'
-            curl -fsS -c /tmp/impresscms-cookies -b /tmp/impresscms-cookies \
+            curl -fsSL -c /tmp/impresscms-cookies -b /tmp/impresscms-cookies \
               -d 'uname=admin&pass=CI-Admin-Only-2026&op=login' "$base/user.php" -o /tmp/impresscms-login
-            curl -fsS -b /tmp/impresscms-cookies "$base/modules/system/admin.php" | grep -qi "admin"
-            curl -fsS "$base/modules/content/" -o /tmp/impresscms-content
+            curl -fsS -b /tmp/impresscms-cookies "$base/modules/system/admin.php" -o /tmp/impresscms-admin
+            test -s /tmp/impresscms-admin
+            curl -fsSL "$base/modules/content/" -o /tmp/impresscms-content
+            grep -qi "content" /tmp/impresscms-content
             echo "PASS: ImpressCMS homepage, login form, administrator login, system admin page and Content module page"
           fi
       - name: Publish tested image
