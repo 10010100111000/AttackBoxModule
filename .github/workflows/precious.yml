@@ -4,7 +4,6 @@ on:
     paths:
       - "labs/precious/**"
       - ".github/workflows/precious.yml"
-      - "catalog/web-curriculum.json"
   push:
     branches: [main]
     paths:
