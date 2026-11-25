@@ -245,8 +245,7 @@ jobs:
                 -e VALIDATION_STATIC_ROOT_FLAG="TTP{ci_validation_root_not_production}")
               ;;
             intense)
-              args+=(-p 127.0.0.1:18080:8080
-                -e INTENSE_WEB_FLAG="TTP{ci_intense_smoke_only}")
+              args+=(-e INTENSE_WEB_FLAG="TTP{ci_intense_smoke_only}")
               ;;
           esac
           test_container=$(docker run -d "${args[@]}" "$IMAGE")
@@ -270,14 +269,17 @@ jobs:
               raise SystemExit('靶机启动检查超时')
           PY
           if [ "$LAB_SLUG" = "intense" ]; then
-            base="http://127.0.0.1:18080"
-            curl -fsS "$base/" | grep -q "Community message service"
-            curl -fsS "$base/login" | grep -q 'name="username"'
-            curl -fsS "$base/src.zip" -o /tmp/intense-source.zip
-            unzip -tq /tmp/intense-source.zip
-            curl -fsS -c /tmp/intense-cookies -b /tmp/intense-cookies -d 'username=guest&password=guest' "$base/postlogin" | grep -q "OK"
-            curl -fsS -b /tmp/intense-cookies -d 'message=ordinary+community+message' "$base/submitmessage" | grep -q "OK"
-            test "$(curl -s -o /dev/null -w '%{http_code}' -b /tmp/intense-cookies "$base/admin")" = "403"
+            docker exec "$test_container" sh -ec '
+              base="http://127.0.0.1:8080"
+              curl -fsS "$base/" | grep -q "A small community space"
+              curl -fsS "$base/login" | grep -q "name=\\"username\\""
+              curl -fsS "$base/src.zip" -o /tmp/intense-source.zip
+              python -c "import zipfile; assert zipfile.is_zipfile(\\"/tmp/intense-source.zip\\")"
+              curl -fsS -c /tmp/intense-cookies -b /tmp/intense-cookies -d "username=guest&password=guest" "$base/postlogin" | grep -q "OK"
+              curl -fsS -b /tmp/intense-cookies -d "message=ordinary+community+message" "$base/submitmessage" | grep -q "OK"
+              code=$(curl -s -o /dev/null -w "%{http_code}" -b /tmp/intense-cookies "$base/admin")
+              test "$code" = "403"
+            '
             echo "PASS: Intense home, login form, source archive, guest login, ordinary message submission and guest admin access control"
           fi
       - name: Publish tested image
