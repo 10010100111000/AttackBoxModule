@@ -2196,7 +2196,7 @@
         "impresscms-composite"
       ],
       "selected_candidate": "impresscms-composite",
-      "note": "One target image/template is intended to serve multiple independent Challenge entries. Candidate disclosures: H1 #1119296 (Display Name XSS), #1081145 (findusers groups SQLi), #1081137 (findusers function-level access control). Keep the findings separate; stacked queries deferred. Verify same-template target scope and reset/state implications."
+      "note": "Next action is source/version and disclosure mapping, not implementation. Once approved, build one target template and bind separate XSS, SQLi and function-level access-control Challenge records to lab: impresscms. The AttackBox runtime scope is template-based (target:<templateId>), so a learner reuses one per-user instance across those Challenges; Challenge answers/progress remain independent. Verify reset and shared-state behavior before authoring the Challenge set."
     }
   ],
   "skills_catalog": "catalog/web-competencies.json",
@@ -2533,7 +2533,8 @@
         "Reproduce the groups parameter SQLi from H1 #1081145 / CVE-2021-26599. Public technical analysis describes Boolean-based extraction and also stacked-query capability; initially scope only the Boolean-based behavior and keep stacked queries deferred.",
         "Audit other vulnerabilities present in the same 1.4.2 release (including autologin type confusion, path traversal and administrative code execution); exclude or safely neutralize unrelated paths without breaking the three selected findings.",
         "Measure a single-container Linux Docker build and identify which services and dependencies are actually required.",
-        "Confirm that one target template can be bound to multiple Challenge records and that target runtime scope is shared as intended; document reset/state implications for independent challenges."
+        "Confirm that one target template can be bound to multiple Challenge records and that target runtime scope is shared as intended; document reset/state implications for independent challenges.",
+        "Define the reset contract: confirm whether a stop/start recreates the same target template instance and which data is ephemeral or volume-backed. Make each Challenge independently usable and document when learners should reset."
       ],
       "design_rule": "One application/container, many Challenge entries. Bind every Challenge to the same target template slug; each Challenge retains its own stages, answer/Flag and learner progress. Prefer one meaningful Flag per Challenge; multiple stages only where useful. Keep the shared application state coherent and ensure completing one Challenge does not make another unusable. Functional CI only: build, startup, health and ordinary CMS flows; no automated exploit-chain tests.",
       "source_references": [
@@ -2554,6 +2555,38 @@
           "kind": "access-control",
           "hackerone": "https://hackerone.com/reports/1081137",
           "summary": "token-based access to findusers.php without required authentication; before 1.4.3"
+        }
+      ],
+      "research_plan": [
+        {
+          "step": 1,
+          "name": "Pin source",
+          "deliverable": "Exact 1.4.2 release archive/tag/commit, PHP and MySQL compatibility, required PHP extensions and installer dependencies."
+        },
+        {
+          "step": 2,
+          "name": "Map HackerOne findings",
+          "deliverable": "For each report, record affected route/file, parameter, preconditions, user role, request/response behavior, trigger context and exact vulnerable code."
+        },
+        {
+          "step": 3,
+          "name": "Audit coexisting vulnerabilities",
+          "deliverable": "Inventory other issues in 1.4.2; classify as selected, irrelevant, or interfering. Do not silently patch/alter the selected vulnerable code."
+        },
+        {
+          "step": 4,
+          "name": "Validate one-image feasibility",
+          "deliverable": "Minimal PHP + MySQL service topology, single-container startup approach, persistent/ephemeral data behavior, image and memory estimates."
+        },
+        {
+          "step": 5,
+          "name": "Design multiple Challenges",
+          "deliverable": "Separate XSS, SQLi and access-control Challenge documents (and optional composite); all use lab: impresscms and each has independent answer/Flag and progress."
+        },
+        {
+          "step": 6,
+          "name": "Implement only after review",
+          "deliverable": "One target image, one Docker build, normal-functionality CI only; no exploit-chain automation."
         }
       ]
     }
