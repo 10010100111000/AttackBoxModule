@@ -1039,6 +1039,12 @@
           "title": "由浏览器脚本完成跨用户权限操作",
           "first_target_level": "advanced",
           "status": "not_audited"
+        },
+        {
+          "id": "xss.output-context",
+          "title": "用户可控数据输出上下文与编码缺陷",
+          "first_target_level": "intermediate",
+          "status": "not_audited"
         }
       ]
     },
