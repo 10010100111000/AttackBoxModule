@@ -1516,6 +1516,46 @@
         "evidence": [],
         "failure_reason": null
       }
+    },
+    {
+      "id": "impresscms",
+      "path": "labs/impresscms",
+      "track": "web",
+      "provisional_difficulty": "intermediate",
+      "primary_category": "cms_vulnerability",
+      "secondary_categories": [
+        "xss",
+        "sqli",
+        "idor",
+        "file_read",
+        "auth_session",
+        "code_injection"
+      ],
+      "validated_skills": [],
+      "implemented_skills": [],
+      "lab_ci_status": "unverified",
+      "worker_status": "not_verified",
+      "release_status": "blocked_by_marker",
+      "evidence": "docs/research/IMPRESSCMS_1.4.2_SOURCE_AUDIT.md",
+      "note": "One ImpressCMS 1.4.2 target template intended to serve multiple independent Challenges across categories. Core source is pinned; Content module source is provisional and not yet reconciled with the official 1.2.1 Final package. Dockerfile and first-start installer have been authored but not built or functionally checked. No challenge-specific data/Flags are seeded yet.",
+      "variant_profile": {
+        "technology": "PHP 7.4 FPM, Nginx, MariaDB, ImpressCMS 1.4.2 core, provisional Content module source",
+        "initial_discovery": "ImpressCMS CMS homepage, user login, public search and system/content management modules",
+        "key_constraint_or_mechanism": "One shared CMS instance exposes independent source-backed findings in findusers.php, image-editor, autologin, autotasks and Content Manager",
+        "attack_path": "Multiple independent Challenge paths share one target template; no forced linear exploit chain",
+        "incremental_learning_value": "One Docker image and per-user CMS instance can support independent XSS, SQLi, function-level authorization, path traversal, authentication and server-side code-injection Challenges, each with its own answer and progress",
+        "confidence": "core tag and several vulnerable source paths pinned; add-on archive, installer automation, Docker build, ordinary functionality and runtime resource measurements pending"
+      },
+      "skill_mapping_stage": "source_audit_started_container_skeleton_not_validated",
+      "manual_validation": {
+        "status": "not_reviewed",
+        "commit": null,
+        "reviewer": null,
+        "reviewed_at": null,
+        "scope": null,
+        "evidence": [],
+        "failure_reason": null
+      }
     }
   ],
   "backlog": [
