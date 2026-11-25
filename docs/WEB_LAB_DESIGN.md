@@ -620,49 +620,42 @@ CI is limited to image build, container startup, healthcheck and ordinary applic
 
 
 
-The next category after Intense is **XSS**, but the next lab should not be artificially limited to XSS. Research ImpressCMS 1.4.2 as one authentic CMS target with several independently discoverable findings:
+The next category after Intense is **XSS**, but the next target should not be artificially limited to XSS. Use ImpressCMS 1.4.2 as one real CMS target that can support multiple independent Challenges across vulnerability categories.
 
-| Finding | Public disclosure | Affected component |
+The core source is pinned to upstream tag \`v1.4.2\`, commit \`56caca0356646ad29497ce877589326a4a76123b\`. The Content Manager XSS is in a separate official add-on, Content 1.2.1 Final, so the core and add-on must both be pinned and hashed.
+
+The detailed source audit is maintained in [IMPRESSCMS_1.4.2_SOURCE_AUDIT.md](research/IMPRESSCMS_1.4.2_SOURCE_AUDIT.md).
+
+### Challenge candidates
+
+| Challenge | Category | Source / issue |
 |---|---|---|
-| Display Name XSS | [HackerOne #1119296](https://hackerone.com/reports/1119296), CVE-2021-28088 | \`modules/content/admin/content.php\` |
-| SQL injection through \`groups\` | [HackerOne #1081145](https://hackerone.com/reports/1081145), CVE-2021-26599 | \`include/findusers.php\` |
-| Function-level access control flaw | [HackerOne #1081137](https://hackerone.com/reports/1081137), CVE-2021-26598 | \`include/findusers.php\` |
+| Findusers authorization | Access Control | CVE-2021-26598 / H1 #1081137 |
+| Findusers groups | SQL Injection | CVE-2021-26599 / H1 #1081145 |
+| Image editor temp path | Path Traversal | CVE-2021-26601 / H1 #1081878 |
+| Autotasks | Server-side Code Injection | CVE-2021-47938 |
+| Content Display Name | XSS | CVE-2021-28088 / H1 #1119296; requires separate Content 1.2.1 add-on |
+| Autologin | Authentication / Type Confusion | CVE-2021-26600 / H1 #1081986; exact vulnerable comparison pending source/report reconciliation |
+| Mimetype | SQL Injection | CVE-2022-26986; candidate pending exact request/parameter flow in pinned 1.4.2 source |
 
-The SQLi and access-control disclosures affect the same \`findusers.php\` feature but are distinct vulnerabilities. The XSS is a separate profile/content path; do not label it stored until persistence is confirmed from the report and source. Do not claim they form a single linear exploit chain unless the original reports and source prove that dependency.
+Include other verified vulnerabilities from the same target release as separate Challenges, regardless of category. Do not patch them merely because they fall outside the original XSS scope. Do not claim an issue is confirmed until the exact affected source and preconditions are mapped.
 
-### Important version and scope caveats
+### One target, many Challenges
 
-- CVE-2021-28088 explicitly identifies ImpressCMS 1.4.2.
-- CVE-2021-26598 and CVE-2021-26599 affect versions before 1.4.3, so 1.4.2 is within the affected range.
-- Other serious issues also exist in nearby versions, including autologin type confusion, path traversal, administrative code execution and the later \`mimetypeid\` SQLi. Do not accidentally include these as extra objectives. Audit them and decide whether unrelated vulnerable surfaces can be safely excluded or neutralized without breaking the selected original behaviors.
-- CVE-2022-26986 is an additional admin-permission SQLi candidate, not part of the initial required scope.
+All Challenge documents bind to target slug \`impresscms\`. The AttackBox runtime scopes the target by target-template ID, so Challenges bound to the same template reuse the same per-user target instance. Each Challenge retains independent answers/Flags and progress. One meaningful Flag per Challenge is sufficient; multi-stage answers are optional. Do not force independent findings into one linear exploit chain.
 
-### Research before implementation
+Because the CMS state is shared, ensure completing one Challenge does not remove records, permissions or data needed by another. Define stop/start persistence and reset behavior before publishing the Challenge set.
 
-1. Pin the exact upstream 1.4.2 source release/commit.
-2. Reconstruct the original PHP/MySQL/PHP-extension prerequisites and Docker footprint.
-3. Read the three HackerOne reports separately and map each to the exact request, parameter, role, and response behavior.
-4. Verify whether Display Name XSS is stored and identify its actual viewing context.
-5. Verify how an unauthenticated visitor obtains a valid token for the \`findusers.php\` access-control issue.
-6. Verify the \`groups\` SQLi independently and document the real database impact.
-8. Choose whether to preserve all three findings in one CMS instance; no forced linear chain and no requirement for a Flag per vulnerability.
-9. CI remains limited to build, startup, healthcheck and ordinary CMS functionality. Do not add automated XSS, SQLi, authorization-bypass, exploit-chain or Flag-extraction tests.
+### Current implementation gates
 
-### Intended teaching value
+1. Core v1.4.2 tag and source commit are pinned.
+2. Obtain the official Content 1.2.1 add-on archive and record its hash.
+3. Finish source mapping for every candidate, especially autologin and mimetype SQLi.
+4. Record PHP extensions, MariaDB compatibility and installer requirements.
+5. Decide whether PHP/Apache and MariaDB can run reliably in one container under a small supervisor; measure image size, startup time and memory.
+6. Automate the initial installation and deterministic seed data; do not leave the installer exposed to learners.
+7. Build one image and register one target template. Add separate Challenge records only after the target is functional.
 
-This is a cross-category composite lab: students perform normal CMS reconnaissance, discover multiple routes and role boundaries, and understand how XSS, SQL injection and function-level authorization failures can coexist in one real product. The final task can be a single meaningful objective; intermediate discoveries do not need individual Flags.
+CI remains limited to image build, startup, healthcheck and normal application functionality. Do not add automated XSS, SQLi, authorization-bypass, code-execution, exploit-chain or Flag-extraction tests.
 
-The candidate is research-only. No Dockerfile, challenge implementation branch, or image release is authorized until source/version, dependency and unrelated-vulnerability scope are reviewed.
-
-
-### Next execution plan (research only)
-
-1. **Pin upstream source:** locate the exact 1.4.2 release archive/tag/commit; record PHP/MySQL versions, PHP extensions, installer prerequisites and licensing.
-2. **Map each disclosure independently:** extract exact file, route, parameter, required role/token, vulnerable code and observable behavior from the original HackerOne report and source. Do not infer stored XSS until persistence is proven.
-3. **Audit coexisting vulnerabilities:** inventory all known 1.4.2 issues and identify which could interfere with the three selected exercises. Do not silently modify the vulnerable code being taught.
-4. **Check container feasibility:** decide whether PHP and MySQL can run reliably in one lightweight container or whether the original app genuinely requires separate services. Measure rather than assume image size.
-5. **Define the target reset contract:** all Challenges use the same \`lab: impresscms\` target template. The current AttackBox runtime scopes a per-user target by target-template ID, so Challenges bound to that template reuse the same running target instance. Their answer stages and completion records remain independent. Confirm stop/start persistence and shared CMS state before writing challenge docs.
-6. **Author separate Challenges:** create XSS, SQLi and access-control challenge documents, each with its own difficulty, prompt, hint and one meaningful Flag/answer. Add a composite Challenge only if it offers a genuinely different learning outcome.
-7. **Implement after review:** one Docker image and one build. CI checks only image build, startup, health and ordinary CMS functions; no automated exploit or Flag extraction.
-
-**No Docker implementation starts until steps 1–5 are complete and the candidate is approved.**
+**Current status:** source audit started; no Docker image has been built, tested or published.
