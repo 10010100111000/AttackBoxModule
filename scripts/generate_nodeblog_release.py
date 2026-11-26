@@ -57,21 +57,21 @@ def main():
     (FLAGS / "user.txt").write_text(flags["flag03"] + "\n", encoding="utf-8")
 
     docs = {
-        ROOT / "challenges/authentication/nodeblog-nosql/NoSQL Authentication Bypass.md":
-            challenge_markdown("调查博客登录行为，完成第一阶段认证挑战。", "easy",
-                "一个社区博客开放了文章浏览和作者登录功能。请从普通访问者的视角观察登录请求与应用响应，找到进入受保护作者内容的方法。",
-                [("Flag 01 — Protected Staff Note", "进入受保护的编辑团队内容，提交其中的第一枚 Flag。", flags["flag01"])]),
-        ROOT / "challenges/file-security/nodeblog-xxe/XXE Source Disclosure.md":
-            challenge_markdown("复习认证绕过，并调查 XML 导入和外部实体解析。", "medium",
-                "博客提供 XML 文章导入功能。完成认证目标后，继续观察导入数据如何被服务端解析，以及解析结果如何进入文章编辑器。",
+        ROOT / "challenges/authentication/nodeblog-nosql/Editorial Access.md":
+            challenge_markdown("调查博客的作者访问边界。", "easy",
+                "一个社区博客开放了公开文章浏览和作者登录功能。请从普通访问者的视角观察页面与请求，找到进入编辑团队区域的方法。",
+                [("Flag 01 — Staff Notes", "找到编辑团队可见的内部记录，提交其中的内容。", flags["flag01"])]),
+        ROOT / "challenges/file-security/nodeblog-xxe/Import Pipeline.md":
+            challenge_markdown("复习作者访问，并调查文章导入行为。", "medium",
+                "作者区域提供文章导入功能。调查应用如何接收和处理导入内容，并找到处理流程中可取得的信息。",
+                [("Flag 01 — Staff Notes Review", "重新取得编辑团队的内部记录，提交第一枚 Flag。", flags["flag01"]),
+                 ("Flag 02 — Import Result", "调查文章导入的处理结果，提交第二枚 Flag。", flags["flag02"])]),
+        ROOT / "challenges/integrated/nodeblog/Session Integrity.md":
+            challenge_markdown("完整评估博客的认证、导入与会话处理流程。", "hard",
+                "对博客进行一次完整安全评估。从访问控制开始，追踪文章导入，再分析应用如何处理浏览器会话。",
                 [("Flag 01 — Authentication Review", "重新完成认证阶段，提交受保护内容中的第一枚 Flag。", flags["flag01"]),
-                 ("Flag 02 — XML Disclosure", "利用 XML 导入处理过程读取专用本地数据文件，提交第二枚 Flag。", flags["flag02"])]),
-        ROOT / "challenges/integrated/nodeblog/NodeBlog 03 — Complete Web Assessment.md":
-            challenge_markdown("综合考察 NoSQL 认证绕过、XXE 和不安全 Cookie 反序列化。", "hard",
-                "你将对同一个博客应用进行完整 Web 安全评估。重新验证认证边界与 XML 导入行为，再调查浏览器会话 Cookie 的生成、解析和信任过程。",
-                [("Flag 01 — Authentication Review", "重新完成认证阶段，提交受保护内容中的第一枚 Flag。", flags["flag01"]),
-                 ("Flag 02 — XML Disclosure Review", "重新完成 XML 外部实体读取阶段，提交第二枚 Flag。", flags["flag02"]),
-                 ("Flag 03 — Web Execution", "利用会话处理中的真实漏洞取得 Web 服务执行能力，提交最终 Flag。", flags["flag03"])])
+                 ("Flag 02 — Import Result Review", "重新完成文章导入阶段，提交第二枚 Flag。", flags["flag02"]),
+                 ("Flag 03 — Application Access", "继续调查应用的会话处理方式，完成最后阶段并提交 Flag。", flags["flag03"])])
     }
     for path, content in docs.items():
         path.parent.mkdir(parents=True, exist_ok=True)
