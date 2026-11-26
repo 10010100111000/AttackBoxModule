@@ -39,7 +39,7 @@
 以 main 提交 `bb3d62f3f8f96ded4eb34b16ba2561a4a1e0f678` 为本次盘点基准：
 
 - 当前目录有 **27 台 Lab**：18 台记录为 `full_chain_ci`、5 台为 `partial`、4 台为 `unverified`。
-- 端到端 CI：**Bike 1 台 passed、26 台 pending**；Bike 的独立攻击端测试和版本化 Flag 发布测试均已通过。
+- 端到端 CI：**Bike 1 台 passed、Precious 1 台 configured、25 台 pending**；Precious 正在接入真实 PDFKit 命令注入和 Flag 回读验收。
 - 其中 **10 台**保留 `.release-blocked` 标记；该字段与 CI 结果分开记录。
 - 技能目录仍为 **31 个专题 / 219 个细分目标**。
 - 滚动队列为 **35 项**：4 项 done、4 项 in_progress、27 项 planned。
