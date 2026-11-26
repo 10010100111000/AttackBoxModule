@@ -1,0 +1,194 @@
+# NodeBlog / Zipping / Soccer — Lab 复用与 Challenge 独立性审查
+
+**日期：2026-11-26**  
+**范围：只读源码、题面、Flag 存放方式和既有 CI 证据；本次没有修改 Dockerfile、应用代码、脚本、Flag、题面或 Worker。**
+
+## 结论摘要
+
+| Lab | 已确认的真实 Web 机制 | 当前 Flag | 是否建议拆成多道独立 Challenge |
+| --- | --- | --- | --- |
+| NodeBlog | MongoDB NoSQL 认证绕过 → libxml2 XXE 源码读取 → node-serialize 0.0.4 不安全反序列化执行 | `/home/nodeblog/user.txt`，nodeblog UID 10001，0600 | **暂不拆**。一条连续链、一个最终 Web Flag；一题覆盖多个 Skill，可增加知识检查阶段 |
+| Zipping | ZIP 符号链接处理 → MariaDB SQLi/FILE → PHP LFI/include | `/home/rektsu/user.txt`，www-data，0400 | **暂不拆，先验证绕题路径**。源代码显示可能直接用 ZIP symlink 读取最终 Flag，绕过后续 SQLi/LFI |
+| Soccer | 原版 Tiny File Manager 上传 → Nginx vhost/config 发现 → WebSocket/MariaDB 布尔盲注 | `soccer_db.accounts.goal`；启动时由 root-owned 0400 seed 写入 | **暂不拆 Flag Challenge**。建议一题多技能，增加 vhost 与 WebSocket 协议两个 question checkpoint，最后提交一个 Web Flag |
+
+核心结论：**多 Challenge 复用是平台能力，不是把每个漏洞阶段都切成一道题。** 这三台目前都只有一个有意义的最终 Flag。NodeBlog 和 Soccer 的自然阶段适合做同一 Challenge 的分阶段问题；Zipping 还存在需要先确认的 Flag shortcut。
+
+---
+
+## 1. NodeBlog
+
+### 真实实现和漏洞入口
+
+源码证据：
+
+- `labs/nodeblog/routes/login.js`：登录处理将 JSON 请求体中的 `user` 和 `password` 对象直接交给 Mongoose `User.findOne()`，没有把对象操作符转换成普通字符串。后端使用真实 MongoDB，不是模拟查询器。
+- `labs/nodeblog/routes/articles.js`：登录后访问 XML 导入；使用 `libxmljs2` 调用真实 libxml2，设置 `noent: true`，解析 XML 外部实体。
+- `labs/nodeblog/server.js`：使用上游 `node-serialize`；`authenticated()` 在检查 MD5 签名前先调用 `serialize.unserialize()`，因此不安全反序列化的 IIFE 可以先执行。
+- `labs/nodeblog/Dockerfile`：真实 MongoDB 8、Node 20、libxmljs2 0.37.0、node-serialize 0.0.4；服务以 nodeblog UID 10001 运行。
+- `labs/nodeblog/seed.js`：初始化 admin 账号和文章。
+
+### Flag 可达性
+
+- 当前实现只有一个 Flag：`/home/nodeblog/user.txt`，owner 为 nodeblog，权限 0600；`NODEBLOG_USER_FLAG` 在入口脚本写入后即 unset。
+- **这不适合直接用于三阶段 Flag 设计**：XXE 和最终 RCE 都在同一 NodeBlog 进程身份（nodeblog UID 10001）下执行，因此 XXE 文件读取也能读取该 `user.txt`。
+- 规划上建议：Challenge 01 Flag 放真实受保护的管理员文章/内容；Challenge 02 Flag 放 NodeBlog 进程可读、但不公开的 challenge-data 文件；Challenge 03 最终 Flag 移入不经普通路由暴露的 MongoDB challenge record，由真实反序列化 RCE 查询。必须验证 XXE 无法直接取出 MongoDB 中的最终 Flag。
+- Worker 不负责生成、校验或判题；Flag 属于 Challenge，由 Web 后端判题。
+
+### Challenge 拆分建议：三道递进题 + 一条综合路径
+
+这条链存在真实先后依赖，但**有依赖不等于不能拆题**。三个阶段各自训练不同的核心能力，适合分别成为 Challenge：
+
+1. **NodeBlog 01 — NoSQL Authentication Bypass**：主考点为 MongoDB JSON 查询操作符。完成目标是通过真实登录功能进入作者区域。建议增加独立中间 Flag，放在真实受保护的管理员文章或后台内容中；只有建立预期认证会话后才能看到。
+2. **NodeBlog 02 — XXE Source Disclosure**：主考点为真实 libxml2 XXE。依赖 01 的登录状态；通过 XML 导入读取源码/指定本地文件，并取得第二枚独立 Flag。建议将其放在真实本地 challenge data 文件中，由 NodeBlog 进程可读、但不经公开静态目录或普通路由暴露，只能通过预期 XXE 数据流读取。
+3. **NodeBlog 03 — Unsafe Cookie Deserialization**：主考点为 node-serialize 0.0.4 不安全反序列化。依赖 02 的源码/依赖发现；最终通过真实 Web 执行路径读取独立的 MongoDB challenge record Flag。
+
+另设 **NodeBlog — Complete Web Assessment** 作为 Capstone/ChallengePath，要求完成以上三题并汇总进度；它不需要额外复制一枚第四 Flag。
+
+中间 Flag 是允许且鼓励的教学设计，不必拘泥于原始 HTB 只有最终 Flag 的安排。但 Flag 必须依附于真实应用状态或真实文件读取路径，不能靠伪造漏洞接口、模拟解析器或把答案直接放进公开页面。开发验收必须证明：第一题可取得第一枚 Flag、第二题可取得第二枚 Flag、第三题可取得最终 Flag，并且前面的路径不能提前读取后续 Flag。特别要验证 XXE 文件读取不能读到最终数据库 Flag。
+
+### 既有证据和限制
+
+README 记录两次全新容器的独立 HTTP 利用链 CI 通过，包含真实 MongoDB、XXE、node-serialize 执行和 Flag 读取。它不是人工验收，也不是 Worker 发布验收。当前 `.release-blocked` 仍存在。
+
+---
+
+## 2. Zipping
+
+### 真实实现和漏洞入口
+
+源码证据：
+
+- `labs/zipping/site/upload.php`：上传处理使用 PHP ZipArchive，要求 ZIP 仅有一个扩展名为 PDF 的条目；随后执行真实 `unzip -j`，并将提取出的文件 rename 到 Apache 可访问的 uploads 目录。
+- `labs/zipping/Dockerfile`：Apache 目录明确启用 `Options FollowSymLinks`；uploads 目录由 www-data 写入。
+- `labs/zipping/site/shop/product.php`：数字过滤正则存在换行绕过条件，随后将输入拼入真实 MariaDB 查询。PDO 使用 emulated prepares。
+- `labs/zipping/db/init.sql`：shop 数据库用户具有 SELECT 和 FILE 权限。
+- `labs/zipping/site/shop/index.php`：通过 `file_exists($page . '.php')` 后执行 PHP `include`，形成真实 LFI/include 执行边界。
+
+### Flag 可达性与潜在 shortcut
+
+当前唯一 Flag 为 `/home/rektsu/user.txt`，owner 是 www-data，mode 0400。最终 PHP include/RCE 以 www-data 身份运行，因此可以读取它。
+
+但源码还显示一个高优先级风险：
+
+1. ZIP 条目名只需要是一个 basename 且以 `.pdf` 结尾；basename 检查本身不验证该条目是不是 symlink。
+2. README 说明当前 Info-ZIP 解包行为会保留 Unix symlink。
+3. 解包后通过 `file_exists()` 检查，并将条目 rename 到 uploads。
+4. Apache 启用了 FollowSymLinks。
+5. 当前 Flag 对 www-data 可读。
+
+因此，**一个指向 `/home/rektsu/user.txt` 的绝对 ZIP symlink 可能在上传阶段就直接读取最终 Flag**。这是基于代码和权限的高置信度风险判断，但本次没有实际构建容器并复现该请求，不能把它写成已经证实。
+
+### 隔离验证结果：直接 Flag 读取已确认（2026-11-26）
+
+GitHub Actions 临时 Ubuntu Runner 已使用**未修改的 Zipping 镜像**完成验证：
+
+- 在内部 Docker 网络启动目标，注入唯一测试 Flag `TTP{zipping_symlink_probe_2026}`。
+- 生成一个 ZIP，唯一条目名为 `resume.pdf`，Unix symlink 目标为 `/home/rektsu/user.txt`。
+- 通过正常 `/upload.php` 上传，应用返回成功和 `/uploads/2da1da9f8cf138cae5a2d14a4d148be0/resume.pdf`。
+- 对该返回 URL 发起普通 HTTP GET，响应正文包含唯一测试 Flag。
+- 整个过程没有使用 SQLi、MariaDB FILE、PHP LFI 或命令执行。
+- Runner 最后清理目标容器、内部网络和测试镜像。
+
+<badge>结论：DIRECT_FLAG_READ_CONFIRMED</badge>
+
+证据：[GitHub Actions run 45782449750](https://github.com/10010100111000/AttackBoxModule/actions/runs/45782449750)，测试提交 `208b776f643693c5b44130335d93298b17df9fd0`。同一提交上的常规 Lab 镜像构建/启动检查也通过：[run 45782449684](https://github.com/10010100111000/AttackBoxModule/actions/runs/45782449684)。
+
+这证实了 ZIP symlink 上传路径可以直接读取最终 Flag，原先设计的 SQLi/FILE/LFI 阶段并非取得 Flag 的必要条件。
+
+### 后续决策（尚未修改运行代码）
+
+必须先决定题目目标：
+
+1. **将 ZIP symlink 文件读取作为题目核心**：把它明确设计为文件处理专项，SQLi/LFI 留作环境中的额外漏洞或后续训练目标；但不能宣称用户必须完成 SQLi/LFI 才能得到现有 Flag。
+2. **保留 SQLi/FILE/LFI 为必经目标**：需要调整 Flag 的存放/可达边界或题目机制，使公开上传 URL 不再直接暴露最终 Flag，同时保留真实的归档处理漏洞。之后必须重新跑直接 symlink 负向测试和完整 SQLi/LFI 正向链。
+
+本轮没有修改 Dockerfile、PHP、Flag、题面或 Worker，也没有解除发布阻断。
+
+### Challenge 拆分建议：三道子题 + 一条综合路径
+
+根据你的教学设计原则，综合链条可以拆成多道有独立目标的 Challenge；题目之间允许存在前置依赖。Zipping 建议拆成：
+
+1. **Zipping 01 — ZIP Symlink File Disclosure**：独立的 Careers 上传功能。现有 `/home/rektsu/user.txt` 已通过真实 ZIP symlink 上传 URL 直接可读，作为第一题 Flag。考察 ZIP 结构、Unix symlink 元数据、上传处理与文件读取。
+2. **Zipping 02 — SQL Injection and Database FILE**：独立的 Shop 商品查询功能。考察换行绕过、UNION SQLi、MariaDB FILE 权限。建议在专门的数据库 challenge record 中增加第二枚 Flag，让它通过真实 SQLi 查询取得；不要将它放在 www-data 可读文件中，否则第一题的 ZIP symlink 可能直接读取。
+3. **Zipping 03 — SQLi File Write to PHP Include**：依赖 02，考察 SQLi FILE 写入 PHP 文件后，通过 `/shop/index.php?page=...` 触发真实 PHP include。此阶段先用 question 型完成条件，例如验证 include 执行输出的有效身份或稳定结果；暂不放第三枚 Flag。
+
+为什么第三题暂时不放 Flag：第一题的 symlink 能读取 Apache 进程 www-data 可读的文件，而 PHP include 也是以 www-data 执行。任何放在 www-data 可读文件里的静态 Flag 都可能被第一题直接读走。数据库 Flag 又可能被第二题的 SQLi 直接取走。必须先有可靠的独立数据/权限边界，才适合增加第三枚 Flag，不能为满足数量而造一个绕题路径。
+
+另设 **Zipping — Complete Web Assessment** 作为 Capstone，要求完成三个子题，汇总进度，不重复复制 Flag。
+
+### 既有证据和限制
+
+README 记录两次全新实例的 CI 完整链通过：ZIP symlink 读取源码、SQLi 过滤绕过、MariaDB FILE 写入、PHP include 执行和 Flag 获取。现有 CI 说明了所测路径成功，**不等于排除了更短的直接 symlink-to-Flag 路径**。当前 `.release-blocked` 仍存在。
+
+---
+
+## 3. Soccer
+
+### 真实实现和漏洞入口
+
+源码证据：
+
+- `labs/soccer/Dockerfile`：固定拉取原版 Tiny File Manager 2.4.3 上游提交 `1dbe7c5339ad955fcb08d01d256f591a3c83d713`，不是自制文件管理器。
+- `labs/soccer/scripts/filemanager-config.php`：上传根目录设置为 `/var/www/html/tiny/uploads`。
+- `labs/soccer/scripts/nginx.conf`：配置两个虚拟主机，第二个是 `soc-player.soccer.htb`。
+- `labs/soccer/app/server.js`：Node ws 服务接收 JSON `id`，直接插入真实 MariaDB 查询；存在真/假票据响应差异。
+- `labs/soccer/db/init.sql`：真实 MariaDB 中有 tickets 与 accounts 表，Node 使用 ticket_reader 只读账号。
+- `labs/soccer/scripts/start.sh`：从 `/home/player/user.txt` 读取 Flag 并写入 `soccer_db.accounts.goal`。
+
+### Flag 可达性
+
+- Flag 最终保存在 `soccer_db.accounts.goal`，不是直接由上传接口返回。
+- seed 文件位于 `/home/player/user.txt`，owner root，mode 0400。
+- PHP 上传运行在 www-data，不能直接读取 root-owned seed。
+- Node 服务以 soccerapp 用户运行，并通过 ticket_reader 数据库账号查询。
+- WebSocket SQLi 的真实布尔差异可以从 accounts.goal 提取最终 Web Flag。
+
+因此，上传 foothold 和 vhost/config disclosure 本身并没有取得 Flag；它们是发现第二个 WebSocket 服务的前置侦察路径。
+
+### Challenge 拆分建议：三道递进题 + 一条综合路径
+
+Soccer 可以将真实利用链拆成三个独立学习目标，并为每个阶段设计 Flag：
+
+1. **Soccer 01 — File Manager Upload Foothold**：考察 Tiny File Manager 2.4.3 发现、认证和真实 PHP 上传执行。可设置一枚 foothold Flag，放在上传代码执行后可读取的 challenge-data 位置。它只证明第一阶段能力。
+2. **Soccer 02 — Virtual Host and WebSocket Discovery**：依赖 01 的 PHP foothold。考察读取真实 Nginx 配置、发现 `soc-player.soccer.htb`、定位 WebSocket 服务与消息结构。可在实际 vhost 配置中放置独立的配置发现 Flag/标记，由读取真实配置取得。
+3. **Soccer 03 — WebSocket Boolean Blind SQL Injection**：依赖 02。通过真实 MariaDB-backed WebSocket oracle 提取 `soccer_db.accounts.goal` 中现有最终 Flag。
+
+需要验证的权限边界：第一阶段 PHP 以 www-data 运行，最终 Flag 存于数据库而不是 seed 文件；Node 服务源码由 soccerapp 用户以 0400 拥有。应保留该隔离，并实测 www-data 不能读取 Node 服务源码或直接取得数据库连接凭据。这样第三阶段仍有独立的 WebSocket SQLi 训练目标。
+
+另设 **Soccer — Complete Web Assessment** 作为 Capstone，汇总三个子题的完成状态，不重复最终 Flag。
+
+### 既有证据和限制
+
+README 记录两次全新实例通过 HTTP + WebSocket 的独立完整链 CI，使用不同的实例 Flag。Worker 网络、端口策略和 Web 后端判题仍未验收；当前 `.release-blocked` 仍存在。
+
+---
+
+## 4. 平台复用能力：目前能确认什么
+
+另行只读检查了平台仓库 `10010100111000/attackbox`：
+
+- `web/server/db/schema/challenges.ts`：Challenge 有 `target_template_id`。
+- `web/server/db/schema/target-templates.ts`：target_templates 保存镜像、资源、平台和加密变量。
+- `web/server/services/challenges.ts`：Challenge detail 读取关联的 target template。
+- Worker 的 target model / start flow 使用 `target_id` 和 `owner_id`，Worker 本身负责容器和沙箱生命周期。
+
+目前能确认：多个 Challenge 在数据层可以引用同一个 target template/image。
+
+目前**不能确认**：两个不同 Challenge ID 对同一个用户是否复用同一个运行中的容器、共享网络地址和状态，或者重置一个 Challenge 是否会影响另一个 Challenge。现有 schema 中尚未看到明确的 Lab 实体或 LabChallenge 关联表。
+
+因此必须区分：
+
+- **镜像/模板复用**：同一个 target template 被多道题引用。
+- **运行实例复用**：同一用户的多道题真正连接到同一个 Lab 实例。
+
+前者已有字段可以表达；后者还没有从当前源码证实。下一步需要追踪 target-start API 如何生成 target_id，并用两个 Challenge ID 指向同一个模板进行验证。此项不应直接通过修改 Worker 来猜测解决。
+
+---
+
+## 5. 最终建议
+
+1. NodeBlog：保持一题多 Skill，增加 question checkpoints，不拆成三个 Flag Challenge。
+2. Zipping：先做 symlink-to-Flag shortcut 测试；在此之前不宣称 SQLi/LFI 阶段有独立目标。
+3. Soccer：保持一题多 Skill，增加 vhost 和 WebSocket 协议两个 question checkpoints，最终一个 Web Flag。
+4. 在平台确认“同模板是否同实例”之前，不批量创建多道 Challenge 指向同一模板，也不承诺用户能在多道题间共享一个运行环境。
+5. 本轮只更新规划与审计记录；未修改运行代码、Flag、题面或 Worker。

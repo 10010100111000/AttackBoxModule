@@ -1,10 +1,10 @@
 # trytopwn — Web 靶机全套设计与开发计划
 
-> **唯一内容规划入口** · v3 · 2026-11-24
+> **唯一内容规划入口** · v4 · 2026-11-26
 >
 > 面向 PortSwigger Web Security Academy 风格的 **Web 技术分类、细分技能、难度递进、真实靶机选择、当前覆盖缺口、下一台决策与完整验收**。这不是仅描述 Docker 或 Worker 的工程规范。保留原有 31 专题、219 技能和全部历史候选，不推倒重做。
 >
-> **长期数据真值**：[31 专题/219 技能能力矩阵](../catalog/web-competencies.json) · [机器状态/候选/滚动 backlog](../catalog/web-curriculum.json)。本文的机器清单是 2026-11-23 的 `main` 快照，不能取代实时 CI / PR 状态。
+> **长期数据真值**：[31 专题/219 技能能力矩阵](../catalog/web-competencies.json) · [Lab 状态、Challenge 复用提案与滚动 backlog](../catalog/web-curriculum.json)。本文件保留部分历史快照，实时状态以结构化清单和 GitHub Actions/PR 为准。
 
 ## 验证职责调整（2026-11-25，当前规则）
 
@@ -22,13 +22,13 @@
 
 PR 创建、更新或提交之前，先展示具体代码差异和实际检查结果，再取得用户明确批准。
 
-## 当前验收状态核对（2026-11-25）
+## 当前验收状态核对（2026-11-26）
 
-main 目录记录 23 台：17 台完整目标 CI、4 台部分验证、2 台未验证；6 台有发布限制标记，23 台均未记录 Worker 实机验收。知识点目录共 219 项，其中 1 项记录独立验收、218 项尚未审核。滚动队列 33 项：2 项完成、2 项进行中、29 项计划中。
+当前 main 的结构化清单记录 27 个 Lab：17 个有历史完整目标链 CI 证据、5 个部分验证、5 个未验证；10 个 Lab 标记为发布阻断。27 个 Lab 的人工验收状态均为 not_reviewed，Worker 状态均为 not_verified。滚动 backlog 有 35 项。历史 CI 只能说明对应历史测试范围，不能替代人工验收或 Worker 上线验收。
 
-**2026-11-25 状态更新**：PR #18 Trick、#21 Alert、#22 Precious、#23 Soccer、#24 状态盘点、#25 CI 策略均已关闭；其中 #21–#25 对应改动已合并。Trick 分支仍有未合并实现，不能因 PR 关闭而视为进入 main。Alert 与 Precious 的 Web 专项目标仍需按人工验收状态分别核对；Soccer 的 WebSocket 盲注 CI 已通过。当前没有开放 PR。
+**2026-11-26 状态更新**：Headless PR #30 仍为 Draft，开发验收与当前分支 CI 尚未完成。Lab 与 Challenge 复用模型已进入规划提案；尚未批量拆分现有题面、创建新的独立 Flag 或修改 Worker 接口。发布限制不得仅凭构建成功解除。
 
-以下 17 台清单为历史快照，不作为当前统计。发布限制不得仅凭构建成功解除。
+以下旧机器清单为历史快照，不作为当前统计。实时机器状态以 catalog/web-curriculum.json 为准。
 
 ## 如何用这份文档选择下一台靶机
 
@@ -54,6 +54,88 @@ main 目录记录 23 台：17 台完整目标 CI、4 台部分验证、2 台未�
 | `challenges/<category>/<slug>/<title>.md` | 平台实际给学员的题面（不暴露答案） |
 | `.github/workflows/` | CI 与发布门禁；不通过不能声称靶机完成 |
 
+## Lab 复用与多 Challenge 模型（2026-11-26，用户确认）
+
+三台现有环境的源码、Flag 可达性和题目独立性审查见：[NodeBlog / Zipping / Soccer 复用审计](research/LAB_CHALLENGE_REUSE_NODEBLOG_ZIPPING_SOCCER.md)。本轮只更新规划和审计，不修改运行代码、Flag、题面或 Worker。
+
+### 核心原则
+
+**一台靶机可以承载多道题目；一道题可以考察多个知识点。** 题目不再默认等于容器或镜像。先研究真实应用能提供哪些训练目标，再围绕同一应用设计 Challenge，避免为了增加题量重复制作相似 Docker 环境。
+
+### 对象和关系
+
+| 对象 | 职责 | 关键内容 |
+| --- | --- | --- |
+| Lab | 可部署的真实运行环境 | 应用/服务版本、镜像、端口、资源、网络、生命周期、健康检查 |
+| Challenge | 学员独立完成和计分的题目 | 题面、目标、难度、提示、Flag/答案、状态、前置依赖 |
+| Skill | 细分训练能力 | 使用 web-competencies.json 中的 skill_id |
+| ChallengeSkill | Challenge 与 Skill 的多对多关系 | 主考点、次要考点、学习目标 |
+| LabChallenge | Lab 与 Challenge 的关联 | 关联的 Lab、入口/服务、是否共享状态、环境要求 |
+| 累积式 Challenge | 同一 Lab 上不同难度/覆盖范围的独立题目 | 各自的有序 Flag Stage；后续题可重复前面题目的 Flag 作为复习 |
+| 用户进度 | 用户与具体 Challenge 阶段的关联 | 现有 challenge_completions 按 user_id + stage_id 记录；challenge_attempt_limits 按 user_id + challenge_id 记录 |
+
+默认允许一个 Lab 关联多个 Challenge；不要在每道题下复制一份 Dockerfile。若未来同一 Challenge 需要在不同真实应用中重复训练，可关联多个 Lab，但每个关联都要说明场景增量。
+
+### 累积式 Challenge（同一 Lab 的递进题目）
+
+当多个漏洞阶段存在知识关联时，可以为同一 Lab 创建多个独立 Challenge 记录。**不做跨 Challenge 自动解锁，也不设置前置题门槛。** 学员可以自由选择任何已发布的题目；后续题目通过重复前面的 Flag，让学员有机会复习和重新证明之前掌握的知识。
+
+例如同一个 NodeBlog Lab：
+
+- Challenge 01：Flag 01（NoSQL 入门）。
+- Challenge 02：Flag 01 + Flag 02（复习 NoSQL，再完成 XXE）。
+- Challenge 03：Flag 01 + Flag 02 + Flag 03（复习前两阶段，再完成反序列化综合考核）。
+
+每个 Challenge 独立展示、计分和记录完成状态。后续 Challenge 的有序 Flag Stage 由现有机制负责顺序提交；这只是**单个 Challenge 内部的阶段顺序**，不是不同 Challenge 之间的解锁关系。
+
+如果不同漏洞没有关联，则创建完全独立的 Challenge，各自使用自己的考察目标和 Flag，不继承其他题目的 Flag。
+
+### 用户进度与靶机生命周期
+
+平台现有 `challenge_completions` 以 `(user_id, stage_id)` 记录用户完成的题目阶段；通过 `challenge_stages.challenge_id` 可以归属到具体 Challenge。提交次数则由 `challenge_attempt_limits(user_id, challenge_id)` 记录。因此当前模型就是用户与 Challenge/Stage 的关联，不需要额外建立用户与 Lab 的学习进度，也不需要 ChallengeDependency 自动解锁模型。
+
+多个 Challenge 可以关联同一个 `target_template_id`。当前 `targetScope()` 会将 Challenge 解析为 `scope = target:<templateId>`；`target_instances` 对 `(user_id, scope)` 有唯一约束。因此同一用户从关联相同模板的不同 Challenge 启动靶机时，会命中同一个 target instance；`targetOperation()` 会复用仍有效的实例，而不是为每个 Challenge 新建容器。若启动不同模板的靶机，当前实现会先停止该用户其他未停止的靶机，再创建新实例。靶机启动、停止和重置仍属于 Worker 生命周期；题目完成记录由 Web 后端保存。
+
+### 题目拆分规则
+
+1. 先从真实应用的可观察功能和漏洞链识别候选目标，不先按知识点数量切题。
+2. **综合攻击链可以拆成多道 Challenge**：只要各阶段有独立的学习目标、可观察成果或值得单独训练的技能，就可以分别出题；题目可以存在前置依赖，不要求每道题都能从零独立进入。
+3. 一道 Challenge 可以组合多个 Skill；指定一个主 Skill，其余为次要 Skill。
+4. 如果后续题在知识上依赖前一阶段，可以在题面说明建议的学习顺序，但不做跨 Challenge 自动解锁。后续 Challenge 自己包含需要复习的前置 Flag Stage。
+5. **允许为独立 Challenge 增加中间 Flag**，不必拘泥于原始机器的 Flag 数量或位置。Flag 可以放在真实应用数据、受保护内容或专门的本地 challenge data 文件中；必须通过该阶段的真实漏洞/功能路径取得，并验证前一阶段不能提前读取后续 Flag。没有合适独立 Flag 的阶段仍可使用 question 类型答案；禁止伪造漏洞接口、模拟组件或公开暴露答案。
+6. 多道题共享一个 Lab 时，可以共享服务和数据；每个 Flag 目标必须有清晰边界，不能由普通页面、公开目录或前一道题无意泄露。
+7. 多道子题可以组成 ChallengePath / Capstone，作为一组综合训练或最终考核。综合路径汇总子题完成状态，不需要再复制一个重复 Flag。
+8. 共享 Lab 的重置默认重置整个环境及其所有 Challenge 状态；除非平台明确支持独立快照，否则不承诺单题重置而不影响其他题。
+9. 不同 Challenge 的 Flag 由 Web 后端分别判题；Worker 不管理题目、Flag 或挑战解锁逻辑。
+10. Web 专项以 Web 目标为终点，不强制 SSH、Linux Root 或双 Flag。只有真实题目目标包含这些阶段时才纳入综合靶机路线。
+
+### 前台分类与后台技能
+
+前台先使用六个易理解方向：XSS、SQL 注入、文件处理、认证与访问控制、服务端漏洞、API 与高级 Web。每道 Challenge 选择一个主分类，可附多个辅助标签。后台继续使用 31 个 Topic 和 219 个 Skill 做精细映射；分类不是 Lab 的属性副本，也不决定镜像数量。
+
+### 现有 Lab 的复用候选（均为规划建议，尚未新增 Challenge）
+
+| Lab | 可拆分的 Challenge 候选 | 关系建议 | 当前限制 |
+| --- | --- | --- | --- |
+| NodeBlog | NoSQL 认证绕过；XXE 源码披露；反序列化执行 | 三个独立 Challenge 记录，共享同一 Lab；Flag 数量分别为 1、2、3 | 后续 Challenge 累积包含前置 Flag，第三题本身就是完整综合考核，不需要额外 Capstone 实体 |
+| Zipping | ZIP symlink 文件读取；SQLi → MariaDB FILE → PHP Include | 两道独立 Challenge + 一条 Capstone 路径 | 上传与 Shop 是独立功能面；第二题需设计不同的自然答案，不能复用已被上传路径读取的 Flag |
+| Soccer | Tiny File Manager 上传；vhost/协议发现；WebSocket 盲注 | 三道递进 Challenge + 一条 Capstone 路径 | 前两题用发现结果作为 question 答案；最终盲注使用数据库中的 Web Flag |
+| Usage | 密码恢复处的布尔/时间盲注；管理后台文件上传 | 顺序依赖候选 | 只规划 Web 阶段；SSH、Monit、sudo Root 不属于 Web 专项默认目标 |
+| WonderCMS | 属性上下文反射型 XSS；管理员浏览器与跨用户影响 | 同一题可覆盖多个 Skill，优先不强拆 | 管理员 Bot 与 Flag 获取属于靶机自身；生产 Worker 尚未验收 |
+| Django Debug XSS | Debug 错误页中的反射型 XSS | 单题多技能 | 基础专项，不为增加题数强拆 |
+| Alert | Markdown 存储型 XSS；管理员审阅/本地资源访问 | 先保持综合题 | 完整 Web Flag 路径尚未验收 |
+| Headless | Blind XSS、管理员会话、Dashboard 命令注入 | 暂不拆分 | 整台 Lab 尚未完成开发验收，不能作为可用资产计数 |
+
+以上候选只表示同一环境可能承载的训练目标，不表示已经存在对应 Challenge 文件、独立 Flag 或独立验收。拆分前必须审查源码、数据流、题目边界和 Flag 可达性。
+
+### 数据迁移顺序
+
+1. 保留现有 Lab ID、Docker 目录、历史 CI 证据和 manual_validation 状态。
+2. 先建立 Lab 与 Challenge 的显式关联清单；现有一题一 Lab 关系按迁移记录处理，不推断未存在的 Challenge。
+3. 再为每道 Challenge 补充主/次 Skill、目标、Flag、难度和依赖。
+4. 最后调整前台分类、筛选、进度统计和共享 Lab 重置交互。
+5. 不在本轮迁移中批量拆分现有题面、改 Flag 或改 Worker 接口。
+
 ## 技术分类与训练梯度
 
 
@@ -63,13 +145,16 @@ main 目录记录 23 台：17 台完整目标 CI、4 台部分验证、2 台未�
 
 以前的规划很容易变成 SQLi 三台、XSS 三台，完成数量后便停止。同一类别内部包含彼此完全不同的攻击机制；即使相同机制，也可能在输入面、回显方式、限制条件和数据库语法上存在值得反复训练的变体。
 
-**新的基础结构：`专题（topic） → 细分知识点（skill） → 场景变体（variant） → 真实靶机（lab） → 独立验收证据（evidence）`。**
+**新的内容关系：专题（topic） → 细分知识点（skill） → 训练题目（challenge） ↔ 靶机环境（lab） → 验收证据（evidence）。**
 
-- **专题数不等于覆盖率**：某台机器含 SQLi，只说明它涉及 SQLi，不代表盲注、报错、OAST 都覆盖。
-- **知识点不限制重复次数**：同一 `skill_id` 可以关联多台真实机器，每个场景记录 `variant_id` 与明确的教学增量。
-- **现有标签不自动成为细分技能已验证**：目前旧机器清单的 `validated_skills` 是历史 CI 关联证据，具体技能还需对应单独断言。新技能表默认 `not_audited`，避免虚报。
-- **难度属于整道题的玩家体验**：每条知识点的 `first_target_level` 只是适合第一次练习的深度，技术可以重复出现在更高等级。
-- **一台机器有一个主专题、若干次要知识点**；统计专题覆盖只按主标签，统计技能训练按真实有证据的场景变体。
+- **Lab 与 Challenge 不再一一对应**：一台真实 Lab 可以承载多道 Challenge；同一 Lab 的服务、数据库和运行环境只部署一次。必要时同一道 Challenge 也可以关联不同 Lab 作为场景变体。
+- **Challenge 才是学员完成和计分的单位**：每道题有自己的目标、难度、题面、提示、Flag/判题规则和完成状态。
+- **Challenge 与 Skill 是多对多**：一道题可以训练多个技能；一个技能也可以出现在多道题中。每题指定一个主考点，其余作为次要考点。
+- **Challenge 之间可独立或有前置依赖**：依赖关系必须来自真实应用流程；不能为了拆题人为伪造漏洞入口或让后续题绕过必要条件。
+- **Lab 是共享运行环境，不是题目目录**：Lab 负责真实应用、服务、端口、镜像、资源和生命周期；不为每道 Challenge 复制镜像。
+- **Flag 属于 Challenge**：不同题目使用不同答案；Flag 必须在对应真实行为或可访问数据中取得。Web 后端判题，Worker 只管理 Lab/沙箱生命周期。
+- **技能覆盖按 Challenge 统计，资源成本按 Lab 统计**：不能把一台复合靶机的全部技能自动标记为已独立掌握；每个 Challenge 仍需自己的目标与验收证据。
+- **前台分类使用少量用户可理解的 Web 方向**，后台继续保留细分 skill_id，不要把 31 个技术专题直接做成 31 个首页分类。
 
 参考：[PortSwigger 官方 31 专题](https://portswigger.net/web-security/all-topics)、[所有学习资料](https://portswigger.net/web-security/all-materials)、[选题评审与真实机器候选](#选题评审与真实靶机候选)。完整结构化目录：[**219 个目标**](../catalog/web-competencies.json)。
 
@@ -550,7 +635,7 @@ WonderCMS 3.4.2 **原版反射型属性 XSS 已通过真实 Chromium CI**。但�
 
 - **当前只上线 Linux Docker 靶机。** 暂不纳入 Windows、Active Directory、MSSQL Windows 专属链、内核提权或容器逃逸题目。
 - 目录分工：`challenges/<category>/<slug>/` 存学员题面及 Writeup，`labs/<slug>/` 存 Dockerfile、启动脚本、真实服务、测试与素材。不要在规划目录中添加 Dockerfile 触发镜像构建。
-- Docker 镜像由 `.github/workflows/lab-images.yml` 根据 `labs/**/Dockerfile` 构建，采用 Linux/amd64；运行实例由平台 Worker 管理。**一题一镜像、一实例一容器**为目前最稳妥的默认设计。确实需要多服务时可在同一容器内运行真实进程，使用内部回环端口和独立账户；不预设平台支持 Compose 多容器编排。
+- Docker 镜像由 `.github/workflows/lab-images.yml` 根据 `labs/**/Dockerfile` 构建，采用 Linux/amd64；运行实例由平台 Worker 管理。**一台 Lab 可关联多道 Challenge，默认一个 Lab 实例/容器承载这些关联题目**，不为每道题复制镜像。只有在资源隔离、网络拓扑或生命周期确实要求时，才为一个 Lab 设计多个协同服务；不预设平台支持 Compose 多容器编排。
 - 优先选择 PHP、Python、Node.js、Ruby、Java、SQLite/MySQL/PostgreSQL、FTP/SMTP/SNMP/Redis 等在 Linux 容器里可复现的场景。涉及 systemd、SUID、Capabilities、sudo 时，必须先在平台真实容器权限配置下做端到端验证；不能为复现强行放开宿主机权限。
 - **现阶段使用静态 Flag**，遵循当前 `attackbox/docs/content-authoring.md` 中的 `quiz.answer` 判题机制。用户、Root 是否双 Flag 取决于原题真实利用链，不增加不必要的阶段。
 
