@@ -18,12 +18,15 @@ def new_flag():
 
 def update_answer(path, values):
     text = path.read_text(encoding="utf-8")
-    for value in values:
-        text, count = re.subn(r'(?m)^answer: "TTP\{[^"]+\}"$', f'answer: "{value}"', text, count=1)
-        if count != 1:
-            raise SystemExit(f"expected one Flag answer slot for {path}, got {count}")
-    path.write_text(text, encoding="utf-8")
-
+    pattern = r'(?m)^answer: "[^"]+"$'
+    matches = list(re.finditer(pattern, text))
+    if len(matches) != len(values):
+        raise SystemExit(f"expected {len(values)} Flag answer slots for {path}, got {len(matches)}")
+    iterator = iter(values)
+    updated, count = re.subn(pattern, lambda _: f'answer: "{next(iterator)}"', text)
+    if count != len(values):
+        raise SystemExit(f"could not update all Flag answers in {path}")
+    path.write_text(updated, encoding="utf-8")
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--version", required=True)
