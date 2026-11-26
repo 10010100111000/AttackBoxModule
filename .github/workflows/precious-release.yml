@@ -93,7 +93,7 @@ jobs:
             sleep 2
           done
           test "$ready" = 1
-          docker run --rm --network precious-release python:3.12-alpine python3 - <<'PY'
+          docker run --rm -i --network precious-release python:3.12-alpine python3 - <<'PY'
           import urllib.parse
           import urllib.request
           body = urllib.parse.urlencode({"url": "http://precious-content:8000/"}).encode()
