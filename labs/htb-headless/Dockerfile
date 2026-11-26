@@ -11,7 +11,7 @@ FROM debian:bookworm-slim AS runtime
 ENV PATH=/opt/venv/bin:$PATH PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-      ca-certificates chromium coreutils curl findutils iproute2 openssh-server procps python3 sudo supervisor \
+      bash ca-certificates chromium coreutils curl findutils iproute2 openssh-server procps python3 sudo supervisor \
  && rm -rf /var/lib/apt/lists/* \
  && groupadd --gid 1000 dvir \
  && useradd --uid 1000 --gid 1000 --create-home --home-dir /home/dvir --shell /bin/bash dvir \
