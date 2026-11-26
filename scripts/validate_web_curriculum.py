@@ -53,12 +53,14 @@ def main() -> None:
          "catalog Academy topic ID mismatch")
 
     policy = catalog.get("verification_policy", {})
-    need(policy.get("automation") == "build_startup_health_and_structure_only",
-         "CI policy must stay limited to engineering smoke checks")
-    need(policy.get("automated_exploitation") is False,
-         "automated exploitation is not part of CI acceptance")
-    need(policy.get("full_flow") == "manual_acceptance",
-         "full lab flow needs separately recorded manual acceptance")
+    need(policy.get("automation") == "build_startup_health_structure_and_lab_specific_e2e",
+         "CI policy must include per-Lab end-to-end acceptance")
+    need(policy.get("automated_exploitation") is True,
+         "per-Lab end-to-end acceptance must exercise the real intended path")
+    need(policy.get("full_flow") == "per_lab_automated_acceptance",
+         "full lab flow must be covered by a Lab-specific automated player")
+    need(policy.get("end_to_end_acceptance") == "isolated_network_client_real_vulnerable_component_and_exact_flag",
+         "end-to-end acceptance must use an isolated network client and verify the exact Flag")
 
     category_ids = {x["id"] for x in catalog["categories"]}
     need(set(topic_names) <= category_ids, "missing Academy topic from machine categories")
@@ -86,6 +88,23 @@ def main() -> None:
              f"{name}: no Dockerfile at declared path")
         need(machine["lab_ci_status"] in {"full_chain_ci", "partial", "unverified"},
              f"{name}: invalid CI status")
+        e2e_status = machine.get("e2e_ci_status")
+        need(e2e_status in {"pending", "configured", "passed", "failed"},
+             f"{name}: invalid end-to-end CI status")
+        e2e_workflow = machine.get("e2e_ci_workflow")
+        if e2e_status in {"configured", "passed"}:
+            need(isinstance(e2e_workflow, str) and e2e_workflow.startswith(".github/workflows/"),
+                 f"{name}: configured end-to-end CI needs a workflow path")
+            need((ROOT / e2e_workflow).is_file(),
+                 f"{name}: configured end-to-end workflow does not exist")
+        if e2e_status == "passed":
+            need(machine.get("e2e_ci_evidence", "").startswith("https://github.com/"),
+                 f"{name}: passed end-to-end CI needs a run URL")
+            need(bool(machine.get("e2e_ci_commit")),
+                 f"{name}: passed end-to-end CI needs a commit SHA")
+        if e2e_status == "failed":
+            need(bool(machine.get("e2e_ci_failure_reason")),
+                 f"{name}: failed end-to-end CI needs a failure reason")
         need(machine["worker_status"] == "not_verified" or
              machine["worker_status"] == "verified",
              f"{name}: invalid Worker status")
@@ -109,20 +128,29 @@ def main() -> None:
         pattern = rf"\| `{re.escape(status)}` \| {count} \|"
         need(re.search(pattern, inventory) is not None,
              f"inventory count for {status} does not match catalog ({count})")
+    e2e_counts = Counter(machine["e2e_ci_status"] for machine in catalog["machines"])
+    for status, count in e2e_counts.items():
+        need(f"{count} 台 {status}" in inventory,
+             f"inventory end-to-end count for {status} does not match catalog ({count})")
     index_header = "## CI machine index"
     need(index_header in inventory, "inventory is missing the CI machine index")
     index = inventory.split(index_header, 1)[1].split("\n## ", 1)[0]
     row_pattern = re.compile(
         r"^\| `([a-z0-9-]+)` \| `(full_chain_ci|partial|unverified)` "
-        r"\| `(blocked_by_marker|not_assessed)` \|$",
+        r"\| `(blocked_by_marker|not_assessed)` "
+        r"\| `(pending|configured|passed|failed)` \|$",
         re.MULTILINE,
     )
     inventory_rows = {
-        lab_id: (ci_status, release_status)
-        for lab_id, ci_status, release_status in row_pattern.findall(index)
+        lab_id: (ci_status, release_status, e2e_status)
+        for lab_id, ci_status, release_status, e2e_status in row_pattern.findall(index)
     }
     expected_rows = {
-        machine["id"]: (machine["lab_ci_status"], machine["release_status"])
+        machine["id"]: (
+            machine["lab_ci_status"],
+            machine["release_status"],
+            machine["e2e_ci_status"],
+        )
         for machine in catalog["machines"]
     }
     missing_rows = set(expected_rows) - set(inventory_rows)
