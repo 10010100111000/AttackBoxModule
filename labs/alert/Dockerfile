@@ -13,7 +13,7 @@ COPY bot/ /opt/alert/bot/
 COPY scripts/ /opt/alert/scripts/
 COPY flags/user.txt /opt/alert/private/web-flag.txt
 RUN chmod 0755 /opt/alert/scripts/start.sh && chown www-data:www-data /opt/alert/private/web-flag.txt \
- && chmod 0400 /opt/alert/private/web-flag.txt \
+ && chmod 0600 /opt/alert/private/web-flag.txt \
  && php -l /srv/alert/index.php && php -l /srv/alert/visualizer.php \
  && php -l /srv/alert/contact.php && php -l /srv/alert/messages.php \
  && python3 -m py_compile /opt/alert/bot/review.py /opt/alert/scripts/render_md.py
