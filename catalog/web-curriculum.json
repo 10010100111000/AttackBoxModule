@@ -572,7 +572,7 @@
       "worker_status": "not_verified",
       "release_status": "not_assessed",
       "evidence": "",
-      "note": "真实 Handlebars 4.1.2；正在接入独立攻击端完整流程 CI，尚未通过实际运行验收。",
+      "note": "真实 Handlebars 4.1.1（受 GHSA-q42p-pg8m-cqh6 影响）；正在接入独立攻击端完整流程 CI，尚未通过实际运行验收。",
       "variant_profile": {
         "technology": "Node.js, Handlebars",
         "initial_discovery": "POST email",
