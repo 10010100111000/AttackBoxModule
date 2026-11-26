@@ -11,6 +11,10 @@ on:
       - "scripts/validate_web_curriculum.py"
       - "scripts/generate_nodeblog_release.py"
       - "scripts/generate_django_debug_release.py"
+      - "scripts/generate_cap_release.py"
+      - "labs/cap/flags/**"
+      - "challenges/idor/cap-packet-drop/**"
+      - "challenges/linux-privilege-escalation/cap-setuid/**"
       - "labs/django-debug-xss/flags/**"
       - "challenges/xss/harbor-registry/**"
       - "labs/nodeblog/**"
@@ -38,6 +42,33 @@ jobs:
       - uses: actions/checkout@v4
       - name: Validate Academy taxonomy, existing labs and planned scenarios
         run: python3 scripts/validate_web_curriculum.py
+      - name: Check Cap Flag generator determinism and Challenge answer consistency
+        run: |
+          set -euo pipefail
+          python3 scripts/generate_cap_release.py --version 0.0.0-ci
+          manifest=labs/cap/flags/releases/0.0.0-ci.json
+          before=$(sha256sum "$manifest" | cut -d' ' -f1)
+          python3 scripts/generate_cap_release.py --version 0.0.0-ci
+          after=$(sha256sum "$manifest" | cut -d' ' -f1)
+          test "$before" = "$after"
+          python3 - <<'PY'
+          import json, pathlib, re
+          manifest = json.loads(pathlib.Path("labs/cap/flags/releases/0.0.0-ci.json").read_text())
+          flags = manifest["flags"]
+          assert set(flags) == {"user", "root"} and len(set(flags.values())) == 2
+          assert all(re.fullmatch(r"TTP\{[a-z2-7]{16}\}", value) for value in flags.values())
+          assert pathlib.Path("labs/cap/flags/user.txt").read_text().strip() == flags["user"]
+          assert pathlib.Path("labs/cap/flags/root.txt").read_text().strip() == flags["root"]
+          packet = pathlib.Path("challenges/idor/cap-packet-drop/Packet-Drop.md").read_text()
+          full = pathlib.Path("challenges/linux-privilege-escalation/cap-setuid/Setuid-Surprise.md").read_text()
+          assert packet.count(f'answer: "{flags["user"]}"') == 1
+          assert full.count(f'answer: "{flags["user"]}"') == 1
+          assert full.count(f'answer: "{flags["root"]}"') == 1
+          assert packet.count("kind: flag") == 1 and full.count("kind: flag") == 2
+          assert "lab: cap" in packet and "lab: cap" in full
+          print("Cap: random Flags, stable same-version manifest, target seed and Challenge answers match: PASS")
+          PY
+
       - name: Check Django Debug XSS Flag generator determinism and answer consistency
         run: |
           set -euo pipefail
