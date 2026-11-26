@@ -468,7 +468,10 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "configured"
+      "e2e_ci_status": "configured",
+      "e2e_ci_workflow": ".github/workflows/alert.yml",
+      "e2e_ci_evidence": null,
+      "e2e_ci_commit": null
     },
     {
       "id": "base",
@@ -507,7 +510,10 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "pending"
+      "e2e_ci_status": "pending",
+      "e2e_ci_workflow": null,
+      "e2e_ci_evidence": null,
+      "e2e_ci_commit": null
     },
     {
       "id": "bashed",
@@ -545,7 +551,10 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "pending"
+      "e2e_ci_status": "pending",
+      "e2e_ci_workflow": null,
+      "e2e_ci_evidence": null,
+      "e2e_ci_commit": null
     },
     {
       "id": "bike",
@@ -582,7 +591,10 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "configured"
+      "e2e_ci_status": "configured",
+      "e2e_ci_workflow": ".github/workflows/bike.yml",
+      "e2e_ci_evidence": null,
+      "e2e_ci_commit": null
     },
     {
       "id": "bountyhunter",
@@ -620,7 +632,10 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "pending"
+      "e2e_ci_status": "pending",
+      "e2e_ci_workflow": null,
+      "e2e_ci_evidence": null,
+      "e2e_ci_commit": null
     },
     {
       "id": "cap",
@@ -660,7 +675,10 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "pending"
+      "e2e_ci_status": "pending",
+      "e2e_ci_workflow": null,
+      "e2e_ci_evidence": null,
+      "e2e_ci_commit": null
     },
     {
       "id": "cursed-stale-policy",
@@ -698,7 +716,10 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "pending"
+      "e2e_ci_status": "pending",
+      "e2e_ci_workflow": null,
+      "e2e_ci_evidence": null,
+      "e2e_ci_commit": null
     },
     {
       "id": "devvortex",
@@ -737,7 +758,10 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "pending"
+      "e2e_ci_status": "pending",
+      "e2e_ci_workflow": null,
+      "e2e_ci_evidence": null,
+      "e2e_ci_commit": null
     },
     {
       "id": "editorial",
@@ -777,7 +801,10 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "pending"
+      "e2e_ci_status": "pending",
+      "e2e_ci_workflow": null,
+      "e2e_ci_evidence": null,
+      "e2e_ci_commit": null
     },
     {
       "id": "goodgames",
@@ -817,7 +844,10 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "pending"
+      "e2e_ci_status": "pending",
+      "e2e_ci_workflow": null,
+      "e2e_ci_evidence": null,
+      "e2e_ci_commit": null
     },
     {
       "id": "nibbles",
@@ -859,7 +889,10 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "pending"
+      "e2e_ci_status": "pending",
+      "e2e_ci_workflow": null,
+      "e2e_ci_evidence": null,
+      "e2e_ci_commit": null
     },
     {
       "id": "openadmin",
@@ -901,7 +934,10 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "pending"
+      "e2e_ci_status": "pending",
+      "e2e_ci_workflow": null,
+      "e2e_ci_evidence": null,
+      "e2e_ci_commit": null
     },
     {
       "id": "pebbles",
@@ -943,7 +979,10 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "pending"
+      "e2e_ci_status": "pending",
+      "e2e_ci_workflow": null,
+      "e2e_ci_evidence": null,
+      "e2e_ci_commit": null
     },
     {
       "id": "photobomb",
@@ -985,7 +1024,10 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "pending"
+      "e2e_ci_status": "pending",
+      "e2e_ci_workflow": null,
+      "e2e_ci_evidence": null,
+      "e2e_ci_commit": null
     },
     {
       "id": "precious",
@@ -1021,7 +1063,10 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "pending"
+      "e2e_ci_status": "pending",
+      "e2e_ci_workflow": null,
+      "e2e_ci_evidence": null,
+      "e2e_ci_commit": null
     },
     {
       "id": "shocker",
@@ -1061,7 +1106,10 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "pending"
+      "e2e_ci_status": "pending",
+      "e2e_ci_workflow": null,
+      "e2e_ci_evidence": null,
+      "e2e_ci_commit": null
     },
     {
       "id": "union",
@@ -1105,7 +1153,10 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "pending"
+      "e2e_ci_status": "pending",
+      "e2e_ci_workflow": null,
+      "e2e_ci_evidence": null,
+      "e2e_ci_commit": null
     },
     {
       "id": "validation",
@@ -1149,7 +1200,10 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "pending"
+      "e2e_ci_status": "pending",
+      "e2e_ci_workflow": null,
+      "e2e_ci_evidence": null,
+      "e2e_ci_commit": null
     },
     {
       "id": "funnel",
@@ -1187,7 +1241,10 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "pending"
+      "e2e_ci_status": "pending",
+      "e2e_ci_workflow": null,
+      "e2e_ci_evidence": null,
+      "e2e_ci_commit": null
     },
     {
       "id": "django-debug-xss",
@@ -1221,7 +1278,10 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "pending"
+      "e2e_ci_status": "pending",
+      "e2e_ci_workflow": null,
+      "e2e_ci_evidence": null,
+      "e2e_ci_commit": null
     },
     {
       "id": "wondercms-xss",
@@ -1261,7 +1321,10 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "pending"
+      "e2e_ci_status": "pending",
+      "e2e_ci_workflow": null,
+      "e2e_ci_evidence": null,
+      "e2e_ci_commit": null
     },
     {
       "id": "usage",
@@ -1311,7 +1374,10 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "pending"
+      "e2e_ci_status": "pending",
+      "e2e_ci_workflow": null,
+      "e2e_ci_evidence": null,
+      "e2e_ci_commit": null
     },
     {
       "id": "nodeblog",
@@ -1358,7 +1424,10 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "configured"
+      "e2e_ci_status": "configured",
+      "e2e_ci_workflow": ".github/workflows/nodeblog-dev-acceptance.yml",
+      "e2e_ci_evidence": null,
+      "e2e_ci_commit": null
     },
     {
       "id": "zipping",
@@ -1405,7 +1474,10 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "pending"
+      "e2e_ci_status": "pending",
+      "e2e_ci_workflow": null,
+      "e2e_ci_evidence": null,
+      "e2e_ci_commit": null
     },
     {
       "id": "soccer",
@@ -1450,7 +1522,10 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "pending"
+      "e2e_ci_status": "pending",
+      "e2e_ci_workflow": null,
+      "e2e_ci_evidence": null,
+      "e2e_ci_commit": null
     },
     {
       "id": "trick",
@@ -1491,7 +1566,10 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "pending"
+      "e2e_ci_status": "pending",
+      "e2e_ci_workflow": null,
+      "e2e_ci_evidence": null,
+      "e2e_ci_commit": null
     },
     {
       "id": "intense",
@@ -1537,7 +1615,10 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "pending"
+      "e2e_ci_status": "pending",
+      "e2e_ci_workflow": null,
+      "e2e_ci_evidence": null,
+      "e2e_ci_commit": null
     }
   ],
   "backlog": [
