@@ -56,7 +56,7 @@ This table is generated from the same state recorded in `catalog/web-curriculum.
 | `openadmin` | `full_chain_ci` | `not_assessed` |
 | `pebbles` | `full_chain_ci` | `not_assessed` |
 | `photobomb` | `full_chain_ci` | `not_assessed` |
-| `precious` | `partial` | `blocked_by_marker` |
+| `precious` | `partial` | `not_assessed` |
 | `shocker` | `full_chain_ci` | `not_assessed` |
 | `union` | `full_chain_ci` | `not_assessed` |
 | `validation` | `full_chain_ci` | `not_assessed` |
@@ -105,7 +105,7 @@ This table is generated from the same state recorded in `catalog/web-curriculum.
 | Devvortex | Joomla 4.2.6 信息泄露 | 明确并完成 Web 专项目标；不要默认追加 Linux Root |
 | GoodGames | 登录 SQLi、凭据线索、存储型 Jinja2 SSTI | 整理单 Web Flag 目标与完整 Challenge/Writeup |
 | Funnel | FTP、SSH、PostgreSQL 隧道 | 属于非 Web 服务链，单独标识其题库归类与目标 |
-| Precious | PDFKit 0.8.6 命令注入 Web-only 重建 | 普通功能 CI 已通过；漏洞目标与 Web Flag 路径尚未人工确认；有 `.release-blocked` |
+| Precious | PDFKit 0.8.6 / CVE-2022-25765 命令注入 | 普通功能 CI 已通过；独立攻击端 E2E 已接入，等待真实 Flag 回读结果 |
 
 ### 尚未充分验证（4 台）
 
@@ -120,7 +120,7 @@ This table is generated from the same state recorded in `catalog/web-curriculum.
 
 建议顺序：
 
-1. **Precious**：保留已通过的普通 CI，后续只补题目说明和实际 Web 目标路径缺口；不重新制作。
+1. **Precious**：正在接入真实 PDFKit 命令注入和 Web Flag 的独立 E2E；不重做普通 PDF 功能。
 3. **GoodGames**：整理 SQLi → Jinja2 SSTI 的自然探索路径与单 Flag 目标。
 4. **Devvortex**：明确 Web-only 目标，不把原题 Linux 后半段强加进来。
 5. **Base**：补清楚认证与上传两部分的实际功能和题目目标。
