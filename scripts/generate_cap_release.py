@@ -9,8 +9,8 @@ FLAG_DIR = ROOT / "labs/cap/flags"
 RELEASE_DIR = FLAG_DIR / "releases"
 USER_DOC = ROOT / "challenges/idor/cap-packet-drop/Packet-Drop.md"
 ROOT_DOC = ROOT / "challenges/linux-privilege-escalation/cap-setuid/Setuid-Surprise.md"
-VERSION_RE = re.compile(r"^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-[a-z0-9]+(?:[.-][a-z0-9]+)*)?$")
-FLAG_RE = re.compile(r"^TTP\\{[a-z2-7]{16}\\}$")
+VERSION_RE = re.compile(r"^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(?:-[a-z0-9]+(?:[.-][a-z0-9]+)*)?$")
+FLAG_RE = re.compile(r"^TTP\{[a-z2-7]{16}\}$")
 
 def new_flag():
     token = base64.b32encode(secrets.token_bytes(10)).decode("ascii").rstrip("=").lower()
@@ -19,7 +19,7 @@ def new_flag():
 def update_answer(path, values):
     text = path.read_text(encoding="utf-8")
     for value in values:
-        text, count = re.subn(r'(?m)^answer: "TTP\\{[^"]+\\}"$', f'answer: "{value}"', text, count=1)
+        text, count = re.subn(r'(?m)^answer: "TTP\{[^"]+\}"$', f'answer: "{value}"', text, count=1)
         if count != 1:
             raise SystemExit(f"expected one Flag answer slot for {path}, got {count}")
     path.write_text(text, encoding="utf-8")
@@ -46,12 +46,12 @@ def main():
             values[1] = new_flag()
         flags = {"user": values[0], "root": values[1]}
         manifest = {"version": version, "format": "TTP{16-lowercase-base32}", "flags": flags}
-        manifest_path.write_text(json.dumps(manifest, indent=2) + "\\n", encoding="utf-8")
+        manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
         action = "generated"
 
     FLAG_DIR.mkdir(parents=True, exist_ok=True)
-    (FLAG_DIR / "user.txt").write_text(flags["user"] + "\\n", encoding="utf-8")
-    (FLAG_DIR / "root.txt").write_text(flags["root"] + "\\n", encoding="utf-8")
+    (FLAG_DIR / "user.txt").write_text(flags["user"] + "\n", encoding="utf-8")
+    (FLAG_DIR / "root.txt").write_text(flags["root"] + "\n", encoding="utf-8")
     update_answer(USER_DOC, [flags["user"]])
     update_answer(ROOT_DOC, [flags["user"], flags["root"]])
     print(f"Cap release {version}: {action}; 2 unique random 80-bit Flags")
