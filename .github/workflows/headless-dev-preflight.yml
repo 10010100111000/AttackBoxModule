@@ -1,0 +1,61 @@
+name: Headless development preflight
+
+# Manual-only disposable runner. This is not the exploit-chain acceptance.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  headless-preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build disposable image
+        run: docker build --pull -t ttp-headless:dev-preflight labs/htb-headless
+
+      - name: Create isolated network
+        run: docker network create --internal ttp-headless-preflight
+
+      - name: Start target
+        run: |
+          docker run -d \
+            --name headless-preflight \
+            --network ttp-headless-preflight \
+            --memory 768m --cpus 2 --pids-limit 192 \
+            --security-opt no-new-privileges=false \
+            ttp-headless:dev-preflight
+
+      - name: Wait for health
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 120); do
+            state=$(docker inspect -f '{{.State.Status}}' headless-preflight)
+            health=$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' headless-preflight)
+            if [ "$state" != "running" ]; then docker logs headless-preflight; exit 1; fi
+            if [ "$health" = "healthy" ]; then exit 0; fi
+            if [ "$health" = "unhealthy" ]; then docker logs headless-preflight; exit 1; fi
+            sleep 1
+          done
+          docker logs headless-preflight
+          exit 1
+
+      - name: Run non-exploit integration checks
+        run: docker exec headless-preflight /usr/local/bin/headless-smoke-test
+
+      - name: Capture image and runtime measurements
+        if: always()
+        run: |
+          docker image inspect ttp-headless:dev-preflight --format='IMAGE_SIZE_BYTES={{.Size}}' || true
+          docker stats --no-stream headless-preflight || true
+          docker logs headless-preflight || true
+
+      - name: Clean up
+        if: always()
+        run: |
+          docker rm -f headless-preflight 2>/dev/null || true
+          docker network rm ttp-headless-preflight 2>/dev/null || true
+          docker image rm ttp-headless:dev-preflight 2>/dev/null || true
