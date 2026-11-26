@@ -2,9 +2,7 @@
 set -eu
 umask 027
 if [ -n "${ALERT_USER_FLAG:-}" ]; then
-  printf '%s\n' "$ALERT_USER_FLAG" > /opt/alert/private/web-flag.txt
-  chown www-data:www-data /opt/alert/private/web-flag.txt
-  chmod 0400 /opt/alert/private/web-flag.txt
+  su-exec www-data sh -c 'printf "%s\\n" "$ALERT_USER_FLAG" > /opt/alert/private/web-flag.txt && chmod 0400 /opt/alert/private/web-flag.txt'
 fi
 unset ALERT_USER_FLAG
 mkdir -p /srv/alert/uploads /srv/alert/messages /run/alert/queue /run/alert/profiles
