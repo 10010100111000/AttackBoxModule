@@ -1513,7 +1513,7 @@
       }
     },
     {
-      "id": "headless",
+      "id": "htb-headless",
       "path": "labs/htb-headless",
       "track": "web",
       "provisional_difficulty": "beginner",
