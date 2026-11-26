@@ -2560,6 +2560,19 @@
         "Flags are Challenge data and are graded by the Web backend; Worker remains responsible only for Lab/sandbox lifecycle.",
         "Progressive Challenge stages may each have their own Flag. Before adding one, test the actual privileges gained at that stage against all later-stage Flag locations; do not put a later Flag in a file readable by an earlier-stage foothold with the same OS identity."
       ]
+    },
+    "progression": {
+      "model": "separate cumulative Challenge records sharing one Lab/target template",
+      "rules": [
+        "Each learner-facing Challenge is a separate record and can be published/scored independently.",
+        "All cumulative Challenge records for one Lab bind to the same target template identifier.",
+        "Challenge 01 contains the first Flag stage; Challenge 02 repeats Flag 01 and adds Flag 02; Challenge 03 repeats Flag 01 and Flag 02 and adds Flag 03.",
+        "The later Challenge rechecks earlier milestones, so it is a full integrated assessment rather than only the final exploit stage.",
+        "A cumulative Challenge may repeat the same Flag answer in its own stage record; completion is tracked per Challenge stage, while the actual Lab data source may be shared.",
+        "Independent challenges with no prerequisite relation do not inherit previous Flags; they have their own goal and answer stages.",
+        "Do not add a separate Capstone entity for this pattern: the highest cumulative Challenge itself is the integrated challenge.",
+        "The Challenge records can share the same target template/image. Confirm whether runtime instance sharing is supported before promising one live container across simultaneously open Challenge pages; if starts create separate instances, the data/content model still shares the Lab template but not the live container."
+      ]
     }
   },
   "lab_challenge_proposals": [
@@ -2682,74 +2695,103 @@
     },
     {
       "lab_id": "nodeblog",
-      "status": "split_into_progressive_challenges_with_capstone_path",
-      "reason": "The sequential exploit chain can be split into independently scored progressive Challenges with explicit prerequisites. Intermediate Flags are allowed and should be added when they naturally mark a meaningful learning milestone. They may be placed in real application data or purpose-built challenge data surfaces, provided they are reachable only after the intended stage and do not introduce fake vulnerabilities or bypass the authentic exploit path. The final RCE stage retains the existing service-account Flag; the Capstone aggregates all child completions.",
+      "status": "three_cumulative_challenge_records_same_lab",
+      "reason": "Create three separate Challenge records, all bound to the same NodeBlog target template/Lab. Each Challenge cumulatively includes the earlier Flag stages: Challenge 01 has 1 Flag; Challenge 02 has Flag 01 + Flag 02; Challenge 03 (integrated assessment) has Flag 01 + Flag 02 + Flag 03. This uses the existing ordered challenge_stages model and avoids requiring a separate Capstone entity. Prerequisites are reflected in the stages of each Challenge; the later Challenge intentionally rechecks earlier milestones.",
       "challenges": [
         {
           "key": "nodeblog-nosql-auth",
           "title": "NodeBlog 01 — NoSQL Authentication Bypass",
-          "challenge_type": "progressive_web",
+          "challenge_type": "focused_progressive",
+          "target_lab": "nodeblog",
           "primary_skill": "nosql.operator-auth-bypass",
           "secondary_skills": [],
           "dependency_on": [],
-          "objective": "Discover the JSON login request shape and bypass the real MongoDB query-operator authentication check.",
-          "completion": "Dedicated intermediate Flag in protected admin/article content, revealed only after the intended authenticated session is established.",
-          "flag_status": "planned_new_intermediate_flag",
-          "flag_design": "Dedicated intermediate Flag in genuinely protected admin/article content, reachable after the intended login bypass. Ensure the public article index and unauthenticated routes do not expose it.",
+          "stages": [
+            {
+              "position": 1,
+              "key": "flag-01",
+              "kind": "flag",
+              "objective": "Bypass the real MongoDB login query and access protected admin/article content.",
+              "answer_status": "planned_new_flag",
+              "flag_location": "protected admin/article content"
+            }
+          ],
+          "flag_count": 1,
           "implementation_status": "proposal_only"
         },
         {
-          "key": "nodeblog-xxe-source",
-          "title": "NodeBlog 02 — XXE Source Disclosure",
-          "challenge_type": "progressive_web",
+          "key": "nodeblog-xxe",
+          "title": "NodeBlog 02 — NoSQLi + XXE",
+          "challenge_type": "cumulative_progressive",
+          "target_lab": "nodeblog",
           "primary_skill": "xxe.file-read",
           "secondary_skills": [
+            "nosql.operator-auth-bypass",
             "information_disclosure.config-leak"
           ],
           "dependency_on": [
             "nodeblog-nosql-auth"
           ],
-          "objective": "Use the authenticated XML import feature and real libxml2 external entity processing to disclose the intended source/configuration data.",
-          "completion": "Dedicated intermediate Flag in a real local file that is readable through the vulnerable XML parser's external entity path, but not served by public routes.",
-          "flag_status": "planned_new_intermediate_flag",
-          "flag_design": "Dedicated intermediate Flag in a local challenge-data file readable by the real NodeBlog process and disclosed through the authenticated libxml2 XXE import. IMPORTANT: the final stage must not remain in /home/nodeblog/user.txt readable by the same UID, because XXE can read it too.",
+          "stages": [
+            {
+              "position": 1,
+              "key": "flag-01",
+              "kind": "flag",
+              "objective": "Repeat/confirm the NoSQL authentication bypass prerequisite.",
+              "answer_status": "same_flag_as_nodeblog_01"
+            },
+            {
+              "position": 2,
+              "key": "flag-02",
+              "kind": "flag",
+              "objective": "Use authenticated real libxml2 XXE to disclose the dedicated challenge-data Flag.",
+              "answer_status": "planned_new_flag",
+              "flag_location": "XXE-readable non-public challenge-data file"
+            }
+          ],
+          "flag_count": 2,
           "implementation_status": "proposal_only"
         },
         {
-          "key": "nodeblog-deserialization",
-          "title": "NodeBlog 03 — Unsafe Cookie Deserialization",
-          "challenge_type": "progressive_web",
+          "key": "nodeblog-complete",
+          "title": "NodeBlog 03 — Complete Web Assessment",
+          "challenge_type": "integrated_cumulative",
+          "target_lab": "nodeblog",
           "primary_skill": "deserialization.unsafe-parse",
           "secondary_skills": [
-            "deserialization.dependency-gadget"
-          ],
-          "dependency_on": [
-            "nodeblog-xxe-source"
-          ],
-          "objective": "Use the disclosed vulnerable node-serialize 0.0.4 dependency and cookie trust-boundary flaw to reach Web service execution.",
-          "completion": "Use a distinct final Flag stored in a MongoDB challenge-state document/collection that is not returned by the public routes or login query. The real deserialization RCE running as nodeblog can query it; XXE file-read alone cannot query MongoDB. Validate that raw MongoDB data files do not make this answer trivially extractable through XXE.",
-          "flag_status": "planned_new_final_flag_in_database",
-          "implementation_status": "proposal_only",
-          "flag_design": "Move the final Web goal from the nodeblog-readable filesystem to a dedicated MongoDB challenge record that is not exposed by normal app routes. The deserialization RCE can access the local MongoDB service using the real application runtime; earlier XXE only reads files and should not obtain this database value."
-        },
-        {
-          "key": "nodeblog-capstone",
-          "title": "NodeBlog — Complete Web Assessment",
-          "challenge_type": "capstone_path",
-          "primary_skill": "nosql.operator-auth-bypass",
-          "secondary_skills": [
+            "nosql.operator-auth-bypass",
             "xxe.file-read",
-            "deserialization.unsafe-parse",
             "deserialization.dependency-gadget"
           ],
           "dependency_on": [
             "nodeblog-nosql-auth",
-            "nodeblog-xxe-source",
-            "nodeblog-deserialization"
+            "nodeblog-xxe"
           ],
-          "objective": "Complete all three progressive Challenges in one continuous Lab environment and demonstrate the full NoSQLi → XXE → deserialization path.",
-          "completion": "Aggregate completion of all three child Challenges and their Flags; do not create a duplicate fourth Flag.",
-          "flag_status": "aggregate_only_no_duplicate_flag",
+          "stages": [
+            {
+              "position": 1,
+              "key": "flag-01",
+              "kind": "flag",
+              "objective": "NoSQL authentication bypass.",
+              "answer_status": "same_flag_as_nodeblog_01"
+            },
+            {
+              "position": 2,
+              "key": "flag-02",
+              "kind": "flag",
+              "objective": "XXE challenge-data disclosure.",
+              "answer_status": "same_flag_as_nodeblog_xxe"
+            },
+            {
+              "position": 3,
+              "key": "flag-03",
+              "kind": "flag",
+              "objective": "Use real node-serialize 0.0.4 deserialization to execute as NodeBlog service and retrieve the final Flag.",
+              "answer_status": "planned_new_final_flag",
+              "flag_location": "private MongoDB challenge record, not returned by ordinary routes"
+            }
+          ],
+          "flag_count": 3,
           "implementation_status": "proposal_only"
         }
       ]
