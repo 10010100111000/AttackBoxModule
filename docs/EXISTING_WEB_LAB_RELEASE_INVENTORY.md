@@ -8,6 +8,8 @@
 
 当前目录清单有 **27 台 Lab**：
 
+**端到端 CI 进度：** 3 台已有专属端到端工作流配置（Bike 自动触发；Alert、NodeBlog 当前为手动触发），24 台尚待接入。只有攻击端从网络接口按预期路径取得正确 Flag 后，才能将对应状态更新为 `passed`。
+
 | main 中记录的 CI 状态 | 数量 | 含义 |
 |---|---:|---|
 | `full_chain_ci` | 17 | 保留了历史完整目标链 CI 证据；不代表当前 CI 会继续自动执行攻击链 |
@@ -29,35 +31,35 @@ Precious 已在 `bb3d62f` 合并 main。以下两个工作流均成功：
 
 This table is generated from the same state recorded in `catalog/web-curriculum.json`. The curriculum CI compares every row, count and release marker; update this table whenever the catalog changes.
 
-| Lab ID | Catalog CI status | Release marker status |
-|---|---|---|
-| `alert` | `partial` | `blocked_by_marker` |
-| `base` | `unverified` | `not_assessed` |
-| `bashed` | `full_chain_ci` | `not_assessed` |
-| `bike` | `partial` | `not_assessed` |
-| `bountyhunter` | `full_chain_ci` | `not_assessed` |
-| `cap` | `full_chain_ci` | `not_assessed` |
-| `cursed-stale-policy` | `unverified` | `not_assessed` |
-| `devvortex` | `partial` | `not_assessed` |
-| `editorial` | `full_chain_ci` | `blocked_by_marker` |
-| `goodgames` | `partial` | `not_assessed` |
-| `nibbles` | `full_chain_ci` | `not_assessed` |
-| `openadmin` | `full_chain_ci` | `not_assessed` |
-| `pebbles` | `full_chain_ci` | `not_assessed` |
-| `photobomb` | `full_chain_ci` | `not_assessed` |
-| `precious` | `partial` | `blocked_by_marker` |
-| `shocker` | `full_chain_ci` | `not_assessed` |
-| `union` | `full_chain_ci` | `not_assessed` |
-| `validation` | `full_chain_ci` | `not_assessed` |
-| `funnel` | `partial` | `not_assessed` |
-| `django-debug-xss` | `full_chain_ci` | `blocked_by_marker` |
-| `wondercms-xss` | `full_chain_ci` | `blocked_by_marker` |
-| `usage` | `full_chain_ci` | `blocked_by_marker` |
-| `nodeblog` | `full_chain_ci` | `blocked_by_marker` |
-| `zipping` | `full_chain_ci` | `blocked_by_marker` |
-| `soccer` | `full_chain_ci` | `blocked_by_marker` |
-| `trick` | `unverified` | `blocked_by_marker` |
-| `intense` | `unverified` | `blocked_by_marker` |
+| Lab ID | Catalog CI status | Release marker status | End-to-end CI |
+|---|---|---|---|
+| `alert` | `partial` | `blocked_by_marker` | `configured` |
+| `base` | `unverified` | `not_assessed` | `pending` |
+| `bashed` | `full_chain_ci` | `not_assessed` | `pending` |
+| `bike` | `partial` | `not_assessed` | `configured` |
+| `bountyhunter` | `full_chain_ci` | `not_assessed` | `pending` |
+| `cap` | `full_chain_ci` | `not_assessed` | `pending` |
+| `cursed-stale-policy` | `unverified` | `not_assessed` | `pending` |
+| `devvortex` | `partial` | `not_assessed` | `pending` |
+| `editorial` | `full_chain_ci` | `blocked_by_marker` | `pending` |
+| `goodgames` | `partial` | `not_assessed` | `pending` |
+| `nibbles` | `full_chain_ci` | `not_assessed` | `pending` |
+| `openadmin` | `full_chain_ci` | `not_assessed` | `pending` |
+| `pebbles` | `full_chain_ci` | `not_assessed` | `pending` |
+| `photobomb` | `full_chain_ci` | `not_assessed` | `pending` |
+| `precious` | `partial` | `blocked_by_marker` | `pending` |
+| `shocker` | `full_chain_ci` | `not_assessed` | `pending` |
+| `union` | `full_chain_ci` | `not_assessed` | `pending` |
+| `validation` | `full_chain_ci` | `not_assessed` | `pending` |
+| `funnel` | `partial` | `not_assessed` | `pending` |
+| `django-debug-xss` | `full_chain_ci` | `blocked_by_marker` | `pending` |
+| `wondercms-xss` | `full_chain_ci` | `blocked_by_marker` | `pending` |
+| `usage` | `full_chain_ci` | `blocked_by_marker` | `pending` |
+| `nodeblog` | `full_chain_ci` | `blocked_by_marker` | `configured` |
+| `zipping` | `full_chain_ci` | `blocked_by_marker` | `pending` |
+| `soccer` | `full_chain_ci` | `blocked_by_marker` | `pending` |
+| `trick` | `unverified` | `blocked_by_marker` | `pending` |
+| `intense` | `unverified` | `blocked_by_marker` | `pending` |
 
 ## 现有靶机状态
 
