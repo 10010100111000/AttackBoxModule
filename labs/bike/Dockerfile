@@ -18,9 +18,8 @@ COPY server.js healthcheck.js ./
 COPY public/ ./public/
 COPY start.sh /usr/local/bin/bike-start
 COPY sshd_config /etc/ssh/sshd_config.d/10-bike-lab.conf
-RUN chmod 755 /usr/local/bin/bike-start \
-    && printf '%s\n' 'HTB{local_bike_training_flag_not_the_official_flag}' > /root/flag.txt \
-    && chmod 600 /root/flag.txt
+COPY flags/root.txt /root/flag.txt
+RUN chmod 755 /usr/local/bin/bike-start && chmod 600 /root/flag.txt
 
 EXPOSE 22 80
 HEALTHCHECK --interval=20s --timeout=5s --start-period=15s --retries=3 \
