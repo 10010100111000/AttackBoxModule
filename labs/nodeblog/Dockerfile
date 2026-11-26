@@ -47,7 +47,7 @@ COPY flags/user.txt /home/nodeblog/user.txt
 COPY scripts/entrypoint.sh /usr/local/bin/nodeblog-entrypoint
 RUN set -eux; \
     chmod 755 /usr/local/bin/nodeblog-entrypoint /usr/local/bin/mongod; \
-    chown nodeblog:nodeblog /home/nodeblog/user.txt /run/nodeblog/flag01.txt /opt/blog/challenge-data/xxe-flag.txt; \
+    chown nodeblog:nodeblog /home/nodeblog/user.txt /run/nodeblog /run/nodeblog/flag01.txt /opt/blog/challenge-data/xxe-flag.txt; \
     chmod 0600 /home/nodeblog/user.txt; \
     chmod 0400 /run/nodeblog/flag01.txt /opt/blog/challenge-data/xxe-flag.txt; \
     if ldd /usr/local/bin/mongod | grep -q 'not found'; then exit 1; fi
