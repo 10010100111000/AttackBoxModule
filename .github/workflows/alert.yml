@@ -17,6 +17,8 @@ jobs:
     timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
+      - name: Compile the independent HTTP player test
+        run: python3 -m py_compile labs/alert/tests/browser_proof.py
       - name: Build PHP Markdown + genuine headless Chromium container
         run: docker build --progress=plain -t ttp-alert:ci -f labs/alert/Dockerfile labs/alert
       - name: Start one isolated target and check basic Web behavior
