@@ -111,10 +111,10 @@ def main() -> None:
              f"inventory count for {status} does not match catalog ({count})")
     index_header = "## CI machine index"
     need(index_header in inventory, "inventory is missing the CI machine index")
-    index = inventory.split(index_header, 1)[1].split("\\n## ", 1)[0]
+    index = inventory.split(index_header, 1)[1].split("\n## ", 1)[0]
     row_pattern = re.compile(
-        r"^\\| `([a-z0-9-]+)` \\| `(full_chain_ci|partial|unverified)` "
-        r"\\| `(blocked_by_marker|not_assessed)` \\|$",
+        r"^\| `([a-z0-9-]+)` \| `(full_chain_ci|partial|unverified)` "
+        r"\| `(blocked_by_marker|not_assessed)` \|$",
         re.MULTILINE,
     )
     inventory_rows = {
@@ -125,11 +125,15 @@ def main() -> None:
         machine["id"]: (machine["lab_ci_status"], machine["release_status"])
         for machine in catalog["machines"]
     }
-    need(inventory_rows == expected_rows,
-         f"inventory machine index differs from catalog: "
-         f"missing={set(expected_rows) - set(inventory_rows)}, "
-         f"extra={set(inventory_rows) - set(expected_rows)}, "
-         f"changed={{{k for k in set(expected_rows) & set(inventory_rows) if expected_rows[k] != inventory_rows[k]}}}")
+    missing_rows = set(expected_rows) - set(inventory_rows)
+    extra_rows = set(inventory_rows) - set(expected_rows)
+    changed_rows = {
+        key for key in set(expected_rows) & set(inventory_rows)
+        if expected_rows[key] != inventory_rows[key]
+    }
+    need(not (missing_rows or extra_rows or changed_rows),
+         f"inventory machine index differs from catalog: missing={missing_rows}, "
+         f"extra={extra_rows}, changed={changed_rows}")
     for machine in catalog["machines"]:
         marker_exists = (ROOT / machine["path"] / ".release-blocked").is_file()
         need(marker_exists == (machine["release_status"] == "blocked_by_marker"),
