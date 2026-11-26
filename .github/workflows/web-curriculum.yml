@@ -52,7 +52,7 @@ jobs:
           docs = [
             (pathlib.Path("challenges/authentication/nodeblog-nosql/NoSQL Authentication Bypass.md"), 1),
             (pathlib.Path("challenges/file-security/nodeblog-xxe/XXE Source Disclosure.md"), 2),
-            (pathlib.Path("challenges/code-execution/nodeblog-deserialization/Unsafe Cookie Deserialization.md"), 3),
+            (pathlib.Path("challenges/integrated/nodeblog/NodeBlog 03 — Complete Web Assessment.md"), 3),
           ]
           for path, count in docs:
             text = path.read_text()
