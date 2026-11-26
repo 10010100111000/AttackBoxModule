@@ -48,6 +48,9 @@ def main():
 
     # The first loopback visit receives the application's signed admin cookie.
     visit(BASE_URL + "/")
+    dashboard = visit(BASE_URL + "/dashboard")
+    if "System Health Report" not in dashboard:
+        raise RuntimeError("loopback browser session did not receive the admin dashboard")
     Path("/tmp/headless-admin-review.ready").write_text("ready\n", encoding="utf-8")
 
     while True:
