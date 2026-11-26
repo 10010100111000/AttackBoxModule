@@ -33,7 +33,7 @@ curl -i http://127.0.0.1:8080/
 
 ## CI 范围
 
-普通 CI 只检查：
+工程 smoke CI 检查：
 
 - Docker 镜像能否构建；
 - 容器能否启动并通过 Healthcheck；
@@ -53,6 +53,12 @@ CI 不执行命令注入、读取 Flag、反向连接或其他自动攻击流程
 - 同步 `labs/precious/flags/user.txt` 与 `challenges/integrated/precious/Precious.md`；
 - 重复运行同一版本复用 Manifest 中的 Flag；
 - 使用新版本才会生成新 Flag。
+
+## 独立利用与 Writeup
+
+- `exploit.py`：从 AttackBox 发起 HTTP 请求，并通过转换器正常的 URL 获取请求通道验证命令执行和 Flag 读取
+- `writeup.md`：从正常 PDF 转换、元数据识别到 CVE 利用的完整发现路径
+- `.github/workflows/precious-e2e.yml`：隔离网络中的真实命令注入与精确 Flag 验收
 
 ## 来源
 

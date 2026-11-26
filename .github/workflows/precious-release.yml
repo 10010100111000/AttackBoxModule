@@ -40,6 +40,7 @@ jobs:
           echo "Flag generation and same-version idempotency: PASS"
 
       - name: Verify manifest, target seed and Challenge answer
+        id: release
         env:
           RELEASE_VERSION: ${{ inputs.version }}
         run: |
@@ -56,13 +57,18 @@ jobs:
           assert challenge.count(f'answer: "{flag}"') == 1
           assert challenge.count("kind: flag") == 1
           assert "lab: precious" in challenge
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              output.write(f"expected={flag}\n")
+          print(f"::add-mask::{flag}")
           print("Manifest, target seed and Challenge answer match: PASS")
           PY
 
       - name: Build target with the generated Flag
         run: docker build --pull --progress=plain -t ttp-precious:release -f labs/precious/Dockerfile labs/precious
 
-      - name: Check startup, health and ordinary PDF behavior
+      - name: Check startup, health, ordinary PDF behavior and real exploit
+        env:
+          EXPECTED_FLAG: ${{ steps.release.outputs.expected }}
         shell: bash
         run: |
           set -euo pipefail
@@ -104,6 +110,14 @@ jobs:
           print("PASS: release target startup, health and ordinary PDF conversion")
           PY
           docker stats --no-stream --format 'Target memory: {{.MemUsage}}, PIDs: {{.PIDs}}' precious-target
+          docker run --rm --network precious-release --network-alias precious-player \
+            -v "$GITHUB_WORKSPACE/labs/precious/exploit.py:/exploit.py:ro" \
+            -e EXPECTED_FLAG \
+            python:3.12-alpine python /exploit.py \
+              --url http://precious-target:8080 \
+              --callback-host precious-player \
+              --listen-port 9000 \
+              --expected-flag "$EXPECTED_FLAG"
 
       - name: Commit generated release artifacts
         env:

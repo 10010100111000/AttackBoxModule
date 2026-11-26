@@ -10,8 +10,8 @@
 
 | main 中记录的 CI 状态 | 数量 | 含义 |
 |---|---:|---|
-| `full_chain_ci` | 18 | 保留了历史完整目标链 CI 证据；不代表当前 CI 会继续自动执行攻击链 |
-| `partial` | 5 | 已有部分真实功能或目标行为检查，仍有靶机内容/目标路径缺口 |
+| `full_chain_ci` | 19 | 保留了历史完整目标链 CI 证据；不代表当前 CI 会继续自动执行攻击链 |
+| `partial` | 4 | 已有部分真实功能或目标行为检查，仍有靶机内容/目标路径缺口 |
 | `unverified` | 4 | 尚无足够的靶机目标验证记录 |
 
 另有 **11 台**保留 `.release-blocked` 标记。该标记不是 CI 结果，也不等同于靶机代码不存在；未完成原因应以各自 README 和标记文件为准。
@@ -27,14 +27,16 @@ Bike 已在 main 合并，代码提交为 `05f5c1048a297961e0ff42745e8fae2fbc39b
 
 Flag seed、版本 Manifest 与 Challenge 答案已由 CI 核对一致。Bike 是 Web-only 单 Flag，不包含 SSH 登录或第二阶段 Root 提权。
 
-### 上一项更新：Precious
+### Precious 完整 E2E 验收
 
-Precious 已在 `bb3d62f` 合并 main。以下两个工作流均成功：
+Precious 已完成独立攻击端端到端验收。真实 PDFKit 0.8.6 / wkhtmltopdf 靶机在隔离 Docker 网络中，通过 CVE-2022-25765 以 `ruby` 身份执行命令，并读取本次 CI 生成的精确随机 Web Flag。
 
-- [Precious 专属普通功能 CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/45889383302)
-- [Lab 镜像构建工作流](https://github.com/10010100111000/AttackBoxModule/actions/runs/45889383313)
+- [独立攻击端 E2E](https://github.com/10010100111000/AttackBoxModule/actions/runs/45901870712)：命令执行身份与 Web Flag 回读均通过
+- [普通 PDF 功能 smoke CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/45901579321)：首页、PDFKit 版本、健康检查和正常 PDF 转换通过
+- [镜像构建与启动检查](https://github.com/10010100111000/AttackBoxModule/actions/runs/45901579285)：通过
+- Docker 镜像约 **190.9 MB**；测试时内存约 **21 MiB**（850 MiB 限额）
 
-已确认的范围：镜像构建、容器启动、healthcheck、PDFKit 0.8.6 版本检查、首页和普通 HTML 转 PDF。**没有自动执行命令注入或读取 Flag**，因此目录状态记为 `partial`，不是完整漏洞链通过。预期 Web Flag 路径仍未人工确认。
+Flag 由每次 CI 独立生成，并核对目标文件与 Challenge 答案一致。题目仍为 Web-only 单 Flag，不包含 SSH、YAML 反序列化或 Linux Root 阶段。
 
 ## CI machine index
 
@@ -56,7 +58,7 @@ This table is generated from the same state recorded in `catalog/web-curriculum.
 | `openadmin` | `full_chain_ci` | `not_assessed` |
 | `pebbles` | `full_chain_ci` | `not_assessed` |
 | `photobomb` | `full_chain_ci` | `not_assessed` |
-| `precious` | `partial` | `blocked_by_marker` |
+| `precious` | `full_chain_ci` | `not_assessed` |
 | `shocker` | `full_chain_ci` | `not_assessed` |
 | `union` | `full_chain_ci` | `not_assessed` |
 | `validation` | `full_chain_ci` | `not_assessed` |
@@ -72,7 +74,7 @@ This table is generated from the same state recorded in `catalog/web-curriculum.
 
 ## 现有靶机状态
 
-### 已有完整目标链 CI 记录（18 台）
+### 已有完整目标链 CI 记录（19 台）
 
 | Lab | 主要技术/目标 | 备注 |
 |---|---|---|
@@ -95,9 +97,9 @@ This table is generated from the same state recorded in `catalog/web-curriculum.
 | Soccer | Tiny File Manager、WebSocket blind SQLi | Web-only；有 `.release-blocked` |
 | WonderCMS XSS | WonderCMS 属性上下文 XSS、管理员浏览器 | 有 `.release-blocked` |
 
-`full_chain_ci` 表示该 Lab 有完整目标链 CI 证据；旧 Lab 的历史证据不自动等同于当前统一 E2E 标准。每台是否通过新标准，以 `catalog/web-curriculum.json` 中的 `e2e_ci_status`、运行链接和提交 SHA 为准。Bike 已按新标准通过独立攻击端验收。
+`full_chain_ci` 表示该 Lab 有完整目标链 CI 证据；旧 Lab 的历史证据不自动等同于当前统一 E2E 标准。每台是否通过新标准，以 `catalog/web-curriculum.json` 中的 `e2e_ci_status`、运行链接和提交 SHA 为准。Bike 与 Precious 均已按新标准通过独立攻击端验收。
 
-### 部分完成（5 台）
+### 部分完成（4 台）
 
 | Lab | 已有内容 | 仍需处理的靶机工作 |
 |---|---|---|
@@ -105,7 +107,6 @@ This table is generated from the same state recorded in `catalog/web-curriculum.
 | Devvortex | Joomla 4.2.6 信息泄露 | 明确并完成 Web 专项目标；不要默认追加 Linux Root |
 | GoodGames | 登录 SQLi、凭据线索、存储型 Jinja2 SSTI | 整理单 Web Flag 目标与完整 Challenge/Writeup |
 | Funnel | FTP、SSH、PostgreSQL 隧道 | 属于非 Web 服务链，单独标识其题库归类与目标 |
-| Precious | PDFKit 0.8.6 命令注入 Web-only 重建 | 普通功能 CI 已通过；漏洞目标与 Web Flag 路径尚未人工确认；有 `.release-blocked` |
 
 ### 尚未充分验证（4 台）
 
@@ -120,11 +121,10 @@ This table is generated from the same state recorded in `catalog/web-curriculum.
 
 建议顺序：
 
-1. **Precious**：保留已通过的普通 CI，后续只补题目说明和实际 Web 目标路径缺口；不重新制作。
-3. **GoodGames**：整理 SQLi → Jinja2 SSTI 的自然探索路径与单 Flag 目标。
-4. **Devvortex**：明确 Web-only 目标，不把原题 Linux 后半段强加进来。
-5. **Base**：补清楚认证与上传两部分的实际功能和题目目标。
-6. **Intense / Trick**：先处理复杂实现的基础工程与文档，不扩展新功能。
+1. **GoodGames**：整理 SQLi → Jinja2 SSTI 的自然探索路径与单 Flag 目标。
+2. **Devvortex**：明确 Web-only 目标，不把原题 Linux 后半段强加进来。
+3. **Base**：补清楚认证与上传两部分的实际功能和题目目标。
+4. **Intense / Trick**：先处理复杂实现的基础工程与文档，不扩展新功能。
 
 这只是 main 现有资产的处理顺序，不代表上述靶机已经全部通过人工漏洞验收。完成一台后，再按实际差异更新本清单和 `catalog/web-curriculum.json`。
 

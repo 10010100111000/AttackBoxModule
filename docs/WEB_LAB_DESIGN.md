@@ -38,12 +38,12 @@
 
 以 main 提交 `bb3d62f3f8f96ded4eb34b16ba2561a4a1e0f678` 为本次盘点基准：
 
-- 当前目录有 **27 台 Lab**：18 台记录为 `full_chain_ci`、5 台为 `partial`、4 台为 `unverified`。
-- 端到端 CI：**Bike 1 台 passed、26 台 pending**；Bike 的独立攻击端测试和版本化 Flag 发布测试均已通过。
+- 当前目录有 **27 台 Lab**：19 台记录为 `full_chain_ci`、4 台为 `partial`、4 台为 `unverified`。
+- 端到端 CI：**Bike 与 Precious 2 台 passed、25 台 pending**；Precious 已通过真实 PDFKit 命令注入与精确 Flag 回读验收。
 - 其中 **10 台**保留 `.release-blocked` 标记；该字段与 CI 结果分开记录。
 - 技能目录仍为 **31 个专题 / 219 个细分目标**。
 - 滚动队列为 **35 项**：4 项 done、4 项 in_progress、27 项 planned。
-- Precious 已合并 main；其专属普通功能 CI 与镜像构建工作流均成功。通过范围是构建、启动、healthcheck、PDFKit 0.8.6 版本、首页和普通 HTML 转 PDF，不包含命令注入或 Flag 提取。因此 Precious 从 `unverified` 更新为 `partial`，漏洞目标仍未人工验收。
+- Precious 已通过专属普通功能 CI、镜像构建和独立攻击端 E2E。端到端测试通过真实 PDFKit 0.8.6 命令注入，以 `ruby` 身份读取本次随机 Web Flag；不包含 SSH、YAML 反序列化或 Root 阶段。
 
 本次清单与执行顺序见 [现有 main 靶机清单](EXISTING_WEB_LAB_RELEASE_INVENTORY.md)。不要再使用 2026-11-25 之前的机器数量、CI 分类或候选顺序作为当前状态。
 
