@@ -56,6 +56,8 @@ PR 创建、更新或提交之前，先展示具体代码差异和实际检查�
 
 ## Lab 复用与多 Challenge 模型（2026-11-26，用户确认）
 
+三台现有环境的源码、Flag 可达性和题目独立性审查见：[NodeBlog / Zipping / Soccer 复用审计](research/LAB_CHALLENGE_REUSE_NODEBLOG_ZIPPING_SOCCER.md)。本轮只更新规划和审计，不修改运行代码、Flag、题面或 Worker。
+
 ### 核心原则
 
 **一台靶机可以承载多道题目；一道题可以考察多个知识点。** 题目不再默认等于容器或镜像。先研究真实应用能提供哪些训练目标，再围绕同一应用设计 Challenge，避免为了增加题量重复制作相似 Docker 环境。
