@@ -99,7 +99,7 @@ A Lab is eligible for platform onboarding only when its relevant checks are comp
 1. **Source fidelity:** affected real component/version and any reconstruction differences documented.
 2. **Build/start:** deterministic image build, service health, no hidden manual setup.
 3. **Player proof:** a separate HTTP/VPN-only player reaches the actual Flag through the intended vulnerable path. No target \`docker exec\`, no fake exploit endpoint.
-4. **Flag contract:** generated/seeded Flag equals the Challenge answer; restart/reset semantics are known.
+4. **Flag contract:** Flag is placed in a real application/business data location appropriate to the vulnerability (database row, user/order record, API response, admin-visible content, template context, uploaded object or local file); generated/seeded value equals the Challenge answer; restart/reset semantics are known. Local-file Flags are only required when file access is part of the learning objective.
 5. **Resource profile:** image size, idle/active memory, CPU/process use and required ports measured.
 6. **Worker smoke:** start, inspect, stop, reset, per-user isolation and special capabilities checked against the real Worker.
 7. **AttackBox sync:** Challenge Markdown imports; correct target template; expected Flag stage count; independent per-user/per-Challenge progress.
