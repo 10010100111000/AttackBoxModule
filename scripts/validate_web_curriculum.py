@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import sys
 from collections import Counter
 from pathlib import Path
@@ -96,6 +97,48 @@ def main() -> None:
     need(machine_ids == all_lab_dirs,
          f"machines and Dockerfile directories differ: {machine_ids ^ all_lab_dirs}")
 
+    # The human-readable inventory is checked against the structured catalog.
+    # This prevents stale machine counts, missing Labs, or outdated CI/release labels.
+    inventory_path = ROOT / "docs/EXISTING_WEB_LAB_RELEASE_INVENTORY.md"
+    need(inventory_path.is_file(), "missing current main Lab inventory")
+    inventory = inventory_path.read_text(encoding="utf-8")
+    need(f"**{len(machine_ids)} 台 Lab**" in inventory,
+         "inventory Lab total does not match catalog")
+    counts = Counter(machine["lab_ci_status"] for machine in catalog["machines"])
+    for status, count in counts.items():
+        pattern = rf"\| `{re.escape(status)}` \| {count} \|"
+        need(re.search(pattern, inventory) is not None,
+             f"inventory count for {status} does not match catalog ({count})")
+    index_header = "## CI machine index"
+    need(index_header in inventory, "inventory is missing the CI machine index")
+    index = inventory.split(index_header, 1)[1].split("\n## ", 1)[0]
+    row_pattern = re.compile(
+        r"^\| `([a-z0-9-]+)` \| `(full_chain_ci|partial|unverified)` "
+        r"\| `(blocked_by_marker|not_assessed)` \|$",
+        re.MULTILINE,
+    )
+    inventory_rows = {
+        lab_id: (ci_status, release_status)
+        for lab_id, ci_status, release_status in row_pattern.findall(index)
+    }
+    expected_rows = {
+        machine["id"]: (machine["lab_ci_status"], machine["release_status"])
+        for machine in catalog["machines"]
+    }
+    missing_rows = set(expected_rows) - set(inventory_rows)
+    extra_rows = set(inventory_rows) - set(expected_rows)
+    changed_rows = {
+        key for key in set(expected_rows) & set(inventory_rows)
+        if expected_rows[key] != inventory_rows[key]
+    }
+    need(not (missing_rows or extra_rows or changed_rows),
+         f"inventory machine index differs from catalog: missing={missing_rows}, "
+         f"extra={extra_rows}, changed={changed_rows}")
+    for machine in catalog["machines"]:
+        marker_exists = (ROOT / machine["path"] / ".release-blocked").is_file()
+        need(marker_exists == (machine["release_status"] == "blocked_by_marker"),
+             f"{machine['id']}: release status does not match .release-blocked marker")
+
     candidates = catalog["candidate_shortlist"]
     candidates_by_id = {c["id"] for c in candidates}
     need(len(candidates) == len(candidates_by_id), "duplicate source candidate")
@@ -134,7 +177,7 @@ def main() -> None:
                  for a in associations),
              f"legacy evidence wrongly marked as independently verified: {skill}")
 
-    for path in ("README.md", "docs/WEB_LAB_DESIGN.md"):
+    for path in ("README.md", "docs/WEB_LAB_DESIGN.md", "docs/EXISTING_WEB_LAB_RELEASE_INVENTORY.md"):
         need((ROOT / path).is_file(), f"missing curriculum documentation: {path}")
 
     print(f"PASS: {len(topic_names)} topics, {len(skill_ids)} skill objectives, "

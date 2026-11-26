@@ -1181,7 +1181,7 @@
       "implemented_skills": [],
       "lab_ci_status": "full_chain_ci",
       "worker_status": "not_verified",
-      "release_status": "not_assessed",
+      "release_status": "blocked_by_marker",
       "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45233000605",
       "note": "Native PostgreSQL unique constraint -> actual Django 1.11.4 technical-500 XSS -> authenticated headless editor -> Flag callback; patched Django 1.11.5 negative control and rebuilt-instance Flag rotation pass",
       "variant_profile": {
