@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "updated_on": "2026-11-27",
-  "main_snapshot_commit": "bb3d62f3f8f96ded4eb34b16ba2561a4a1e0f678",
+  "main_snapshot_commit": "0b59cce463beedba93aab93a09cda0e2d8b93648",
   "purpose": "trytopwn Web 题库选题、覆盖率与验收状态的唯一结构化索引；每次新增靶机时维护本文件与 docs/WEB_ROADMAP.md",
   "difficulty_is_provisional": true,
   "statuses": {
@@ -563,16 +563,17 @@
       "provisional_difficulty": "beginner",
       "primary_category": "ssti",
       "secondary_categories": [],
-      "validated_skills": [],
-      "implemented_skills": [
-        "ssti.expression",
+      "validated_skills": [
         "ssti.object-access"
       ],
-      "lab_ci_status": "partial",
+      "implemented_skills": [
+        "ssti.object-access"
+      ],
+      "lab_ci_status": "full_chain_ci",
       "worker_status": "not_verified",
       "release_status": "not_assessed",
       "evidence": "",
-      "note": "真实 Handlebars 4.1.1（受 GHSA-q42p-pg8m-cqh6 影响）；正在接入独立攻击端完整流程 CI，尚未通过实际运行验收。",
+      "note": "Handlebars 4.1.1（GHSA-q42p-pg8m-cqh6）真实 SSTI/RCE；独立 HTTP 攻击端完成命令执行并读取随机 Flag。PR E2E 与 main 版本化 Flag 发布 E2E 均通过；Web-only 单 Flag。",
       "variant_profile": {
         "technology": "Node.js, Handlebars",
         "initial_discovery": "POST email",
@@ -581,7 +582,7 @@
         "incremental_learning_value": "需要补原版 Handlebars 利用的独立验收",
         "confidence": "from_repository_readme_or_existing_tests"
       },
-      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review",
+      "skill_mapping_stage": "real_handlebars_object_access_rce_e2e_verified",
       "manual_validation": {
         "status": "not_reviewed",
         "commit": null,
@@ -591,10 +592,10 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "configured",
+      "e2e_ci_status": "passed",
       "e2e_ci_workflow": ".github/workflows/bike.yml",
-      "e2e_ci_evidence": null,
-      "e2e_ci_commit": null
+      "e2e_ci_evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45899322346; https://github.com/10010100111000/AttackBoxModule/actions/runs/45899503806",
+      "e2e_ci_commit": "05f5c1048a297961e0ff42745e8fae2fbc39bfe2"
     },
     {
       "id": "bountyhunter",
