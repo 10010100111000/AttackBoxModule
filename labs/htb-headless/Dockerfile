@@ -8,7 +8,7 @@ RUN python3 -m venv /opt/venv \
       Flask==2.2.2 Werkzeug==2.2.2 itsdangerous==2.1.2
 
 FROM debian:bookworm-slim AS runtime
-ENV PATH=/opt/venv/bin:$PATH PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+ENV PATH=/opt/venv/bin:$PATH PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 XDG_CONFIG_HOME=/tmp/.config XDG_CACHE_HOME=/tmp/.cache
 RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
       bash ca-certificates chromium coreutils curl findutils iproute2 openssh-server procps python3 sudo supervisor \
