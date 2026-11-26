@@ -14,10 +14,10 @@ FLAG_FILE = ROOT / "labs/bike/flags/root.txt"
 MANIFEST_DIR = ROOT / "labs/bike/flags/releases"
 CHALLENGE = ROOT / "challenges/startpoint/bike/Bike.md"
 VERSION_RE = re.compile(
-    r"^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)"
+    r"^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)"
     r"(?:-[a-z0-9]+(?:[.-][a-z0-9]+)*)?$"
 )
-FLAG_RE = re.compile(r"^TTP\\{[a-z2-7]{16}\\}$")
+FLAG_RE = re.compile(r"^TTP\{[a-z2-7]{16}\}$")
 ANSWER_RE = re.compile(r'(?m)^answer: "[^"]+"$')
 
 
@@ -48,10 +48,10 @@ def main() -> None:
             "format": "TTP{16-lowercase-base32}",
             "flag": flag,
         }
-        manifest_path.write_text(json.dumps(manifest, indent=2) + "\\n", encoding="utf-8")
+        manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
         action = "generated"
 
-    FLAG_FILE.write_text(flag + "\\n", encoding="utf-8")
+    FLAG_FILE.write_text(flag + "\n", encoding="utf-8")
     challenge = CHALLENGE.read_text(encoding="utf-8")
     updated, count = ANSWER_RE.subn(f'answer: "{flag}"', challenge)
     if count != 1:
