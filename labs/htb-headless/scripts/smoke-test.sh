@@ -22,7 +22,7 @@ curl -fsS -A "$marker" \
   --data-urlencode "lname=Smoke" \
   --data-urlencode "email=ci@example.invalid" \
   --data-urlencode "phone=0000000000" \
-  --data-urlencode "message=%3CCI%3E+Please+review+this+ordinary+support+request" \
+  --data-urlencode "message=<CI> Please review this ordinary support request" \
   "$base/support" >/tmp/headless-support-response.html
 
 report_file=""
