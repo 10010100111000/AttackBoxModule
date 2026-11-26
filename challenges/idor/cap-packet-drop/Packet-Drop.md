@@ -21,7 +21,7 @@ title: Packet Drop
 kind: flag
 prompt: |
   调查网络快照的编号与下载访问控制，取得其他用户的真实流量记录，从中发现可用凭据并完成用户级访问，提交 user Flag。
-answer: "TTP{pending}"
+answer: "TTP{ocg7a5dd5zdd7hnq}"
 match: trim
 hint: 先观察正常快照的 URL 和编号，再比较未经授权的其他编号是否也能访问。下载后检查 PCAP 中的应用层协议数据。
 ```
