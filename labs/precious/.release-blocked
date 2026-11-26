@@ -1,5 +1,0 @@
-Release remains blocked pending the intended Web learning path being reviewed against the documented real PDFKit 0.8.6 behavior.
-
-CI scope is limited to image build, startup, healthcheck, component-version inspection and ordinary PDF conversion. It does not execute command injection, retrieve Flags or simulate an attack.
-
-The target is a deliberately vulnerable training service. Keep it on an isolated lab network; do not expose it to the public Internet.
