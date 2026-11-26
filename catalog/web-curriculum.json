@@ -1043,16 +1043,16 @@
       ],
       "lab_ci_status": "partial",
       "worker_status": "not_verified",
-      "release_status": "blocked_by_marker",
+      "release_status": "not_assessed",
       "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45889383302; https://github.com/10010100111000/AttackBoxModule/actions/runs/45889383313",
-      "note": "Precious Web-only reconstruction using real PDFKit 0.8.6 and wkhtmltopdf. Main commit bb3d62f: dedicated CI and image build workflow both succeeded; homepage, healthcheck, version and ordinary HTML-to-PDF conversion passed. No exploit or Flag retrieval is automated; intended Web Flag path remains not manually reviewed. One Web Flag; no SSH/YAML/Root stages.",
+      "note": "真实 PDFKit 0.8.6 / wkhtmltopdf；普通 PDF 功能 smoke 已通过。正在接入独立 HTTP 攻击端验证 CVE-2022-25765 命令执行和 /home/ruby/user.txt 单 Web Flag；不包含 SSH/YAML/Root。",
       "variant_profile": {
-        "technology": "Ruby 3.1, Sinatra 2.2.4, pdfkit 0.8.6, wkhtmltopdf, Debian Bookworm",
-        "initial_discovery": "URL to PDF converter; generated PDF metadata reveals pdfkit 0.8.6",
-        "key_constraint_or_mechanism": "CVE-2022-25765 native PDFKit URL shell metacharacter interpolation",
-        "attack_path": "Recon -> generate PDF -> metadata -> native PDFKit command injection -> Web service user flag",
-        "incremental_learning_value": "Real third-party Ruby PDF generator command injection, not generic synthetic shell endpoint",
-        "confidence": "ordinary_pdf_ci_passed_manual_web_path_pending"
+        "technology": "Ruby, Sinatra, PDFKit 0.8.6, wkhtmltopdf",
+        "initial_discovery": "URL-to-PDF conversion and PDF metadata",
+        "key_constraint_or_mechanism": "PDFKit source URL is embedded in shell command without escaping",
+        "attack_path": "PDF metadata → PDFKit version → CVE-2022-25765 → command execution → Web Flag",
+        "incremental_learning_value": "识别生成文件元数据并将组件版本线索映射到真实依赖漏洞",
+        "confidence": "source_verified"
       },
       "skill_mapping_stage": "ordinary_pdf_ci_verified_manual_web_path_pending",
       "manual_validation": {
@@ -1064,8 +1064,8 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "pending",
-      "e2e_ci_workflow": null,
+      "e2e_ci_status": "configured",
+      "e2e_ci_workflow": ".github/workflows/precious-e2e.yml",
       "e2e_ci_evidence": null,
       "e2e_ci_commit": null
     },
