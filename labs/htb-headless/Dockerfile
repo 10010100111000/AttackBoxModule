@@ -36,8 +36,7 @@ RUN set -eu; \
     chown root:root /usr/bin/syscheck /etc/sudoers.d/dvir; \
     chmod 0755 /usr/bin/syscheck /usr/local/bin/headless-entrypoint /usr/local/bin/headless-healthcheck; \
     chmod 0440 /etc/sudoers.d/dvir; \
-    visudo -cf /etc/sudoers; \
-    ssh-keygen -A
+    visudo -cf /etc/sudoers
 
 WORKDIR /home/dvir/app
 EXPOSE 22/tcp 5000/tcp
