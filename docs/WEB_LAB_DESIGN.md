@@ -76,6 +76,18 @@ PR 创建、更新或提交之前，先展示具体代码差异和实际检查�
 
 默认允许一个 Lab 关联多个 Challenge；不要在每道题下复制一份 Dockerfile。若未来同一 Challenge 需要在不同真实应用中重复训练，可关联多个 Lab，但每个关联都要说明场景增量。
 
+### 累积式 Challenge（同一 Lab 的递进题目）
+
+当多个漏洞阶段存在明确前置关系时，可以为同一 Lab 创建多个独立 Challenge 记录，并让后续 Challenge 累积包含前面阶段的 Flag：
+
+- Challenge 01：Flag 01（入门阶段）。
+- Challenge 02：Flag 01 + Flag 02（前置阶段 + 当前阶段）。
+- Challenge 03：Flag 01 + Flag 02 + Flag 03（完整综合考核）。
+
+每个 Challenge 独立展示、独立计分、独立记录完成状态；后续题重新要求提交前置 Flag，明确验证完整知识链。最高级的累积 Challenge 本身就是综合题，不必再额外创建一个 Capstone 实体。
+
+如果不同漏洞没有真实依赖关系，则各自创建独立 Challenge，不继承其他题目的 Flag。所有 Challenge 可以绑定同一个 target template；但“共享模板/镜像”不自动等于“共享同一个运行中的容器”。在产品文案承诺共享实例前，必须确认平台的 target start/stop/reset 行为。
+
 ### 题目拆分规则
 
 1. 先从真实应用的可观察功能和漏洞链识别候选目标，不先按知识点数量切题。
@@ -97,7 +109,7 @@ PR 创建、更新或提交之前，先展示具体代码差异和实际检查�
 
 | Lab | 可拆分的 Challenge 候选 | 关系建议 | 当前限制 |
 | --- | --- | --- | --- |
-| NodeBlog | NoSQL 认证绕过；XXE 源码披露；反序列化执行 | 三道递进 Challenge + 一条 Capstone 路径 | 前两题可用 source-derived question 完成；最终 RCE 使用现有 Web Flag；不伪造额外 Flag |
+| NodeBlog | NoSQL 认证绕过；XXE 源码披露；反序列化执行 | 三个独立 Challenge 记录，共享同一 Lab；Flag 数量分别为 1、2、3 | 后续 Challenge 累积包含前置 Flag，第三题本身就是完整综合考核，不需要额外 Capstone 实体 |
 | Zipping | ZIP symlink 文件读取；SQLi → MariaDB FILE → PHP Include | 两道独立 Challenge + 一条 Capstone 路径 | 上传与 Shop 是独立功能面；第二题需设计不同的自然答案，不能复用已被上传路径读取的 Flag |
 | Soccer | Tiny File Manager 上传；vhost/协议发现；WebSocket 盲注 | 三道递进 Challenge + 一条 Capstone 路径 | 前两题用发现结果作为 question 答案；最终盲注使用数据库中的 Web Flag |
 | Usage | 密码恢复处的布尔/时间盲注；管理后台文件上传 | 顺序依赖候选 | 只规划 Web 阶段；SSH、Monit、sudo Root 不属于 Web 专项默认目标 |
