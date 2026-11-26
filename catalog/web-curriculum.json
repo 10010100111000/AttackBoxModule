@@ -2547,6 +2547,18 @@
         "A capstone path groups child Challenges and may require all of them; it aggregates progress rather than duplicating a child Flag.",
         "A Lab can host all child Challenges and the capstone path on one shared runtime; resetting the Lab affects all Challenges attached to that instance unless isolation is explicitly implemented."
       ]
+    },
+    "flag_policy": {
+      "principle": "Challenge Flags are pedagogical checkpoints and are not constrained to the original machine's Flag count or placement.",
+      "rules": [
+        "A Challenge may have its own Flag even when the original source machine had only one final Flag.",
+        "Place intermediate Flags in real application data or purpose-built challenge data surfaces that fit the stage's learning objective.",
+        "An intermediate Flag must be reachable through the intended stage and must not be publicly exposed, embedded in source delivered to learners, or trivially readable before the stage.",
+        "Do not add fake vulnerable endpoints, fake services or simulated exploit behavior merely to host a Flag.",
+        "A later-stage Flag should not be retrievable through an earlier-stage shortcut. Test all prior-stage routes against all later Flags.",
+        "The final Capstone aggregates child Challenge completion; it does not need a duplicate Flag unless it has a genuinely new objective.",
+        "Flags are Challenge data and are graded by the Web backend; Worker remains responsible only for Lab/sandbox lifecycle."
+      ]
     }
   },
   "lab_challenge_proposals": [
@@ -2670,24 +2682,25 @@
     {
       "lab_id": "nodeblog",
       "status": "split_into_progressive_challenges_with_capstone_path",
-      "reason": "The sequential nature of the exploit chain does not prevent separate learner-facing Challenges. Split the meaningful learning objectives into progressive Challenges with explicit prerequisites; provide a capstone path that groups and assesses the whole chain. Earlier stages can be question-based (e.g. discover the vulnerable XML parser/version), while the final RCE stage retains the existing Web Flag. Do not fabricate separate Flags for stages that have no natural independent secret.",
+      "reason": "The sequential exploit chain can be split into independently scored progressive Challenges with explicit prerequisites. Intermediate Flags are allowed and should be added when they naturally mark a meaningful learning milestone. They may be placed in real application data or purpose-built challenge data surfaces, provided they are reachable only after the intended stage and do not introduce fake vulnerabilities or bypass the authentic exploit path. The final RCE stage retains the existing service-account Flag; the Capstone aggregates all child completions.",
       "challenges": [
         {
           "key": "nodeblog-nosql-auth",
           "title": "NodeBlog 01 — NoSQL Authentication Bypass",
-          "challenge_type": "focused_web",
+          "challenge_type": "progressive_web",
           "primary_skill": "nosql.operator-auth-bypass",
           "secondary_skills": [],
           "dependency_on": [],
-          "objective": "Discover the JSON login request shape and demonstrate the application's MongoDB query-operator authentication weakness.",
-          "completion": "Question-based: report the accepted account identity or explain the query-operator behavior after reaching the authenticated area; no synthetic Flag.",
-          "answer_status": "requires_question_answer_design",
+          "objective": "Discover the JSON login request shape and bypass the real MongoDB query-operator authentication check.",
+          "completion": "Dedicated intermediate Flag in protected admin/article content, revealed only after the intended authenticated session is established.",
+          "flag_status": "planned_new_intermediate_flag",
+          "flag_design": "Store a per-challenge value in a genuine protected article or admin-only content record; do not expose it in the public blog or seed output. Verify the login bypass is required to view it.",
           "implementation_status": "proposal_only"
         },
         {
           "key": "nodeblog-xxe-source",
-          "title": "NodeBlog 02 — XML External Entity Source Disclosure",
-          "challenge_type": "focused_web",
+          "title": "NodeBlog 02 — XXE Source Disclosure",
+          "challenge_type": "progressive_web",
           "primary_skill": "xxe.file-read",
           "secondary_skills": [
             "information_disclosure.config-leak"
@@ -2695,15 +2708,16 @@
           "dependency_on": [
             "nodeblog-nosql-auth"
           ],
-          "objective": "Use the authenticated XML import feature and real libxml2 entity processing to disclose application source; identify the vulnerable serialization dependency and version.",
-          "completion": "Question-based: submit the package name/version or a source-derived value that is naturally disclosed; no fabricated Flag file.",
-          "answer_status": "requires_source_derived_question_design",
+          "objective": "Use the authenticated XML import feature and real libxml2 external entity processing to disclose the intended source/configuration data.",
+          "completion": "Dedicated intermediate Flag in a real local file that is readable through the vulnerable XML parser's external entity path, but not served by public routes.",
+          "flag_status": "planned_new_intermediate_flag",
+          "flag_design": "Place a distinct challenge data file in the container filesystem with permissions readable by the NodeBlog process. Confirm it is not rendered by public routes and is only disclosed via the intended XXE behavior. Avoid making it a generic world-readable web asset.",
           "implementation_status": "proposal_only"
         },
         {
           "key": "nodeblog-deserialization",
           "title": "NodeBlog 03 — Unsafe Cookie Deserialization",
-          "challenge_type": "focused_web",
+          "challenge_type": "progressive_web",
           "primary_skill": "deserialization.unsafe-parse",
           "secondary_skills": [
             "deserialization.dependency-gadget"
@@ -2711,9 +2725,9 @@
           "dependency_on": [
             "nodeblog-xxe-source"
           ],
-          "objective": "Use the disclosed vulnerable node-serialize dependency and cookie trust-boundary flaw to reach Web service execution.",
+          "objective": "Use the disclosed vulnerable node-serialize 0.0.4 dependency and cookie trust-boundary flaw to reach Web service execution.",
           "completion": "Existing Web Flag at /home/nodeblog/user.txt, owner nodeblog UID 10001, mode 0600.",
-          "answer_status": "existing_flag",
+          "flag_status": "existing_flag",
           "implementation_status": "proposal_only"
         },
         {
@@ -2732,8 +2746,8 @@
             "nodeblog-deserialization"
           ],
           "objective": "Complete all three progressive Challenges in one continuous Lab environment and demonstrate the full NoSQLi → XXE → deserialization path.",
-          "completion": "Aggregate completion of the three child Challenges; do not create a duplicate final Flag.",
-          "answer_status": "aggregate_only_no_duplicate_flag",
+          "completion": "Aggregate completion of all three child Challenges and their Flags; do not create a duplicate fourth Flag.",
+          "flag_status": "aggregate_only_no_duplicate_flag",
           "implementation_status": "proposal_only"
         }
       ]
