@@ -133,8 +133,8 @@ jobs:
 
           with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
               matrix_items = items or [{'context': '', 'slug': 'none', 'image': 'none', 'version': ''}]
-              output.write('matrix=' + json.dumps({'include': matrix_items}) + '\\n')
-              output.write('has_labs=' + ('true' if items else 'false') + '\\n')
+              output.write('matrix=' + json.dumps({'include': matrix_items}) + '\n')
+              output.write('has_labs=' + ('true' if items else 'false') + '\n')
           print('Selected lab builds:', ', '.join(item['context'] for item in items) or '(none)')
           PY
 
