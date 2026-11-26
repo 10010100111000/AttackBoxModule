@@ -94,7 +94,7 @@ PR 创建、更新或提交之前，先展示具体代码差异和实际检查�
 
 平台现有 `challenge_completions` 以 `(user_id, stage_id)` 记录用户完成的题目阶段；通过 `challenge_stages.challenge_id` 可以归属到具体 Challenge。提交次数则由 `challenge_attempt_limits(user_id, challenge_id)` 记录。因此当前模型就是用户与 Challenge/Stage 的关联，不需要额外建立用户与 Lab 的学习进度，也不需要 ChallengeDependency 自动解锁模型。
 
-多个 Challenge 可以关联同一个 `target_template_id`。这能确认模板/镜像复用，但不能单凭该字段断言同一用户的不同 Challenge 一定共享同一个运行容器。靶机启动、停止和重置仍属于 Worker 生命周期；题目完成记录由 Web 后端保存。重置运行环境不应默认删除用户历史答题记录。
+多个 Challenge 可以关联同一个 `target_template_id`。当前 `targetScope()` 会将 Challenge 解析为 `scope = target:<templateId>`；`target_instances` 对 `(user_id, scope)` 有唯一约束。因此同一用户从关联相同模板的不同 Challenge 启动靶机时，会命中同一个 target instance；`targetOperation()` 会复用仍有效的实例，而不是为每个 Challenge 新建容器。若启动不同模板的靶机，当前实现会先停止该用户其他未停止的靶机，再创建新实例。靶机启动、停止和重置仍属于 Worker 生命周期；题目完成记录由 Web 后端保存。
 
 ### 题目拆分规则
 
