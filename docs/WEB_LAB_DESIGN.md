@@ -71,29 +71,37 @@ PR 创建、更新或提交之前，先展示具体代码差异和实际检查�
 | Skill | 细分训练能力 | 使用 web-competencies.json 中的 skill_id |
 | ChallengeSkill | Challenge 与 Skill 的多对多关系 | 主考点、次要考点、学习目标 |
 | LabChallenge | Lab 与 Challenge 的关联 | 关联的 Lab、入口/服务、是否共享状态、环境要求 |
-| ChallengeDependency | 题目之间的前置关系 | 前置 Challenge、依赖原因、解锁条件 |
-| ChallengePath / Capstone | 多道题组成的学习路径或综合考核 | 子题目、完成规则、汇总进度；不必额外复制子题 Flag |
+| 累积式 Challenge | 同一 Lab 上不同难度/覆盖范围的独立题目 | 各自的有序 Flag Stage；后续题可重复前面题目的 Flag 作为复习 |
+| 用户进度 | 用户与具体 Challenge 阶段的关联 | 现有 challenge_completions 按 user_id + stage_id 记录；challenge_attempt_limits 按 user_id + challenge_id 记录 |
 
 默认允许一个 Lab 关联多个 Challenge；不要在每道题下复制一份 Dockerfile。若未来同一 Challenge 需要在不同真实应用中重复训练，可关联多个 Lab，但每个关联都要说明场景增量。
 
 ### 累积式 Challenge（同一 Lab 的递进题目）
 
-当多个漏洞阶段存在明确前置关系时，可以为同一 Lab 创建多个独立 Challenge 记录，并让后续 Challenge 累积包含前面阶段的 Flag：
+当多个漏洞阶段存在知识关联时，可以为同一 Lab 创建多个独立 Challenge 记录。**不做跨 Challenge 自动解锁，也不设置前置题门槛。** 学员可以自由选择任何已发布的题目；后续题目通过重复前面的 Flag，让学员有机会复习和重新证明之前掌握的知识。
 
-- Challenge 01：Flag 01（入门阶段）。
-- Challenge 02：Flag 01 + Flag 02（前置阶段 + 当前阶段）。
-- Challenge 03：Flag 01 + Flag 02 + Flag 03（完整综合考核）。
+例如同一个 NodeBlog Lab：
 
-每个 Challenge 独立展示、独立计分、独立记录完成状态；后续题重新要求提交前置 Flag，明确验证完整知识链。最高级的累积 Challenge 本身就是综合题，不必再额外创建一个 Capstone 实体。
+- Challenge 01：Flag 01（NoSQL 入门）。
+- Challenge 02：Flag 01 + Flag 02（复习 NoSQL，再完成 XXE）。
+- Challenge 03：Flag 01 + Flag 02 + Flag 03（复习前两阶段，再完成反序列化综合考核）。
 
-如果不同漏洞没有真实依赖关系，则各自创建独立 Challenge，不继承其他题目的 Flag。所有 Challenge 可以绑定同一个 target template；但“共享模板/镜像”不自动等于“共享同一个运行中的容器”。在产品文案承诺共享实例前，必须确认平台的 target start/stop/reset 行为。
+每个 Challenge 独立展示、计分和记录完成状态。后续 Challenge 的有序 Flag Stage 由现有机制负责顺序提交；这只是**单个 Challenge 内部的阶段顺序**，不是不同 Challenge 之间的解锁关系。
+
+如果不同漏洞没有关联，则创建完全独立的 Challenge，各自使用自己的考察目标和 Flag，不继承其他题目的 Flag。
+
+### 用户进度与靶机生命周期
+
+平台现有 `challenge_completions` 以 `(user_id, stage_id)` 记录用户完成的题目阶段；通过 `challenge_stages.challenge_id` 可以归属到具体 Challenge。提交次数则由 `challenge_attempt_limits(user_id, challenge_id)` 记录。因此当前模型就是用户与 Challenge/Stage 的关联，不需要额外建立用户与 Lab 的学习进度，也不需要 ChallengeDependency 自动解锁模型。
+
+多个 Challenge 可以关联同一个 `target_template_id`。这能确认模板/镜像复用，但不能单凭该字段断言同一用户的不同 Challenge 一定共享同一个运行容器。靶机启动、停止和重置仍属于 Worker 生命周期；题目完成记录由 Web 后端保存。重置运行环境不应默认删除用户历史答题记录。
 
 ### 题目拆分规则
 
 1. 先从真实应用的可观察功能和漏洞链识别候选目标，不先按知识点数量切题。
 2. **综合攻击链可以拆成多道 Challenge**：只要各阶段有独立的学习目标、可观察成果或值得单独训练的技能，就可以分别出题；题目可以存在前置依赖，不要求每道题都能从零独立进入。
 3. 一道 Challenge 可以组合多个 Skill；指定一个主 Skill，其余为次要 Skill。
-4. 如果后续漏洞必须先取得前一阶段权限，使用明确的 ChallengeDependency；不要假装后续题可独立完成。
+4. 如果后续题在知识上依赖前一阶段，可以在题面说明建议的学习顺序，但不做跨 Challenge 自动解锁。后续 Challenge 自己包含需要复习的前置 Flag Stage。
 5. **允许为独立 Challenge 增加中间 Flag**，不必拘泥于原始机器的 Flag 数量或位置。Flag 可以放在真实应用数据、受保护内容或专门的本地 challenge data 文件中；必须通过该阶段的真实漏洞/功能路径取得，并验证前一阶段不能提前读取后续 Flag。没有合适独立 Flag 的阶段仍可使用 question 类型答案；禁止伪造漏洞接口、模拟组件或公开暴露答案。
 6. 多道题共享一个 Lab 时，可以共享服务和数据；每个 Flag 目标必须有清晰边界，不能由普通页面、公开目录或前一道题无意泄露。
 7. 多道子题可以组成 ChallengePath / Capstone，作为一组综合训练或最终考核。综合路径汇总子题完成状态，不需要再复制一个重复 Flag。
