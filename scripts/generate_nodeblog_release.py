@@ -66,7 +66,7 @@ def main():
                 "博客提供 XML 文章导入功能。完成认证目标后，继续观察导入数据如何被服务端解析，以及解析结果如何进入文章编辑器。",
                 [("Flag 01 — Authentication Review", "重新完成认证阶段，提交受保护内容中的第一枚 Flag。", flags["flag01"]),
                  ("Flag 02 — XML Disclosure", "利用 XML 导入处理过程读取专用本地数据文件，提交第二枚 Flag。", flags["flag02"])]),
-        ROOT / "challenges/code-execution/nodeblog-deserialization/Unsafe Cookie Deserialization.md":
+        ROOT / "challenges/integrated/nodeblog/NodeBlog 03 — Complete Web Assessment.md":
             challenge_markdown("综合考察 NoSQL 认证绕过、XXE 和不安全 Cookie 反序列化。", "hard",
                 "你将对同一个博客应用进行完整 Web 安全评估。重新验证认证边界与 XML 导入行为，再调查浏览器会话 Cookie 的生成、解析和信任过程。",
                 [("Flag 01 — Authentication Review", "重新完成认证阶段，提交受保护内容中的第一枚 Flag。", flags["flag01"]),
