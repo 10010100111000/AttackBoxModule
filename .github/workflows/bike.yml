@@ -55,6 +55,9 @@ jobs:
           print(f"::add-mask::{flag}")
           PY
 
+      - name: Syntax-check independent player and CI scripts
+        run: python3 -m py_compile labs/bike/exploit.py labs/bike/verify_ssti.py scripts/generate_bike_release.py
+
       - name: Build the real Handlebars 4.1.2 target
         run: docker build --pull --progress=plain -t ttp-bike:e2e -f labs/bike/Dockerfile labs/bike
 
