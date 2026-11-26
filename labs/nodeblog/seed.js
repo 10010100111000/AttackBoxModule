@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const fs = require('fs');
 const User = require('./models/user');
 const Article = require('./models/article');
 
@@ -27,11 +28,25 @@ async function seed() {
       { slug: post.slug },
       { $setOnInsert: {
         title: post.title, slug: post.slug, description: post.description,
-        markdown: post.markdown, createdAt: new Date(post.date)
+        markdown: post.markdown, private: false, createdAt: new Date(post.date)
       } },
       { upsert: true }
     );
   }
+
+  const flag01 = fs.readFileSync('/run/nodeblog/flag01.txt', 'utf8').trim();
+  if (!/^TTP\\{[a-z2-7]{16}\\}$/.test(flag01)) {
+    throw new Error('NodeBlog Flag 01 is missing or malformed');
+  }
+  await Article.updateOne(
+    { slug: 'staff-notes' },
+    { $setOnInsert: {
+      title: 'Staff Notes', slug: 'staff-notes',
+      description: 'Internal notes for the editorial team.',
+      markdown: flag01, private: true, createdAt: new Date('2022-01-01')
+    } },
+    { upsert: true }
+  );
   await mongoose.disconnect();
 }
 seed().catch((err) => { console.error(err.message); process.exit(1); });
