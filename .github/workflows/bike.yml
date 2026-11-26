@@ -58,7 +58,7 @@ jobs:
       - name: Syntax-check independent player and CI scripts
         run: python3 -m py_compile labs/bike/exploit.py labs/bike/verify_ssti.py scripts/generate_bike_release.py
 
-      - name: Build the real Handlebars 4.1.2 target
+      - name: Build the real Handlebars 4.1.1 target
         run: docker build --pull --progress=plain -t ttp-bike:e2e -f labs/bike/Dockerfile labs/bike
 
       - name: Pull isolated HTTP player image
@@ -124,5 +124,5 @@ jobs:
       - name: Record acceptance scope
         if: success()
         run: |
-          echo "PASS: external HTTP player reached the real Handlebars 4.1.2 template compilation path, executed a command as the target Web process, and retrieved the exact versioned root Flag." >> "$GITHUB_STEP_SUMMARY"
+          echo "PASS: external HTTP player reached the real Handlebars 4.1.1 template compilation path, executed a command as the target Web process, and retrieved the exact versioned root Flag." >> "$GITHUB_STEP_SUMMARY"
           echo "The test client had no Docker socket or target filesystem mount. The target and attacker shared only an internal Docker network." >> "$GITHUB_STEP_SUMMARY"
