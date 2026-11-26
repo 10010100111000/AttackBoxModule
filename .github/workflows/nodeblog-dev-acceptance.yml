@@ -63,8 +63,7 @@ jobs:
             labs/nodeblog/flags/user.txt \
             challenges/authentication/nodeblog-nosql \
             challenges/file-security/nodeblog-xxe \
-            challenges/code-execution/nodeblog-deserialization
-          git rm -f challenges/integrated/nodeblog/NodeBlog.md || true
+            challenges/integrated/nodeblog
           if ! git diff --cached --quiet; then
             git commit -m "chore(nodeblog): generate Flags and Challenges for $RELEASE_VERSION"
             git push origin "HEAD:$BRANCH_NAME"
