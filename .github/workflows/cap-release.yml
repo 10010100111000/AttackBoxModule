@@ -1,0 +1,101 @@
+name: Cap versioned Flag release
+
+# Push creates the initial version; manual dispatch creates a new version.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/generate_cap_release.py"
+      - "labs/cap/flags/**"
+      - "challenges/idor/cap-packet-drop/**"
+      - "challenges/linux-privilege-escalation/cap-setuid/**"
+      - ".github/workflows/cap-release.yml"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Cap release version. Re-running the same version reuses its Flags."
+        required: true
+        default: "0.1.0"
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cap-flag-release-${{ github.event.inputs.version || '0.1.0' }}
+  cancel-in-progress: false
+
+jobs:
+  generate-and-commit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+
+      - name: Generate or reuse random user/root Flags
+        env:
+          RELEASE_VERSION: ${{ github.event.inputs.version || '0.1.0' }}
+        run: |
+          set -euo pipefail
+          python3 scripts/generate_cap_release.py --version "$RELEASE_VERSION"
+          manifest="labs/cap/flags/releases/$RELEASE_VERSION.json"
+          before=$(sha256sum "$manifest" | cut -d' ' -f1)
+          python3 scripts/generate_cap_release.py --version "$RELEASE_VERSION"
+          after=$(sha256sum "$manifest" | cut -d' ' -f1)
+          test "$before" = "$after"
+          echo "Cap Flag generation and same-version idempotency: PASS"
+
+      - name: Verify image seed and both Challenge answers match Manifest
+        env:
+          RELEASE_VERSION: ${{ github.event.inputs.version || '0.1.0' }}
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib, re
+          version = os.environ["RELEASE_VERSION"]
+          root = pathlib.Path(".")
+          manifest = json.loads((root / f"labs/cap/flags/releases/{version}.json").read_text())
+          flags = manifest["flags"]
+          assert set(flags) == {"user", "root"}
+          assert len(set(flags.values())) == 2
+          assert all(re.fullmatch(r"TTP\{[a-z2-7]{16}\}", value) for value in flags.values())
+          assert (root / "labs/cap/flags/user.txt").read_text().strip() == flags["user"]
+          assert (root / "labs/cap/flags/root.txt").read_text().strip() == flags["root"]
+          packet = (root / "challenges/idor/cap-packet-drop/Packet-Drop.md").read_text()
+          full = (root / "challenges/linux-privilege-escalation/cap-setuid/Setuid-Surprise.md").read_text()
+          assert packet.count(f'answer: "{flags["user"]}"') == 1
+          assert full.count(f'answer: "{flags["user"]}"') == 1
+          assert full.count(f'answer: "{flags["root"]}"') == 1
+          assert packet.count("kind: flag") == 1 and full.count("kind: flag") == 2
+          assert "lab: cap" in packet and "lab: cap" in full
+          print("Manifest, target seed files, and Challenge answers match: PASS")
+          PY
+
+      - name: Commit generated release artifacts
+        env:
+          RELEASE_VERSION: ${{ github.event.inputs.version || '0.1.0' }}
+          BRANCH_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            "labs/cap/flags/releases/$RELEASE_VERSION.json" \
+            labs/cap/flags/user.txt \
+            labs/cap/flags/root.txt \
+            challenges/idor/cap-packet-drop/Packet-Drop.md \
+            challenges/linux-privilege-escalation/cap-setuid/Setuid-Surprise.md
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(cap): generate Flags for $RELEASE_VERSION"
+            git push origin "HEAD:$BRANCH_NAME"
+          else
+            echo "Release content already matches this version."
+          fi
+
+      - name: Summarize
+        run: |
+          echo "Two random 80-bit Flags generated/reused from one versioned manifest." >> "$GITHUB_STEP_SUMMARY"
+          echo "The same manifest supplies the target user/root files and both Challenge answers." >> "$GITHUB_STEP_SUMMARY"
+          echo "Same-version rebuilds preserve values; use a new version to rotate them." >> "$GITHUB_STEP_SUMMARY"
