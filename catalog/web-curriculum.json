@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "updated_on": "2026-11-25",
+  "updated_on": "2026-11-26",
   "main_snapshot_commit": "45c2e88165342dca8ce3583c33659651f5c3c7f2",
   "purpose": "trytopwn Web 题库选题、覆盖率与验收状态的唯一结构化索引；每次新增靶机时维护本文件与 docs/WEB_ROADMAP.md",
   "difficulty_is_provisional": true,
@@ -2513,5 +2513,261 @@
     ],
     "next_review": "Finish the Intense build and manually verify the original Web attack path before selecting another SQLi candidate. Inject remains a later path-traversal / Spring RCE research candidate.",
     "selection_reason": "The existing curriculum already covers UNION, Boolean/Time Blind, second-order, FILE operations and WebSocket blind SQLi. Intense adds a distinct SQLite conditional-error oracle plus cryptographic session forgery and authenticated path traversal, creating a coherent composite Web exercise without a JVM."
-  }
+  },
+  "challenge_model": {
+    "version": 1,
+    "status": "proposal_only",
+    "principle": "A Lab is a reusable runtime environment, not a one-to-one synonym for a Challenge. One Lab may host multiple Challenges; each Challenge may map to multiple Skills.",
+    "entities": {
+      "lab": "Deployable application/runtime, image, services, ports, resource/network constraints, lifecycle and reset boundary.",
+      "challenge": "Learner-facing objective, difficulty, prompt, hints, answer/Flag and completion state.",
+      "skill": "Existing fine-grained skill_id from web-competencies.json.",
+      "lab_challenge": "Many-to-many association between runtime Labs and Challenges, including entry point, shared-state and environment requirements.",
+      "challenge_skill": "Many-to-many association with one primary Skill and zero or more secondary Skills.",
+      "challenge_dependency": "Optional directed prerequisite relation between Challenges, justified by the real application flow."
+    },
+    "rules": [
+      "Do not create a new Docker image or runtime instance solely because a new Challenge is added to an existing Lab.",
+      "A Challenge can combine multiple Skills; one Skill can appear in multiple Challenges.",
+      "Split a composite application into multiple Challenges only when each has a distinct learner objective and defensible completion boundary.",
+      "Use prerequisite dependencies when the real application requires an earlier foothold; do not invent parallel entry points.",
+      "Each Challenge has its own answer/Flag and Web-backend grading record. Worker manages only Lab and sandbox lifecycle.",
+      "A shared Lab reset resets the shared environment and all Challenge progress tied to that instance unless independent snapshots are explicitly supported.",
+      "Web-only Challenges do not require SSH, Linux root or two Flags unless those are part of the actual stated objective.",
+      "Proposals do not imply existing Challenge files, separate Flag placement, independent exploitability or acceptance."
+    ],
+    "migration_policy": "Keep existing machine records and historical CI/manual/Worker/release states. Add explicit Lab-Challenge associations gradually. Do not bulk-split current challenge files, change Flag values or change Worker APIs in this planning update."
+  },
+  "lab_challenge_proposals": [
+    {
+      "lab_id": "nodeblog",
+      "status": "proposal_only",
+      "reason": "One existing Web-only runtime contains several observable stages; verify each stage can support a meaningful standalone objective and naturally retrievable answer before splitting.",
+      "challenges": [
+        {
+          "key": "nodeblog-auth-bypass",
+          "title": "Blog authentication boundary",
+          "primary_skill": "nosql.operator-auth-bypass",
+          "secondary_skills": [],
+          "dependency_on": [],
+          "flag_status": "not_designed",
+          "implementation_status": "proposal_only"
+        },
+        {
+          "key": "nodeblog-xxe",
+          "title": "XML import and source disclosure",
+          "primary_skill": "xxe.file-read",
+          "secondary_skills": [],
+          "dependency_on": [
+            "nodeblog-auth-bypass"
+          ],
+          "flag_status": "not_designed",
+          "implementation_status": "proposal_only"
+        },
+        {
+          "key": "nodeblog-deserialization",
+          "title": "Cookie deserialization",
+          "primary_skill": "deserialization.unsafe-parse",
+          "secondary_skills": [
+            "deserialization.dependency-gadget"
+          ],
+          "dependency_on": [
+            "nodeblog-xxe"
+          ],
+          "flag_status": "not_designed",
+          "implementation_status": "proposal_only"
+        }
+      ]
+    },
+    {
+      "lab_id": "zipping",
+      "status": "proposal_only",
+      "reason": "The archive, SQL file operation and LFI stages may provide distinct learning objectives, but must retain the real sequential path.",
+      "challenges": [
+        {
+          "key": "zipping-archive",
+          "title": "Archive handling and source discovery",
+          "primary_skill": "file_read.file-to-rce",
+          "secondary_skills": [],
+          "dependency_on": [],
+          "flag_status": "not_designed",
+          "implementation_status": "proposal_only"
+        },
+        {
+          "key": "zipping-sqli",
+          "title": "Database query and file write",
+          "primary_skill": "sqli.union",
+          "secondary_skills": [
+            "sqli.file-operations",
+            "sqli.filter-bypass"
+          ],
+          "dependency_on": [
+            "zipping-archive"
+          ],
+          "flag_status": "not_designed",
+          "implementation_status": "proposal_only"
+        },
+        {
+          "key": "zipping-lfi",
+          "title": "Local file inclusion",
+          "primary_skill": "file_read.lfi",
+          "secondary_skills": [
+            "file_read.file-to-rce"
+          ],
+          "dependency_on": [
+            "zipping-sqli"
+          ],
+          "flag_status": "not_designed",
+          "implementation_status": "proposal_only"
+        }
+      ]
+    },
+    {
+      "lab_id": "soccer",
+      "status": "proposal_only",
+      "reason": "Separate the initial file-manager discovery from the secondary WebSocket SQLi only if the first stage has its own defensible objective.",
+      "challenges": [
+        {
+          "key": "soccer-upload-recon",
+          "title": "File manager and upload surface",
+          "primary_skill": "file_upload.unrestricted-upload",
+          "secondary_skills": [],
+          "dependency_on": [],
+          "flag_status": "not_designed",
+          "implementation_status": "proposal_only"
+        },
+        {
+          "key": "soccer-websocket-sqli",
+          "title": "WebSocket ticket lookup",
+          "primary_skill": "websockets.blind-sqli",
+          "secondary_skills": [
+            "sqli.boolean-blind",
+            "websockets.ws-recon"
+          ],
+          "dependency_on": [
+            "soccer-upload-recon"
+          ],
+          "flag_status": "not_designed",
+          "implementation_status": "proposal_only"
+        }
+      ]
+    },
+    {
+      "lab_id": "usage",
+      "status": "proposal_only",
+      "reason": "Only Web stages are in scope for the Web curriculum; exclude SSH, Monit and sudo Root from these Challenge proposals.",
+      "challenges": [
+        {
+          "key": "usage-password-recovery",
+          "title": "Password recovery oracle",
+          "primary_skill": "sqli.boolean-blind",
+          "secondary_skills": [
+            "sqli.time-blind",
+            "sqli.db-enumeration"
+          ],
+          "dependency_on": [],
+          "flag_status": "not_designed",
+          "implementation_status": "proposal_only"
+        },
+        {
+          "key": "usage-admin-upload",
+          "title": "Admin media upload",
+          "primary_skill": "file_upload.unrestricted-upload",
+          "secondary_skills": [
+            "file_upload.polyglot",
+            "file_upload.extension-bypass"
+          ],
+          "dependency_on": [
+            "usage-password-recovery"
+          ],
+          "flag_status": "not_designed",
+          "implementation_status": "proposal_only"
+        }
+      ]
+    },
+    {
+      "lab_id": "wondercms-xss",
+      "status": "proposal_only",
+      "reason": "Prefer one focused Challenge covering the reflected attribute context and cross-user browser behavior rather than splitting a single exploit into artificial questions.",
+      "challenges": [
+        {
+          "key": "wondercms-attribute-xss",
+          "title": "Reflected attribute XSS",
+          "primary_skill": "xss.reflected-attribute",
+          "secondary_skills": [
+            "xss.cross-user-action"
+          ],
+          "dependency_on": [],
+          "flag_status": "not_designed",
+          "implementation_status": "proposal_only"
+        }
+      ]
+    },
+    {
+      "lab_id": "django-debug-xss",
+      "status": "proposal_only",
+      "reason": "Keep this as a focused beginner Challenge; multiple related XSS skills can be mapped to one Challenge.",
+      "challenges": [
+        {
+          "key": "django-debug-error-xss",
+          "title": "Debug error page XSS",
+          "primary_skill": "xss.reflected",
+          "secondary_skills": [
+            "xss.reflected-html"
+          ],
+          "dependency_on": [],
+          "flag_status": "not_designed",
+          "implementation_status": "proposal_only"
+        }
+      ]
+    },
+    {
+      "lab_id": "alert",
+      "status": "proposal_only",
+      "reason": "Keep the existing composite challenge until the complete Web Flag path is accepted; its component skills can still be mapped to one Challenge.",
+      "challenges": [
+        {
+          "key": "alert-markdown-xss",
+          "title": "Markdown sharing and stored XSS",
+          "primary_skill": "xss.stored",
+          "secondary_skills": [
+            "xss.cross-user-action",
+            "file_read.path-traversal"
+          ],
+          "dependency_on": [],
+          "flag_status": "not_designed",
+          "implementation_status": "proposal_only"
+        }
+      ]
+    },
+    {
+      "lab_id": "headless",
+      "status": "proposal_only",
+      "reason": "Do not split or publish while the Lab's full development acceptance remains incomplete.",
+      "challenges": [
+        {
+          "key": "headless-blind-xss",
+          "title": "Support report review",
+          "primary_skill": "xss.blind",
+          "secondary_skills": [
+            "xss.cross-user-action"
+          ],
+          "dependency_on": [],
+          "flag_status": "not_designed",
+          "implementation_status": "proposal_only"
+        },
+        {
+          "key": "headless-dashboard",
+          "title": "Dashboard report generation",
+          "primary_skill": "command_injection.basic-rce",
+          "secondary_skills": [],
+          "dependency_on": [
+            "headless-blind-xss"
+          ],
+          "flag_status": "not_designed",
+          "implementation_status": "proposal_only"
+        }
+      ]
+    }
+  ]
 }
