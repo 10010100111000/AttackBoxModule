@@ -299,6 +299,8 @@ jobs:
               test -s /root/root.txt
             '
             echo "PASS: Headless homepage, support form, ordinary user authorization, Chromium reviewer, SSH listener and per-instance flag files"
+            docker image inspect "$IMAGE" --format='HEADLESS_IMAGE_SIZE_BYTES={{.Size}}'
+            docker stats --no-stream --format='HEADLESS_IDLE_MEMORY={{.MemUsage}}' "$test_container"
           fi
       - name: Publish tested image
         if: github.event_name == 'workflow_dispatch'
