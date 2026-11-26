@@ -40,6 +40,7 @@ jobs:
           echo "Flag generation and same-version idempotency: PASS"
 
       - name: Verify manifest, target seed and Challenge answer
+        id: release
         env:
           RELEASE_VERSION: ${{ inputs.version }}
         run: |
