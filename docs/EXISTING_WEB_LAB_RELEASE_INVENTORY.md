@@ -50,7 +50,7 @@ This table is generated from the same state recorded in `catalog/web-curriculum.
 | `union` | `full_chain_ci` | `not_assessed` |
 | `validation` | `full_chain_ci` | `not_assessed` |
 | `funnel` | `partial` | `not_assessed` |
-| `django-debug-xss` | `full_chain_ci` | `not_assessed` |
+| `django-debug-xss` | `full_chain_ci` | `blocked_by_marker` |
 | `wondercms-xss` | `full_chain_ci` | `blocked_by_marker` |
 | `usage` | `full_chain_ci` | `blocked_by_marker` |
 | `nodeblog` | `full_chain_ci` | `blocked_by_marker` |
