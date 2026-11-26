@@ -8,7 +8,7 @@ ROOT = Path(__file__).resolve().parents[1]
 LAB = ROOT / "labs" / "nodeblog"
 FLAGS = LAB / "flags"
 RELEASES = FLAGS / "releases"
-VERSION_RE = re.compile(r"^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$")
+VERSION_RE = re.compile(r"^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(?:-[a-z0-9]+(?:[.-][a-z0-9]+)*)?$")
 FLAG_RE = re.compile(r"^TTP\{[a-z2-7]{16}\}$")
 FENCE = chr(96) * 3
 
