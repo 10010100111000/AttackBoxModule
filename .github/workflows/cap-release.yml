@@ -73,6 +73,29 @@ jobs:
           print("Manifest, target seed files, and Challenge answers match: PASS")
           PY
 
+      - name: Build and smoke the target with the generated Flags
+        run: |
+          set -euo pipefail
+          docker build --pull --progress=plain -t ttp-cap:release -f labs/cap/Dockerfile labs/cap
+          docker run -d --name cap-release --network none --memory 160m --cpus 1 --pids-limit 128 ttp-cap:release
+          cleanup() { docker logs cap-release 2>/dev/null || true; docker rm -f cap-release 2>/dev/null || true; docker image rm ttp-cap:release 2>/dev/null || true; }
+          trap cleanup EXIT
+          ready=0
+          for attempt in $(seq 1 60); do
+            state=$(docker inspect -f '{{.State.Status}}' cap-release)
+            health=$(docker inspect -f '{{.State.Health.Status}}' cap-release)
+            if [ "$state" != running ] || [ "$health" = unhealthy ]; then
+              echo "Cap target failed startup/health"
+              exit 1
+            fi
+            if [ "$health" = healthy ]; then ready=1; break; fi
+            sleep 2
+          done
+          test "$ready" = 1
+          docker stats --no-stream --format 'Cap memory={{.MemUsage}} PIDs={{.PIDs}}' cap-release
+          docker image inspect ttp-cap:release --format='Cap image bytes={{.Size}}'
+          echo "Cap target built and became healthy with generated release Flags: PASS"
+
       - name: Commit generated release artifacts
         env:
           RELEASE_VERSION: ${{ github.event.inputs.version || '0.1.0' }}
