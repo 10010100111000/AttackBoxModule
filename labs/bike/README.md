@@ -37,7 +37,7 @@ curl -s -X POST --data-urlencode 'email=test@example.com' http://127.0.0.1:8080/
 curl -i -X POST --data-urlencode 'email={{7*7}}' http://127.0.0.1:8080/
 ```
 
-PDF 的 `POST /`、`email` 参数与 Handlebars 模板注入已复现。`/root/flag.txt` 是示例 flag，不是原题真实 flag。页面风格相近，非原站点像素级复刻。Node.js / Handlebars 故意使用可兼容旧链路的组合，含已知安全缺陷。请勿升级 Handlebars 后仍期待漏洞成立。
+PDF 的 `POST /`、`email` 参数与 Handlebars 模板注入已复现。`/root/flag.txt` 由 TTP 的版本化发布流程生成随机 Flag；它不是 HTB 原题的静态 Flag。页面风格相近，非原站点像素级复刻。Node.js / Handlebars 故意使用可兼容旧链路的组合，含已知安全缺陷。请勿升级 Handlebars 后仍期待漏洞成立。
 
 ## 停止、删除
 
@@ -66,10 +66,10 @@ EXPECTED_FLAG='TTP{your_local_flag}' python3 verify_ssti.py --url http://127.0.0
 
 只有上述四项全部通过，才算验证了 PDF 中的完整 SSTI 利用链。脚本默认只接受 `localhost` 或 `127.0.0.1`；只有设置 `ALLOW_INTERNAL_TARGET=1` 时才接受 CI 专用的 `bike-target:80` 内部网络地址。不要把漏洞服务暴露到公网。
 
-> 环境说明：此项目的源码与测试脚本已完成静态语法检查；若构建环境未提供 Docker / npm 网络访问，则需要在实际构建镜像并运行后执行上述端到端验证。`HEALTHCHECK` 仅监测 HTTP/SSH 服务可用性，不主动执行漏洞利用验证。
+> CI 说明：每次端到端工作流都会生成一个新的随机 CI Flag，并在独立攻击端通过 HTTP 实际读取该 Flag。普通 healthcheck 只负责服务可用性，不代替漏洞路径测试。
 
 ## CI 与 Flag 发布
 
-- `.github/workflows/bike.yml`：构建镜像、等待 Web/SSH 健康检查，并启动独立攻击端容器，通过真实 SSTI 请求读取目标 Flag。CI 不通过 `docker exec` 进入靶机，也不挂载目标文件系统。
+- `.github/workflows/bike.yml`：每次运行先生成新的随机 CI Flag，再构建镜像、等待 Web/SSH 健康检查，并启动独立攻击端容器，通过真实 SSTI 请求读取并比对该 Flag。CI 不通过 `docker exec` 进入靶机，也不挂载目标文件系统。
 - `scripts/generate_bike_release.py` 与 `.github/workflows/bike-release.yml`：按版本生成随机 80-bit Flag，保存 Manifest，并同步 `flags/root.txt` 与 Challenge 答案。同一版本重跑会复用原 Flag，新版本才轮换。
 - 普通构建/健康检查与完整 Web 攻击路径分开记录；完整路径只有独立攻击端实际取回正确 Flag 才算通过。
