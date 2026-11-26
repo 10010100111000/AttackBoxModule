@@ -4,6 +4,8 @@ Current policy (2026-11-25): CI only checks build, startup, health and ordinary 
 No automated exploitation, Flag-retrieval or privilege-chain CI is required.
 Historical CI evidence stays in the catalog; it does not become manual acceptance.
 
-当前待验收事项：人工题目流程与重置记录、实际 Worker/Web 集成尚需验收；靶机内 Bot 不交由 Worker 管理。
+已完成：GitHub Actions 手动验收 Run #45874359031。两个独立实例分别使用不同随机 Flag，均通过真实 Stored XSS → 管理员 Chromium → loopback-only PHP 路径遍历 → 外部玩家 HTTP callback，返回各自正确 Flag。
+
+仍待验收：Worker 启动/停止/重置、AttackBox Challenge Flag 提交与判题。靶机内 Bot 不交由 Worker 管理。
 
 需先补实际人工验收和平台证据，再经明确批准解除限制；不得将脆弱服务暴露到公网。
