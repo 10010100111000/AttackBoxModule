@@ -1,0 +1,140 @@
+name: Bike real SSTI end-to-end acceptance
+
+on:
+  pull_request:
+    paths:
+      - "labs/bike/**"
+      - "challenges/startpoint/bike/**"
+      - "scripts/generate_bike_release.py"
+      - ".github/workflows/bike.yml"
+      - ".github/workflows/bike-release.yml"
+  push:
+    branches: [main]
+    paths:
+      - "labs/bike/**"
+      - "challenges/startpoint/bike/**"
+      - "scripts/generate_bike_release.py"
+      - ".github/workflows/bike.yml"
+      - ".github/workflows/bike-release.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  bike-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate a fresh random Flag for this CI instance
+        env:
+          RELEASE_VERSION: 0.0.0-ci.${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          python3 scripts/generate_bike_release.py --version "$RELEASE_VERSION"
+
+      - name: Verify target Flag and Challenge answer match
+        id: flag
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os
+          import pathlib
+          import re
+
+          flag = pathlib.Path("labs/bike/flags/root.txt").read_text().strip()
+          challenge = pathlib.Path("challenges/startpoint/bike/Bike.md").read_text()
+          matches = re.findall(r'(?m)^answer: "([^"]+)"$', challenge)
+          assert re.fullmatch(r"TTP\{[a-z2-7]{16}\}", flag), "Bike Flag is not a versioned random TTP Flag"
+          assert matches == [flag], "Bike target Flag and Challenge answer differ"
+          print("Bike target seed and Challenge answer match.")
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              output.write(f"expected={flag}\n")
+          print(f"::add-mask::{flag}")
+          PY
+
+      - name: Syntax-check independent player and CI scripts
+        run: python3 -m py_compile labs/bike/exploit.py labs/bike/verify_ssti.py scripts/generate_bike_release.py
+
+      - name: Build the real Handlebars 4.1.1 target
+        run: docker build --pull --progress=plain -t ttp-bike:e2e -f labs/bike/Dockerfile labs/bike
+
+      - name: Pull isolated HTTP player image
+        run: docker pull python:3.12-alpine
+
+      - name: Create private test network
+        run: docker network create --internal bike-e2e
+
+      - name: Start target with production-like resource limits
+        run: |
+          docker run -d \
+            --name bike-target \
+            --network bike-e2e \
+            --network-alias bike-target \
+            --memory 700m --cpus 1.5 --pids-limit 160 \
+            --security-opt no-new-privileges \
+            ttp-bike:e2e
+
+      - name: Wait for Web and SSH health
+        shell: bash
+        run: |
+          set -euo pipefail
+          ready=0
+          for attempt in $(seq 1 60); do
+            state=$(docker inspect -f '{{.State.Status}}' bike-target)
+            health=$(docker inspect -f '{{.State.Health.Status}}' bike-target)
+            if [ "$state" != running ] || [ "$health" = unhealthy ]; then
+              docker logs bike-target
+              exit 1
+            fi
+            if [ "$health" = healthy ]; then ready=1; break; fi
+            sleep 2
+          done
+          test "$ready" = 1
+
+      - name: Run independent network-only player through the real SSTI Flag path
+        env:
+          EXPECTED_FLAG: ${{ steps.flag.outputs.expected }}
+        run: |
+          set -euo pipefail
+          docker run --rm \
+            --network bike-e2e \
+            -v "$GITHUB_WORKSPACE/labs/bike/verify_ssti.py:/verify_ssti.py:ro" \
+            -e ALLOW_INTERNAL_TARGET=1 \
+            -e EXPECTED_FLAG \
+            python:3.12-alpine \
+            python /verify_ssti.py --url http://bike-target:80
+
+      - name: Verify the documented standalone player exploit
+        env:
+          EXPECTED_FLAG: ${{ steps.flag.outputs.expected }}
+        run: |
+          set -euo pipefail
+          output=$(docker run --rm \
+            --network bike-e2e \
+            -v "$GITHUB_WORKSPACE/labs/bike/exploit.py:/exploit.py:ro" \
+            python:3.12-alpine python /exploit.py --url http://bike-target:80)
+          printf '%s\n' "$output" | grep -F "$EXPECTED_FLAG" >/dev/null
+          echo "Standalone writeup exploit retrieved the exact instance Flag: PASS"
+
+      - name: Capture target image and resource profile
+        if: always()
+        run: |
+          docker image inspect ttp-bike:e2e --format='IMAGE_SIZE_BYTES={{.Size}}' || true
+          docker stats --no-stream bike-target || true
+          docker logs bike-target || true
+
+      - name: Clean up isolated environment
+        if: always()
+        run: |
+          docker rm -f bike-target 2>/dev/null || true
+          docker network rm bike-e2e 2>/dev/null || true
+          docker image rm ttp-bike:e2e 2>/dev/null || true
+
+      - name: Record acceptance scope
+        if: success()
+        run: |
+          echo "PASS: external HTTP player reached the real Handlebars 4.1.1 template compilation path, executed a command as the target Web process, and retrieved the exact versioned root Flag." >> "$GITHUB_STEP_SUMMARY"
+          echo "The test client had no Docker socket or target filesystem mount. The target and attacker shared only an internal Docker network." >> "$GITHUB_STEP_SUMMARY"

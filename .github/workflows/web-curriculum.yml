@@ -10,9 +10,19 @@ on:
       - "docs/EXISTING_WEB_LAB_RELEASE_INVENTORY.md"
       - "README.md"
       - "scripts/validate_web_curriculum.py"
+      - "scripts/generate_bike_release.py"
+      - "labs/bike/**"
+      - "challenges/startpoint/bike/**"
+      - ".github/workflows/bike.yml"
+      - ".github/workflows/bike-release.yml"
       - "scripts/generate_nodeblog_release.py"
       - "scripts/generate_django_debug_release.py"
       - "scripts/generate_cap_release.py"
+      - "scripts/generate_bike_release.py"
+      - "labs/bike/**"
+      - "challenges/startpoint/bike/**"
+      - ".github/workflows/bike.yml"
+      - ".github/workflows/bike-release.yml"
       - "labs/cap/flags/**"
       - "challenges/idor/cap-packet-drop/**"
       - "challenges/linux-privilege-escalation/cap-setuid/**"
@@ -44,6 +54,28 @@ jobs:
       - uses: actions/checkout@v4
       - name: Validate Academy taxonomy, existing labs and planned scenarios
         run: python3 scripts/validate_web_curriculum.py
+      - name: Check Bike versioned Flag generator and answer consistency
+        run: |
+          set -euo pipefail
+          python3 scripts/generate_bike_release.py --version 0.0.0-ci
+          manifest=labs/bike/flags/releases/0.0.0-ci.json
+          before=$(sha256sum "$manifest" | cut -d' ' -f1)
+          python3 scripts/generate_bike_release.py --version 0.0.0-ci
+          after=$(sha256sum "$manifest" | cut -d' ' -f1)
+          test "$before" = "$after"
+          python3 - <<'PY'
+          import json, pathlib, re
+          manifest = json.loads(pathlib.Path("labs/bike/flags/releases/0.0.0-ci.json").read_text())
+          flag = manifest["flag"]
+          assert flag.startswith("TTP{") and flag.endswith("}") and len(flag) == 21 and all(ch in "abcdefghijklmnopqrstuvwxyz234567" for ch in flag[4:-1])
+          assert pathlib.Path("labs/bike/flags/root.txt").read_text().strip() == flag
+          challenge = pathlib.Path("challenges/startpoint/bike/Bike.md").read_text()
+          assert challenge.count(f'answer: "{flag}"') == 1
+          assert challenge.count("kind: flag") == 1
+          assert "lab: bike" in challenge
+          print("Bike random Flag, stable release manifest and Challenge answer: PASS")
+          PY
+
       - name: Check Cap Flag generator determinism and Challenge answer consistency
         run: |
           set -euo pipefail
@@ -84,7 +116,7 @@ jobs:
           import json, pathlib, re
           manifest = json.loads(pathlib.Path("labs/django-debug-xss/flags/releases/0.0.0-ci.json").read_text())
           flag = manifest["flag"]
-          assert re.fullmatch(r"TTP\{[a-z2-7]{16}\}", flag)
+          assert flag.startswith("TTP{") and flag.endswith("}") and len(flag) == 21 and all(ch in "abcdefghijklmnopqrstuvwxyz234567" for ch in flag[4:-1])
           assert pathlib.Path("labs/django-debug-xss/flags/user.txt").read_text().strip() == flag
           challenge = pathlib.Path("challenges/xss/harbor-registry/Harbor-Lights.md").read_text()
           assert challenge.count(f'answer: "{flag}"') == 1

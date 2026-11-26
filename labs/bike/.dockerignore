@@ -2,3 +2,8 @@ node_modules
 .git
 *.zip
 *.log
+README.md
+writeup.md
+exploit.py
+verify_ssti.py
+flags/releases
