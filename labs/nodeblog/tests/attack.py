@@ -40,10 +40,10 @@ def post_form(path, value):
 def upload_xml(xml):
     boundary = "nodeblog-real-xxe"
     data = (
-        "--" + boundary + "\\r\\n"
-        'Content-Disposition: form-data; name="file"; filename="post.xml"\\r\\n'
-        "Content-Type: application/xml\\r\\n\\r\\n" +
-        xml + "\\r\\n--" + boundary + "--\\r\\n"
+        "--" + boundary + "\r\n"
+        'Content-Disposition: form-data; name="file"; filename="post.xml"\r\n'
+        "Content-Type: application/xml\r\n\r\n" +
+        xml + "\r\n--" + boundary + "--\r\n"
     ).encode()
     return send("/articles/xml", data,
                 {"Content-Type": "multipart/form-data; boundary=" + boundary})
