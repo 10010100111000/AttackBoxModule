@@ -1,120 +1,95 @@
-# Existing Web Lab Inventory and Release Readiness
+# main 分支现有靶机清单
 
-**Snapshot:** 2026-11-27  
-**Scope:** Existing Labs only. No new Lab research or implementation is authorized by this inventory.
+**快照日期：2026-11-27**  
+**基准提交：** `bb3d62f3f8f96ded4eb34b16ba2561a4a1e0f678`  
+**范围：** 只盘点 `main` 已有的 Lab 代码、Challenge 内容、CI 证据与尚未完成的靶机本身。不管理 Worker、平台同步或生产发布流程。
 
-## Executive summary
+## 总览
 
-The curriculum catalog currently contains 27 Lab records:
+当前目录清单有 **27 台 Lab**：
 
-| Catalog CI state | Count | Meaning |
-| --- | ---: | --- |
-| \`full_chain_ci\` | 17 | README/catalog records independent end-to-end CI evidence |
-| \`partial\` | 5 | Some real behavior is tested, but the complete intended chain is not proven |
-| \`unverified\` | 5 | No sufficient end-to-end CI evidence recorded |
+| main 中记录的 CI 状态 | 数量 | 含义 |
+|---|---:|---|
+| `full_chain_ci` | 17 | 保留了历史完整目标链 CI 证据；不代表当前 CI 会继续自动执行攻击链 |
+| `partial` | 6 | 已有部分真实功能或目标行为检查，仍有靶机内容/目标路径缺口 |
+| `unverified` | 4 | 尚无足够的靶机目标验证记录 |
 
-Important cross-cutting status:
-- **Worker integration:** all 27 catalog records currently say \`not_verified\`.
-- **Manual acceptance:** all 27 records currently say \`not_reviewed\`.
-- **Platform challenge sync:** must be checked per Challenge; a Lab CI pass does not prove Markdown import, Flag grading, target binding or user progress.
-- **Release markers:** 10 Labs currently have \`.release-blocked\` markers: Alert, Editorial, Precious, WonderCMS XSS, Usage, NodeBlog, Zipping, Soccer, Trick and Intense.
-- A \`full_chain_ci\` label means the documented disposable CI path passed; it does not mean the Lab is ready for public release.
+另有 **10 台**保留 `.release-blocked` 标记。该标记不是 CI 结果，也不等同于靶机代码不存在；未完成原因应以各自 README 和标记文件为准。
 
-## A. First candidates for platform onboarding
+### 最近更新：Precious
 
-These have full-chain CI evidence in the catalog and no current release-block marker. They are the best candidates for the next platform integration pass, subject to reviewing each workflow and confirming the evidence still matches the current main commit.
+Precious 已在 `bb3d62f` 合并 main。以下两个工作流均成功：
 
-| Lab | Main Web learning objective | Recorded CI evidence | Remaining gate / note |
-| --- | --- | --- | --- |
-| Nibbles | Nibbleblog plugin upload / CMS RCE | [Run 44954697830](https://github.com/10010100111000/AttackBoxModule/actions/runs/44954697830) | Worker lifecycle, target resource/network profile, platform Flag submission |
-| Bashed | Exposed phpbash interface discovery | [Run 45073735584](https://github.com/10010100111000/AttackBoxModule/actions/runs/45073735584) | Worker lifecycle and platform grading |
-| Cap | IDOR / direct object access | [Run 45073735596](https://github.com/10010100111000/AttackBoxModule/actions/runs/45073735596) | Worker lifecycle and platform grading |
-| Photobomb | ImageMagick command injection | [Run 45073735570](https://github.com/10010100111000/AttackBoxModule/actions/runs/45073735570) | Worker lifecycle and platform grading |
-| Shocker | Bash CGI Shellshock | [Run 44955028484](https://github.com/10010100111000/AttackBoxModule/actions/runs/44955028484) | Worker lifecycle and platform grading |
-| Bountyhunter | Real SimpleXML XXE | [Run 45166657846](https://github.com/10010100111000/AttackBoxModule/actions/runs/45166657846) | Worker lifecycle and platform grading |
-| OpenAdmin | ONA xajax RCE / service pivot | [Run 45166657718](https://github.com/10010100111000/AttackBoxModule/actions/runs/45166657718) | Worker lifecycle and platform grading |
-| Validation | Second-order SQLi / MariaDB FILE | [Run 45166657712](https://github.com/10010100111000/AttackBoxModule/actions/runs/45166657712) | Worker lifecycle and platform grading |
-| Pebbles | ZoneMinder SQLi / DB file operations | [Workflow evidence](../.github/workflows/pebbles-full.yml) | Historical stack and Worker compatibility need careful review |
-| Django Debug XSS | Django technical-500 XSS / authenticated headless editor | [Run 45233000605](https://github.com/10010100111000/AttackBoxModule/actions/runs/45233000605) | Worker browser/network/resource profile and platform grading |
+- [Precious 专属普通功能 CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/45889383302)
+- [Lab 镜像构建工作流](https://github.com/10010100111000/AttackBoxModule/actions/runs/45889383313)
 
-**Suggested order:** Nibbles, Cap, Bashed, Photobomb, Shocker, Bountyhunter, OpenAdmin, Validation, Django Debug XSS, then Pebbles. This order favours focused Web objectives and avoids beginning with the more unusual resource/capability profile.
+已确认的范围：镜像构建、容器启动、healthcheck、PDFKit 0.8.6 版本检查、首页和普通 HTML 转 PDF。**没有自动执行命令注入或读取 Flag**，因此目录状态记为 `partial`，不是完整漏洞链通过。预期 Web Flag 路径仍未人工确认。
 
-## B. Full-chain CI passed, but release marker remains
+## 现有靶机状态
 
-These are not new-development candidates. Their next work is specific release-gate closure.
+### 已有完整目标链 CI 记录（17 台）
 
-| Lab | Verified Web path | Recorded evidence | Explicit remaining issue |
-| --- | --- | --- | --- |
-| Editorial | SSRF → internal API → SSH/Git history → GitPython UID 0 | [Run 45180593763](https://github.com/10010100111000/AttackBoxModule/actions/runs/45180593763) | Worker network isolation and required target capability/resource profile |
-| Usage | Boolean/time SQLi → Laravel Admin upload → Web/Linux chain | [Run 45386437038](https://github.com/10010100111000/AttackBoxModule/actions/runs/45386437038) | Worker integration; reconstruction differences must remain visible in challenge notes |
-| NodeBlog | NoSQLi → XXE → node-serialize RCE | [Historical run 45466022851](https://github.com/10010100111000/AttackBoxModule/actions/runs/45466022851) | New three-Flag acceptance passed manually in run [45809898571](https://github.com/10010100111000/AttackBoxModule/actions/runs/45809898571); sync three Challenges and verify platform binding/progress |
-| Zipping | ZIP symlink → SQLi/FILE → PHP include | [Run 45471673982](https://github.com/10010100111000/AttackBoxModule/actions/runs/45471673982) | Confirm the direct symlink Flag path is reflected in the intended Challenge; retain documented extractor divergence |
-| Soccer | Tiny File Manager → vhost discovery → WebSocket blind SQLi | [Run 45478649027](https://github.com/10010100111000/AttackBoxModule/actions/runs/45478649027) | Worker network/port exposure and platform grading |
-| WonderCMS XSS | Real WonderCMS reflected attribute XSS → admin browser → Flag callback | [Run 45229393592](https://github.com/10010100111000/AttackBoxModule/actions/runs/45229393592) | Worker browser sandbox/network/resource acceptance |
-| Alert | Stored Markdown XSS → Chromium → loopback reader | [Run 45474730425](https://github.com/10010100111000/AttackBoxModule/actions/runs/45474730425) | Actual Web Flag extraction is not yet proven; must finish before onboarding |
-| Precious | Native PDFKit 0.8.6 command injection | Pending | Full HTTP-only Flag extraction acceptance not yet passed |
-| Trick | DNS/SQLi/LFI/SSH/Fail2ban chain | Pending | Independent CI and Worker verification |
-| Intense | SQLite conditional-error SQLi → session forgery → path traversal | Pending | Initial implementation only; build and complete acceptance required |
+| Lab | 主要技术/目标 | 备注 |
+|---|---|---|
+| Bashed | phpbash 暴露入口、sudo/cron | 原版 phpbash 组件 |
+| Bountyhunter | SimpleXML XXE、凭据与后续服务链 | 真实 XML 解析器 |
+| Cap | IDOR、PCAP、凭据复用、Linux capability | 已拆分为 Packet Drop / Setuid Surprise 两个 Challenge |
+| Django Debug XSS | Django 1.11.4 技术错误页 XSS | 有真实浏览器与版本负向对照记录 |
+| Nibbles | Nibbleblog 插件上传 | 真实 Nibbleblog 4.0.3 |
+| OpenAdmin | OpenNetAdmin xajax RCE | 真实 ONA 18.1.1 |
+| Pebbles | ZoneMinder SQLi、数据库文件操作 | 历史依赖栈较复杂 |
+| Photobomb | ImageMagick 命令注入 | Sinatra / ImageMagick |
+| Shocker | Bash CGI Shellshock | 真实 GNU Bash 4.3 |
+| Union | MariaDB UNION / LOAD_FILE | 后续链涉及网络权限边界 |
+| Validation | 二阶 SQLi、MariaDB FILE | 真实 MariaDB 与 PHP |
+| Editorial | SSRF、内部 API、GitPython | 有 `.release-blocked` |
+| Usage | Laravel password recovery SQLi | 有 `.release-blocked` |
+| NodeBlog | MongoDB NoSQLi、XXE、node-serialize | Web-only，多阶段 Challenge；有 `.release-blocked` |
+| Zipping | ZIP symlink、SQLi/FILE、PHP LFI | 使用的解压组件与原题存在差异；有 `.release-blocked` |
+| Soccer | Tiny File Manager、WebSocket blind SQLi | Web-only；有 `.release-blocked` |
+| WonderCMS XSS | WonderCMS 属性上下文 XSS、管理员浏览器 | 有 `.release-blocked` |
 
-## C. Partial implementation: finish or consciously narrow scope
+这里的 `full_chain_ci` 是历史目录字段，保留其原始证据含义。当前 CI 规范已经调整为构建、启动、健康检查和普通功能检查，不再把自动攻击链作为 CI 要求。
 
-| Lab | Existing real implementation | What is missing |
-| --- | --- | --- |
-| Bike | Handlebars 4.1.2 SSTI | Independent full-chain test of the intended expression/object-access path |
-| GoodGames | Login SQLi → stored Jinja2 SSTI | Complete independent Web Flag acceptance; keep its deliberate Web-only scope |
-| Devvortex | Joomla 4.2.6 information disclosure | Complete the actual intended Web path; Apport Root is not yet accepted |
-| Base | PHP 7.2 strcmp authentication and upload | Independent test proving the real login/upload sequence and Flag reachability |
-| Funnel | FTP/SSH/PostgreSQL tunnel | Decide whether to keep in Web catalogue or classify under network services; verify its actual objective |
+### 部分完成（6 台）
 
-## D. Unverified / not yet suitable for onboarding
+| Lab | 已有内容 | 仍需处理的靶机工作 |
+|---|---|---|
+| Alert | Markdown 存储型 XSS、真实 Chromium 管理员浏览器、内部文件读取 | Web Flag 目标路径仍需人工确认；有 `.release-blocked` |
+| Bike | Handlebars 4.1.2 SSTI | 核对真实模板上下文、题目目标与说明 |
+| Devvortex | Joomla 4.2.6 信息泄露 | 明确并完成 Web 专项目标；不要默认追加 Linux Root |
+| GoodGames | 登录 SQLi、凭据线索、存储型 Jinja2 SSTI | 整理单 Web Flag 目标与完整 Challenge/Writeup |
+| Funnel | FTP、SSH、PostgreSQL 隧道 | 属于非 Web 服务链，单独标识其题库归类与目标 |
+| Precious | PDFKit 0.8.6 命令注入 Web-only 重建 | 普通功能 CI 已通过；漏洞目标与 Web Flag 路径尚未人工确认；有 `.release-blocked` |
 
-| Lab | Catalog observation | Next action |
-| --- | --- | --- |
-| Cursed Stale Policy | CSP/XSS/WebSocket code exists; no confirmed browser attack-chain acceptance | Inspect the real intended flow; do not count CSP bypass as covered until proven |
-| Precious | Native PDFKit code is implemented, but no successful independent acceptance recorded | Run the dedicated manual acceptance before any release decision |
-| Trick | Full reconstruction exists, but no independent CI evidence recorded | Build and validate the actual chain in a disposable runner |
-| Intense | Initial Web-only implementation; no build/manual/Worker acceptance | Finish basic startup, then HTTP-only end-to-end test |
-| Base | Basic implementation, no full acceptance | Add an external test client and verify the actual login/upload route |
+### 尚未充分验证（4 台）
 
-Note: Precious, Trick and Intense are also listed in the blocked-marker section above; this section describes their technical acceptance state, not an additional Lab count. Base is listed under partial implementation because the source/catalog records a concrete implementation but no CI proof.
+| Lab | 当前实现 | 下一步关注 |
+|---|---|---|
+| Base | PHP 7.2 strcmp 认证逻辑、文件上传 | 明确真实请求处理和 Flag 目标 |
+| Cursed Stale Policy | CSP、XSS、WebSocket 相关代码 | 先核对实际浏览器行为，不把代码存在当成漏洞已成立 |
+| Trick | DNS、PHP、MariaDB、LFI、Fail2ban 等真实服务 | 当前实现较复杂，先整理正常业务与题目范围，再补基础工程检查 |
+| Intense | Flask、SQLite 条件错误、LWT 会话、路径遍历 | Web-only 初始实现；先完成构建、启动与普通功能 |
 
-## E. Current coverage gaps using existing Labs
+## 接下来只处理 main 已有靶机
 
-Before creating anything new, reuse and split existing targets into multiple Challenges where the real application surfaces support it:
+建议顺序：
 
-- **XSS:** Alert, WonderCMS XSS, Django Debug XSS. Add separate Challenges for distinct real contexts only after each path is validated.
-- **SQLi:** Usage, NodeBlog, Zipping, Soccer, Union, Validation, Pebbles, GoodGames. Prefer distinct variants (blind, second-order, file operations, WebSocket) over more generic SQLi Labs.
-- **SSRF:** Editorial already covers basic and internal enumeration. Do not create another basic SSRF target before a distinct bypass/Blind SSRF candidate is necessary.
-- **SSTI:** Bike and GoodGames already provide two different real template engines/contexts; finish them before adding another.
-- **XXE:** Bountyhunter and NodeBlog already cover distinct PHP/libxml2 paths; NodeBlog also has its own cumulative Challenge model.
-- **IDOR:** Cap is an existing candidate; inspect whether its current Challenge and Flag expose the authorization boundary clearly.
-- **File upload / file read:** Nibbles, Zipping, Soccer and Base offer different parser, CMS, and foothold contexts.
+1. **Precious**：保留已通过的普通 CI，后续只补题目说明和实际 Web 目标路径缺口；不重新制作。
+2. **Bike**：核对 Handlebars 真实模板行为，完善题面和 Writeup。
+3. **GoodGames**：整理 SQLi → Jinja2 SSTI 的自然探索路径与单 Flag 目标。
+4. **Devvortex**：明确 Web-only 目标，不把原题 Linux 后半段强加进来。
+5. **Base**：补清楚认证与上传两部分的实际功能和题目目标。
+6. **Intense / Trick**：先处理复杂实现的基础工程与文档，不扩展新功能。
 
-The current backlog has 35 tracked learning objectives, including several already implemented by these Labs. Do not create a new Lab simply because a backlog item exists; first map it to an existing Lab and determine whether a separate Challenge can teach it.
+这只是 main 现有资产的处理顺序，不代表上述靶机已经全部通过人工漏洞验收。完成一台后，再按实际差异更新本清单和 `catalog/web-curriculum.json`。
 
-## F. Standard onboarding checklist
+## 维护规则
 
-A Lab is eligible for platform onboarding only when its relevant checks are complete:
-
-1. **Source fidelity:** affected real component/version and any reconstruction differences documented.
-2. **Build/start:** deterministic image build, service health, no hidden manual setup.
-3. **Player proof:** a separate HTTP/VPN-only player reaches the actual Flag through the intended vulnerable path. No target \`docker exec\`, no fake exploit endpoint.
-4. **Flag contract:** Flag is placed in a real application/business data location appropriate to the vulnerability (database row, user/order record, API response, admin-visible content, template context, uploaded object or local file); generated/seeded value equals the Challenge answer; restart/reset semantics are known. Local-file Flags are only required when file access is part of the learning objective.
-5. **Resource profile:** image size, idle/active memory, CPU/process use and required ports measured.
-6. **Worker smoke:** start, inspect, stop, reset, per-user isolation and special capabilities checked against the real Worker.
-7. **AttackBox sync:** Challenge Markdown imports; correct target template; expected Flag stage count; independent per-user/per-Challenge progress.
-8. **Release decision:** remove \`.release-blocked\` only after the above gates pass.
-
-CI policy:
-- Ordinary PR CI: syntax, taxonomy, build, startup, health and non-offensive regression only.
-- Dedicated manual disposable-runner acceptance: real intended player path, using an isolated test client and fresh targets.
-- No production server is used for development acceptance.
-
-## G. Immediate execution plan
-
-1. Finish Alert's actual Flag extraction acceptance.
-2. Complete the NodeBlog three-Challenge content sync already designed; its manual three-Flag acceptance has passed.
-3. Select the first 3–5 Labs from section A and verify Worker lifecycle/resource compatibility.
-4. Import those Challenge documents into AttackBox and confirm target template + Flag grading.
-5. Continue in batches; do not start Open WebUI, VAmPI or other new Lab implementations until the existing inventory has been triaged.
-
+- `catalog/web-curriculum.json` 是 Lab 状态、候选与 backlog 的结构化主清单。
+- `catalog/web-competencies.json` 是技能分类和验收目标的唯一来源。
+- `labs/<slug>/README.md` 记录该 Lab 的真实组件版本、部署、功能和已知差异。
+- `challenges/` 存放玩家题面；适合的题目附带 `writeup.md`。
+- CI 只检查构建、启动、healthcheck 和普通功能，不添加自动攻击链、自动 Flag 提取或模拟漏洞。
+- 不因为 CI 普通功能通过就把漏洞利用路径标记为已人工验收。
+- 暂停新增 Lab；优先完成以上 main 已有靶机。
