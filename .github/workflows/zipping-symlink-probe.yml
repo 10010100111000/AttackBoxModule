@@ -1,0 +1,81 @@
+name: Zipping direct Flag symlink probe
+
+# Disposable, internal-network-only diagnostic for a suspected shortcut.
+# It does not alter the lab image or run on a production target.
+on:
+  pull_request:
+    paths:
+      - "labs/zipping/**"
+      - ".github/workflows/zipping-symlink-probe.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  symlink-flag-probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build the unchanged Zipping target
+        run: docker build --pull -t ttp-zipping:symlink-probe labs/zipping
+
+      - name: Pull disposable test client
+        run: docker pull python:3.12-alpine
+
+      - name: Create internal-only network
+        run: docker network create --internal zipping-probe
+
+      - name: Start isolated target with a recognizable test Flag
+        run: |
+          docker run -d \
+            --name zipping-probe-target \
+            --network zipping-probe \
+            --network-alias zipping \
+            --memory 1g --cpus 1.5 --pids-limit 240 \
+            --security-opt no-new-privileges \
+            -e ZIPPING_USER_FLAG='TTP{zipping_symlink_probe_2026}' \
+            ttp-zipping:symlink-probe
+
+      - name: Wait for target health
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 120); do
+            state=$(docker inspect -f '{{.State.Status}}' zipping-probe-target)
+            health=$(docker inspect -f '{{.State.Health.Status}}' zipping-probe-target)
+            if [ "$state" != "running" ]; then docker logs zipping-probe-target; exit 1; fi
+            if [ "$health" = "healthy" ]; then exit 0; fi
+            if [ "$health" = "unhealthy" ]; then docker logs zipping-probe-target; exit 1; fi
+            sleep 1
+          done
+          docker logs zipping-probe-target
+          echo "Zipping target did not become healthy"
+          exit 1
+
+      - name: Probe direct Flag read through the real ZIP upload path
+        id: probe
+        run: |
+          set +e
+          docker run --rm \
+            --network zipping-probe \
+            -v "$GITHUB_WORKSPACE/labs/zipping/tests/direct_flag_symlink_probe.py:/tmp/probe.py:ro" \
+            python:3.12-alpine python /tmp/probe.py
+          result=$?
+          set -e
+          echo "probe_exit=$result" >> "$GITHUB_OUTPUT"
+          case "$result" in
+            0) echo "### Result: direct Flag read not reproduced" >> "$GITHUB_STEP_SUMMARY" ;;
+            10) echo "### Result: direct Flag read CONFIRMED — intended SQLi/LFI path is bypassable" >> "$GITHUB_STEP_SUMMARY" ;;
+            20) echo "### Result: upload was rejected or shortcut was inconclusive" >> "$GITHUB_STEP_SUMMARY" ;;
+            *) echo "### Result: probe failed unexpectedly (exit $result)" >> "$GITHUB_STEP_SUMMARY"; exit "$result" ;;
+          esac
+
+      - name: Capture target logs and cleanup
+        if: always()
+        run: |
+          docker logs zipping-probe-target || true
+          docker rm -f zipping-probe-target 2>/dev/null || true
+          docker network rm zipping-probe 2>/dev/null || true
+          docker image rm ttp-zipping:symlink-probe 2>/dev/null || true
