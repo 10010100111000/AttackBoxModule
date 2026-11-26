@@ -2557,7 +2557,8 @@
         "Do not add fake vulnerable endpoints, fake services or simulated exploit behavior merely to host a Flag.",
         "A later-stage Flag should not be retrievable through an earlier-stage shortcut. Test all prior-stage routes against all later Flags.",
         "The final Capstone aggregates child Challenge completion; it does not need a duplicate Flag unless it has a genuinely new objective.",
-        "Flags are Challenge data and are graded by the Web backend; Worker remains responsible only for Lab/sandbox lifecycle."
+        "Flags are Challenge data and are graded by the Web backend; Worker remains responsible only for Lab/sandbox lifecycle.",
+        "Progressive Challenge stages may each have their own Flag. Before adding one, test the actual privileges gained at that stage against all later-stage Flag locations; do not put a later Flag in a file readable by an earlier-stage foothold with the same OS identity."
       ]
     }
   },
@@ -2694,7 +2695,7 @@
           "objective": "Discover the JSON login request shape and bypass the real MongoDB query-operator authentication check.",
           "completion": "Dedicated intermediate Flag in protected admin/article content, revealed only after the intended authenticated session is established.",
           "flag_status": "planned_new_intermediate_flag",
-          "flag_design": "Store a per-challenge value in a genuine protected article or admin-only content record; do not expose it in the public blog or seed output. Verify the login bypass is required to view it.",
+          "flag_design": "Dedicated intermediate Flag in genuinely protected admin/article content, reachable after the intended login bypass. Ensure the public article index and unauthenticated routes do not expose it.",
           "implementation_status": "proposal_only"
         },
         {
@@ -2711,7 +2712,7 @@
           "objective": "Use the authenticated XML import feature and real libxml2 external entity processing to disclose the intended source/configuration data.",
           "completion": "Dedicated intermediate Flag in a real local file that is readable through the vulnerable XML parser's external entity path, but not served by public routes.",
           "flag_status": "planned_new_intermediate_flag",
-          "flag_design": "Place a distinct challenge data file in the container filesystem with permissions readable by the NodeBlog process. Confirm it is not rendered by public routes and is only disclosed via the intended XXE behavior. Avoid making it a generic world-readable web asset.",
+          "flag_design": "Dedicated intermediate Flag in a local challenge-data file readable by the real NodeBlog process and disclosed through the authenticated libxml2 XXE import. IMPORTANT: the final stage must not remain in /home/nodeblog/user.txt readable by the same UID, because XXE can read it too.",
           "implementation_status": "proposal_only"
         },
         {
@@ -2726,9 +2727,10 @@
             "nodeblog-xxe-source"
           ],
           "objective": "Use the disclosed vulnerable node-serialize 0.0.4 dependency and cookie trust-boundary flaw to reach Web service execution.",
-          "completion": "Existing Web Flag at /home/nodeblog/user.txt, owner nodeblog UID 10001, mode 0600.",
-          "flag_status": "existing_flag",
-          "implementation_status": "proposal_only"
+          "completion": "Use a distinct final Flag stored in a MongoDB challenge-state document/collection that is not returned by the public routes or login query. The real deserialization RCE running as nodeblog can query it; XXE file-read alone cannot query MongoDB. Validate that raw MongoDB data files do not make this answer trivially extractable through XXE.",
+          "flag_status": "planned_new_final_flag_in_database",
+          "implementation_status": "proposal_only",
+          "flag_design": "Move the final Web goal from the nodeblog-readable filesystem to a dedicated MongoDB challenge record that is not exposed by normal app routes. The deserialization RCE can access the local MongoDB service using the real application runtime; earlier XXE only reads files and should not obtain this database value."
         },
         {
           "key": "nodeblog-capstone",
@@ -2754,12 +2756,12 @@
     },
     {
       "lab_id": "zipping",
-      "status": "two_challenge_split_recommended_flag_design_pending",
-      "reason": "The ZIP upload/symlink disclosure and the shop product SQLi are separate application surfaces with no prerequisite relationship. The SQLi -> MariaDB FILE write -> PHP include path is a connected chain and should remain together unless an independently meaningful LFI objective is demonstrated.",
+      "status": "three_challenges_plus_capstone_proposal",
+      "reason": "Careers ZIP upload, Shop SQLi, and the SQLi-created PHP include execution are distinct learning objectives/surfaces. Split the upload and SQLi into independent Challenges, and optionally split the file-write/include proof as a dependent Challenge. The final include stage has no safely isolated filesystem Flag while www-data can read the same file through the upload symlink; use an observable question answer for execution proof unless a robust non-bypassable answer store is designed.",
       "challenges": [
         {
           "key": "zipping-zip-symlink-disclosure",
-          "title": "Zipping: ZIP symlink file disclosure",
+          "title": "Zipping 01 — ZIP Symlink File Disclosure",
           "challenge_type": "focused_web",
           "primary_skill": "file_upload.parser-mismatch",
           "secondary_skills": [
@@ -2767,28 +2769,42 @@
             "information_disclosure.config-leak"
           ],
           "dependency_on": [],
-          "flag_status": "existing_flag_currently_reachable_here",
-          "flag_location": "/home/rektsu/user.txt",
-          "flag_owner": "www-data",
-          "flag_mode": "0400",
-          "flag_reachability": "Confirmed by isolated GitHub Actions probe: upload a single-entry absolute symlink ZIP through /upload.php, then GET the returned /uploads URL to read the Flag.",
-          "implementation_status": "challenge_split_proposal_flag_boundary_review_pending"
+          "objective": "Upload a single-entry Unix symlink ZIP and retrieve the intended target file through the returned document URL.",
+          "completion": "Existing /home/rektsu/user.txt Flag; direct path confirmed by isolated runner.",
+          "flag_status": "existing_flag_confirmed",
+          "implementation_status": "proposal_only"
         },
         {
-          "key": "zipping-sqli-file-include",
-          "title": "Zipping: SQL injection to PHP file inclusion",
-          "challenge_type": "composite_web",
+          "key": "zipping-sqli",
+          "title": "Zipping 02 — SQL Injection and Database FILE",
+          "challenge_type": "focused_web",
           "primary_skill": "sqli.union",
           "secondary_skills": [
             "sqli.filter-bypass",
-            "sqli.file-operations",
-            "file_read.lfi",
-            "file_read.file-to-rce"
+            "sqli.file-operations"
           ],
           "dependency_on": [],
-          "flag_status": "new_independent_flag_not_designed",
-          "flag_reachability": "The connected chain is SQLi newline filter bypass -> MariaDB FILE write -> PHP include of the written file. A distinct answer must be naturally retrievable through this chain and must not be the same Flag exposed by the ZIP symlink Challenge.",
-          "implementation_status": "challenge_split_proposal_requires_flag_design_and_acceptance"
+          "objective": "Discover the shop product query, bypass the newline-sensitive filter, and use the real MariaDB query/FILE behavior to reach a database-specific answer.",
+          "completion": "Add a distinct Flag in a dedicated database row/table reachable through the SQL injection query. This Flag confirms SQLi/DB access, not PHP execution.",
+          "flag_status": "planned_new_database_flag",
+          "implementation_status": "proposal_only"
+        },
+        {
+          "key": "zipping-php-include",
+          "title": "Zipping 03 — SQLi File Write to PHP Include",
+          "challenge_type": "progressive_web",
+          "primary_skill": "file_read.lfi",
+          "secondary_skills": [
+            "file_read.file-to-rce",
+            "sqli.file-operations"
+          ],
+          "dependency_on": [
+            "zipping-sqli"
+          ],
+          "objective": "Use the SQLi FILE write path to create a PHP file and invoke it through the real shop include parameter.",
+          "completion": "Question-based execution proof, e.g. submit the effective PHP execution identity or a stable output from the included PHP file. Do not reuse the ZIP-readable user.txt Flag. A separate Flag is deferred until a non-bypassable storage/retrieval boundary is proven.",
+          "flag_status": "question_checkpoint_no_flag_until_safe_design",
+          "implementation_status": "proposal_only"
         },
         {
           "key": "zipping-capstone",
@@ -2803,36 +2819,37 @@
           ],
           "dependency_on": [
             "zipping-zip-symlink-disclosure",
-            "zipping-sqli-file-include"
+            "zipping-sqli",
+            "zipping-php-include"
           ],
-          "objective": "Complete both independent application-surface Challenges on the shared Zipping Lab.",
-          "completion": "Aggregate completion of both child Challenges; no duplicate Flag.",
-          "answer_status": "aggregate_only_no_duplicate_flag",
+          "objective": "Complete the independent upload and SQLi/file-include objectives on one shared Zipping Lab.",
+          "completion": "Aggregate completion of child Challenges; no duplicate Flag.",
+          "flag_status": "aggregate_only_no_duplicate_flag",
           "implementation_status": "proposal_only"
         }
       ]
     },
     {
       "lab_id": "soccer",
-      "status": "split_progressive_challenges_with_capstone_path",
-      "reason": "Upload foothold, vhost discovery and WebSocket SQLi are meaningful separate learning objectives, even though later tasks depend on the earlier foothold. Split into progressive Challenges with explicit dependencies and group them into one Soccer capstone path. Use question answers for reconnaissance milestones and the existing DB goal Flag only for the final blind SQLi objective.",
+      "status": "three_progressive_challenges_plus_capstone_with_flag_checkpoints",
+      "reason": "The upload foothold, Nginx vhost/config discovery and WebSocket blind SQLi are three meaningful progressive learning objectives. Each can have a separate completion checkpoint. Use real target-local challenge data for the first two and retain the database-backed Web goal for the final stage; verify that the PHP upload identity cannot read the final DB goal.",
       "challenges": [
         {
           "key": "soccer-upload-foothold",
           "title": "Soccer 01 — File Manager Upload Foothold",
-          "challenge_type": "focused_web",
+          "challenge_type": "progressive_web",
           "primary_skill": "file_upload.unrestricted-upload",
           "secondary_skills": [],
           "dependency_on": [],
-          "objective": "Discover the Tiny File Manager service and establish the intended PHP upload foothold.",
-          "completion": "Question-based: identify the manager version or the web-writable upload location from the real application; no separate Flag.",
-          "answer_status": "requires_source_or_runtime_derived_question_design",
+          "objective": "Discover the genuine Tiny File Manager 2.4.3 and establish the intended PHP upload foothold.",
+          "completion": "Dedicated Flag in a root-owned seed copied to a www-data-readable, non-public challenge-data file or a protected application data record, reachable only after successful PHP execution in the upload directory.",
+          "flag_status": "planned_new_foothold_flag",
           "implementation_status": "proposal_only"
         },
         {
           "key": "soccer-vhost-discovery",
-          "title": "Soccer 02 — Virtual Host and Service Discovery",
-          "challenge_type": "focused_web",
+          "title": "Soccer 02 — Virtual Host and WebSocket Discovery",
+          "challenge_type": "progressive_web",
           "primary_skill": "information_disclosure.config-leak",
           "secondary_skills": [
             "websockets.ws-recon"
@@ -2840,15 +2857,15 @@
           "dependency_on": [
             "soccer-upload-foothold"
           ],
-          "objective": "Use the foothold to inspect the actual Nginx configuration, discover the secondary vhost and map the WebSocket endpoint/message shape.",
-          "completion": "Question-based: submit the secondary hostname and/or WebSocket route/message field; no separate Flag.",
-          "answer_status": "requires_question_answer_design",
+          "objective": "Read the real Nginx configuration, identify soc-player.soccer.htb and discover the WebSocket ticket protocol.",
+          "completion": "Distinct Flag/comment token in the actual Nginx vhost configuration, or a challenge-specific value in the config file. The first foothold permits local config reading, which is the intended behavior of this stage.",
+          "flag_status": "planned_new_config_disclosure_flag",
           "implementation_status": "proposal_only"
         },
         {
           "key": "soccer-websocket-sqli",
           "title": "Soccer 03 — WebSocket Boolean Blind SQL Injection",
-          "challenge_type": "focused_web",
+          "challenge_type": "progressive_web",
           "primary_skill": "websockets.blind-sqli",
           "secondary_skills": [
             "sqli.boolean-blind"
@@ -2857,8 +2874,8 @@
             "soccer-vhost-discovery"
           ],
           "objective": "Use the ticket lookup oracle to extract the goal from the real MariaDB-backed account record.",
-          "completion": "Existing Flag in soccer_db.accounts.goal; seed is /home/player/user.txt, root-owned 0400.",
-          "answer_status": "existing_flag",
+          "completion": "Existing Flag in soccer_db.accounts.goal; retain the root-owned 0400 seed and verify that the www-data foothold cannot read Node service source or DB credentials directly.",
+          "flag_status": "existing_flag_confirmed_in_database",
           "implementation_status": "proposal_only"
         },
         {
@@ -2877,9 +2894,9 @@
             "soccer-vhost-discovery",
             "soccer-websocket-sqli"
           ],
-          "objective": "Complete the upload foothold, virtual-host discovery and WebSocket blind SQLi as one continuous assessment.",
-          "completion": "Aggregate completion of the three child Challenges; do not create a duplicate final Flag.",
-          "answer_status": "aggregate_only_no_duplicate_flag",
+          "objective": "Complete the upload foothold, vhost/protocol discovery and WebSocket blind SQLi as one continuous assessment.",
+          "completion": "Aggregate completion of child Challenges; no duplicate Flag.",
+          "flag_status": "aggregate_only_no_duplicate_flag",
           "implementation_status": "proposal_only"
         }
       ]
