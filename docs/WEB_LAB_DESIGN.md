@@ -628,3 +628,32 @@ The target does **not** include the original SNMP command execution, SSH pivot, 
 - **Current status:** implementation branch created; Docker build, measured image/resource usage, manual acceptance and Worker integration are still pending.
 
 The structured machine entry and rolling backlog are maintained in [web-curriculum.json](../catalog/web-curriculum.json).
+
+
+## 2026-11-26 — Switch next target to HTB Headless
+
+ImpressCMS is paused and its draft PR was closed. The Content add-on version provenance and several CVE-to-source mappings could not be pinned cleanly enough to justify the build effort.
+
+**Selected next target: HTB Headless** — a smaller, better-evidenced Linux Docker reconstruction.
+
+### Why Headless
+
+The official HTB synopsis and multiple independent writeups agree on the observable path: Werkzeug web app → support form → request-header XSS in an administrator-reviewed report → signed admin cookie → dashboard date command injection → dvir shell → sudo syscheck relative-path execution.
+
+The disclosed app.py source excerpt is available in public writeups, including the exact unsafe report rendering and os.popen data flow. The original syscheck script and sudo rule are also reproduced in independent writeups. This is materially better evidence than the unresolved CMS add-on provenance.
+
+### One target, one machine-style Challenge
+
+Use one target slug, htb-headless, with one complete machine-style challenge and separate User/Root Flags. Keep the real browser victim and the Linux privilege boundary. Do not turn each step into a separate unrelated challenge.
+
+### Implementation constraints
+
+- Reproduce the disclosed Flask routes, signed cookie behavior, support WAF trigger, stored HTML report and raw header output context.
+- The admin reviewer must be a real headless Chromium browser opening the saved report; do not replace it with a fake callback endpoint or a string parser.
+- Preserve the dashboard date-to-shell command construction and the real syscheck sudo script with its relative initdb.sh call.
+- Flask must run as dvir, UID 1000. The app working directory must be writable by dvir so the documented relative-path behavior is genuine.
+- The target uses Debian 12/Python 3.11.2, Flask/Werkzeug and itsdangerous, Chromium, OpenSSH and sudo in one Docker image. Measure the image and memory; reduce dependencies if the browser package becomes too large.
+- Worker injects HEADLESS_USER_FLAG and HEADLESS_ROOT_FLAG. The image contains no production flag values.
+- CI checks build, startup, health and ordinary pages only. It must not run exploit payloads, steal cookies, execute command injection, obtain reverse shells, invoke sudo exploitation or extract Flags.
+
+Detailed evidence and source mapping: [HTB_HEADLESS_SOURCE_AUDIT.md](research/HTB_HEADLESS_SOURCE_AUDIT.md). Current implementation: [labs/htb-headless](../labs/htb-headless/README.md).

@@ -1511,6 +1511,45 @@
         "evidence": [],
         "failure_reason": null
       }
+    },
+    {
+      "id": "htb-headless",
+      "path": "labs/htb-headless",
+      "track": "web",
+      "provisional_difficulty": "beginner",
+      "primary_category": "xss",
+      "secondary_categories": [
+        "command_injection",
+        "auth_session"
+      ],
+      "validated_skills": [],
+      "implemented_skills": [
+        "xss.blind",
+        "command_injection.basic-rce"
+      ],
+      "lab_ci_status": "partial",
+      "worker_status": "not_verified",
+      "release_status": "blocked_by_marker",
+      "evidence": "docs/research/HTB_HEADLESS_SOURCE_AUDIT.md",
+      "note": "HTB Headless reconstruction. Public app.py excerpt maps the actual WAF report, raw User-Agent rendering and dashboard date-to-os.popen flow. A real Chromium reviewer visits stored reports; a real dvir user owns the app; the original sudo syscheck script retains its relative initdb.sh call. Docker build, startup, health, homepage/support, user-cookie denial, SSH listener and browser-reviewer readiness smoke checks passed. Full exploit path, Worker flag grading and manual exploit-path verification remain pending; CI measured image size 325,701,549 bytes and idle memory 49.89 MiB.",
+      "variant_profile": {
+        "technology": "Debian 12, Python 3.11.2, Flask 2.2.2, Werkzeug 2.2.2, itsdangerous 2.1.2, Chromium, OpenSSH, sudo, Bash",
+        "initial_discovery": "Under-construction homepage, /support contact form, /dashboard authorization boundary, TCP 22 and TCP 5000",
+        "key_constraint_or_mechanism": "Support POST message triggers report; request headers are rendered into an HTML page with Jinja safe; admin Chromium visits saved reports; signed is_admin cookie is readable by JavaScript",
+        "attack_path": "Recon -> WAF/report behavior -> User-Agent blind XSS -> admin cookie -> dashboard date command injection -> dvir -> sudo syscheck relative-path hijack -> root flag",
+        "incremental_learning_value": "A realistic multi-stage OSCP-style path combining browser victim context, HTTP headers, signed cookies, shell command construction and Unix current-working-directory trust",
+        "confidence": "source-backed implementation; Docker build, ordinary smoke and Chromium reviewer readiness passed; CI image 325.7 MB, idle memory 49.89 MiB; manual exploit path and Worker flag integration pending"
+      },
+      "skill_mapping_stage": "container_build_startup_health_and_ordinary_smoke_passed_manual_attack_path_pending",
+      "manual_validation": {
+        "status": "not_reviewed",
+        "commit": null,
+        "reviewer": null,
+        "reviewed_at": null,
+        "scope": null,
+        "evidence": [],
+        "failure_reason": null
+      }
     }
   ],
   "backlog": [
@@ -2168,6 +2207,32 @@
       ],
       "selected_candidate": "intense",
       "note": "Based on multiple public writeups. Original private Flask source is unavailable and will not be copied. Recreate the same observable routes, request behavior, SQLite error oracle, weak cookie signature and final LFI path. Web-only: exclude SNMP, SSH, binary exploitation and Linux Root. One final Flag is sufficient; intermediate skills are learned through the path rather than forced into separate flags."
+    },
+    {
+      "id": "headless-composite",
+      "status": "in_progress",
+      "objective": "HTB Headless reconstruction: actual request-header blind XSS in stored support reports -> admin browser cookie -> real dashboard command injection -> real dvir shell -> sudo syscheck relative-path root stage",
+      "scope": "single_application_composite_lab",
+      "primary_category": "xss",
+      "secondary_categories": [
+        "command_injection",
+        "auth_session"
+      ],
+      "required_skill_coverage": [
+        "xss.blind",
+        "command_injection.basic-rce"
+      ],
+      "note": "One target, one independent challenge answer per stage only if the platform requires it; prefer the normal User/Root flags for this OSCP-style machine. CI must not test the exploit chain.",
+      "priority": 36,
+      "difficulty": "intermediate",
+      "track": "web_focus",
+      "candidate_status": "in_progress",
+      "one_to_many_allowed": false,
+      "scenario_variant_focus": "One HTB-style machine with blind XSS via request-header HTML report, admin cookie theft, dashboard date command injection and a real sudo relative-path escalation.",
+      "candidate_options": [
+        "headless"
+      ],
+      "selected_candidate": "headless"
     }
   ],
   "skills_catalog": "catalog/web-competencies.json",
@@ -2244,9 +2309,28 @@
         "xss.blind",
         "command_injection.basic-rce"
       ],
-      "signature": "User-Agent blind XSS -> admin browser/session -> OS command injection",
-      "source_status": "official_synopsis_verified",
-      "review_status": "research_required"
+      "signature": "Support POST WAF trigger -> stored request-header HTML report -> real Chromium admin reviewer -> signed is_admin cookie theft -> dashboard date command injection -> dvir -> sudo syscheck relative initdb.sh -> root",
+      "source_status": "official_synopsis_and_public_app_source_excerpt_mapped",
+      "review_status": "in_progress",
+      "version": "HTB Headless retired machine; Debian 12, Python 3.11.2, Werkzeug 2.2.2",
+      "evidence_urls": [
+        "https://www.hackthebox.com/machines/headless",
+        "https://github.com/0xh7ml/htb-wiki/blob/38e5d0d0abc6bf85a52586b4221219b0e4b4eb2b/raw/htb-headless.md",
+        "https://github.com/ch3ng625/ch3ng625.github.io/blob/848c8e3e4d097515720a24c1600589705c8639ea/_posts/2024-07-21-headless.md",
+        "https://writeups.csirt.muni.cz/content/htb/Machines/Headless/writeup/",
+        "https://github.com/evyatar9/Writeups/blob/3d40d78dd2cf9ce34cc48db405e1b46b076e5b72/HackTheBox/Headless/README.md"
+      ],
+      "design_rule": "Reconstruct the disclosed Flask routes and original observable data flow; retain the actual browser review boundary and actual shell/OS permission boundary. Use a real Chromium reviewer, real Flask/Werkzeug, real Bash report helper, real sudo syscheck script. Do not replace XSS with a fake callback endpoint or command injection with simulated output. CI checks build/startup/health/ordinary pages only; no exploit-chain automation.",
+      "research_questions": [
+        "Confirm the exact Flask route behavior from the public app.py excerpt: loopback determines admin cookie; support POST triggers report generation; raw request headers are rendered by hackattempt.html; dashboard date reaches os.popen('bash report.sh ...').",
+        "Inspect the report reviewer behavior from independent writeups and implement a real headless Chromium process that visits the saved HTML report as an admin browser.",
+        "Confirm the exact Flask/Werkzeug/Python versions and preserve the observed cookie serialization and header output context.",
+        "Reproduce the exact syscheck shell script and sudo rule, including the relative ./initdb.sh call and intended working directory.",
+        "Verify the service process identity: Flask must execute as dvir (UID 1000), and the root flag must remain unreadable until the actual sudo path is used.",
+        "Build a single Docker image containing Flask, Chromium reviewer, SSH and syscheck; measure final image bytes, memory, startup time and PIDs.",
+        "Define Worker-provided per-instance HEADLESS_USER_FLAG and HEADLESS_ROOT_FLAG; ensure reset creates a fresh report directory and new flag pair.",
+        "Keep CI limited to image build, startup, health, homepage/support ordinary behavior, SSH listener and reviewer process. Do not automate XSS, cookie theft, command injection, reverse shell, sudo exploitation or Flag extraction."
+      ]
     },
     {
       "id": "trick",

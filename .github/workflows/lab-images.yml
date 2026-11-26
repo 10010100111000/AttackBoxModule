@@ -1,15 +1,18 @@
 name: Build and publish lab images
-# CI validates build/startup/health only. Full lab flow is reviewed manually.
+# CI validates build, startup, health and non-exploit functional integration.
+# It must never automate vulnerability exploitation or Flag extraction.
 
 on:
   pull_request:
     paths:
       - "labs/**"
+      - "challenges/**"
       - ".github/workflows/lab-images.yml"
   push:
     branches: [main]
     paths:
       - "labs/**"
+      - "challenges/**"
       - ".github/workflows/lab-images.yml"
   workflow_dispatch:
     inputs:
@@ -25,7 +28,6 @@ on:
 permissions:
   contents: read
 
-# 在教材仓库中只需调整镜像根目录。目录内每个 Dockerfile 对应一台靶机。
 env:
   IMAGE_ROOT: labs
 
@@ -73,7 +75,7 @@ jobs:
                   raise SystemExit('发布时必须指定包含 Dockerfile 的靶机目录')
               if (selected_path / '.release-blocked').is_file():
                   raise SystemExit(f'{selected}: release blocked; see {selected}/.release-blocked')
-              if len(version) > 32 or not re.fullmatch(r'(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)', version):
+              if len(version) > 32 or not re.fullmatch(r'(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)', version):
                   raise SystemExit('版本号使用三段数字，例如 1.0.0，不含 v 前缀')
               selected_dirs = {selected_path}
           else:
@@ -218,8 +220,6 @@ jobs:
           LAB_SLUG: ${{ matrix.slug }}
         run: |
           set -euo pipefail
-          # Keep all smoke-test containers disconnected from external networks.
-          # Only the explicitly selected lab receives its required capability.
           args=(--network none)
           case "$LAB_SLUG" in
             trick)
@@ -280,7 +280,13 @@ jobs:
               code=$(curl -s -o /dev/null -w "%{http_code}" -b /tmp/intense-cookies "$base/admin")
               test "$code" = "403"
             '
-            echo "PASS: Intense homepage, login form, source archive, guest login, normal message submission and guest admin access control"
+            echo "PASS: Intense normal application integration checks"
+          fi
+          if [ "$LAB_SLUG" = "htb-headless" ]; then
+            docker exec "$test_container" /usr/local/bin/headless-smoke-test
+            echo "PASS: Headless application, report-review browser, dashboard, runtime identity, static Flags and sudo configuration"
+            docker image inspect "$IMAGE" --format='HEADLESS_IMAGE_SIZE_BYTES={{.Size}}'
+            docker stats --no-stream --format='HEADLESS_IDLE_MEMORY={{.MemUsage}}' "$test_container"
           fi
       - name: Publish tested image
         if: github.event_name == 'workflow_dispatch'

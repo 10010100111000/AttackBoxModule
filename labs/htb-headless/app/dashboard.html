@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Headless - Dashboard</title>
+<style>
+body{margin:0;background:#101820;color:#e7edf2;font-family:Arial,sans-serif}
+main{width:min(760px,calc(100% - 32px));margin:56px auto;padding:38px;background:#17232d;border:1px solid #34414c}
+h1{margin-top:0}label{display:block;margin:20px 0 8px}
+input{padding:11px;background:#0e171e;color:#e7edf2;border:1px solid #465662}
+button{padding:12px 20px;border:0;background:#e4a84c;color:#101820;font-weight:700}
+.output{margin-top:24px;padding:16px;background:#0e171e;white-space:pre-wrap}
+</style></head><body><main>
+<h1>System Health Report</h1><p>Generate a report for a selected date.</p>
+<form method="post" action="/dashboard">
+<label for="date">Date</label><input id="date" name="date" type="date" value="2023-09-15">
+<button type="submit">Generate Report</button>
+</form>
+{% if script_output %}<div class="output">{{ script_output }}</div>{% endif %}
+</main></body></html>

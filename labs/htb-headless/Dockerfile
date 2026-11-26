@@ -1,0 +1,53 @@
+# syntax=docker/dockerfile:1.7
+FROM debian:bookworm-slim AS python-deps
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends python3 python3-venv \
+ && rm -rf /var/lib/apt/lists/*
+RUN python3 -m venv /opt/venv \
+ && /opt/venv/bin/pip install --no-cache-dir \
+      Flask==2.2.2 Werkzeug==2.2.2 itsdangerous==2.1.2
+
+FROM debian:bookworm-slim AS runtime
+ENV PATH=/opt/venv/bin:$PATH PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 XDG_CONFIG_HOME=/tmp/.config XDG_CACHE_HOME=/tmp/.cache
+RUN apt-get update \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+      bash ca-certificates chromium coreutils curl findutils iproute2 openssh-server procps python3 sudo supervisor \
+ && rm -rf /var/lib/apt/lists/* \
+ && groupadd --gid 1000 dvir \
+ && useradd --uid 1000 --gid 1000 --create-home --home-dir /home/dvir --shell /bin/bash dvir \
+ && mkdir -p /run/sshd /run/supervisor /home/dvir/app/hacking_reports /var/mail \
+ && touch /var/mail/dvir \
+ && chmod 0644 /var/mail/dvir \
+ && chown -R dvir:dvir /home/dvir
+
+COPY --from=python-deps /opt/venv /opt/venv
+COPY app/ /home/dvir/app/
+COPY flags/user.txt /home/dvir/user.txt
+COPY flags/root.txt /root/root.txt
+COPY config/supervisord.conf /etc/supervisor/conf.d/headless.conf
+COPY config/sshd_config /etc/ssh/sshd_config
+COPY config/sudoers-dvir /etc/sudoers.d/dvir
+COPY config/dvir-mail /var/mail/dvir
+COPY scripts/entrypoint.sh /usr/local/bin/headless-entrypoint
+COPY scripts/healthcheck.sh /usr/local/bin/headless-healthcheck
+COPY scripts/syscheck /usr/bin/syscheck
+COPY scripts/smoke-test.sh /usr/local/bin/headless-smoke-test
+
+RUN set -eu; \
+    chown -R dvir:dvir /home/dvir/app; \
+    chmod 0755 /home/dvir/app; \
+    chmod 0755 /home/dvir/app/app.py /home/dvir/app/inspect_reports.py /home/dvir/app/report.sh; \
+    chown dvir:dvir /home/dvir/user.txt; \
+    chmod 0400 /home/dvir/user.txt; \
+    chown root:root /root/root.txt; \
+    chmod 0600 /root/root.txt; \
+    chown -R dvir:dvir /home/dvir/app/hacking_reports; \
+    chmod 0755 /usr/bin/syscheck /usr/local/bin/headless-entrypoint /usr/local/bin/headless-healthcheck /usr/local/bin/headless-smoke-test; \
+    chown root:root /usr/bin/syscheck /etc/sudoers.d/dvir; \
+    chmod 0440 /etc/sudoers.d/dvir; \
+    visudo -cf /etc/sudoers
+
+WORKDIR /home/dvir/app
+EXPOSE 22/tcp 5000/tcp
+HEALTHCHECK --interval=20s --timeout=6s --start-period=35s --retries=3 CMD ["/usr/local/bin/headless-healthcheck"]
+ENTRYPOINT ["/usr/local/bin/headless-entrypoint"]
