@@ -1,36 +1,62 @@
 #!/usr/bin/env python3
-"""Headless admin review process: visit new security reports in Chromium."""
+"""Headless admin reviewer: use a real Chromium process to open saved reports."""
 from pathlib import Path
+import subprocess
 import time
-from playwright.sync_api import sync_playwright
 
 REPORTS = Path("/home/dvir/app/hacking_reports")
 BASE_URL = "http://127.0.0.1:5000"
+PROFILE = "/tmp/headless-admin-chromium"
+
+
+def visit(url):
+    command = [
+        "/usr/bin/chromium",
+        "--headless",
+        "--no-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-gpu",
+        "--disable-crash-reporter",
+        "--disable-breakpad",
+        "--disable-extensions",
+        "--no-first-run",
+        "--no-default-browser-check",
+        "--no-zygote",
+        "--user-data-dir=" + PROFILE,
+        "--virtual-time-budget=2500",
+        "--timeout=5000",
+        "--dump-dom",
+        url,
+    ]
+    result = subprocess.run(
+        command,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.PIPE,
+        text=True,
+        timeout=20,
+        check=False,
+    )
+    if result.returncode != 0:
+        raise RuntimeError("Chromium exited with " + str(result.returncode) + ": " + result.stderr[-1200:])
 
 
 def main():
     REPORTS.mkdir(parents=True, exist_ok=True)
     seen = set()
-    with sync_playwright() as playwright:
-        browser = playwright.chromium.launch(
-            executable_path="/usr/bin/chromium",
-            headless=True,
-            args=["--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu"],
-        )
-        context = browser.new_context()
-        page = context.new_page()
-        page.goto(BASE_URL + "/", wait_until="domcontentloaded")
-        while True:
-            for report in sorted(REPORTS.glob("*.html")):
-                if report.name in seen:
-                    continue
-                try:
-                    page.goto(BASE_URL + "/hacking_reports/" + report.stem, wait_until="load", timeout=15000)
-                    page.wait_for_timeout(1800)
-                    seen.add(report.name)
-                except Exception as error:
-                    print("Report review failed:", report.name, repr(error), flush=True)
-            time.sleep(1)
+
+    # The first loopback visit receives the application's signed admin cookie.
+    visit(BASE_URL + "/")
+
+    while True:
+        for report in sorted(REPORTS.glob("*.html")):
+            if report.name in seen:
+                continue
+            try:
+                visit(BASE_URL + "/hacking_reports/" + report.stem)
+                seen.add(report.name)
+            except Exception as error:
+                print("Report review failed:", report.name, repr(error), flush=True)
+        time.sleep(1)
 
 
 if __name__ == "__main__":
