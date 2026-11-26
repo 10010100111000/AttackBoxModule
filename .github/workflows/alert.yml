@@ -98,6 +98,8 @@ jobs:
         run: |
           set -euo pipefail
           cleanup() {
+            docker logs alert-target-a 2>/dev/null || true
+            docker logs alert-target-b 2>/dev/null || true
             docker rm -f alert-target-a alert-target-b 2>/dev/null || true
             docker network rm alert-acceptance 2>/dev/null || true
           }
