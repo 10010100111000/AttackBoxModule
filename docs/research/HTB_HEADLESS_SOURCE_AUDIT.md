@@ -101,12 +101,12 @@ The reconstruction retains the actual script logic and sudo boundary. The intend
 
 ## Container and flag model
 
-One target template, slug \`htb-headless\`, exposes TCP 5000 and TCP 22. The Worker injects a per-instance User Flag and Root Flag:
+One target template, slug `htb-headless`, exposes TCP 5000 and TCP 22. The two challenge Flags are static files copied into the image at build time:
 
-- \`HEADLESS_USER_FLAG\` → \`/home/dvir/user.txt\`, owner dvir, mode 0400.
-- \`HEADLESS_ROOT_FLAG\` → \`/root/root.txt\`, owner root, mode 0600.
+- `labs/htb-headless/flags/user.txt` → `/home/dvir/user.txt`, owner dvir, mode 0400.
+- `labs/htb-headless/flags/root.txt` → `/root/root.txt`, owner root, mode 0600.
 
-The image contains no default production Flag values. Startup fails if the Worker does not provide both values. No persistent volume is declared, so a new target instance starts with clean report storage and new Worker-provided Flags.
+There is no Flag Rotation, per-instance generation, Worker injection or Worker-side grading. The Worker manages only target and sandbox lifecycle. Challenge metadata and submitted-Flag validation belong to the Web backend/challenge system.
 
 ## Acceptance policy
 

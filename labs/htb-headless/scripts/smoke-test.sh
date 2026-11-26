@@ -65,7 +65,7 @@ test -x /usr/bin/syscheck
 grep -Fq './initdb.sh' /usr/bin/syscheck
 visudo -cf /etc/sudoers >/dev/null
 sudo -l -U dvir | grep -Fq '/usr/bin/syscheck'
-ps -eo user,args | grep -F '[a]pp.py' | grep -q '^dvir'
+ps -eo user,args | grep -E '[a]pp.py' | grep -q '^dvir'
 pgrep -f '[i]nspect_reports.py' >/dev/null
 ss -lnt | grep -q ':22 '
 
