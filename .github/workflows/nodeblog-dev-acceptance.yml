@@ -1,0 +1,155 @@
+name: NodeBlog manual development acceptance
+
+# Manual-only development validation. This is not a PR gate and does not publish an image.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "NodeBlog content/image version. Re-running a version reuses its committed Flags."
+        required: true
+        default: "0.1.0"
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nodeblog-dev-${{ inputs.version }}
+  cancel-in-progress: false
+
+jobs:
+  generate-build-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout selected development branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+
+      - name: Generate or reuse versioned Flags and Challenge Markdown
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          python3 scripts/generate_nodeblog_release.py --version "$RELEASE_VERSION"
+          manifest="labs/nodeblog/flags/releases/$RELEASE_VERSION.json"
+          before=$(sha256sum "$manifest" | cut -d' ' -f1)
+          python3 scripts/generate_nodeblog_release.py --version "$RELEASE_VERSION"
+          after=$(sha256sum "$manifest" | cut -d' ' -f1)
+          test "$before" = "$after"
+          echo "Flag generator idempotency: PASS"
+
+      - name: Commit generated release manifest, image Flags and Challenge answers
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+          BRANCH_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            "labs/nodeblog/flags/releases/$RELEASE_VERSION.json" \
+            labs/nodeblog/flags/flag01.txt \
+            labs/nodeblog/flags/flag02.txt \
+            labs/nodeblog/flags/user.txt \
+            challenges/authentication/nodeblog-nosql \
+            challenges/file-security/nodeblog-xxe \
+            challenges/code-execution/nodeblog-deserialization
+          git rm -f challenges/integrated/nodeblog/NodeBlog.md || true
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(nodeblog): generate Flags and Challenges for $RELEASE_VERSION"
+            git push origin "HEAD:$BRANCH_NAME"
+          else
+            echo "Generated release content already matches the repository."
+          fi
+
+      - name: Load expected answers without printing them
+        id: flags
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          python3 - <<'PY'
+          import json, os
+          path = f"labs/nodeblog/flags/releases/{os.environ['RELEASE_VERSION']}.json"
+          flags = json.load(open(path, encoding="utf-8"))["flags"]
+          with open(os.environ["GITHUB_OUTPUT"], "a") as out:
+              for key, value in flags.items():
+                  print(f"::add-mask::{value}")
+                  out.write(f"{key}={value}\n")
+          PY
+
+      - name: Build the NodeBlog target image
+        run: docker build --pull -t ttp-nodeblog:dev labs/nodeblog
+
+      - name: Pull the isolated HTTP test client
+        run: docker pull python:3.12-alpine
+
+      - name: Create an internal-only test network
+        run: docker network create --internal ttp-nodeblog-dev
+
+      - name: Start the target with production-like restrictions
+        run: |
+          docker run -d \
+            --name nodeblog-target \
+            --network ttp-nodeblog-dev \
+            --network-alias nodeblog-target \
+            --memory 1024m --cpus 1.5 --pids-limit 192 \
+            --cap-drop ALL --security-opt no-new-privileges \
+            ttp-nodeblog:dev
+
+      - name: Wait for application and MongoDB health
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 120); do
+            state=$(docker inspect -f '{{.State.Status}}' nodeblog-target)
+            health=$(docker inspect -f '{{.State.Health.Status}}' nodeblog-target)
+            if [ "$state" != "running" ]; then
+              docker logs nodeblog-target
+              echo "NodeBlog exited before becoming healthy"
+              exit 1
+            fi
+            if [ "$health" = "healthy" ]; then
+              echo "NodeBlog HTTP + MongoDB health: PASS"
+              exit 0
+            fi
+            if [ "$health" = "unhealthy" ]; then
+              docker logs nodeblog-target
+              exit 1
+            fi
+            sleep 1
+          done
+          docker logs nodeblog-target
+          echo "NodeBlog health timeout"
+          exit 1
+
+      - name: Verify all three Challenge Flags over HTTP
+        env:
+          EXPECTED_FLAG_01: ${{ steps.flags.outputs.flag01 }}
+          EXPECTED_FLAG_02: ${{ steps.flags.outputs.flag02 }}
+          EXPECTED_FLAG_03: ${{ steps.flags.outputs.flag03 }}
+          TARGET_URL: http://nodeblog-target:5000
+        run: |
+          docker run --rm \
+            --network ttp-nodeblog-dev \
+            -v "$GITHUB_WORKSPACE/labs/nodeblog/tests/attack.py:/attack.py:ro" \
+            -e TARGET_URL \
+            -e EXPECTED_FLAG_01 \
+            -e EXPECTED_FLAG_02 \
+            -e EXPECTED_FLAG_03 \
+            python:3.12-alpine python /attack.py
+
+      - name: Capture image size, runtime usage and target logs
+        if: always()
+        run: |
+          docker image inspect ttp-nodeblog:dev --format='IMAGE_SIZE_BYTES={{.Size}}' || true
+          docker stats --no-stream nodeblog-target || true
+          docker logs nodeblog-target || true
+
+      - name: Clean up disposable environment
+        if: always()
+        run: |
+          docker rm -f nodeblog-target 2>/dev/null || true
+          docker network rm ttp-nodeblog-dev 2>/dev/null || true
+          docker image rm ttp-nodeblog:dev 2>/dev/null || true
