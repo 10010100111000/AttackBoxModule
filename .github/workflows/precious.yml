@@ -63,7 +63,7 @@ jobs:
           docker exec precious-target ruby -e 'require "pdfkit"; abort "wrong PDFKit version" unless Gem.loaded_specs["pdfkit"].version.to_s == "0.8.6"'
           docker stats --no-stream --format 'Target memory: {{.MemUsage}}, PIDs: {{.PIDs}}' precious-target
 
-          docker run --rm --network precious-ci python:3.12-alpine python3 - <<'PY'
+          docker run --rm -i --network precious-ci python:3.12-alpine python3 - <<'PY'
           import urllib.parse
           import urllib.request
 
