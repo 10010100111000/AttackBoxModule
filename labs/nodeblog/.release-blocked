@@ -1,9 +1,13 @@
 Release remains blocked.
 
-Current policy (2026-11-25): CI only checks build, startup, health and ordinary smoke behavior.
-No automated exploitation, Flag-retrieval or privilege-chain CI is required.
-Historical CI evidence stays in the catalog; it does not become manual acceptance.
+NodeBlog now has a manual-only development workflow that generates or reuses three versioned Flags, writes the corresponding Challenge Markdown, builds the image and verifies all three intended paths on an ephemeral GitHub-hosted runner.
 
-当前待验收事项：实际平台集成尚需验收；题目完整目标流程的人工记录尚需复核。
+Do not publish until:
+- the manual development acceptance workflow passes for the selected release version;
+- the generated Challenge Markdown has been synchronized into AttackBox and all three Challenge records bind to the same NodeBlog target template;
+- user progress and shared target instance behavior have been checked in the platform;
+- the current image has been reviewed for resource use and normal lifecycle behavior.
 
-需先补实际人工验收和平台证据，再经明确批准解除限制；不得将脆弱服务暴露到公网。
+The regular PR CI remains non-offensive build/startup/health regression. The full HTTP exploit-path verifier is manual-only and is not a PR gate.
+
+当前仍需完成：开发验收、Challenge 内容同步、平台判题和 Worker 生命周期验收。不得将脆弱服务暴露到公网。

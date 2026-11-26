@@ -1,6 +1,6 @@
 # NodeBlog — Web-only authentic attack-chain reconstruction
 
-**Status:** independent black-box full Web chain CI **PASS** on two fresh isolated instances; Worker release not yet assessed. Not an official Hack The Box image. Do not deploy to the public Internet.
+**Status:** original single-Flag Web chain has historical black-box CI evidence. The three-Challenge / three-Flag redesign is under development and has not yet passed the new manual acceptance workflow. Worker release remains unassessed. Not an official Hack The Box image. Do not deploy to the public Internet.
 
 ## Scope and source fidelity
 
@@ -30,7 +30,6 @@ docker build -t ttp-nodeblog:local -f labs/nodeblog/Dockerfile labs/nodeblog
 docker run -d --name nodeblog-local \
   --cap-drop ALL --security-opt no-new-privileges \
   --memory 1024m --cpus 1.5 --pids-limit 192 \
-  -e NODEBLOG_USER_FLAG='TTP{example_web_flag}' \
   -p 127.0.0.1:5000:5000 ttp-nodeblog:local
 docker inspect -f '{{.State.Health.Status}}' nodeblog-local
 ```
@@ -41,13 +40,13 @@ MongoDB 8 has x86-64 CPU requirements and a nontrivial memory footprint. Actual 
 
 ## Flag and reset
 
-The `flags/user.txt` is a clearly labelled static development placeholder. The optional `NODEBLOG_USER_FLAG` variable replaces it on target startup and is unset before the web process is launched; the Worker only forwards variables and manages lifecycle, never performs challenge-specific flag judgement. The Web backend remains responsible for verifying the correct answer for an instance.
+CI generates three short random Flags per NodeBlog release version and writes the versioned manifest plus the matching Challenge Markdown. Re-running the same version reuses the existing manifest; a new version receives a new set. Flag 01 is seeded into a genuinely private MongoDB article. Its seed file remains in the container so a normal container restart can re-run the idempotent seed step; it is not treated as a security boundary, and the training design does not require strict anti-shortcut isolation. Flag 02 is stored in a local challenge-data file and retrieved through the real XXE parser. Flag 03 remains the service-account Web goal at /home/nodeblog/user.txt and is retrieved through the real deserialization execution path. The Worker only manages target lifecycle; it does not generate, inject or judge Challenge Flags. The Web backend syncs the generated Markdown answers and performs grading.
 
-With no external volume, deleting the instance deletes the MongoDB data and article changes; recreating it with a different injected flag resets all state. When an external volume is used, explicitly delete that volume to reset the database.
+The three Flag values are generated once per semantic version and stored in `flags/releases/<version>.json`. Re-running the generator for the same version reuses the manifest; selecting a new version creates a new set. The image contains the corresponding files and seeded article. Resetting a target instance resets MongoDB and application state but does not rotate the image's Flags.
 
 ## Independent full-chain testing
 
-`.github/workflows/nodeblog.yml` builds both the target and a separate Python attacker container, places them on an internal Docker network, and attempts the Web sequence over HTTP without `docker exec`. The attacker must prove *actual native MongoDB* NoSQLi, XML entity substitution, OS command execution through the vulnerable npm package, and unique per-instance Flag retrieval across two rebuilt instances.
+`.github/workflows/nodeblog-dev-acceptance.yml` is a manual-only development workflow. It generates or reuses versioned Flags, commits the matching Challenge Markdown, builds the target on an ephemeral GitHub-hosted runner, and uses a separate HTTP-only test client on an internal Docker network. It does not run on every PR and is not a general offensive CI gate. The attacker must prove *actual native MongoDB* NoSQLi, XML entity substitution, OS command execution through the vulnerable npm package, and unique per-instance Flag retrieval across two rebuilt instances.
 
 ```bash
 docker build -t nodeblog-attacker -f labs/nodeblog/tests/Dockerfile.attacker labs/nodeblog/tests
@@ -57,7 +56,7 @@ docker run --rm --network nodeblog-ci \
   -e EXPECTED_USER_FLAG='TTP{example_web_flag}' nodeblog-attacker
 ```
 
-**Verified independent CI:** [NodeBlog real Web full-chain CI — successful run 45466022851](https://github.com/10010100111000/AttackBoxModule/actions/runs/45466022851). GitHub Actions completed the nine-step HTTP chain twice, against two freshly created target containers with distinct flags. Assertions include native MongoDB operator behavior, XXE disclosure, native `node-serialize` command execution as UID 10001, and reading the Web-only goal Flag; no shortcuts via `docker exec`.
+The manual development workflow validates all three Challenge Flags over HTTP: NoSQL authentication bypass and protected article access; native libxml2 XXE and the local challenge-data Flag; node-serialize 0.0.4 command execution and the final Web Flag. No Docker socket or target-side exec is available to the test client. It also checks that rerunning the same version does not change the manifest or answers.
 
 **Measured resources:** target image **165,215,162 bytes** (~157.6 MiB), memory **136.2 MiB** and **135.4 MiB** respectively during the two CI runs, ~65 PIDs. Both instances used `--cap-drop ALL` and `--security-opt no-new-privileges`; no privileged mode, extra Linux capabilities, or volume mounts.
 

@@ -1,13 +1,6 @@
 #!/bin/sh
 set -eu
 
-# Per-instance target flags; the Worker forwards values but never judges them.
-if [ -n "$NODEBLOG_USER_FLAG" ]; then
-  printf '%s\n' "$NODEBLOG_USER_FLAG" > /home/nodeblog/user.txt
-  chmod 0600 /home/nodeblog/user.txt
-fi
-unset NODEBLOG_USER_FLAG
-
 mkdir -p /data/mongo
 mongod --bind_ip 127.0.0.1 --port 27017 --dbpath /data/mongo \
   --wiredTigerCacheSizeGB 0.25 --quiet --logpath /data/mongod.log &

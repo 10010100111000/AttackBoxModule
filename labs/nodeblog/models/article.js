@@ -5,6 +5,7 @@ const articleSchema = new mongoose.Schema({
   slug: { type: String, required: true, unique: true },
   description: { type: String, default: '' },
   markdown: { type: String, default: '' },
+  private: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now }
 }, { versionKey: false, collection: 'articles' });
 

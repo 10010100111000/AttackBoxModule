@@ -37,8 +37,10 @@ app.get('/healthz', wrap(async (_req, res) => {
 }));
 
 app.get('/', wrap(async (req, res) => {
-  const articles = await Article.find().sort({ createdAt: -1 }).lean();
-  res.render('articles/index', { articles, authenticated: authenticated(req.cookies.auth) });
+  const isAuthenticated = authenticated(req.cookies.auth);
+  const visibility = isAuthenticated ? {} : { private: { $ne: true } };
+  const articles = await Article.find(visibility).sort({ createdAt: -1 }).lean();
+  res.render('articles/index', { articles, authenticated: isAuthenticated });
 }));
 
 app.use('/login', require('./routes/login')(authenticated, cookie_secret));

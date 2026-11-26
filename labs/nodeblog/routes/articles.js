@@ -52,8 +52,9 @@ module.exports = (authenticated) => {
 
   router.get('/:slug', wrap(async (req, res) => {
     const article = await Article.findOne({ slug: req.params.slug }).lean();
-    if (!article) return res.status(404).send('Not Found');
-    res.render('articles/show', { article, authenticated: authenticated(req.cookies.auth) });
+    const isAuthenticated = authenticated(req.cookies.auth);
+    if (!article || (article.private && !isAuthenticated)) return res.status(404).send('Not Found');
+    res.render('articles/show', { article, authenticated: isAuthenticated });
   }));
 
   router.get('/:slug/edit', requireAuth, wrap(async (req, res) => {
