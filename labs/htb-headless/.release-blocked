@@ -1,0 +1,3 @@
+Do not publish this target yet.
+
+The disclosed Flask routes and sudo syscheck behavior have been mapped into the reconstruction. The container has not yet been built or smoke-tested. Verify the Chromium admin reviewer, report persistence, Flask service identity, sudo working-directory behavior, and Worker flag injection before removing this marker.
