@@ -1527,20 +1527,20 @@
         "xss.blind",
         "command_injection.basic-rce"
       ],
-      "lab_ci_status": "unverified",
+      "lab_ci_status": "partial",
       "worker_status": "not_verified",
       "release_status": "blocked_by_marker",
       "evidence": "docs/research/HTB_HEADLESS_SOURCE_AUDIT.md",
-      "note": "HTB Headless reconstruction. Public app.py excerpt maps the actual WAF report, raw User-Agent rendering and dashboard date-to-os.popen flow. A real Chromium reviewer visits stored reports; a real dvir user owns the app; the original sudo syscheck script retains its relative initdb.sh call. No Docker build or runtime verification yet.",
+      "note": "HTB Headless reconstruction. Public app.py excerpt maps the actual WAF report, raw User-Agent rendering and dashboard date-to-os.popen flow. A real Chromium reviewer visits stored reports; a real dvir user owns the app; the original sudo syscheck script retains its relative initdb.sh call. Docker build, startup, health, homepage/support, user-cookie denial, SSH listener and browser-reviewer readiness smoke checks passed. Full exploit path, Worker integration and resource measurement remain pending.",
       "variant_profile": {
         "technology": "Debian 12, Python 3.11.2, Flask 2.2.2, Werkzeug 2.2.2, itsdangerous 2.1.2, Chromium, OpenSSH, sudo, Bash",
         "initial_discovery": "Under-construction homepage, /support contact form, /dashboard authorization boundary, TCP 22 and TCP 5000",
         "key_constraint_or_mechanism": "Support POST message triggers report; request headers are rendered into an HTML page with Jinja safe; admin Chromium visits saved reports; signed is_admin cookie is readable by JavaScript",
         "attack_path": "Recon -> WAF/report behavior -> User-Agent blind XSS -> admin cookie -> dashboard date command injection -> dvir -> sudo syscheck relative-path hijack -> root flag",
         "incremental_learning_value": "A realistic multi-stage OSCP-style path combining browser victim context, HTTP headers, signed cookies, shell command construction and Unix current-working-directory trust",
-        "confidence": "public source excerpt and multiple independent writeups map the application and OS stages; container and Worker remain unverified"
+        "confidence": "source-backed implementation; Docker build and ordinary startup/health smoke passed; manual exploit-path verification and Worker acceptance pending"
       },
-      "skill_mapping_stage": "source_audit_and_container_skeleton_added_not_validated",
+      "skill_mapping_stage": "container_build_startup_health_and_ordinary_smoke_passed_manual_attack_path_pending",
       "manual_validation": {
         "status": "not_reviewed",
         "commit": null,
