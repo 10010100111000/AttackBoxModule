@@ -72,19 +72,22 @@ PR 创建、更新或提交之前，先展示具体代码差异和实际检查�
 | ChallengeSkill | Challenge 与 Skill 的多对多关系 | 主考点、次要考点、学习目标 |
 | LabChallenge | Lab 与 Challenge 的关联 | 关联的 Lab、入口/服务、是否共享状态、环境要求 |
 | ChallengeDependency | 题目之间的前置关系 | 前置 Challenge、依赖原因、解锁条件 |
+| ChallengePath / Capstone | 多道题组成的学习路径或综合考核 | 子题目、完成规则、汇总进度；不必额外复制子题 Flag |
 
 默认允许一个 Lab 关联多个 Challenge；不要在每道题下复制一份 Dockerfile。若未来同一 Challenge 需要在不同真实应用中重复训练，可关联多个 Lab，但每个关联都要说明场景增量。
 
 ### 题目拆分规则
 
 1. 先从真实应用的可观察功能和漏洞链识别候选目标，不先按知识点数量切题。
-2. 只有在目标、可提交答案、学习成果或可独立验证的阶段有清晰边界时，才拆成不同 Challenge。
+2. **综合攻击链可以拆成多道 Challenge**：只要各阶段有独立的学习目标、可观察成果或值得单独训练的技能，就可以分别出题；题目可以存在前置依赖，不要求每道题都能从零独立进入。
 3. 一道 Challenge 可以组合多个 Skill；指定一个主 Skill，其余为次要 Skill。
 4. 如果后续漏洞必须先取得前一阶段权限，使用明确的 ChallengeDependency；不要假装后续题可独立完成。
-5. 多道题共享一个 Lab 时，可以共享服务和数据，但各题 Flag 必须有清晰边界，不能由普通页面、公开目录或前一道题无意泄露。
-6. 共享 Lab 的重置默认重置整个环境及其所有 Challenge 状态；除非平台明确支持独立快照，否则不承诺单题重置而不影响其他题。
-7. 不同 Challenge 的 Flag 由 Web 后端分别判题；Worker 不管理题目、Flag 或挑战解锁逻辑。
-8. Web 专项以 Web 目标为终点，不强制 SSH、Linux Root 或双 Flag。只有真实题目目标包含这些阶段时才纳入综合靶机路线。
+5. 没有自然独立 Flag 的阶段可以使用 question 类型的答案（例如识别漏洞组件、版本、虚拟主机或协议字段），不需要为每个阶段伪造 Flag 文件。
+6. 多道题共享一个 Lab 时，可以共享服务和数据；每个 Flag 目标必须有清晰边界，不能由普通页面、公开目录或前一道题无意泄露。
+7. 多道子题可以组成 ChallengePath / Capstone，作为一组综合训练或最终考核。综合路径汇总子题完成状态，不需要再复制一个重复 Flag。
+8. 共享 Lab 的重置默认重置整个环境及其所有 Challenge 状态；除非平台明确支持独立快照，否则不承诺单题重置而不影响其他题。
+9. 不同 Challenge 的 Flag 由 Web 后端分别判题；Worker 不管理题目、Flag 或挑战解锁逻辑。
+10. Web 专项以 Web 目标为终点，不强制 SSH、Linux Root 或双 Flag。只有真实题目目标包含这些阶段时才纳入综合靶机路线。
 
 ### 前台分类与后台技能
 
@@ -94,9 +97,9 @@ PR 创建、更新或提交之前，先展示具体代码差异和实际检查�
 
 | Lab | 可拆分的 Challenge 候选 | 关系建议 | 当前限制 |
 | --- | --- | --- | --- |
-| NodeBlog | NoSQL 认证绕过；XXE 文件读取/源码披露；反序列化执行 | 顺序依赖候选 | 现有题面是一道综合题；需确认每个阶段能否放置独立、自然取得的 Flag，不得制造测试后门 |
-| Zipping | ZIP 符号链接/源代码发现；SQL 注入与文件写入；LFI/执行 | 顺序依赖候选 | 现有题面是一道综合 Web 题；需审查拆题后是否保留真实发现路径 |
-| Soccer | 文件管理器与上传入口；虚拟主机/服务发现；WebSocket 盲注 | 部分独立、部分顺序依赖 | 上传阶段是否值得独立成题，要看它是否有独立目标，而不是只为拆分而拆分 |
+| NodeBlog | NoSQL 认证绕过；XXE 源码披露；反序列化执行 | 三道递进 Challenge + 一条 Capstone 路径 | 前两题可用 source-derived question 完成；最终 RCE 使用现有 Web Flag；不伪造额外 Flag |
+| Zipping | ZIP symlink 文件读取；SQLi → MariaDB FILE → PHP Include | 两道独立 Challenge + 一条 Capstone 路径 | 上传与 Shop 是独立功能面；第二题需设计不同的自然答案，不能复用已被上传路径读取的 Flag |
+| Soccer | Tiny File Manager 上传；vhost/协议发现；WebSocket 盲注 | 三道递进 Challenge + 一条 Capstone 路径 | 前两题用发现结果作为 question 答案；最终盲注使用数据库中的 Web Flag |
 | Usage | 密码恢复处的布尔/时间盲注；管理后台文件上传 | 顺序依赖候选 | 只规划 Web 阶段；SSH、Monit、sudo Root 不属于 Web 专项默认目标 |
 | WonderCMS | 属性上下文反射型 XSS；管理员浏览器与跨用户影响 | 同一题可覆盖多个 Skill，优先不强拆 | 管理员 Bot 与 Flag 获取属于靶机自身；生产 Worker 尚未验收 |
 | Django Debug XSS | Debug 错误页中的反射型 XSS | 单题多技能 | 基础专项，不为增加题数强拆 |
