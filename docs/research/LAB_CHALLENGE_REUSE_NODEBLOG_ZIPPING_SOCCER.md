@@ -104,13 +104,27 @@ GitHub Actions 临时 Ubuntu Runner 已使用**未修改的 Zipping 镜像**完�
 
 ### Challenge 独立性判断
 
-在 shortcut 验证前，不应把当前 SQLi/LFI 题拆成多个 Flag Challenge。
+这里应该按**应用功能面和真实依赖关系**拆题，而不是因为它们都在同一台靶机里就强行组成一道题。
 
-- 如果 symlink 可以直接读取 Flag，当前唯一 Flag 并不能证明 SQLi/FILE/LFI 链完成。
-- 可以考虑把 symlink disclosure 作为独立的文件处理 Challenge，但后续 SQLi/LFI 题必须有独立、自然可取得的目标答案；不能复制同一个 Flag。
-- 如果不希望 symlink 直接成为最终目标，则需要重新设计 Flag 的权限/存放位置或上传行为，但不能因此删除真实的 ZIP symlink 漏洞，也不能先凭空增加第二枚 Flag。
+- `/upload.php` 的 ZIP 上传/符号链接读取，是 Careers 功能。
+- `/shop/product.php` 的 SQL 注入，是商城商品详情功能。
+- `/shop/index.php?page=...` 的 PHP include，与数据库 FILE 写入形成后续文件执行路径。
 
-推荐暂时保留一个综合 Challenge，先完成 shortcut 负向/正向测试，再决定是否拆分。
+Careers 上传和 Shop SQLi 没有前置依赖，可以拆成两道独立 Challenge，共用同一个 Zipping Lab：
+
+**Challenge A：ZIP Symlink 文件读取**
+- 主考点：ZIP 上传处理/符号链接。
+- 使用当前已经确认可达的上传 URL 读取目标 Flag。
+- 这道题有实际、独立、可复现的完成目标。
+
+**Challenge B：SQL Injection → MariaDB FILE → PHP Include**
+- 主考点：SQL 注入。
+- 次考点：过滤绕过、数据库文件写入、PHP LFI/include。
+- 这三个阶段在当前商城实现中是因果相连的：SQLi 负责写入 PHP 文件，include 负责让文件在 Web 上下文执行。因此暂时保留为一道组合 Challenge，不机械拆成三题。
+- 需要为它设计一个**不同于 Challenge A** 的自然答案。不能继续使用当前 `/home/rektsu/user.txt`，因为它已经能从 ZIP symlink 直接读取；也不能只把同一个 Flag 复制到另一处。
+- 需要证明完成 Challenge A 不会顺手得到 Challenge B 的答案，完成 Challenge B 则确实需要预期 SQLi/FILE/include 路径。
+
+因此建议将原 Zipping 综合题重构为两个 Challenge，而不是一个，也不是三个。两题关联同一 Lab，但各自有独立目标和 Flag/判题记录。
 
 ### 既有证据和限制
 
