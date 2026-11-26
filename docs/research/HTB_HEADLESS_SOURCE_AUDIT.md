@@ -1,6 +1,6 @@
 # HTB Headless — source audit and reconstruction notes
 
-**Status:** Docker build and ordinary startup/health smoke checks passed. CI image size is 325,701,549 bytes (about 310.7 MiB); idle memory is 49.89 MiB. Peak report-review memory and manual attack-path acceptance remain pending. This is a reconstruction of the retired HTB machine's observable application and OS configuration, not the original VM image.
+**Status:** Source mapping and implementation are in progress. Earlier build/idle measurements refer to a previous revision and are not acceptance evidence for the current branch. The latest static-Flag and integration-test changes have not yet been confirmed by a successful build job. Full development-time User-to-Root acceptance and current resource measurements remain pending. This is a reconstruction of the retired HTB machine's observable application and OS configuration, not the original VM image.
 
 ## Primary references
 

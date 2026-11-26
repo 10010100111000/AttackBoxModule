@@ -1,3 +1,7 @@
 Do not publish this target yet.
 
-The disclosed Flask routes and sudo syscheck behavior have been mapped into the reconstruction. The container has not yet been built or smoke-tested. Verify the Chromium admin reviewer, report persistence, Flask service identity, sudo working-directory behavior, and Worker flag injection before removing this marker.
+Development-time full-path acceptance has not been performed on a fresh isolated container. Before removing this marker, verify the real report-review browser/admin session, the intended dvir command-execution context, User Flag reachability, and the actual sudo syscheck relative-path Root stage. Record the observed results and confirm a clean rebuild reproduces them.
+
+The Worker owns only target/sandbox lifecycle. Flags are static challenge files in the image; do not add Worker-side Flag injection or rotation.
+
+After development acceptance, run the non-offensive CI regression checks and confirm the build matrix actually runs. CI green alone is not proof that the vulnerability chain is usable.
