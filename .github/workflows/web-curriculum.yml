@@ -67,7 +67,7 @@ jobs:
           import json, pathlib, re
           manifest = json.loads(pathlib.Path("labs/bike/flags/releases/0.0.0-ci.json").read_text())
           flag = manifest["flag"]
-          assert re.fullmatch(r"TTP\\{[a-z2-7]{16}\\}", flag)
+          assert flag.startswith("TTP{") and flag.endswith("}") and len(flag) == 21 and all(ch in "abcdefghijklmnopqrstuvwxyz234567" for ch in flag[4:-1])
           assert pathlib.Path("labs/bike/flags/root.txt").read_text().strip() == flag
           challenge = pathlib.Path("challenges/startpoint/bike/Bike.md").read_text()
           assert challenge.count(f'answer: "{flag}"') == 1
@@ -116,7 +116,7 @@ jobs:
           import json, pathlib, re
           manifest = json.loads(pathlib.Path("labs/django-debug-xss/flags/releases/0.0.0-ci.json").read_text())
           flag = manifest["flag"]
-          assert re.fullmatch(r"TTP\{[a-z2-7]{16}\}", flag)
+          assert flag.startswith("TTP{") and flag.endswith("}") and len(flag) == 21 and all(ch in "abcdefghijklmnopqrstuvwxyz234567" for ch in flag[4:-1])
           assert pathlib.Path("labs/django-debug-xss/flags/user.txt").read_text().strip() == flag
           challenge = pathlib.Path("challenges/xss/harbor-registry/Harbor-Lights.md").read_text()
           assert challenge.count(f'answer: "{flag}"') == 1
