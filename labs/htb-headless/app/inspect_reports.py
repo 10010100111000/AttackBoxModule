@@ -46,6 +46,7 @@ def main():
 
     # The first loopback visit receives the application's signed admin cookie.
     visit(BASE_URL + "/")
+    Path("/tmp/headless-admin-review.ready").write_text("ready\n", encoding="utf-8")
 
     while True:
         for report in sorted(REPORTS.glob("*.html")):
