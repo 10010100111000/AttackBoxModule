@@ -57,7 +57,7 @@ jobs:
           assert challenge.count("kind: flag") == 1
           assert "lab: precious" in challenge
           with open(os.environ["GITHUB_OUTPUT"], "a") as output:
-              output.write(f"expected={flag}\\n")
+              output.write(f"expected={flag}\n")
           print(f"::add-mask::{flag}")
           print("Manifest, target seed and Challenge answer match: PASS")
           PY
@@ -109,13 +109,13 @@ jobs:
           print("PASS: release target startup, health and ordinary PDF conversion")
           PY
           docker stats --no-stream --format 'Target memory: {{.MemUsage}}, PIDs: {{.PIDs}}' precious-target
-          docker run --rm --network precious-release --network-alias precious-player \\
-            -v "$GITHUB_WORKSPACE/labs/precious/exploit.py:/exploit.py:ro" \\
-            -e EXPECTED_FLAG \\
-            python:3.12-alpine python /exploit.py \\
-              --url http://precious-target:8080 \\
-              --callback-host precious-player \\
-              --listen-port 9000 \\
+          docker run --rm --network precious-release --network-alias precious-player \
+            -v "$GITHUB_WORKSPACE/labs/precious/exploit.py:/exploit.py:ro" \
+            -e EXPECTED_FLAG \
+            python:3.12-alpine python /exploit.py \
+              --url http://precious-target:8080 \
+              --callback-host precious-player \
+              --listen-port 9000 \
               --expected-flag "$EXPECTED_FLAG"
 
       - name: Commit generated release artifacts
