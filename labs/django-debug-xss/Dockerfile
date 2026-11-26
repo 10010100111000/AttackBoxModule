@@ -15,6 +15,7 @@ COPY app.py /app/app.py
 COPY xss /app/xss
 COPY start.sh /usr/local/bin/start-lab
 COPY seed.py /usr/local/bin/seed-lab.py
+COPY flags /app/flags
 COPY bot.py /opt/review/bot.py
 RUN chmod 0755 /usr/local/bin/start-lab \
  && python -m py_compile /app/app.py
