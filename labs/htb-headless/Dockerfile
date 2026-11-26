@@ -22,12 +22,13 @@ COPY app/ /home/dvir/app/
 COPY config/supervisord.conf /etc/supervisor/conf.d/headless.conf
 COPY config/sshd_config /etc/ssh/sshd_config
 COPY config/sudoers-dvir /etc/sudoers.d/dvir
+COPY config/dvir-mail /var/mail/dvir
 COPY scripts/entrypoint.sh /usr/local/bin/headless-entrypoint
 COPY scripts/healthcheck.sh /usr/local/bin/headless-healthcheck
 COPY scripts/syscheck /usr/bin/syscheck
 
 RUN set -eu; \
-    chown -R root:root /home/dvir/app; \
+    chown -R dvir:dvir /home/dvir/app; \
     chmod 0755 /home/dvir/app; \
     chmod 0755 /home/dvir/app/app.py /home/dvir/app/inspect_reports.py /home/dvir/app/report.sh; \
     chown -R dvir:dvir /home/dvir/app/hacking_reports; \
