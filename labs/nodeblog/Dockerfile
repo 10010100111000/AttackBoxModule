@@ -23,7 +23,6 @@ RUN npm install --omit=dev --no-audit --no-fund && npm cache clean --force
 FROM node:20-bookworm-slim AS runtime
 ENV NODE_ENV=production \
     MONGO_URL=mongodb://127.0.0.1:27017/blog \
-    NODEBLOG_USER_FLAG="" \
     PORT=5000
 RUN set -eux; \
     apt-get update; \
@@ -33,7 +32,7 @@ RUN set -eux; \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*; \
     groupadd -g 10001 nodeblog; \
     useradd -u 10001 -g 10001 -m -s /usr/sbin/nologin nodeblog; \
-    mkdir -p /opt/blog /data/mongo; \
+    mkdir -p /opt/blog/challenge-data /run/nodeblog /data/mongo; \
     chown -R nodeblog:nodeblog /opt/blog /data /home/nodeblog
 COPY --from=mongo-package /mongodb/usr/bin/mongod /usr/local/bin/mongod
 COPY --from=node-deps /opt/blog/node_modules /opt/blog/node_modules
@@ -42,12 +41,15 @@ COPY models/ /opt/blog/models/
 COPY routes/ /opt/blog/routes/
 COPY views/ /opt/blog/views/
 COPY public/ /opt/blog/public/
+COPY flags/flag01.txt /run/nodeblog/flag01.txt
+COPY flags/flag02.txt /opt/blog/challenge-data/xxe-flag.txt
 COPY flags/user.txt /home/nodeblog/user.txt
 COPY scripts/entrypoint.sh /usr/local/bin/nodeblog-entrypoint
 RUN set -eux; \
     chmod 755 /usr/local/bin/nodeblog-entrypoint /usr/local/bin/mongod; \
-    chown nodeblog:nodeblog /home/nodeblog/user.txt; \
+    chown nodeblog:nodeblog /home/nodeblog/user.txt /run/nodeblog/flag01.txt /opt/blog/challenge-data/xxe-flag.txt; \
     chmod 0600 /home/nodeblog/user.txt; \
+    chmod 0400 /run/nodeblog/flag01.txt /opt/blog/challenge-data/xxe-flag.txt; \
     if ldd /usr/local/bin/mongod | grep -q 'not found'; then exit 1; fi
 WORKDIR /opt/blog
 USER nodeblog
