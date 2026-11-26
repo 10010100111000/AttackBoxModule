@@ -76,16 +76,31 @@ README 记录两次全新容器的独立 HTTP 利用链 CI 通过，包含真实
 
 因此，**一个指向 `/home/rektsu/user.txt` 的绝对 ZIP symlink 可能在上传阶段就直接读取最终 Flag**。这是基于代码和权限的高置信度风险判断，但本次没有实际构建容器并复现该请求，不能把它写成已经证实。
 
-### 必须先做的隔离验证
+### 隔离验证结果：直接 Flag 读取已确认（2026-11-26）
 
-在临时、隔离的测试实例中：
+GitHub Actions 临时 Ubuntu Runner 已使用**未修改的 Zipping 镜像**完成验证：
 
-- 用一个名字为 `resume.pdf` 的 ZIP symlink 指向 `/home/rektsu/user.txt`。
-- 确认 ZipArchive 对该条目返回的文件名和元数据。
-- 确认 Info-ZIP 解包后实际得到的是 symlink，而不是普通文件。
-- 确认 rename 后 symlink 仍指向原绝对目标。
-- 通过返回的 uploads URL 请求该文件，观察是否直接返回 Flag。
-- 使用一个无敏感内容的 PHP 源文件作为正向控制。
+- 在内部 Docker 网络启动目标，注入唯一测试 Flag `TTP{zipping_symlink_probe_2026}`。
+- 生成一个 ZIP，唯一条目名为 `resume.pdf`，Unix symlink 目标为 `/home/rektsu/user.txt`。
+- 通过正常 `/upload.php` 上传，应用返回成功和 `/uploads/2da1da9f8cf138cae5a2d14a4d148be0/resume.pdf`。
+- 对该返回 URL 发起普通 HTTP GET，响应正文包含唯一测试 Flag。
+- 整个过程没有使用 SQLi、MariaDB FILE、PHP LFI 或命令执行。
+- Runner 最后清理目标容器、内部网络和测试镜像。
+
+<badge>结论：DIRECT_FLAG_READ_CONFIRMED</badge>
+
+证据：[GitHub Actions run 45782449750](https://github.com/10010100111000/AttackBoxModule/actions/runs/45782449750)，测试提交 `208b776f643693c5b44130335d93298b17df9fd0`。同一提交上的常规 Lab 镜像构建/启动检查也通过：[run 45782449684](https://github.com/10010100111000/AttackBoxModule/actions/runs/45782449684)。
+
+这证实了 ZIP symlink 上传路径可以直接读取最终 Flag，原先设计的 SQLi/FILE/LFI 阶段并非取得 Flag 的必要条件。
+
+### 后续决策（尚未修改运行代码）
+
+必须先决定题目目标：
+
+1. **将 ZIP symlink 文件读取作为题目核心**：把它明确设计为文件处理专项，SQLi/LFI 留作环境中的额外漏洞或后续训练目标；但不能宣称用户必须完成 SQLi/LFI 才能得到现有 Flag。
+2. **保留 SQLi/FILE/LFI 为必经目标**：需要调整 Flag 的存放/可达边界或题目机制，使公开上传 URL 不再直接暴露最终 Flag，同时保留真实的归档处理漏洞。之后必须重新跑直接 symlink 负向测试和完整 SQLi/LFI 正向链。
+
+本轮没有修改 Dockerfile、PHP、Flag、题面或 Worker，也没有解除发布阻断。
 
 ### Challenge 独立性判断
 
