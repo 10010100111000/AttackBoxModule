@@ -11,7 +11,8 @@ chown root:root /root/root.txt
 chmod 0400 /home/dvir/user.txt
 chmod 0600 /root/root.txt
 
-mkdir -p /run/sshd /run/supervisor /home/dvir/app/hacking_reports
+mkdir -p /run/sshd /run/supervisor /home/dvir/app/hacking_reports /tmp/.config /tmp/.cache /tmp/headless-admin-chromium
+chown -R dvir:dvir /tmp/.config /tmp/.cache /tmp/headless-admin-chromium
 chown -R dvir:dvir /home/dvir/app/hacking_reports
 chmod 0700 /home/dvir/app/hacking_reports
 ssh-keygen -A
