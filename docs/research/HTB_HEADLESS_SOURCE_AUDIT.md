@@ -60,7 +60,7 @@ The disclosed template uses \`{{ request_info | safe }}\`. This is the actual HT
 
 ### 3. Admin report review
 
-The original application directory contains \`inspect_reports.py\` and \`hacking_reports/\`; independent write-ups document an automated process that reviews newly stored reports. The reconstruction uses a real headless Chromium browser, not a JavaScript interpreter or a simulated callback. It first visits the site through loopback to obtain the signed admin cookie, then opens each newly stored report URL.
+The original application directory contains \`inspect_reports.py\` and \`hacking_reports/\`; independent write-ups document an automated process that reviews newly stored reports. The reconstruction uses a real headless Chromium browser process, not a JavaScript interpreter or a simulated callback. It first visits the site through loopback to obtain the signed admin cookie, then opens each newly stored report URL.
 
 The browser reviewer is a separate process from the Flask application. It does not evaluate a supplied payload itself; Chromium renders the same stored HTML report page that an administrator reviews.
 
