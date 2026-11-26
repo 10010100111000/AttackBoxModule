@@ -247,6 +247,10 @@ jobs:
             intense)
               args+=(-e INTENSE_WEB_FLAG="TTP{ci_intense_smoke_only}")
               ;;
+            htb-headless)
+              args+=(-e HEADLESS_USER_FLAG="TTP{ci_headless_user_smoke_only}"
+                -e HEADLESS_ROOT_FLAG="TTP{ci_headless_root_smoke_only}")
+              ;;
           esac
           test_container=$(docker run -d "${args[@]}" "$IMAGE")
           cleanup() { docker logs "$test_container"; docker rm -f "$test_container"; }
@@ -281,6 +285,20 @@ jobs:
               test "$code" = "403"
             '
             echo "PASS: Intense homepage, login form, source archive, guest login, normal message submission and guest admin access control"
+          fi
+          if [ "$LAB_SLUG" = "htb-headless" ]; then
+            docker exec "$test_container" sh -ec '
+              base="http://127.0.0.1:5000"
+              curl -fsS "$base/" -c /tmp/headless-cookies | grep -qi "UNDER CONSTRUCTION"
+              curl -fsS "$base/support" | grep -qi "Contact Support"
+              code=$(curl -s -o /dev/null -w "%{http_code}" -b /tmp/headless-cookies "$base/dashboard")
+              test "$code" = "401"
+              pgrep -f "[i]nspect_reports.py" >/dev/null
+              ss -lnt | grep -q ":22 "
+              test -s /home/dvir/user.txt
+              test -s /root/root.txt
+            '
+            echo "PASS: Headless homepage, support form, ordinary user authorization, Chromium reviewer, SSH listener and per-instance flag files"
           fi
       - name: Publish tested image
         if: github.event_name == 'workflow_dispatch'
