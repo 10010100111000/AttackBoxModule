@@ -2683,29 +2683,41 @@
     },
     {
       "lab_id": "zipping",
-      "status": "audit_recommended_single_challenge_pending_flag_path_check",
-      "reason": "The current app has a serial archive-symlink -> SQLi/FILE -> PHP LFI/include path, but code inspection reveals a likely shortcut: Apache FollowSymLinks plus a moved absolute ZIP symlink and a www-data-readable user.txt may let the archive stage read the final Flag directly. This must be tested before splitting or publishing.",
+      "status": "two_challenge_split_recommended_flag_design_pending",
+      "reason": "The ZIP upload/symlink disclosure and the shop product SQLi are separate application surfaces with no prerequisite relationship. The SQLi -> MariaDB FILE write -> PHP include path is a connected chain and should remain together unless an independently meaningful LFI objective is demonstrated.",
       "challenges": [
         {
-          "key": "zipping-web-chain",
-          "title": "Zipping: archive symlink, SQLi file write and PHP inclusion",
-          "challenge_type": "composite_web_pending_shortcut_test",
+          "key": "zipping-zip-symlink-disclosure",
+          "title": "Zipping: ZIP symlink file disclosure",
+          "challenge_type": "focused_web",
           "primary_skill": "file_upload.parser-mismatch",
           "secondary_skills": [
-            "sqli.union",
+            "file_read.path-traversal",
+            "information_disclosure.config-leak"
+          ],
+          "dependency_on": [],
+          "flag_status": "existing_flag_currently_reachable_here",
+          "flag_location": "/home/rektsu/user.txt",
+          "flag_owner": "www-data",
+          "flag_mode": "0400",
+          "flag_reachability": "Confirmed by isolated GitHub Actions probe: upload a single-entry absolute symlink ZIP through /upload.php, then GET the returned /uploads URL to read the Flag.",
+          "implementation_status": "challenge_split_proposal_flag_boundary_review_pending"
+        },
+        {
+          "key": "zipping-sqli-file-include",
+          "title": "Zipping: SQL injection to PHP file inclusion",
+          "challenge_type": "composite_web",
+          "primary_skill": "sqli.union",
+          "secondary_skills": [
             "sqli.filter-bypass",
             "sqli.file-operations",
             "file_read.lfi",
             "file_read.file-to-rce"
           ],
           "dependency_on": [],
-          "flag_status": "existing_single_flag_path_requires_negative_control",
-          "flag_location": "/home/rektsu/user.txt",
-          "flag_owner": "www-data",
-          "flag_mode": "0400",
-          "flag_reachability": "intended final PHP include/RCE runs as www-data and can read the file; direct read through the ZIP symlink upload path appears possible from source/config but has not been independently reproduced",
-          "implementation_status": "existing_challenge_keep_single_until_shortcut_verified",
-          "risk": "Test whether a one-entry ZIP containing an absolute symlink to /home/rektsu/user.txt passes ZipArchive checks, survives unzip -j, rename and Apache FollowSymLinks. If yes, the SQLi/LFI stages are bypassable for the current Flag."
+          "flag_status": "new_independent_flag_not_designed",
+          "flag_reachability": "The connected chain is SQLi newline filter bypass -> MariaDB FILE write -> PHP include of the written file. A distinct answer must be naturally retrievable through this chain and must not be the same Flag exposed by the ZIP symlink Challenge.",
+          "implementation_status": "challenge_split_proposal_requires_flag_design_and_acceptance"
         }
       ]
     },
@@ -2844,10 +2856,10 @@
           "reachability": "Confirmed direct read via the upload/symlink route: the same www-data-readable /home/rektsu/user.txt is exposed through Apache FollowSymLinks. The intended SQLi/LFI path also reaches it, but is not required."
         },
         "independence": {
-          "decision": "Direct Flag shortcut confirmed. Keep one composite Challenge for now, but the intended SQLi/FILE/LFI chain is currently bypassable and must be corrected or the learning objective re-scoped before release.",
-          "reason": "The isolated GitHub Actions probe uploaded a one-entry ZIP containing an absolute symlink named resume.pdf pointing to /home/rektsu/user.txt. The upload returned a public /uploads/.../resume.pdf URL, and an HTTP GET returned the unique test Flag without SQLi, MariaDB FILE write or LFI."
+          "decision": "Split into two Challenges by independent application surfaces: ZIP symlink file disclosure, and SQLi -> FILE write -> PHP include. Do not split SQLi, FILE write and LFI into separate Challenges because these stages are causally connected in the existing implementation.",
+          "reason": "The upload feature at /upload.php is independent of the shop product endpoint /shop/product.php and shop include endpoint /shop/index.php. The direct symlink Flag probe confirms the ZIP challenge has its own complete objective. The SQLi/FILE/LFI chain is a separate route; it needs a new distinct Flag/answer design before it can become a second publishable Challenge."
         },
-        "required_followup": "Confirmed in disposable GitHub Actions run 45782449750. Before release, decide whether the challenge is intentionally about arbitrary ZIP symlink file disclosure (then change the stated goal and retain only this behavior as the intended solution), or whether SQLi/FILE/LFI must remain required (then revise the target so the final Flag is not directly reachable through the upload URL while preserving the genuine archive behavior). After the change, rerun the direct-symlink negative test and the intended full Web chain on fresh instances.",
+        "required_followup": "Create a separate Challenge brief for the ZIP symlink disclosure using the confirmed existing path. Design a distinct second objective for SQLi -> FILE write -> PHP include; do not reuse the current Flag because it is already exposed by the ZIP route. Prove the second answer is retrievable through the SQLi/LFI chain and not by solving the ZIP Challenge alone. Then verify shared Lab reset/progress behavior in the platform.",
         "historical_ci": "The README reports two fresh isolated instances through symlink source read, SQLi filter bypass, MariaDB FILE write, PHP include and Flag retrieval. Existing CI evidence does not by itself rule out the shorter direct-symlink-to-Flag path.",
         "probe_evidence": {
           "workflow": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45782449750",
@@ -2857,6 +2869,27 @@
           "upload_url_path": "/uploads/2da1da9f8cf138cae5a2d14a4d148be0/resume.pdf",
           "response": "HTTP GET of the returned upload URL contained the unique test Flag",
           "scope": "Disposable Ubuntu GitHub-hosted runner; isolated internal Docker network; unchanged Zipping image; temporary target; automatic cleanup."
+        },
+        "challenge_split": {
+          "independent_surfaces": [
+            {
+              "challenge": "zipping-zip-symlink-disclosure",
+              "surface": "/upload.php -> /uploads/<archive-hash>/resume.pdf",
+              "independent": true,
+              "existing_flag": true
+            },
+            {
+              "challenge": "zipping-sqli-file-include",
+              "surface": "/shop/product.php -> MariaDB FILE -> /shop/index.php?page=...",
+              "independent": true,
+              "existing_flag": false
+            }
+          ],
+          "connected_stages": [
+            "SQL injection",
+            "MariaDB FILE write",
+            "PHP LFI/include"
+          ]
         }
       },
       "soccer": {
