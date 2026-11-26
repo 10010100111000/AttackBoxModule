@@ -25,9 +25,6 @@ until node /opt/blog/seed.js; do
   sleep 2
 done
 
-# Flag 01 is now stored in the protected MongoDB article; remove its seed file.
-rm -f /run/nodeblog/flag01.txt
-
 node /opt/blog/server.js &
 web_pid=$!
 wait "$web_pid"
