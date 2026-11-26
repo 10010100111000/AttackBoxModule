@@ -2841,14 +2841,23 @@
           "path": "/home/rektsu/user.txt",
           "owner": "www-data",
           "mode": "0400",
-          "reachability": "Final PHP include/RCE executes as www-data and can read the Flag. A direct symlink route to the same path is a high-confidence source-level risk, not yet separately reproduced."
+          "reachability": "Confirmed direct read via the upload/symlink route: the same www-data-readable /home/rektsu/user.txt is exposed through Apache FollowSymLinks. The intended SQLi/LFI path also reaches it, but is not required."
         },
         "independence": {
-          "decision": "Do not split yet. Keep one composite Challenge pending an isolated shortcut test.",
-          "reason": "The current Flag is readable by www-data, the same identity that serves the extracted symlink and executes included PHP. An absolute ZIP symlink named *.pdf may therefore point directly at user.txt, bypassing SQLi/FILE/LFI. If confirmed, decide whether symlink disclosure is an accepted independent Challenge and give the later SQLi/LFI objective a distinct natural answer, or redesign Flag reachability without removing the authentic vulnerabilities."
+          "decision": "Direct Flag shortcut confirmed. Keep one composite Challenge for now, but the intended SQLi/FILE/LFI chain is currently bypassable and must be corrected or the learning objective re-scoped before release.",
+          "reason": "The isolated GitHub Actions probe uploaded a one-entry ZIP containing an absolute symlink named resume.pdf pointing to /home/rektsu/user.txt. The upload returned a public /uploads/.../resume.pdf URL, and an HTTP GET returned the unique test Flag without SQLi, MariaDB FILE write or LFI."
         },
-        "required_followup": "In a disposable test instance, submit a single-entry ZIP with a symlink named e.g. resume.pdf targeting /home/rektsu/user.txt; verify the actual extracted inode/link, resulting HTTP response and whether the Flag is returned. Also test a benign source-file symlink as control. Do not change production code until this is measured.",
-        "historical_ci": "The README reports two fresh isolated instances through symlink source read, SQLi filter bypass, MariaDB FILE write, PHP include and Flag retrieval. Existing CI evidence does not by itself rule out the shorter direct-symlink-to-Flag path."
+        "required_followup": "Confirmed in disposable GitHub Actions run 45782449750. Before release, decide whether the challenge is intentionally about arbitrary ZIP symlink file disclosure (then change the stated goal and retain only this behavior as the intended solution), or whether SQLi/FILE/LFI must remain required (then revise the target so the final Flag is not directly reachable through the upload URL while preserving the genuine archive behavior). After the change, rerun the direct-symlink negative test and the intended full Web chain on fresh instances.",
+        "historical_ci": "The README reports two fresh isolated instances through symlink source read, SQLi filter bypass, MariaDB FILE write, PHP include and Flag retrieval. Existing CI evidence does not by itself rule out the shorter direct-symlink-to-Flag path.",
+        "probe_evidence": {
+          "workflow": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45782449750",
+          "commit": "208b776f643693c5b44130335d93298b17df9fd0",
+          "result": "DIRECT_FLAG_READ_CONFIRMED",
+          "target_flag": "TTP{zipping_symlink_probe_2026}",
+          "upload_url_path": "/uploads/2da1da9f8cf138cae5a2d14a4d148be0/resume.pdf",
+          "response": "HTTP GET of the returned upload URL contained the unique test Flag",
+          "scope": "Disposable Ubuntu GitHub-hosted runner; isolated internal Docker network; unchanged Zipping image; temporary target; automatic cleanup."
+        }
       },
       "soccer": {
         "evidence": [
