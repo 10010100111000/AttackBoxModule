@@ -1,0 +1,1 @@
+dvir ALL=(ALL) NOPASSWD: /usr/bin/syscheck
