@@ -99,7 +99,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          docker run -d --name bike-target --network bike-release --network-alias bike-target \\
+          docker run -d --name bike-target --network bike-release --network-alias bike-target \
             --memory 700m --cpus 1.5 --pids-limit 160 --security-opt no-new-privileges ttp-bike:release
           ready=0
           for attempt in $(seq 1 60); do
@@ -118,9 +118,9 @@ jobs:
         env:
           EXPECTED_FLAG: ${{ steps.flag.outputs.expected }}
         run: |
-          docker run --rm --network bike-release \\
-            -v "$GITHUB_WORKSPACE/labs/bike/verify_ssti.py:/verify_ssti.py:ro" \\
-            -e ALLOW_INTERNAL_TARGET=1 -e EXPECTED_FLAG \\
+          docker run --rm --network bike-release \
+            -v "$GITHUB_WORKSPACE/labs/bike/verify_ssti.py:/verify_ssti.py:ro" \
+            -e ALLOW_INTERNAL_TARGET=1 -e EXPECTED_FLAG \
             python:3.12-alpine python /verify_ssti.py --url http://bike-target:80
 
       - name: Clean up release acceptance environment
