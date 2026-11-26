@@ -104,29 +104,17 @@ GitHub Actions 临时 Ubuntu Runner 已使用**未修改的 Zipping 镜像**完�
 
 本轮没有修改 Dockerfile、PHP、Flag、题面或 Worker，也没有解除发布阻断。
 
-### Challenge 独立性判断
+### Challenge 拆分建议：三道子题 + 一条综合路径
 
-这里应该按**应用功能面和真实依赖关系**拆题，而不是因为它们都在同一台靶机里就强行组成一道题。
+根据你的教学设计原则，综合链条可以拆成多道有独立目标的 Challenge；题目之间允许存在前置依赖。Zipping 建议拆成：
 
-- `/upload.php` 的 ZIP 上传/符号链接读取，是 Careers 功能。
-- `/shop/product.php` 的 SQL 注入，是商城商品详情功能。
-- `/shop/index.php?page=...` 的 PHP include，与数据库 FILE 写入形成后续文件执行路径。
+1. **Zipping 01 — ZIP Symlink File Disclosure**：独立的 Careers 上传功能。现有 `/home/rektsu/user.txt` 已通过真实 ZIP symlink 上传 URL 直接可读，作为第一题 Flag。考察 ZIP 结构、Unix symlink 元数据、上传处理与文件读取。
+2. **Zipping 02 — SQL Injection and Database FILE**：独立的 Shop 商品查询功能。考察换行绕过、UNION SQLi、MariaDB FILE 权限。建议在专门的数据库 challenge record 中增加第二枚 Flag，让它通过真实 SQLi 查询取得；不要将它放在 www-data 可读文件中，否则第一题的 ZIP symlink 可能直接读取。
+3. **Zipping 03 — SQLi File Write to PHP Include**：依赖 02，考察 SQLi FILE 写入 PHP 文件后，通过 `/shop/index.php?page=...` 触发真实 PHP include。此阶段先用 question 型完成条件，例如验证 include 执行输出的有效身份或稳定结果；暂不放第三枚 Flag。
 
-Careers 上传和 Shop SQLi 没有前置依赖，可以拆成两道独立 Challenge，共用同一个 Zipping Lab：
+为什么第三题暂时不放 Flag：第一题的 symlink 能读取 Apache 进程 www-data 可读的文件，而 PHP include 也是以 www-data 执行。任何放在 www-data 可读文件里的静态 Flag 都可能被第一题直接读走。数据库 Flag 又可能被第二题的 SQLi 直接取走。必须先有可靠的独立数据/权限边界，才适合增加第三枚 Flag，不能为满足数量而造一个绕题路径。
 
-**Challenge A：ZIP Symlink 文件读取**
-- 主考点：ZIP 上传处理/符号链接。
-- 使用当前已经确认可达的上传 URL 读取目标 Flag。
-- 这道题有实际、独立、可复现的完成目标。
-
-**Challenge B：SQL Injection → MariaDB FILE → PHP Include**
-- 主考点：SQL 注入。
-- 次考点：过滤绕过、数据库文件写入、PHP LFI/include。
-- 这三个阶段在当前商城实现中是因果相连的：SQLi 负责写入 PHP 文件，include 负责让文件在 Web 上下文执行。因此暂时保留为一道组合 Challenge，不机械拆成三题。
-- 需要为它设计一个**不同于 Challenge A** 的自然答案。不能继续使用当前 `/home/rektsu/user.txt`，因为它已经能从 ZIP symlink 直接读取；也不能只把同一个 Flag 复制到另一处。
-- 需要证明完成 Challenge A 不会顺手得到 Challenge B 的答案，完成 Challenge B 则确实需要预期 SQLi/FILE/include 路径。
-
-因此建议将原 Zipping 综合题重构为两个 Challenge，而不是一个，也不是三个。两题关联同一 Lab，但各自有独立目标和 Flag/判题记录。
+另设 **Zipping — Complete Web Assessment** 作为 Capstone，要求完成三个子题，汇总进度，不重复复制 Flag。
 
 ### 既有证据和限制
 
@@ -159,15 +147,15 @@ README 记录两次全新实例的 CI 完整链通过：ZIP symlink 读取源码
 
 ### Challenge 拆分建议：三道递进题 + 一条综合路径
 
-Soccer 的三个阶段同样可以拆成独立训练题，即使后两题需要前面的 foothold：
+Soccer 可以将真实利用链拆成三个独立学习目标，并为每个阶段设计 Flag：
 
-1. **Soccer 01 — File Manager Upload Foothold**：主考点为文件上传。通过真实 Tiny File Manager 2.4.3 建立 PHP 上传 foothold；question 答案可以要求识别实际版本或上传目录。
-2. **Soccer 02 — Virtual Host and Service Discovery**：主考点为配置/信息泄露，次考点为 WebSocket 侦察。依赖 01 的 PHP foothold；从真实 Nginx 配置中找出第二个 vhost，并识别 WebSocket 服务和消息字段。question 答案来自真实配置/协议。
-3. **Soccer 03 — WebSocket Boolean Blind SQL Injection**：主考点为 WebSocket blind SQLi。依赖 02 的服务发现；最终通过真实 MariaDB-backed WebSocket oracle 取得 `soccer_db.accounts.goal` 中的现有 Flag。
+1. **Soccer 01 — File Manager Upload Foothold**：考察 Tiny File Manager 2.4.3 发现、认证和真实 PHP 上传执行。可设置一枚 foothold Flag，放在上传代码执行后可读取的 challenge-data 位置。它只证明第一阶段能力。
+2. **Soccer 02 — Virtual Host and WebSocket Discovery**：依赖 01 的 PHP foothold。考察读取真实 Nginx 配置、发现 `soc-player.soccer.htb`、定位 WebSocket 服务与消息结构。可在实际 vhost 配置中放置独立的配置发现 Flag/标记，由读取真实配置取得。
+3. **Soccer 03 — WebSocket Boolean Blind SQL Injection**：依赖 02。通过真实 MariaDB-backed WebSocket oracle 提取 `soccer_db.accounts.goal` 中现有最终 Flag。
 
-另设 **Soccer — Complete Web Assessment** 作为 Capstone/ChallengePath，汇总三个子题的完成情况，不复制最终 Flag。
+需要验证的权限边界：第一阶段 PHP 以 www-data 运行，最终 Flag 存于数据库而不是 seed 文件；Node 服务源码由 soccerapp 用户以 0400 拥有。应保留该隔离，并实测 www-data 不能读取 Node 服务源码或直接取得数据库连接凭据。这样第三阶段仍有独立的 WebSocket SQLi 训练目标。
 
-前两题没有独立 Flag 并不妨碍它们成为独立 Challenge：它们可以使用自然、可验证的 question 答案。需要在开发验收中验证这些答案确实来自用户可观察的环境，而不是题面直接给出。
+另设 **Soccer — Complete Web Assessment** 作为 Capstone，汇总三个子题的完成状态，不重复最终 Flag。
 
 ### 既有证据和限制
 
