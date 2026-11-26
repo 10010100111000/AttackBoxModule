@@ -10,7 +10,7 @@
 - Independent attack-path reference: https://writeups.csirt.muni.cz/content/htb/Machines/Headless/writeup/
 - Independent \`syscheck\` source and sudo-path reference: https://github.com/evyatar9/Writeups/blob/3d40d78dd2cf9ce34cc48db405e1b46b076e5b72/HackTheBox/Headless/README.md
 
-The official synopsis identifies a Python Werkzeug website, a support form vulnerable to blind XSS through the User-Agent header, admin cookie theft, dashboard command injection, and a Linux privilege escalation stage.
+The official synopsis identifies a Python Werkzeug website, a support form vulnerable to blind XSS through the User-Agent header, admin cookie theft, dashboard command injection, and a Linux privilege escalation stage. Public references identify Python 3.11.2 and Werkzeug 2.2.2; they do not establish the exact Flask version. This reconstruction pins Flask 2.2.2 as a compatible implementation choice, not as a claim about the original package version.
 
 ## Observed target characteristics
 
@@ -94,6 +94,7 @@ The reconstruction retains the actual script logic and sudo boundary. The intend
 
 - The Flask route behavior, signed cookie logic, unsafe report template, report helper and sudo script are sourced from disclosed original-machine code or repeated independent observations.
 - The exact original CSS and every original template asset were not publicly recovered. The page styling is a compact visual reconstruction; the route names, form fields, data flow and vulnerable contexts are preserved.
+- The original Flask version is not confirmed by the available public source excerpt. Flask 2.2.2 is pinned for the reconstruction; Python 3.11.2 and Werkzeug 2.2.2 are the publicly observed runtime versions.
 - The original report-review Python source was not fully recovered. The replacement uses real Chromium to visit the real stored report page, preserving the browser trust boundary and observable blind-XSS behavior.
 - The original root stage does not require container escape. It is an ordinary relative-path execution flaw in a root-run shell script.
 - The target runs the real Flask/Werkzeug app, Chromium browser, OpenSSH daemon, sudo and Bash. It does not emulate command output or fake a shell.
