@@ -14,7 +14,7 @@
 | `partial` | 6 | 已有部分真实功能或目标行为检查，仍有靶机内容/目标路径缺口 |
 | `unverified` | 4 | 尚无足够的靶机目标验证记录 |
 
-另有 **10 台**保留 `.release-blocked` 标记。该标记不是 CI 结果，也不等同于靶机代码不存在；未完成原因应以各自 README 和标记文件为准。
+另有 **11 台**保留 `.release-blocked` 标记。该标记不是 CI 结果，也不等同于靶机代码不存在；未完成原因应以各自 README 和标记文件为准。
 
 ### 最近更新：Precious
 
@@ -68,7 +68,7 @@ This table is generated from the same state recorded in `catalog/web-curriculum.
 | Bashed | phpbash 暴露入口、sudo/cron | 原版 phpbash 组件 |
 | Bountyhunter | SimpleXML XXE、凭据与后续服务链 | 真实 XML 解析器 |
 | Cap | IDOR、PCAP、凭据复用、Linux capability | 已拆分为 Packet Drop / Setuid Surprise 两个 Challenge |
-| Django Debug XSS | Django 1.11.4 技术错误页 XSS | 有真实浏览器与版本负向对照记录 |
+| Django Debug XSS | Django 1.11.4 技术错误页 XSS | 有真实浏览器与版本负向对照记录；有 `.release-blocked` |
 | Nibbles | Nibbleblog 插件上传 | 真实 Nibbleblog 4.0.3 |
 | OpenAdmin | OpenNetAdmin xajax RCE | 真实 ONA 18.1.1 |
 | Pebbles | ZoneMinder SQLi、数据库文件操作 | 历史依赖栈较复杂 |
