@@ -25,6 +25,40 @@ Precious 已在 `bb3d62f` 合并 main。以下两个工作流均成功：
 
 已确认的范围：镜像构建、容器启动、healthcheck、PDFKit 0.8.6 版本检查、首页和普通 HTML 转 PDF。**没有自动执行命令注入或读取 Flag**，因此目录状态记为 `partial`，不是完整漏洞链通过。预期 Web Flag 路径仍未人工确认。
 
+## CI machine index
+
+This table is generated from the same state recorded in `catalog/web-curriculum.json`. The curriculum CI compares every row, count and release marker; update this table whenever the catalog changes.
+
+| Lab ID | Catalog CI status | Release marker status |
+|---|---|---|
+| `alert` | `partial` | `blocked_by_marker` |
+| `base` | `unverified` | `not_assessed` |
+| `bashed` | `full_chain_ci` | `not_assessed` |
+| `bike` | `partial` | `not_assessed` |
+| `bountyhunter` | `full_chain_ci` | `not_assessed` |
+| `cap` | `full_chain_ci` | `not_assessed` |
+| `cursed-stale-policy` | `unverified` | `not_assessed` |
+| `devvortex` | `partial` | `not_assessed` |
+| `editorial` | `full_chain_ci` | `blocked_by_marker` |
+| `goodgames` | `partial` | `not_assessed` |
+| `nibbles` | `full_chain_ci` | `not_assessed` |
+| `openadmin` | `full_chain_ci` | `not_assessed` |
+| `pebbles` | `full_chain_ci` | `not_assessed` |
+| `photobomb` | `full_chain_ci` | `not_assessed` |
+| `precious` | `partial` | `blocked_by_marker` |
+| `shocker` | `full_chain_ci` | `not_assessed` |
+| `union` | `full_chain_ci` | `not_assessed` |
+| `validation` | `full_chain_ci` | `not_assessed` |
+| `funnel` | `partial` | `not_assessed` |
+| `django-debug-xss` | `full_chain_ci` | `not_assessed` |
+| `wondercms-xss` | `full_chain_ci` | `blocked_by_marker` |
+| `usage` | `full_chain_ci` | `blocked_by_marker` |
+| `nodeblog` | `full_chain_ci` | `blocked_by_marker` |
+| `zipping` | `full_chain_ci` | `blocked_by_marker` |
+| `soccer` | `full_chain_ci` | `blocked_by_marker` |
+| `trick` | `unverified` | `blocked_by_marker` |
+| `intense` | `unverified` | `blocked_by_marker` |
+
 ## 现有靶机状态
 
 ### 已有完整目标链 CI 记录（17 台）
