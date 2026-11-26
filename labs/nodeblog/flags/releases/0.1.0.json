@@ -1,0 +1,9 @@
+{
+  "version": "0.1.0",
+  "format": "TTP{16-lowercase-base32}",
+  "flags": {
+    "flag01": "TTP{y6txbhboebhld66l}",
+    "flag02": "TTP{fdfh3urqvpj35dcd}",
+    "flag03": "TTP{6umc5yaco3okvtmu}"
+  }
+}
