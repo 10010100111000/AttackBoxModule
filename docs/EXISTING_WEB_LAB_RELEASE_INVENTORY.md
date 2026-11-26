@@ -27,14 +27,16 @@ Bike 已在 main 合并，代码提交为 `05f5c1048a297961e0ff42745e8fae2fbc39b
 
 Flag seed、版本 Manifest 与 Challenge 答案已由 CI 核对一致。Bike 是 Web-only 单 Flag，不包含 SSH 登录或第二阶段 Root 提权。
 
-### 上一项更新：Precious
+### Precious 完整 E2E 验收
 
-Precious 已在 `bb3d62f` 合并 main。以下两个工作流均成功：
+Precious 已完成独立攻击端端到端验收。真实 PDFKit 0.8.6 / wkhtmltopdf 靶机在隔离 Docker 网络中，通过 CVE-2022-25765 以 `ruby` 身份执行命令，并读取本次 CI 生成的精确随机 Web Flag。
 
-- [Precious 专属普通功能 CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/45889383302)
-- [Lab 镜像构建工作流](https://github.com/10010100111000/AttackBoxModule/actions/runs/45889383313)
+- [独立攻击端 E2E](https://github.com/10010100111000/AttackBoxModule/actions/runs/45901579392)：命令执行身份与 Web Flag 回读均通过
+- [普通 PDF 功能 smoke CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/45901579321)：首页、PDFKit 版本、健康检查和正常 PDF 转换通过
+- [镜像构建与启动检查](https://github.com/10010100111000/AttackBoxModule/actions/runs/45901579285)：通过
+- Docker 镜像约 **190.9 MB**；测试时内存约 **21 MiB**（850 MiB 限额）
 
-已确认的范围：镜像构建、容器启动、healthcheck、PDFKit 0.8.6 版本检查、首页和普通 HTML 转 PDF。**没有自动执行命令注入或读取 Flag**，因此目录状态记为 `partial`，不是完整漏洞链通过。预期 Web Flag 路径仍未人工确认。
+Flag 由每次 CI 独立生成，并核对目标文件与 Challenge 答案一致。题目仍为 Web-only 单 Flag，不包含 SSH、YAML 反序列化或 Linux Root 阶段。
 
 ## CI machine index
 
@@ -85,7 +87,6 @@ This table is generated from the same state recorded in `catalog/web-curriculum.
 | OpenAdmin | OpenNetAdmin xajax RCE | 真实 ONA 18.1.1 |
 | Pebbles | ZoneMinder SQLi、数据库文件操作 | 历史依赖栈较复杂 |
 | Photobomb | ImageMagick 命令注入 | Sinatra / ImageMagick |
-| Precious | PDFKit 0.8.6 / CVE-2022-25765 命令注入 | 独立 HTTP 攻击端读取精确随机 Web Flag；PR E2E 已通过 |
 | Shocker | Bash CGI Shellshock | 真实 GNU Bash 4.3 |
 | Union | MariaDB UNION / LOAD_FILE | 后续链涉及网络权限边界 |
 | Validation | 二阶 SQLi、MariaDB FILE | 真实 MariaDB 与 PHP |
@@ -96,7 +97,7 @@ This table is generated from the same state recorded in `catalog/web-curriculum.
 | Soccer | Tiny File Manager、WebSocket blind SQLi | Web-only；有 `.release-blocked` |
 | WonderCMS XSS | WonderCMS 属性上下文 XSS、管理员浏览器 | 有 `.release-blocked` |
 
-`full_chain_ci` 表示该 Lab 有完整目标链 CI 证据；旧 Lab 的历史证据不自动等同于当前统一 E2E 标准。每台是否通过新标准，以 `catalog/web-curriculum.json` 中的 `e2e_ci_status`、运行链接和提交 SHA 为准。Bike 已按新标准通过独立攻击端验收。
+`full_chain_ci` 表示该 Lab 有完整目标链 CI 证据；旧 Lab 的历史证据不自动等同于当前统一 E2E 标准。每台是否通过新标准，以 `catalog/web-curriculum.json` 中的 `e2e_ci_status`、运行链接和提交 SHA 为准。Bike 与 Precious 均已按新标准通过独立攻击端验收。
 
 ### 部分完成（4 台）
 
@@ -124,7 +125,6 @@ This table is generated from the same state recorded in `catalog/web-curriculum.
 2. **Devvortex**：明确 Web-only 目标，不把原题 Linux 后半段强加进来。
 3. **Base**：补清楚认证与上传两部分的实际功能和题目目标。
 4. **Intense / Trick**：先处理复杂实现的基础工程与文档，不扩展新功能。
-6. **Intense / Trick**：先处理复杂实现的基础工程与文档，不扩展新功能。
 
 这只是 main 现有资产的处理顺序，不代表上述靶机已经全部通过人工漏洞验收。完成一台后，再按实际差异更新本清单和 `catalog/web-curriculum.json`。
 
