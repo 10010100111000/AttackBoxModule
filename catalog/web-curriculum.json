@@ -2540,119 +2540,6 @@
   },
   "lab_challenge_proposals": [
     {
-      "lab_id": "nodeblog",
-      "status": "proposal_only",
-      "reason": "One existing Web-only runtime contains several observable stages; verify each stage can support a meaningful standalone objective and naturally retrievable answer before splitting.",
-      "challenges": [
-        {
-          "key": "nodeblog-auth-bypass",
-          "title": "Blog authentication boundary",
-          "primary_skill": "nosql.operator-auth-bypass",
-          "secondary_skills": [],
-          "dependency_on": [],
-          "flag_status": "not_designed",
-          "implementation_status": "proposal_only"
-        },
-        {
-          "key": "nodeblog-xxe",
-          "title": "XML import and source disclosure",
-          "primary_skill": "xxe.file-read",
-          "secondary_skills": [],
-          "dependency_on": [
-            "nodeblog-auth-bypass"
-          ],
-          "flag_status": "not_designed",
-          "implementation_status": "proposal_only"
-        },
-        {
-          "key": "nodeblog-deserialization",
-          "title": "Cookie deserialization",
-          "primary_skill": "deserialization.unsafe-parse",
-          "secondary_skills": [
-            "deserialization.dependency-gadget"
-          ],
-          "dependency_on": [
-            "nodeblog-xxe"
-          ],
-          "flag_status": "not_designed",
-          "implementation_status": "proposal_only"
-        }
-      ]
-    },
-    {
-      "lab_id": "zipping",
-      "status": "proposal_only",
-      "reason": "The archive, SQL file operation and LFI stages may provide distinct learning objectives, but must retain the real sequential path.",
-      "challenges": [
-        {
-          "key": "zipping-archive",
-          "title": "Archive handling and source discovery",
-          "primary_skill": "file_read.file-to-rce",
-          "secondary_skills": [],
-          "dependency_on": [],
-          "flag_status": "not_designed",
-          "implementation_status": "proposal_only"
-        },
-        {
-          "key": "zipping-sqli",
-          "title": "Database query and file write",
-          "primary_skill": "sqli.union",
-          "secondary_skills": [
-            "sqli.file-operations",
-            "sqli.filter-bypass"
-          ],
-          "dependency_on": [
-            "zipping-archive"
-          ],
-          "flag_status": "not_designed",
-          "implementation_status": "proposal_only"
-        },
-        {
-          "key": "zipping-lfi",
-          "title": "Local file inclusion",
-          "primary_skill": "file_read.lfi",
-          "secondary_skills": [
-            "file_read.file-to-rce"
-          ],
-          "dependency_on": [
-            "zipping-sqli"
-          ],
-          "flag_status": "not_designed",
-          "implementation_status": "proposal_only"
-        }
-      ]
-    },
-    {
-      "lab_id": "soccer",
-      "status": "proposal_only",
-      "reason": "Separate the initial file-manager discovery from the secondary WebSocket SQLi only if the first stage has its own defensible objective.",
-      "challenges": [
-        {
-          "key": "soccer-upload-recon",
-          "title": "File manager and upload surface",
-          "primary_skill": "file_upload.unrestricted-upload",
-          "secondary_skills": [],
-          "dependency_on": [],
-          "flag_status": "not_designed",
-          "implementation_status": "proposal_only"
-        },
-        {
-          "key": "soccer-websocket-sqli",
-          "title": "WebSocket ticket lookup",
-          "primary_skill": "websockets.blind-sqli",
-          "secondary_skills": [
-            "sqli.boolean-blind",
-            "websockets.ws-recon"
-          ],
-          "dependency_on": [
-            "soccer-upload-recon"
-          ],
-          "flag_status": "not_designed",
-          "implementation_status": "proposal_only"
-        }
-      ]
-    },
-    {
       "lab_id": "usage",
       "status": "proposal_only",
       "reason": "Only Web stages are in scope for the Web curriculum; exclude SSH, Monit and sudo Root from these Challenge proposals.",
@@ -2768,6 +2655,254 @@
           "implementation_status": "proposal_only"
         }
       ]
+    },
+    {
+      "lab_id": "nodeblog",
+      "status": "audit_recommended_single_composite_challenge",
+      "reason": "The actual route is a serial chain: MongoDB operator authentication bypass -> authenticated XML import -> libxml2 XXE source disclosure -> node-serialize 0.0.4 cookie deserialization RCE. The only current goal Flag is reached at the final RCE stage; earlier stages have no separate natural Flag. Keep one Challenge with multiple Skill mappings and optional question checkpoints rather than fabricating three independent Flag challenges.",
+      "challenges": [
+        {
+          "key": "nodeblog-web-chain",
+          "title": "NodeBlog: authentication, XML parser and unsafe cookie deserialization",
+          "challenge_type": "composite_web",
+          "primary_skill": "nosql.operator-auth-bypass",
+          "secondary_skills": [
+            "xxe.file-read",
+            "deserialization.unsafe-parse",
+            "deserialization.dependency-gadget"
+          ],
+          "dependency_on": [],
+          "flag_status": "existing_single_flag",
+          "flag_location": "/home/nodeblog/user.txt",
+          "flag_owner": "nodeblog UID 10001",
+          "flag_mode": "0600",
+          "flag_reachability": "reachable after real node-serialize 0.0.4 deserialization command execution as nodeblog; not intended to be reachable at the NoSQLi or XXE-only stages",
+          "implementation_status": "existing_challenge_keep_single"
+        }
+      ]
+    },
+    {
+      "lab_id": "zipping",
+      "status": "audit_recommended_single_challenge_pending_flag_path_check",
+      "reason": "The current app has a serial archive-symlink -> SQLi/FILE -> PHP LFI/include path, but code inspection reveals a likely shortcut: Apache FollowSymLinks plus a moved absolute ZIP symlink and a www-data-readable user.txt may let the archive stage read the final Flag directly. This must be tested before splitting or publishing.",
+      "challenges": [
+        {
+          "key": "zipping-web-chain",
+          "title": "Zipping: archive symlink, SQLi file write and PHP inclusion",
+          "challenge_type": "composite_web_pending_shortcut_test",
+          "primary_skill": "file_upload.parser-mismatch",
+          "secondary_skills": [
+            "sqli.union",
+            "sqli.filter-bypass",
+            "sqli.file-operations",
+            "file_read.lfi",
+            "file_read.file-to-rce"
+          ],
+          "dependency_on": [],
+          "flag_status": "existing_single_flag_path_requires_negative_control",
+          "flag_location": "/home/rektsu/user.txt",
+          "flag_owner": "www-data",
+          "flag_mode": "0400",
+          "flag_reachability": "intended final PHP include/RCE runs as www-data and can read the file; direct read through the ZIP symlink upload path appears possible from source/config but has not been independently reproduced",
+          "implementation_status": "existing_challenge_keep_single_until_shortcut_verified",
+          "risk": "Test whether a one-entry ZIP containing an absolute symlink to /home/rektsu/user.txt passes ZipArchive checks, survives unzip -j, rename and Apache FollowSymLinks. If yes, the SQLi/LFI stages are bypassable for the current Flag."
+        }
+      ]
+    },
+    {
+      "lab_id": "soccer",
+      "status": "audit_recommended_single_challenge_with_question_checkpoints",
+      "reason": "The initial Tiny File Manager upload and nginx configuration disclosure establish the secondary vhost; the actual Web Flag is stored only in the MariaDB accounts.goal field and is extracted through the WebSocket boolean SQLi. The PHP foothold cannot read the root-owned 0400 seed file. Use question stages for vhost/protocol discovery and one final Flag stage; do not force a separate Flag Challenge for the upload stage.",
+      "challenges": [
+        {
+          "key": "soccer-websocket-chain",
+          "title": "Soccer: upload foothold, virtual-host discovery and WebSocket blind SQLi",
+          "challenge_type": "composite_web",
+          "primary_skill": "websockets.blind-sqli",
+          "secondary_skills": [
+            "sqli.boolean-blind",
+            "websockets.ws-recon",
+            "file_upload.unrestricted-upload",
+            "information_disclosure.config-leak"
+          ],
+          "dependency_on": [],
+          "question_checkpoints": [
+            {
+              "key": "soccer-vhost-discovery",
+              "kind": "question",
+              "objective": "Identify the secondary ticket-service virtual host from the real Nginx configuration."
+            },
+            {
+              "key": "soccer-websocket-protocol",
+              "kind": "question",
+              "objective": "Identify the ticket lookup message field and true/false response behavior."
+            }
+          ],
+          "flag_status": "existing_single_flag",
+          "flag_location": "soccer_db.accounts.goal",
+          "seed_location": "/home/player/user.txt",
+          "seed_owner": "root",
+          "seed_mode": "0400",
+          "flag_reachability": "retrievable through the real WebSocket SQL injection against MariaDB; the PHP upload foothold alone cannot read the root-owned seed file",
+          "implementation_status": "existing_challenge_keep_single"
+        }
+      ]
     }
-  ]
+  ],
+  "lab_challenge_audit": {
+    "audit_date": "2026-11-26",
+    "scope": "Source-level audit of existing NodeBlog, Zipping and Soccer Docker implementations, learner-facing challenge files, Flag storage and existing published CI evidence. No runtime code or challenge file was changed.",
+    "conclusions": [
+      "A Lab can host multiple Challenges, but do not split a sequential exploit chain into separate Flag challenges unless each has a genuinely independent goal and naturally reachable answer.",
+      "A single Challenge can assess multiple Skills and can use question checkpoints before a final Flag stage.",
+      "The three audited Labs currently justify one composite Web Challenge each; Soccer has the clearest natural question checkpoints. Zipping has a likely unintended direct-Flag shortcut that must be tested before acceptance."
+    ],
+    "labs": {
+      "nodeblog": {
+        "evidence": [
+          "labs/nodeblog/server.js",
+          "labs/nodeblog/routes/login.js",
+          "labs/nodeblog/routes/articles.js",
+          "labs/nodeblog/seed.js",
+          "labs/nodeblog/scripts/entrypoint.sh",
+          "labs/nodeblog/Dockerfile",
+          "labs/nodeblog/README.md",
+          "challenges/integrated/nodeblog/NodeBlog.md",
+          "https://github.com/10010100111000/AttackBoxModule/actions/runs/45466022851"
+        ],
+        "vulnerabilities": [
+          {
+            "name": "MongoDB operator authentication bypass",
+            "real_component": "Mongoose with native MongoDB",
+            "entry": "POST /login with JSON-typed user/password fields",
+            "evidence": "routes/login.js passes request objects directly into User.findOne; no fake query interpreter."
+          },
+          {
+            "name": "XXE file read/source disclosure",
+            "real_component": "libxmljs2 0.37.0 / native libxml2",
+            "entry": "authenticated POST /articles/xml",
+            "evidence": "routes/articles.js invokes parseXmlString with noent:true and uses parsed XML fields."
+          },
+          {
+            "name": "Unsafe cookie deserialization RCE",
+            "real_component": "upstream node-serialize 0.0.4",
+            "entry": "auth cookie parsed by authenticated() on normal requests",
+            "evidence": "server.js calls serialize.unserialize before checking the MD5 signature."
+          }
+        ],
+        "flag": {
+          "count": 1,
+          "path": "/home/nodeblog/user.txt",
+          "owner": "nodeblog UID 10001",
+          "mode": "0600",
+          "runtime": "NODEBLOG_USER_FLAG is written at entrypoint, then unset before starting the app.",
+          "reachability": "The web process runs as nodeblog; final command execution through the real deserializer can read the Flag. Earlier auth/XXE stages disclose access and source but do not themselves read the Flag."
+        },
+        "independence": {
+          "decision": "Keep one composite Challenge with three Skill mappings.",
+          "reason": "The stages are serial and the current implementation exposes only one final Web Flag. Separate Challenges would either need fabricated extra Flags or merely duplicate the same final goal. If useful, add question checkpoints (e.g. identify the vulnerable package/version) within the existing Challenge."
+        },
+        "historical_ci": "The README reports two fresh isolated instances with independent HTTP-only full Web chain verification. This is historical lab CI evidence, not manual acceptance or Worker verification."
+      },
+      "zipping": {
+        "evidence": [
+          "labs/zipping/site/upload.php",
+          "labs/zipping/site/shop/product.php",
+          "labs/zipping/site/shop/index.php",
+          "labs/zipping/site/shop/functions.php",
+          "labs/zipping/scripts/start.sh",
+          "labs/zipping/Dockerfile",
+          "labs/zipping/README.md",
+          "challenges/integrated/zipping/Zipping.md",
+          "https://github.com/10010100111000/AttackBoxModule/actions/runs/45471673982"
+        ],
+        "vulnerabilities": [
+          {
+            "name": "ZIP symlink disclosure",
+            "real_component": "PHP ZipArchive plus native Info-ZIP unzip",
+            "entry": "POST /upload.php with one ZIP entry whose name ends in .pdf",
+            "evidence": "upload.php extracts with unzip -j, renames the extracted entry into uploads, and Apache is configured with FollowSymLinks."
+          },
+          {
+            "name": "SQL injection with regex newline bypass",
+            "real_component": "PDO emulated prepares and MariaDB",
+            "entry": "/shop/product.php?id=... ",
+            "evidence": "product.php applies a dot-based regex filter and interpolates the value into SQL; the PDO connection enables ATTR_EMULATE_PREPARES."
+          },
+          {
+            "name": "Database FILE write and PHP LFI/include",
+            "real_component": "MariaDB FILE privilege and native PHP include",
+            "entry": "product page query plus /shop/index.php?page=...",
+            "evidence": "shop DB user has SELECT and FILE; index.php includes page+'.php' after file_exists."
+          }
+        ],
+        "flag": {
+          "count": 1,
+          "path": "/home/rektsu/user.txt",
+          "owner": "www-data",
+          "mode": "0400",
+          "reachability": "Final PHP include/RCE executes as www-data and can read the Flag. A direct symlink route to the same path is a high-confidence source-level risk, not yet separately reproduced."
+        },
+        "independence": {
+          "decision": "Do not split yet. Keep one composite Challenge pending an isolated shortcut test.",
+          "reason": "The current Flag is readable by www-data, the same identity that serves the extracted symlink and executes included PHP. An absolute ZIP symlink named *.pdf may therefore point directly at user.txt, bypassing SQLi/FILE/LFI. If confirmed, decide whether symlink disclosure is an accepted independent Challenge and give the later SQLi/LFI objective a distinct natural answer, or redesign Flag reachability without removing the authentic vulnerabilities."
+        },
+        "required_followup": "In a disposable test instance, submit a single-entry ZIP with a symlink named e.g. resume.pdf targeting /home/rektsu/user.txt; verify the actual extracted inode/link, resulting HTTP response and whether the Flag is returned. Also test a benign source-file symlink as control. Do not change production code until this is measured.",
+        "historical_ci": "The README reports two fresh isolated instances through symlink source read, SQLi filter bypass, MariaDB FILE write, PHP include and Flag retrieval. Existing CI evidence does not by itself rule out the shorter direct-symlink-to-Flag path."
+      },
+      "soccer": {
+        "evidence": [
+          "labs/soccer/app/server.js",
+          "labs/soccer/scripts/start.sh",
+          "labs/soccer/db/init.sql",
+          "labs/soccer/scripts/nginx.conf",
+          "labs/soccer/scripts/filemanager-config.php",
+          "labs/soccer/Dockerfile",
+          "labs/soccer/README.md",
+          "challenges/integrated/soccer/Soccer.md",
+          "https://github.com/10010100111000/AttackBoxModule/actions/runs/45478649027"
+        ],
+        "vulnerabilities": [
+          {
+            "name": "Real PHP upload foothold",
+            "real_component": "upstream Tiny File Manager 2.4.3 at pinned commit 1dbe7c5339ad955fcb08d01d256f591a3c83d713",
+            "entry": "/tiny/ manager upload",
+            "evidence": "Original upstream PHP file manager and move_uploaded_file handling; upload directory is executable."
+          },
+          {
+            "name": "Virtual-host/config disclosure",
+            "real_component": "Nginx configuration and PHP-readable filesystem",
+            "entry": "Read Nginx config from the PHP foothold",
+            "evidence": "Two Nginx vhosts are defined; second is soc-player.soccer.htb."
+          },
+          {
+            "name": "WebSocket boolean blind SQL injection",
+            "real_component": "Node ws package and native MariaDB",
+            "entry": "TCP 9091 JSON message with id",
+            "evidence": "server.js interpolates payload.id into SELECT id FROM tickets WHERE id = ...; true/false ticket responses form the oracle."
+          }
+        ],
+        "flag": {
+          "count": 1,
+          "path": "soccer_db.accounts.goal",
+          "seed_path": "/home/player/user.txt",
+          "seed_owner": "root",
+          "seed_mode": "0400",
+          "reachability": "startup inserts the seed value into MariaDB accounts.goal; the ticket_reader DB account can SELECT the database, and the WebSocket SQLi extracts the goal. The PHP foothold cannot read the root-owned seed file."
+        },
+        "independence": {
+          "decision": "Keep one composite Challenge, add two question checkpoints before the final Flag.",
+          "reason": "Upload and vhost discovery are meaningful reconnaissance prerequisites, but they do not independently reach a Flag. The WebSocket SQLi is the final goal. Existing Challenge stages support question/flag kinds, so the learning milestones can be explicit without creating artificial separate Flag Challenges."
+        },
+        "historical_ci": "The README reports two fresh isolated instances solved over HTTP and WebSocket only, with distinct per-instance DB goal values. Worker and Web scoring integration remain unverified."
+      }
+    },
+    "platform_reuse": {
+      "inspected_repository": "10010100111000/attackbox",
+      "observed": "challenges has target_template_id; target_templates stores image, resources, variables and platform. Worker target requests and runtime records use target_id and owner_id; Worker is a lifecycle manager.",
+      "not_proven": "The inspected schema does not contain a Lab entity or LabChallenge association, and it does not prove that two different Challenge IDs for one user attach to the same running container or share reset/progress state.",
+      "implication": "Reusing one image/template across Challenges is already representable; reusing one live instance across multiple Challenges is a separate platform capability that must be verified before building multi-Challenge UX or changing Worker behavior.",
+      "next_check": "Trace the platform target-start API and target ID derivation, then test two Challenge IDs pointing at the same target template for one user. Confirm whether the runtime creates two target IDs/containers or a shared Lab instance. No Worker change is authorized by this audit."
+    }
+  }
 }
