@@ -117,7 +117,7 @@ jobs:
               --network alert-acceptance \
               --network-alias alert-target \
               --memory 1100m --cpus 2 --pids-limit 256 \
-              --cap-drop ALL --security-opt no-new-privileges \
+              --cap-drop ALL --cap-add SETUID --cap-add SETGID --security-opt no-new-privileges \
               -e ALERT_USER_FLAG="$flag" \
               ttp-alert:acceptance >/dev/null
 
