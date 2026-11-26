@@ -14,7 +14,7 @@ EXPECTED_01 = os.environ["EXPECTED_FLAG_01"]
 EXPECTED_02 = os.environ["EXPECTED_FLAG_02"]
 EXPECTED_03 = os.environ["EXPECTED_FLAG_03"]
 for value in (EXPECTED_01, EXPECTED_02, EXPECTED_03):
-    assert re.fullmatch(r"TTP\\{[a-z2-7]{16}\\}", value), "invalid expected Flag format"
+    assert value.startswith("TTP{") and value.endswith("}") and len(value) == 23 and all(c in "abcdefghijklmnopqrstuvwxyz234567" for c in value[4:-1]), "invalid expected Flag format"
 assert len({EXPECTED_01, EXPECTED_02, EXPECTED_03}) == 3, "Flags must be unique"
 
 jar = http.cookiejar.CookieJar()
@@ -45,7 +45,7 @@ def upload_xml(xml):
         "Content-Type: application/xml\\r\\n\\r\\n" +
         xml + "\\r\\n--" + boundary + "--\\r\\n"
     ).encode()
-    return send(" /articles/xml".strip(), data,
+    return send("/articles/xml", data,
                 {"Content-Type": "multipart/form-data; boundary=" + boundary})
 
 
