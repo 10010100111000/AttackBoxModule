@@ -45,7 +45,7 @@ The container needs no privileged mode, host network, Docker socket or host file
 
 ## Flags and reset
 
-The Worker supplies both opaque per-instance values. The target writes the User Flag to /home/dvir/user.txt (dvir-readable) and the Root Flag to /root/root.txt (root-only). No production Flag is embedded in the image. Destroy/recreate starts with empty report storage and a fresh pair of Flags.
+The container accepts both opaque per-instance values from the Worker. It writes the User Flag to /home/dvir/user.txt (dvir-readable) and the Root Flag to /root/root.txt (root-only). No production Flag is embedded in the image. Destroy/recreate starts with empty report storage and new values. The challenge Markdown currently contains development placeholders; Worker-side flag generation and grader synchronization are not implemented by this lab PR and must be connected before publication.
 
 ## CI policy
 
