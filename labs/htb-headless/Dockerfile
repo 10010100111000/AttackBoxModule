@@ -1,14 +1,17 @@
 # syntax=docker/dockerfile:1.7
-FROM python:3.11.2-slim-bookworm AS python-deps
-WORKDIR /build
-RUN pip install --no-cache-dir --target=/opt/python-deps \
+FROM debian:bookworm-slim AS python-deps
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends python3 python3-venv \
+ && rm -rf /var/lib/apt/lists/*
+RUN python3 -m venv /opt/venv \
+ && /opt/venv/bin/pip install --no-cache-dir \
       Flask==2.2.2 Werkzeug==2.2.2 itsdangerous==2.1.2 playwright==1.44.0
 
-FROM python:3.11.2-slim-bookworm AS runtime
-ENV PYTHONPATH=/opt/python-deps PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+FROM debian:bookworm-slim AS runtime
+ENV PATH=/opt/venv/bin:$PATH PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-      ca-certificates chromium coreutils curl findutils iproute2 openssh-server procps sudo supervisor \
+      ca-certificates chromium coreutils curl findutils iproute2 openssh-server procps python3 sudo supervisor \
  && rm -rf /var/lib/apt/lists/* \
  && groupadd --gid 1000 dvir \
  && useradd --uid 1000 --gid 1000 --create-home --home-dir /home/dvir --shell /bin/bash dvir \
@@ -17,7 +20,7 @@ RUN apt-get update \
  && chmod 0644 /var/mail/dvir \
  && chown -R dvir:dvir /home/dvir
 
-COPY --from=python-deps /opt/python-deps /opt/python-deps
+COPY --from=python-deps /opt/venv /opt/venv
 COPY app/ /home/dvir/app/
 COPY config/supervisord.conf /etc/supervisor/conf.d/headless.conf
 COPY config/sshd_config /etc/ssh/sshd_config
@@ -32,9 +35,8 @@ RUN set -eu; \
     chmod 0755 /home/dvir/app; \
     chmod 0755 /home/dvir/app/app.py /home/dvir/app/inspect_reports.py /home/dvir/app/report.sh; \
     chown -R dvir:dvir /home/dvir/app/hacking_reports; \
-    chmod 0700 /home/dvir/app/hacking_reports; \
-    chown root:root /usr/bin/syscheck /etc/sudoers.d/dvir; \
     chmod 0755 /usr/bin/syscheck /usr/local/bin/headless-entrypoint /usr/local/bin/headless-healthcheck; \
+    chown root:root /usr/bin/syscheck /etc/sudoers.d/dvir; \
     chmod 0440 /etc/sudoers.d/dvir; \
     visudo -cf /etc/sudoers
 
