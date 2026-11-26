@@ -29,7 +29,7 @@ app.get('/healthz', async (_req, res) => {
 });
 
 // VULNERABILITY: attacker-controlled email is inserted directly into template
-// SOURCE and then compiled. Handlebars 4.1.2 intentionally allows the
+// SOURCE and then compiled. Handlebars 4.1.1 intentionally allows the
 // constructor/process.mainModule chain illustrated in Bike.pdf.
 // This is intentional for a LOCAL training lab only.
 function render(email) {
