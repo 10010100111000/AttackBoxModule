@@ -2562,16 +2562,19 @@
       ]
     },
     "progression": {
-      "model": "separate cumulative Challenge records sharing one Lab/target template",
+      "model": "independent learner-selected Challenge records sharing one Lab/target template",
+      "cross_challenge_unlock": false,
+      "user_progress": "Progress belongs to the user and the individual Challenge stages. Existing challenge_completions is keyed by (user_id, stage_id), and challenge_attempt_limits is keyed by (user_id, challenge_id). The parent Challenge is derived through challenge_stages.challenge_id. No user-to-Lab progress or ChallengeDependency record is required for this model.",
       "rules": [
-        "Each learner-facing Challenge is a separate record and can be published/scored independently.",
-        "All cumulative Challenge records for one Lab bind to the same target template identifier.",
-        "Challenge 01 contains the first Flag stage; Challenge 02 repeats Flag 01 and adds Flag 02; Challenge 03 repeats Flag 01 and Flag 02 and adds Flag 03.",
-        "The later Challenge rechecks earlier milestones, so it is a full integrated assessment rather than only the final exploit stage.",
-        "A cumulative Challenge may repeat the same Flag answer in its own stage record; completion is tracked per Challenge stage, while the actual Lab data source may be shared.",
-        "Independent challenges with no prerequisite relation do not inherit previous Flags; they have their own goal and answer stages.",
-        "Do not add a separate Capstone entity for this pattern: the highest cumulative Challenge itself is the integrated challenge.",
-        "The Challenge records can share the same target template/image. Confirm whether runtime instance sharing is supported before promising one live container across simultaneously open Challenge pages; if starts create separate instances, the data/content model still shares the Lab template but not the live container."
+        "Learners may open any published Challenge at any time. Do not add automatic unlocking, prerequisites, dependency gates, or cross-Challenge lock state.",
+        "Each Challenge is a separate record and is independently visible, selectable, scored and tracked.",
+        "For a progressive Lab, Challenge 01 may contain Flag 01; Challenge 02 may contain Flag 01 + Flag 02; Challenge 03 may contain Flag 01 + Flag 02 + Flag 03. The later Challenge provides deliberate review of prior objectives and an integrated assessment.",
+        "Each Challenge's own ordered stages are submitted in sequence using the existing challenge_stages/attemptChallenge behavior. This is stage ordering inside one Challenge, not unlocking another Challenge.",
+        "For unrelated vulnerabilities, create independent Challenge records with their own goals/Flags; do not copy previous Flags or impose prerequisites.",
+        "Multiple Challenge records may reference the same target_template_id. This proves shared template/image association, not necessarily one shared live target instance; inspect runtime scope before promising a shared container.",
+        "The user progress record remains user-to-Challenge-stage completion. Do not add a separate user-to-Lab progress model or ChallengeDependency table for automatic unlocking.",
+        "A Lab reset is infrastructure lifecycle behavior. It should not silently delete historical Challenge completions; whether reset clears runtime-only state or progress must be an explicit product rule, separate from Challenge selection.",
+        "Worker manages Lab/sandbox lifecycle only; Web backend owns Challenge definitions, stage answers and user progress."
       ]
     }
   },
@@ -2601,9 +2604,7 @@
             "file_upload.polyglot",
             "file_upload.extension-bypass"
           ],
-          "dependency_on": [
-            "usage-password-recovery"
-          ],
+          "dependency_on": [],
           "flag_status": "not_designed",
           "implementation_status": "proposal_only"
         }
@@ -2685,9 +2686,7 @@
           "title": "Dashboard report generation",
           "primary_skill": "command_injection.basic-rce",
           "secondary_skills": [],
-          "dependency_on": [
-            "headless-blind-xss"
-          ],
+          "dependency_on": [],
           "flag_status": "not_designed",
           "implementation_status": "proposal_only"
         }
@@ -2729,9 +2728,7 @@
             "nosql.operator-auth-bypass",
             "information_disclosure.config-leak"
           ],
-          "dependency_on": [
-            "nodeblog-nosql-auth"
-          ],
+          "dependency_on": [],
           "stages": [
             {
               "position": 1,
@@ -2763,10 +2760,7 @@
             "xxe.file-read",
             "deserialization.dependency-gadget"
           ],
-          "dependency_on": [
-            "nodeblog-nosql-auth",
-            "nodeblog-xxe"
-          ],
+          "dependency_on": [],
           "stages": [
             {
               "position": 1,
@@ -2840,9 +2834,7 @@
             "file_read.file-to-rce",
             "sqli.file-operations"
           ],
-          "dependency_on": [
-            "zipping-sqli"
-          ],
+          "dependency_on": [],
           "objective": "Use the SQLi FILE write path to create a PHP file and invoke it through the real shop include parameter.",
           "completion": "Question-based execution proof, e.g. submit the effective PHP execution identity or a stable output from the included PHP file. Do not reuse the ZIP-readable user.txt Flag. A separate Flag is deferred until a non-bypassable storage/retrieval boundary is proven.",
           "flag_status": "question_checkpoint_no_flag_until_safe_design",
@@ -2851,7 +2843,7 @@
         {
           "key": "zipping-capstone",
           "title": "Zipping — Complete Web Assessment",
-          "challenge_type": "capstone_path",
+          "challenge_type": "cumulative_challenge",
           "primary_skill": "file_upload.parser-mismatch",
           "secondary_skills": [
             "sqli.union",
@@ -2859,11 +2851,7 @@
             "sqli.file-operations",
             "file_read.lfi"
           ],
-          "dependency_on": [
-            "zipping-zip-symlink-disclosure",
-            "zipping-sqli",
-            "zipping-php-include"
-          ],
+          "dependency_on": [],
           "objective": "Complete the independent upload and SQLi/file-include objectives on one shared Zipping Lab.",
           "completion": "Aggregate completion of child Challenges; no duplicate Flag.",
           "flag_status": "aggregate_only_no_duplicate_flag",
@@ -2896,9 +2884,7 @@
           "secondary_skills": [
             "websockets.ws-recon"
           ],
-          "dependency_on": [
-            "soccer-upload-foothold"
-          ],
+          "dependency_on": [],
           "objective": "Read the real Nginx configuration, identify soc-player.soccer.htb and discover the WebSocket ticket protocol.",
           "completion": "Distinct Flag/comment token in the actual Nginx vhost configuration, or a challenge-specific value in the config file. The first foothold permits local config reading, which is the intended behavior of this stage.",
           "flag_status": "planned_new_config_disclosure_flag",
@@ -2912,9 +2898,7 @@
           "secondary_skills": [
             "sqli.boolean-blind"
           ],
-          "dependency_on": [
-            "soccer-vhost-discovery"
-          ],
+          "dependency_on": [],
           "objective": "Use the ticket lookup oracle to extract the goal from the real MariaDB-backed account record.",
           "completion": "Existing Flag in soccer_db.accounts.goal; retain the root-owned 0400 seed and verify that the www-data foothold cannot read Node service source or DB credentials directly.",
           "flag_status": "existing_flag_confirmed_in_database",
@@ -2923,7 +2907,7 @@
         {
           "key": "soccer-capstone",
           "title": "Soccer — Complete Web Assessment",
-          "challenge_type": "capstone_path",
+          "challenge_type": "cumulative_challenge",
           "primary_skill": "websockets.blind-sqli",
           "secondary_skills": [
             "file_upload.unrestricted-upload",
@@ -2931,11 +2915,7 @@
             "websockets.ws-recon",
             "sqli.boolean-blind"
           ],
-          "dependency_on": [
-            "soccer-upload-foothold",
-            "soccer-vhost-discovery",
-            "soccer-websocket-sqli"
-          ],
+          "dependency_on": [],
           "objective": "Complete the upload foothold, vhost/protocol discovery and WebSocket blind SQLi as one continuous assessment.",
           "completion": "Aggregate completion of child Challenges; no duplicate Flag.",
           "flag_status": "aggregate_only_no_duplicate_flag",
