@@ -29,10 +29,10 @@
 
 ### Flag 可达性
 
-- 当前只有一个 Flag：`/home/nodeblog/user.txt`。
-- 文件 owner 为 nodeblog，权限 0600；Node Web 进程也以 nodeblog 运行。
-- `NODEBLOG_USER_FLAG` 在入口脚本写入文件后即 unset；Worker 不负责生成、校验或判题。
-- 只有最终不安全反序列化导致的真实命令执行阶段，才获得读取该文件的能力。NoSQL 绕过和 XXE 本身没有独立 Flag。
+- 当前实现只有一个 Flag：`/home/nodeblog/user.txt`，owner 为 nodeblog，权限 0600；`NODEBLOG_USER_FLAG` 在入口脚本写入后即 unset。
+- **这不适合直接用于三阶段 Flag 设计**：XXE 和最终 RCE 都在同一 NodeBlog 进程身份（nodeblog UID 10001）下执行，因此 XXE 文件读取也能读取该 `user.txt`。
+- 规划上建议：Challenge 01 Flag 放真实受保护的管理员文章/内容；Challenge 02 Flag 放 NodeBlog 进程可读、但不公开的 challenge-data 文件；Challenge 03 最终 Flag 移入不经普通路由暴露的 MongoDB challenge record，由真实反序列化 RCE 查询。必须验证 XXE 无法直接取出 MongoDB 中的最终 Flag。
+- Worker 不负责生成、校验或判题；Flag 属于 Challenge，由 Web 后端判题。
 
 ### Challenge 拆分建议：三道递进题 + 一条综合路径
 
@@ -40,11 +40,11 @@
 
 1. **NodeBlog 01 — NoSQL Authentication Bypass**：主考点为 MongoDB JSON 查询操作符。完成目标是通过真实登录功能进入作者区域。建议增加独立中间 Flag，放在真实受保护的管理员文章或后台内容中；只有建立预期认证会话后才能看到。
 2. **NodeBlog 02 — XXE Source Disclosure**：主考点为真实 libxml2 XXE。依赖 01 的登录状态；通过 XML 导入读取源码/指定本地文件，并取得第二枚独立 Flag。建议将其放在真实本地 challenge data 文件中，由 NodeBlog 进程可读、但不经公开静态目录或普通路由暴露，只能通过预期 XXE 数据流读取。
-3. **NodeBlog 03 — Unsafe Cookie Deserialization**：主考点为 node-serialize 0.0.4 不安全反序列化。依赖 02 的源码/依赖发现；最终通过真实 Web 执行路径读取现有 `/home/nodeblog/user.txt` Flag。
+3. **NodeBlog 03 — Unsafe Cookie Deserialization**：主考点为 node-serialize 0.0.4 不安全反序列化。依赖 02 的源码/依赖发现；最终通过真实 Web 执行路径读取独立的 MongoDB challenge record Flag。
 
 另设 **NodeBlog — Complete Web Assessment** 作为 Capstone/ChallengePath，要求完成以上三题并汇总进度；它不需要额外复制一枚第四 Flag。
 
-中间 Flag 是允许且鼓励的教学设计，不必拘泥于原始 HTB 只有最终 Flag 的安排。但 Flag 必须依附于真实应用状态或真实文件读取路径，不能靠伪造漏洞接口、模拟解析器或把答案直接放进公开页面。开发验收必须证明：第一题可取得第一枚 Flag、第二题可取得第二枚 Flag、第三题可取得最终 Flag，并且前面的路径不能提前读取后续 Flag。
+中间 Flag 是允许且鼓励的教学设计，不必拘泥于原始 HTB 只有最终 Flag 的安排。但 Flag 必须依附于真实应用状态或真实文件读取路径，不能靠伪造漏洞接口、模拟解析器或把答案直接放进公开页面。开发验收必须证明：第一题可取得第一枚 Flag、第二题可取得第二枚 Flag、第三题可取得最终 Flag，并且前面的路径不能提前读取后续 Flag。特别要验证 XXE 文件读取不能读到最终数据库 Flag。
 
 ### 既有证据和限制
 
