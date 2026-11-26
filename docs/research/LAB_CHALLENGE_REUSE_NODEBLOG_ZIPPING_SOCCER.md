@@ -38,13 +38,13 @@
 
 这条链存在真实先后依赖，但**有依赖不等于不能拆题**。三个阶段各自训练不同的核心能力，适合分别成为 Challenge：
 
-1. **NodeBlog 01 — NoSQL Authentication Bypass**：主考点为 MongoDB JSON 查询操作符。完成目标是通过真实登录功能进入作者区域；可用 question 答案检查用户识别到的认证边界/账号，不要求为该阶段伪造 Flag。
-2. **NodeBlog 02 — XXE Source Disclosure**：主考点为真实 libxml2 XXE。依赖 01 的登录状态；通过 XML 导入读取源码，并回答实际源码披露出的易受攻击依赖包和版本。答案必须从真实响应中取得。
-3. **NodeBlog 03 — Unsafe Cookie Deserialization**：主考点为 node-serialize 0.0.4 不安全反序列化。依赖 02 的依赖识别；最终通过真实 Web 执行路径读取现有 `/home/nodeblog/user.txt` Flag。
+1. **NodeBlog 01 — NoSQL Authentication Bypass**：主考点为 MongoDB JSON 查询操作符。完成目标是通过真实登录功能进入作者区域。建议增加独立中间 Flag，放在真实受保护的管理员文章或后台内容中；只有建立预期认证会话后才能看到。
+2. **NodeBlog 02 — XXE Source Disclosure**：主考点为真实 libxml2 XXE。依赖 01 的登录状态；通过 XML 导入读取源码/指定本地文件，并取得第二枚独立 Flag。建议将其放在真实本地 challenge data 文件中，由 NodeBlog 进程可读、但不经公开静态目录或普通路由暴露，只能通过预期 XXE 数据流读取。
+3. **NodeBlog 03 — Unsafe Cookie Deserialization**：主考点为 node-serialize 0.0.4 不安全反序列化。依赖 02 的源码/依赖发现；最终通过真实 Web 执行路径读取现有 `/home/nodeblog/user.txt` Flag。
 
-另设 **NodeBlog — Complete Web Assessment** 作为 Capstone/ChallengePath，要求完成以上三题并汇总进度；它不是额外复制一枚 Flag 的第四个漏洞目标。
+另设 **NodeBlog — Complete Web Assessment** 作为 Capstone/ChallengePath，要求完成以上三题并汇总进度；它不需要额外复制一枚第四 Flag。
 
-注意：01/02 的 question 答案需要根据实际应用响应和源码内容设计，并在开发验收时证明可观察、稳定、不会从题面直接泄露。若某阶段没有合理答案，也可以保留为无计分的学习检查点；不要为了每题都有 Flag 而增加伪造文件。
+中间 Flag 是允许且鼓励的教学设计，不必拘泥于原始 HTB 只有最终 Flag 的安排。但 Flag 必须依附于真实应用状态或真实文件读取路径，不能靠伪造漏洞接口、模拟解析器或把答案直接放进公开页面。开发验收必须证明：第一题可取得第一枚 Flag、第二题可取得第二枚 Flag、第三题可取得最终 Flag，并且前面的路径不能提前读取后续 Flag。
 
 ### 既有证据和限制
 
