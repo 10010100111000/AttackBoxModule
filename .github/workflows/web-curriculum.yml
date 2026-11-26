@@ -50,9 +50,9 @@ jobs:
           assert len(flags) == 3 and len(set(flags.values())) == 3
           assert all(re.fullmatch(r"TTP\{[a-z2-7]{16}\}", value) for value in flags.values())
           docs = [
-            (pathlib.Path("challenges/authentication/nodeblog-nosql/Editorial Access.md"), 1),
-            (pathlib.Path("challenges/file-security/nodeblog-xxe/Import Pipeline.md"), 2),
-            (pathlib.Path("challenges/integrated/nodeblog/Session Integrity.md"), 3),
+            (pathlib.Path("challenges/authentication/nodeblog-nosql/Backstage Pass.md"), 1),
+            (pathlib.Path("challenges/file-security/nodeblog-xxe/Paper Trail.md"), 2),
+            (pathlib.Path("challenges/integrated/nodeblog-complete/Ghost Session.md"), 3),
           ]
           for path, count in docs:
             text = path.read_text()
