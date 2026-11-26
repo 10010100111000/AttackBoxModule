@@ -17,7 +17,7 @@ title: 获取 Root Flag
 kind: flag
 prompt: |
   对目标 Web 站点（端口 80）展开探测，发现并利用服务端模板引擎注入（SSTI）安全缺陷，执行任意系统命令并读取 `/root/flag.txt` 中的 Flag 并提交。
-answer: "HTB{local_bike_training_flag_not_the_official_flag}"
+answer: "TTP{aaaaaaaaaaaaaaaa}"
 match: trim
 hint: 目标使用了 Handlebars 模板引擎，尝试通过原型链遍历并调用 child_process 执行系统命令。
 ```
