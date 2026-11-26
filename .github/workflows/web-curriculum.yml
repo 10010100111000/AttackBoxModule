@@ -28,6 +28,11 @@ on:
       - "labs/**/Dockerfile"
   pull_request:
     paths:
+      - "labs/bike/flags/**"
+      - "challenges/startpoint/bike/**"
+      - "scripts/generate_bike_release.py"
+      - ".github/workflows/bike.yml"
+      - ".github/workflows/bike-release.yml"
       - "catalog/web-competencies.json"
       - "catalog/web-curriculum.json"
       - "docs/WEB_LAB_DESIGN.md"
