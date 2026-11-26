@@ -35,7 +35,7 @@ async function seed() {
   }
 
   const flag01 = fs.readFileSync('/run/nodeblog/flag01.txt', 'utf8').trim();
-  if (flag01.length !== 23 || !flag01.startsWith('TTP{') || !flag01.endsWith('}') || !/^[a-z2-7]{16}$/.test(flag01.slice(4, -1))) {
+  if (flag01.length !== 21 || !flag01.startsWith('TTP{') || !flag01.endsWith('}') || !/^[a-z2-7]{16}$/.test(flag01.slice(4, -1))) {
     throw new Error('NodeBlog Flag 01 is missing or malformed');
   }
   await Article.updateOne(
