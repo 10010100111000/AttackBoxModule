@@ -107,6 +107,18 @@ jobs:
             python:3.12-alpine \
             python /verify_ssti.py --url http://bike-target:80
 
+      - name: Verify the documented standalone player exploit
+        env:
+          EXPECTED_FLAG: ${{ steps.flag.outputs.expected }}
+        run: |
+          set -euo pipefail
+          output=$(docker run --rm \\
+            --network bike-e2e \\
+            -v "$GITHUB_WORKSPACE/labs/bike/exploit.py:/exploit.py:ro" \\
+            python:3.12-alpine python /exploit.py --url http://bike-target:80)
+          printf '%s\\n' "$output" | grep -F "$EXPECTED_FLAG" >/dev/null
+          echo "Standalone writeup exploit retrieved the exact instance Flag: PASS"
+
       - name: Capture target image and resource profile
         if: always()
         run: |
