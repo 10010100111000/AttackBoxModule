@@ -21,7 +21,7 @@ title: Precious
 kind: flag
 prompt: |
   从正常的 URL 转 PDF 功能开始调查，识别生成器及其版本，利用其真实漏洞读取 Web 进程可访问的目标文件。
-answer: "TTP{precious_dev_web_flag}"
+answer: "TTP{aaaaaaaaaaaaaaaa}"
 match: trim
 hint: 先检查生成的 PDF 文件元数据，再根据其中暴露的组件名称和版本查找公开安全公告。
 ```
