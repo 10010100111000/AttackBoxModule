@@ -1,6 +1,6 @@
 # HTB Headless — Blind XSS / Command Injection / sudo path hijack
 
-**Status: partial CI smoke passed; manual acceptance pending.** The Docker image builds and its ordinary startup/health checks pass, including the real Chromium reviewer readiness check. The full exploit path, Worker integration, image size and idle memory have not been accepted. Do not release.
+**Status: image build and ordinary CI smoke passed; manual acceptance pending.** The real Chromium reviewer readiness check passes. CI measured the image at 325,701,549 bytes (about 310.7 MiB) and idle memory at 49.89 MiB. Peak memory while reviewing a report has not yet been measured. Do not release.
 
 ## Attack path
 
@@ -58,10 +58,17 @@ CI checks only:
 
 It must not automate XSS payloads, cookie exfiltration, command injection, reverse shells, sudo exploitation or Flag extraction. Full attack-path verification is a manual review against a fresh instance.
 
+## CI resource measurements
+
+- Image: 325,701,549 bytes (about 310.7 MiB)
+- Idle memory after startup: 49.89 MiB
+- Peak memory while Chromium opens a stored report has not yet been measured.
+
 ## Known blockers
 
 - Docker build, startup, homepage/support, ordinary user authorization, SSH listener and Chromium reviewer readiness smoke checks passed.
 - The admin reviewer has not yet been manually observed processing a malicious report; no exploit-chain test is in CI.
-- Image size and idle memory measurement are pending.
+- Worker-side per-instance Flag generation and grader synchronization remain unimplemented in this PR.
+- Worker must not apply no-new-privileges to this target; otherwise the sudo stage cannot elevate inside the container.
 - Flask app UID, writable report directory and syscheck working directory need smoke verification.
 - Worker network access to the AttackBox and dynamic Flag injection remain unverified.
