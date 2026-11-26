@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Independent attacker test for Cap's real IDOR/PCAP/FTP path."""
 import ftplib
+import os
+import re
 import socket
 import urllib.error
 import urllib.request
@@ -28,7 +30,12 @@ ftp.retrlines("LIST", listing.append)
 assert any("user.txt" in line for line in listing)
 downloaded = bytearray()
 ftp.retrbinary("RETR user.txt", downloaded.extend)
-assert downloaded.startswith(b"TTP{cap_ci_private_user")
+expected_user_flag = os.environ.get("CAP_EXPECTED_USER_FLAG")
+actual_user_flag = downloaded.decode("utf-8", "replace").strip()
+if expected_user_flag:
+    assert actual_user_flag == expected_user_flag
+else:
+    assert re.fullmatch(r"TTP\\{[a-z2-7]{16}\\}", actual_user_flag)
 ftp.quit()
 
 # A live five-second tcpdump is started by the real web app, then redirected
