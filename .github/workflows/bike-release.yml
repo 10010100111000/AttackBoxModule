@@ -70,6 +70,68 @@ jobs:
           print("Manifest, target root Flag and Challenge answer match: PASS")
           PY
 
+      - name: Load expected Flag for the isolated acceptance run
+        id: flag
+        env:
+          RELEASE_VERSION: ${{ github.event.inputs.version || '0.1.0' }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import pathlib
+
+          path = pathlib.Path("labs/bike/flags/releases") / (os.environ["RELEASE_VERSION"] + ".json")
+          flag = json.loads(path.read_text())["flag"]
+          print(f"::add-mask::{flag}")
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              output.write(f"expected={flag}\\n")
+          PY
+
+      - name: Build Bike target for release acceptance
+        run: docker build --pull --progress=plain -t ttp-bike:release -f labs/bike/Dockerfile labs/bike
+
+      - name: Pull isolated player image and create private network
+        run: |
+          docker pull python:3.12-alpine
+          docker network create --internal bike-release
+
+      - name: Start release target and wait for health
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run -d --name bike-target --network bike-release --network-alias bike-target \\
+            --memory 700m --cpus 1.5 --pids-limit 160 --security-opt no-new-privileges ttp-bike:release
+          ready=0
+          for attempt in $(seq 1 60); do
+            state=$(docker inspect -f '{{.State.Status}}' bike-target)
+            health=$(docker inspect -f '{{.State.Health.Status}}' bike-target)
+            if [ "$state" != running ] || [ "$health" = unhealthy ]; then
+              docker logs bike-target
+              exit 1
+            fi
+            if [ "$health" = healthy ]; then ready=1; break; fi
+            sleep 2
+          done
+          test "$ready" = 1
+
+      - name: Verify real SSTI Flag retrieval from independent player container
+        env:
+          EXPECTED_FLAG: ${{ steps.flag.outputs.expected }}
+        run: |
+          docker run --rm --network bike-release \\
+            -v "$GITHUB_WORKSPACE/labs/bike/verify_ssti.py:/verify_ssti.py:ro" \\
+            -e ALLOW_INTERNAL_TARGET=1 -e EXPECTED_FLAG \\
+            python:3.12-alpine python /verify_ssti.py --url http://bike-target:80
+
+      - name: Clean up release acceptance environment
+        if: always()
+        run: |
+          docker logs bike-target 2>/dev/null || true
+          docker rm -f bike-target 2>/dev/null || true
+          docker network rm bike-release 2>/dev/null || true
+          docker image inspect ttp-bike:release --format='IMAGE_SIZE_BYTES={{.Size}}' || true
+          docker image rm ttp-bike:release 2>/dev/null || true
+
       - name: Commit generated release artifacts
         env:
           RELEASE_VERSION: ${{ github.event.inputs.version || '0.1.0' }}
