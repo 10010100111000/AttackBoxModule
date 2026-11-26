@@ -10,6 +10,9 @@ on:
       - "README.md"
       - "scripts/validate_web_curriculum.py"
       - "scripts/generate_nodeblog_release.py"
+      - "scripts/generate_django_debug_release.py"
+      - "labs/django-debug-xss/flags/**"
+      - "challenges/xss/harbor-registry/**"
       - "labs/nodeblog/**"
       - ".github/workflows/web-curriculum.yml"
       - "labs/**/Dockerfile"
@@ -35,6 +38,28 @@ jobs:
       - uses: actions/checkout@v4
       - name: Validate Academy taxonomy, existing labs and planned scenarios
         run: python3 scripts/validate_web_curriculum.py
+      - name: Check Django Debug XSS Flag generator determinism and answer consistency
+        run: |
+          set -euo pipefail
+          python3 scripts/generate_django_debug_release.py --version 0.0.0-ci
+          manifest=labs/django-debug-xss/flags/releases/0.0.0-ci.json
+          before=$(sha256sum "$manifest" | cut -d' ' -f1)
+          python3 scripts/generate_django_debug_release.py --version 0.0.0-ci
+          after=$(sha256sum "$manifest" | cut -d' ' -f1)
+          test "$before" = "$after"
+          python3 - <<'PY'
+          import json, pathlib, re
+          manifest = json.loads(pathlib.Path("labs/django-debug-xss/flags/releases/0.0.0-ci.json").read_text())
+          flag = manifest["flag"]
+          assert re.fullmatch(r"TTP\{[a-z2-7]{16}\}", flag)
+          assert pathlib.Path("labs/django-debug-xss/flags/user.txt").read_text().strip() == flag
+          challenge = pathlib.Path("challenges/xss/harbor-registry/Harbor-Lights.md").read_text()
+          assert challenge.count(f'answer: "{flag}"') == 1
+          assert challenge.count("kind: flag") == 1
+          assert "lab: django-debug-xss" in challenge
+          print("Django Debug XSS: random 80-bit Flag, stable same-version manifest, target seed and Challenge answer match: PASS")
+          PY
+
       - name: Check NodeBlog Flag generator determinism and Challenge stage counts
         run: |
           set -euo pipefail
