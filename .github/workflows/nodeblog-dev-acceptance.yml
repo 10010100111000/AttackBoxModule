@@ -28,6 +28,13 @@ jobs:
           ref: ${{ github.ref_name }}
           fetch-depth: 0
 
+      - name: Ensure selected branch contains the NodeBlog implementation
+        run: |
+          test -f scripts/generate_nodeblog_release.py || {
+            echo "Select the feat/nodeblog-multi-challenge-flags branch when dispatching this workflow."
+            exit 1
+          }
+
       - name: Generate or reuse versioned Flags and Challenge Markdown
         env:
           RELEASE_VERSION: ${{ inputs.version }}
