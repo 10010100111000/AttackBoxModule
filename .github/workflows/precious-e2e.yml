@@ -1,0 +1,115 @@
+name: Precious real PDFKit command-injection end-to-end acceptance
+
+on:
+  pull_request:
+    paths:
+      - "labs/precious/**"
+      - "challenges/integrated/precious/**"
+      - "scripts/generate_precious_release.py"
+      - ".github/workflows/precious-e2e.yml"
+      - ".github/workflows/precious-release.yml"
+  push:
+    branches: [main]
+    paths:
+      - "labs/precious/**"
+      - "challenges/integrated/precious/**"
+      - "scripts/generate_precious_release.py"
+      - ".github/workflows/precious-e2e.yml"
+      - ".github/workflows/precious-release.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  precious-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate a fresh random Flag for this CI instance
+        env:
+          RELEASE_VERSION: 0.0.0-ci.${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          python3 scripts/generate_precious_release.py --version "$RELEASE_VERSION"
+
+      - name: Verify target Flag and Challenge answer match
+        id: flag
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os, pathlib, re
+          flag = pathlib.Path("labs/precious/flags/user.txt").read_text().strip()
+          challenge = pathlib.Path("challenges/integrated/precious/Precious.md").read_text()
+          answers = re.findall(r'(?m)^answer: "([^"]+)"$', challenge)
+          assert re.fullmatch(r"TTP\\{[a-z2-7]{16}\\}", flag)
+          assert answers == [flag], "target Flag and Challenge answer differ"
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              output.write(f"expected={flag}\\n")
+          print(f"::add-mask::{flag}")
+          print("Precious random Flag and Challenge answer match: PASS")
+          PY
+
+      - name: Syntax-check the independent player
+        run: python3 -m py_compile labs/precious/exploit.py scripts/generate_precious_release.py
+
+      - name: Build real Ruby PDFKit 0.8.6 target
+        run: docker build --pull --progress=plain -t ttp-precious:e2e -f labs/precious/Dockerfile labs/precious
+
+      - name: Create isolated network and start target
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker network create --internal precious-e2e
+          docker run -d --name precious-target --network precious-e2e --network-alias precious-target \\
+            --memory 850m --cpus 2 --pids-limit 180 --security-opt no-new-privileges \\
+            ttp-precious:e2e
+          ready=0
+          for attempt in $(seq 1 60); do
+            state=$(docker inspect -f '{{.State.Status}}' precious-target)
+            health=$(docker inspect -f '{{.State.Health.Status}}' precious-target)
+            if [ "$state" != running ] || [ "$health" = unhealthy ]; then
+              docker logs precious-target
+              exit 1
+            fi
+            if [ "$health" = healthy ]; then ready=1; break; fi
+            sleep 2
+          done
+          test "$ready" = 1
+          docker image inspect ttp-precious:e2e --format 'IMAGE_SIZE_BYTES={{.Size}}'
+          docker stats --no-stream precious-target
+
+      - name: Run independent player through real command injection and exact Flag retrieval
+        env:
+          EXPECTED_FLAG: ${{ steps.flag.outputs.expected }}
+        run: |
+          set -euo pipefail
+          docker run --rm --network precious-e2e --network-alias precious-player \\
+            -v "$GITHUB_WORKSPACE/labs/precious/exploit.py:/exploit.py:ro" \\
+            -e EXPECTED_FLAG \\
+            python:3.12-alpine python /exploit.py \\
+              --url http://precious-target:8080 \\
+              --callback-host precious-player \\
+              --listen-port 9000 \\
+              --expected-flag "$EXPECTED_FLAG"
+
+      - name: Record acceptance scope
+        run: |
+          echo "PASS: real PDFKit 0.8.6 URL command injection executed as ruby and returned the exact versioned Web Flag." >> "$GITHUB_STEP_SUMMARY"
+          echo "The player had no target filesystem mount or Docker socket; all interaction used the private Docker network." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Capture target diagnostics
+        if: always()
+        run: |
+          docker logs precious-target || true
+          docker image inspect ttp-precious:e2e --format='IMAGE_SIZE_BYTES={{.Size}}' || true
+          docker stats --no-stream precious-target || true
+
+      - name: Clean up isolated environment
+        if: always()
+        run: |
+          docker rm -f precious-target 2>/dev/null || true
+          docker network rm precious-e2e 2>/dev/null || true
+          docker image rm ttp-precious:e2e 2>/dev/null || true
