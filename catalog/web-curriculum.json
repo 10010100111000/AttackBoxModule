@@ -467,7 +467,8 @@
         "scope": null,
         "evidence": [],
         "failure_reason": null
-      }
+      },
+      "e2e_ci_status": "configured"
     },
     {
       "id": "base",
@@ -505,7 +506,8 @@
         "scope": null,
         "evidence": [],
         "failure_reason": null
-      }
+      },
+      "e2e_ci_status": "pending"
     },
     {
       "id": "bashed",
@@ -542,7 +544,8 @@
         "scope": null,
         "evidence": [],
         "failure_reason": null
-      }
+      },
+      "e2e_ci_status": "pending"
     },
     {
       "id": "bike",
@@ -578,7 +581,8 @@
         "scope": null,
         "evidence": [],
         "failure_reason": null
-      }
+      },
+      "e2e_ci_status": "configured"
     },
     {
       "id": "bountyhunter",
@@ -615,7 +619,8 @@
         "scope": null,
         "evidence": [],
         "failure_reason": null
-      }
+      },
+      "e2e_ci_status": "pending"
     },
     {
       "id": "cap",
@@ -654,7 +659,8 @@
         "scope": null,
         "evidence": [],
         "failure_reason": null
-      }
+      },
+      "e2e_ci_status": "pending"
     },
     {
       "id": "cursed-stale-policy",
@@ -691,7 +697,8 @@
         "scope": null,
         "evidence": [],
         "failure_reason": null
-      }
+      },
+      "e2e_ci_status": "pending"
     },
     {
       "id": "devvortex",
@@ -729,7 +736,8 @@
         "scope": null,
         "evidence": [],
         "failure_reason": null
-      }
+      },
+      "e2e_ci_status": "pending"
     },
     {
       "id": "editorial",
@@ -768,7 +776,8 @@
         "scope": null,
         "evidence": [],
         "failure_reason": null
-      }
+      },
+      "e2e_ci_status": "pending"
     },
     {
       "id": "goodgames",
@@ -807,7 +816,8 @@
         "scope": null,
         "evidence": [],
         "failure_reason": null
-      }
+      },
+      "e2e_ci_status": "pending"
     },
     {
       "id": "nibbles",
@@ -848,7 +858,8 @@
         "scope": null,
         "evidence": [],
         "failure_reason": null
-      }
+      },
+      "e2e_ci_status": "pending"
     },
     {
       "id": "openadmin",
@@ -889,7 +900,8 @@
         "scope": null,
         "evidence": [],
         "failure_reason": null
-      }
+      },
+      "e2e_ci_status": "pending"
     },
     {
       "id": "pebbles",
@@ -930,7 +942,8 @@
         "scope": null,
         "evidence": [],
         "failure_reason": null
-      }
+      },
+      "e2e_ci_status": "pending"
     },
     {
       "id": "photobomb",
@@ -971,7 +984,8 @@
         "scope": null,
         "evidence": [],
         "failure_reason": null
-      }
+      },
+      "e2e_ci_status": "pending"
     },
     {
       "id": "precious",
@@ -1006,7 +1020,8 @@
         "scope": null,
         "evidence": [],
         "failure_reason": null
-      }
+      },
+      "e2e_ci_status": "pending"
     },
     {
       "id": "shocker",
@@ -1045,7 +1060,8 @@
         "scope": null,
         "evidence": [],
         "failure_reason": null
-      }
+      },
+      "e2e_ci_status": "pending"
     },
     {
       "id": "union",
@@ -1088,7 +1104,8 @@
         "scope": null,
         "evidence": [],
         "failure_reason": null
-      }
+      },
+      "e2e_ci_status": "pending"
     },
     {
       "id": "validation",
@@ -1131,7 +1148,8 @@
         "scope": null,
         "evidence": [],
         "failure_reason": null
-      }
+      },
+      "e2e_ci_status": "pending"
     },
     {
       "id": "funnel",
@@ -1168,7 +1186,8 @@
         "scope": null,
         "evidence": [],
         "failure_reason": null
-      }
+      },
+      "e2e_ci_status": "pending"
     },
     {
       "id": "django-debug-xss",
@@ -1201,7 +1220,8 @@
         "scope": null,
         "evidence": [],
         "failure_reason": null
-      }
+      },
+      "e2e_ci_status": "pending"
     },
     {
       "id": "wondercms-xss",
@@ -1240,7 +1260,8 @@
         "scope": null,
         "evidence": [],
         "failure_reason": null
-      }
+      },
+      "e2e_ci_status": "pending"
     },
     {
       "id": "usage",
@@ -1289,7 +1310,8 @@
         "scope": null,
         "evidence": [],
         "failure_reason": null
-      }
+      },
+      "e2e_ci_status": "pending"
     },
     {
       "id": "nodeblog",
@@ -1335,7 +1357,8 @@
         "scope": null,
         "evidence": [],
         "failure_reason": null
-      }
+      },
+      "e2e_ci_status": "configured"
     },
     {
       "id": "zipping",
@@ -1381,7 +1404,8 @@
         "scope": null,
         "evidence": [],
         "failure_reason": null
-      }
+      },
+      "e2e_ci_status": "pending"
     },
     {
       "id": "soccer",
@@ -1425,7 +1449,8 @@
         "scope": null,
         "evidence": [],
         "failure_reason": null
-      }
+      },
+      "e2e_ci_status": "pending"
     },
     {
       "id": "trick",
@@ -1465,7 +1490,8 @@
         "scope": null,
         "evidence": [],
         "failure_reason": null
-      }
+      },
+      "e2e_ci_status": "pending"
     },
     {
       "id": "intense",
@@ -1510,7 +1536,8 @@
         "scope": null,
         "evidence": [],
         "failure_reason": null
-      }
+      },
+      "e2e_ci_status": "pending"
     }
   ],
   "backlog": [
@@ -2493,9 +2520,9 @@
   },
   "verification_policy": {
     "updated_on": "2026-11-25",
-    "automation": "build_startup_health_and_structure_only",
-    "full_flow": "manual_acceptance",
-    "automated_exploitation": false,
+    "automation": "build_startup_health_structure_and_lab_specific_e2e",
+    "full_flow": "per_lab_automated_acceptance",
+    "automated_exploitation": true,
     "historical_ci": "retain_original_evidence_without_promoting_manual_status",
     "manual_statuses": [
       "not_reviewed",
@@ -2504,7 +2531,8 @@
       "failed"
     ],
     "release": "manual_acceptance_and_platform_checks_separate_from_ci",
-    "pr_approval": "show_exact_diff_and_actual_checks_then_explicit_user_approval"
+    "pr_approval": "show_exact_diff_and_actual_checks_then_explicit_user_approval",
+    "end_to_end_acceptance": "isolated_network_client_real_vulnerable_component_and_exact_flag"
   },
   "selection_policy": {
     "preferred_start": "HTB Intense Web-only reconstruction is now the active SQL Injection composite candidate",
