@@ -12,7 +12,7 @@ root = Path("/run/django")
 root.mkdir(parents=True, exist_ok=True)
 
 password = os.environ.get("DJANGO_EDITOR_PASSWORD") or secrets.token_urlsafe(32)
-flag = os.environ.get("DJANGO_XSS_FLAG") or "TTP{" + secrets.token_hex(16) + "}"
+flag = os.environ.get("DJANGO_XSS_FLAG") or (Path(__file__).resolve().parent / "flags" / "user.txt").read_text(encoding="utf-8").strip()
 if len(password) < 12 or not flag.startswith("TTP{") or len(flag) > 256:
     raise SystemExit("Invalid instance editorial credentials or Flag")
 
