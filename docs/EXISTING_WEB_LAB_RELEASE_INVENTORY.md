@@ -16,7 +16,18 @@
 
 另有 **11 台**保留 `.release-blocked` 标记。该标记不是 CI 结果，也不等同于靶机代码不存在；未完成原因应以各自 README 和标记文件为准。
 
-### 最近更新：Precious
+### 最近更新：Bike
+
+Bike 已在 main 合并，代码提交为 `05f5c1048a297961e0ff42745e8fae2fbc39bfe2`。使用受影响的 Handlebars 4.1.1，独立 HTTP 攻击端从 Web 入口完成 SSTI 命令执行并读取随机 Flag。
+
+- [PR 独立攻击端 E2E](https://github.com/10010100111000/AttackBoxModule/actions/runs/45899322346)：包含题目验证器和 Writeup 独立利用脚本
+- [main 版本化 Flag 发布 E2E](https://github.com/10010100111000/AttackBoxModule/actions/runs/45899503806)：生成 0.1.0 随机 Flag，实际读取并验证后提交发布文件
+- [main 题库目录一致性 CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/45899891027)：通过
+- 镜像大小约 **80.8 MB**；测试时容器内存约 **18.4 MiB**（700 MiB 限额）
+
+Flag seed、版本 Manifest 与 Challenge 答案已由 CI 核对一致。Bike 是 Web-only 单 Flag，不包含 SSH 登录或第二阶段 Root 提权。
+
+### 最近更新：Bike
 
 Precious 已在 `bb3d62f` 合并 main。以下两个工作流均成功：
 
