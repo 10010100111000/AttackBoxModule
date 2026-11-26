@@ -610,7 +610,7 @@ WonderCMS 3.4.2 **原版反射型属性 XSS 已通过真实 Chromium CI**。但�
 
 - **当前只上线 Linux Docker 靶机。** 暂不纳入 Windows、Active Directory、MSSQL Windows 专属链、内核提权或容器逃逸题目。
 - 目录分工：`challenges/<category>/<slug>/` 存学员题面及 Writeup，`labs/<slug>/` 存 Dockerfile、启动脚本、真实服务、测试与素材。不要在规划目录中添加 Dockerfile 触发镜像构建。
-- Docker 镜像由 `.github/workflows/lab-images.yml` 根据 `labs/**/Dockerfile` 构建，采用 Linux/amd64；运行实例由平台 Worker 管理。**一题一镜像、一实例一容器**为目前最稳妥的默认设计。确实需要多服务时可在同一容器内运行真实进程，使用内部回环端口和独立账户；不预设平台支持 Compose 多容器编排。
+- Docker 镜像由 `.github/workflows/lab-images.yml` 根据 `labs/**/Dockerfile` 构建，采用 Linux/amd64；运行实例由平台 Worker 管理。**一台 Lab 可关联多道 Challenge，默认一个 Lab 实例/容器承载这些关联题目**，不为每道题复制镜像。只有在资源隔离、网络拓扑或生命周期确实要求时，才为一个 Lab 设计多个协同服务；不预设平台支持 Compose 多容器编排。
 - 优先选择 PHP、Python、Node.js、Ruby、Java、SQLite/MySQL/PostgreSQL、FTP/SMTP/SNMP/Redis 等在 Linux 容器里可复现的场景。涉及 systemd、SUID、Capabilities、sudo 时，必须先在平台真实容器权限配置下做端到端验证；不能为复现强行放开宿主机权限。
 - **现阶段使用静态 Flag**，遵循当前 `attackbox/docs/content-authoring.md` 中的 `quiz.answer` 判题机制。用户、Root 是否双 Flag 取决于原题真实利用链，不增加不必要的阶段。
 
