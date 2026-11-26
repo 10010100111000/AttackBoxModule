@@ -19,6 +19,6 @@ title: 获取 Flag
 kind: flag
 prompt: |
   对目标 Web 应用进行安全评估，利用实际存在的漏洞取得 Flag 并提交。
-answer: "TTP{aaaaaaaaaaaaaaaa}"
+answer: "TTP{bywwm5ytdnyo7ztr}"
 match: trim
 ```
