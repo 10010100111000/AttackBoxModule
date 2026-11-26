@@ -2536,7 +2536,18 @@
       "Web-only Challenges do not require SSH, Linux root or two Flags unless those are part of the actual stated objective.",
       "Proposals do not imply existing Challenge files, separate Flag placement, independent exploitability or acceptance."
     ],
-    "migration_policy": "Keep existing machine records and historical CI/manual/Worker/release states. Add explicit Lab-Challenge associations gradually. Do not bulk-split current challenge files, change Flag values or change Worker APIs in this planning update."
+    "migration_policy": "Keep existing machine records and historical CI/manual/Worker/release states. Add explicit Lab-Challenge associations gradually. Do not bulk-split current challenge files, change Flag values or change Worker APIs in this planning update.",
+    "capstone": {
+      "purpose": "A capstone path groups multiple standalone or progressive Challenges into a larger integrated assessment. It is a learning/aggregation object, not necessarily another independently graded Flag Challenge.",
+      "rules": [
+        "A composite attack chain may be split into multiple learner-facing Challenges when each stage has a distinct learning objective, observable completion condition or useful knowledge outcome.",
+        "Challenges may have explicit prerequisite dependencies. A dependent Challenge is not falsely described as independently exploitable.",
+        "Use question-based completion for milestones whose natural outcome is knowledge or discovery and for which no authentic independent Flag exists.",
+        "Use a Flag only when the challenge objective has a naturally retrievable secret/goal; never add artificial flag files just to split a chain.",
+        "A capstone path groups child Challenges and may require all of them; it aggregates progress rather than duplicating a child Flag.",
+        "A Lab can host all child Challenges and the capstone path on one shared runtime; resetting the Lab affects all Challenges attached to that instance unless isolation is explicitly implemented."
+      ]
+    }
   },
   "lab_challenge_proposals": [
     {
@@ -2658,26 +2669,72 @@
     },
     {
       "lab_id": "nodeblog",
-      "status": "audit_recommended_single_composite_challenge",
-      "reason": "The actual route is a serial chain: MongoDB operator authentication bypass -> authenticated XML import -> libxml2 XXE source disclosure -> node-serialize 0.0.4 cookie deserialization RCE. The only current goal Flag is reached at the final RCE stage; earlier stages have no separate natural Flag. Keep one Challenge with multiple Skill mappings and optional question checkpoints rather than fabricating three independent Flag challenges.",
+      "status": "split_into_progressive_challenges_with_capstone_path",
+      "reason": "The sequential nature of the exploit chain does not prevent separate learner-facing Challenges. Split the meaningful learning objectives into progressive Challenges with explicit prerequisites; provide a capstone path that groups and assesses the whole chain. Earlier stages can be question-based (e.g. discover the vulnerable XML parser/version), while the final RCE stage retains the existing Web Flag. Do not fabricate separate Flags for stages that have no natural independent secret.",
       "challenges": [
         {
-          "key": "nodeblog-web-chain",
-          "title": "NodeBlog: authentication, XML parser and unsafe cookie deserialization",
-          "challenge_type": "composite_web",
+          "key": "nodeblog-nosql-auth",
+          "title": "NodeBlog 01 — NoSQL Authentication Bypass",
+          "challenge_type": "focused_web",
+          "primary_skill": "nosql.operator-auth-bypass",
+          "secondary_skills": [],
+          "dependency_on": [],
+          "objective": "Discover the JSON login request shape and demonstrate the application's MongoDB query-operator authentication weakness.",
+          "completion": "Question-based: report the accepted account identity or explain the query-operator behavior after reaching the authenticated area; no synthetic Flag.",
+          "answer_status": "requires_question_answer_design",
+          "implementation_status": "proposal_only"
+        },
+        {
+          "key": "nodeblog-xxe-source",
+          "title": "NodeBlog 02 — XML External Entity Source Disclosure",
+          "challenge_type": "focused_web",
+          "primary_skill": "xxe.file-read",
+          "secondary_skills": [
+            "information_disclosure.config-leak"
+          ],
+          "dependency_on": [
+            "nodeblog-nosql-auth"
+          ],
+          "objective": "Use the authenticated XML import feature and real libxml2 entity processing to disclose application source; identify the vulnerable serialization dependency and version.",
+          "completion": "Question-based: submit the package name/version or a source-derived value that is naturally disclosed; no fabricated Flag file.",
+          "answer_status": "requires_source_derived_question_design",
+          "implementation_status": "proposal_only"
+        },
+        {
+          "key": "nodeblog-deserialization",
+          "title": "NodeBlog 03 — Unsafe Cookie Deserialization",
+          "challenge_type": "focused_web",
+          "primary_skill": "deserialization.unsafe-parse",
+          "secondary_skills": [
+            "deserialization.dependency-gadget"
+          ],
+          "dependency_on": [
+            "nodeblog-xxe-source"
+          ],
+          "objective": "Use the disclosed vulnerable node-serialize dependency and cookie trust-boundary flaw to reach Web service execution.",
+          "completion": "Existing Web Flag at /home/nodeblog/user.txt, owner nodeblog UID 10001, mode 0600.",
+          "answer_status": "existing_flag",
+          "implementation_status": "proposal_only"
+        },
+        {
+          "key": "nodeblog-capstone",
+          "title": "NodeBlog — Complete Web Assessment",
+          "challenge_type": "capstone_path",
           "primary_skill": "nosql.operator-auth-bypass",
           "secondary_skills": [
             "xxe.file-read",
             "deserialization.unsafe-parse",
             "deserialization.dependency-gadget"
           ],
-          "dependency_on": [],
-          "flag_status": "existing_single_flag",
-          "flag_location": "/home/nodeblog/user.txt",
-          "flag_owner": "nodeblog UID 10001",
-          "flag_mode": "0600",
-          "flag_reachability": "reachable after real node-serialize 0.0.4 deserialization command execution as nodeblog; not intended to be reachable at the NoSQLi or XXE-only stages",
-          "implementation_status": "existing_challenge_keep_single"
+          "dependency_on": [
+            "nodeblog-nosql-auth",
+            "nodeblog-xxe-source",
+            "nodeblog-deserialization"
+          ],
+          "objective": "Complete all three progressive Challenges in one continuous Lab environment and demonstrate the full NoSQLi → XXE → deserialization path.",
+          "completion": "Aggregate completion of the three child Challenges; do not create a duplicate final Flag.",
+          "answer_status": "aggregate_only_no_duplicate_flag",
+          "implementation_status": "proposal_only"
         }
       ]
     },
@@ -2718,45 +2775,98 @@
           "flag_status": "new_independent_flag_not_designed",
           "flag_reachability": "The connected chain is SQLi newline filter bypass -> MariaDB FILE write -> PHP include of the written file. A distinct answer must be naturally retrievable through this chain and must not be the same Flag exposed by the ZIP symlink Challenge.",
           "implementation_status": "challenge_split_proposal_requires_flag_design_and_acceptance"
+        },
+        {
+          "key": "zipping-capstone",
+          "title": "Zipping — Complete Web Assessment",
+          "challenge_type": "capstone_path",
+          "primary_skill": "file_upload.parser-mismatch",
+          "secondary_skills": [
+            "sqli.union",
+            "sqli.filter-bypass",
+            "sqli.file-operations",
+            "file_read.lfi"
+          ],
+          "dependency_on": [
+            "zipping-zip-symlink-disclosure",
+            "zipping-sqli-file-include"
+          ],
+          "objective": "Complete both independent application-surface Challenges on the shared Zipping Lab.",
+          "completion": "Aggregate completion of both child Challenges; no duplicate Flag.",
+          "answer_status": "aggregate_only_no_duplicate_flag",
+          "implementation_status": "proposal_only"
         }
       ]
     },
     {
       "lab_id": "soccer",
-      "status": "audit_recommended_single_challenge_with_question_checkpoints",
-      "reason": "The initial Tiny File Manager upload and nginx configuration disclosure establish the secondary vhost; the actual Web Flag is stored only in the MariaDB accounts.goal field and is extracted through the WebSocket boolean SQLi. The PHP foothold cannot read the root-owned 0400 seed file. Use question stages for vhost/protocol discovery and one final Flag stage; do not force a separate Flag Challenge for the upload stage.",
+      "status": "split_progressive_challenges_with_capstone_path",
+      "reason": "Upload foothold, vhost discovery and WebSocket SQLi are meaningful separate learning objectives, even though later tasks depend on the earlier foothold. Split into progressive Challenges with explicit dependencies and group them into one Soccer capstone path. Use question answers for reconnaissance milestones and the existing DB goal Flag only for the final blind SQLi objective.",
       "challenges": [
         {
-          "key": "soccer-websocket-chain",
-          "title": "Soccer: upload foothold, virtual-host discovery and WebSocket blind SQLi",
-          "challenge_type": "composite_web",
+          "key": "soccer-upload-foothold",
+          "title": "Soccer 01 — File Manager Upload Foothold",
+          "challenge_type": "focused_web",
+          "primary_skill": "file_upload.unrestricted-upload",
+          "secondary_skills": [],
+          "dependency_on": [],
+          "objective": "Discover the Tiny File Manager service and establish the intended PHP upload foothold.",
+          "completion": "Question-based: identify the manager version or the web-writable upload location from the real application; no separate Flag.",
+          "answer_status": "requires_source_or_runtime_derived_question_design",
+          "implementation_status": "proposal_only"
+        },
+        {
+          "key": "soccer-vhost-discovery",
+          "title": "Soccer 02 — Virtual Host and Service Discovery",
+          "challenge_type": "focused_web",
+          "primary_skill": "information_disclosure.config-leak",
+          "secondary_skills": [
+            "websockets.ws-recon"
+          ],
+          "dependency_on": [
+            "soccer-upload-foothold"
+          ],
+          "objective": "Use the foothold to inspect the actual Nginx configuration, discover the secondary vhost and map the WebSocket endpoint/message shape.",
+          "completion": "Question-based: submit the secondary hostname and/or WebSocket route/message field; no separate Flag.",
+          "answer_status": "requires_question_answer_design",
+          "implementation_status": "proposal_only"
+        },
+        {
+          "key": "soccer-websocket-sqli",
+          "title": "Soccer 03 — WebSocket Boolean Blind SQL Injection",
+          "challenge_type": "focused_web",
           "primary_skill": "websockets.blind-sqli",
           "secondary_skills": [
-            "sqli.boolean-blind",
-            "websockets.ws-recon",
+            "sqli.boolean-blind"
+          ],
+          "dependency_on": [
+            "soccer-vhost-discovery"
+          ],
+          "objective": "Use the ticket lookup oracle to extract the goal from the real MariaDB-backed account record.",
+          "completion": "Existing Flag in soccer_db.accounts.goal; seed is /home/player/user.txt, root-owned 0400.",
+          "answer_status": "existing_flag",
+          "implementation_status": "proposal_only"
+        },
+        {
+          "key": "soccer-capstone",
+          "title": "Soccer — Complete Web Assessment",
+          "challenge_type": "capstone_path",
+          "primary_skill": "websockets.blind-sqli",
+          "secondary_skills": [
             "file_upload.unrestricted-upload",
-            "information_disclosure.config-leak"
+            "information_disclosure.config-leak",
+            "websockets.ws-recon",
+            "sqli.boolean-blind"
           ],
-          "dependency_on": [],
-          "question_checkpoints": [
-            {
-              "key": "soccer-vhost-discovery",
-              "kind": "question",
-              "objective": "Identify the secondary ticket-service virtual host from the real Nginx configuration."
-            },
-            {
-              "key": "soccer-websocket-protocol",
-              "kind": "question",
-              "objective": "Identify the ticket lookup message field and true/false response behavior."
-            }
+          "dependency_on": [
+            "soccer-upload-foothold",
+            "soccer-vhost-discovery",
+            "soccer-websocket-sqli"
           ],
-          "flag_status": "existing_single_flag",
-          "flag_location": "soccer_db.accounts.goal",
-          "seed_location": "/home/player/user.txt",
-          "seed_owner": "root",
-          "seed_mode": "0400",
-          "flag_reachability": "retrievable through the real WebSocket SQL injection against MariaDB; the PHP upload foothold alone cannot read the root-owned seed file",
-          "implementation_status": "existing_challenge_keep_single"
+          "objective": "Complete the upload foothold, virtual-host discovery and WebSocket blind SQLi as one continuous assessment.",
+          "completion": "Aggregate completion of the three child Challenges; do not create a duplicate final Flag.",
+          "answer_status": "aggregate_only_no_duplicate_flag",
+          "implementation_status": "proposal_only"
         }
       ]
     }
