@@ -44,10 +44,10 @@ jobs:
           flag = pathlib.Path("labs/precious/flags/user.txt").read_text().strip()
           challenge = pathlib.Path("challenges/integrated/precious/Precious.md").read_text()
           answers = re.findall(r'(?m)^answer: "([^"]+)"$', challenge)
-          assert re.fullmatch(r"TTP\\{[a-z2-7]{16}\\}", flag)
+          assert re.fullmatch(r"TTP\{[a-z2-7]{16}\}", flag)
           assert answers == [flag], "target Flag and Challenge answer differ"
           with open(os.environ["GITHUB_OUTPUT"], "a") as output:
-              output.write(f"expected={flag}\\n")
+              output.write(f"expected={flag}\n")
           print(f"::add-mask::{flag}")
           print("Precious random Flag and Challenge answer match: PASS")
           PY
@@ -63,8 +63,8 @@ jobs:
         run: |
           set -euo pipefail
           docker network create --internal precious-e2e
-          docker run -d --name precious-target --network precious-e2e --network-alias precious-target \\
-            --memory 850m --cpus 2 --pids-limit 180 --security-opt no-new-privileges \\
+          docker run -d --name precious-target --network precious-e2e --network-alias precious-target \
+            --memory 850m --cpus 2 --pids-limit 180 --security-opt no-new-privileges \
             ttp-precious:e2e
           ready=0
           for attempt in $(seq 1 60); do
@@ -86,13 +86,13 @@ jobs:
           EXPECTED_FLAG: ${{ steps.flag.outputs.expected }}
         run: |
           set -euo pipefail
-          docker run --rm --network precious-e2e --network-alias precious-player \\
-            -v "$GITHUB_WORKSPACE/labs/precious/exploit.py:/exploit.py:ro" \\
-            -e EXPECTED_FLAG \\
-            python:3.12-alpine python /exploit.py \\
-              --url http://precious-target:8080 \\
-              --callback-host precious-player \\
-              --listen-port 9000 \\
+          docker run --rm --network precious-e2e --network-alias precious-player \
+            -v "$GITHUB_WORKSPACE/labs/precious/exploit.py:/exploit.py:ro" \
+            -e EXPECTED_FLAG \
+            python:3.12-alpine python /exploit.py \
+              --url http://precious-target:8080 \
+              --callback-host precious-player \
+              --listen-port 9000 \
               --expected-flag "$EXPECTED_FLAG"
 
       - name: Record acceptance scope
