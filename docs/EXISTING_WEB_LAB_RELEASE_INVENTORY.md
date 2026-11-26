@@ -10,8 +10,8 @@
 
 | main 中记录的 CI 状态 | 数量 | 含义 |
 |---|---:|---|
-| `full_chain_ci` | 17 | 保留了历史完整目标链 CI 证据；不代表当前 CI 会继续自动执行攻击链 |
-| `partial` | 6 | 已有部分真实功能或目标行为检查，仍有靶机内容/目标路径缺口 |
+| `full_chain_ci` | 18 | 保留了历史完整目标链 CI 证据；不代表当前 CI 会继续自动执行攻击链 |
+| `partial` | 5 | 已有部分真实功能或目标行为检查，仍有靶机内容/目标路径缺口 |
 | `unverified` | 4 | 尚无足够的靶机目标验证记录 |
 
 另有 **11 台**保留 `.release-blocked` 标记。该标记不是 CI 结果，也不等同于靶机代码不存在；未完成原因应以各自 README 和标记文件为准。
@@ -34,7 +34,7 @@ This table is generated from the same state recorded in `catalog/web-curriculum.
 | `alert` | `partial` | `blocked_by_marker` |
 | `base` | `unverified` | `not_assessed` |
 | `bashed` | `full_chain_ci` | `not_assessed` |
-| `bike` | `partial` | `not_assessed` |
+| `bike` | `full_chain_ci` | `not_assessed` |
 | `bountyhunter` | `full_chain_ci` | `not_assessed` |
 | `cap` | `full_chain_ci` | `not_assessed` |
 | `cursed-stale-policy` | `unverified` | `not_assessed` |
@@ -61,11 +61,12 @@ This table is generated from the same state recorded in `catalog/web-curriculum.
 
 ## 现有靶机状态
 
-### 已有完整目标链 CI 记录（17 台）
+### 已有完整目标链 CI 记录（18 台）
 
 | Lab | 主要技术/目标 | 备注 |
 |---|---|---|
 | Bashed | phpbash 暴露入口、sudo/cron | 原版 phpbash 组件 |
+| Bike | Handlebars 4.1.1 SSTI → RCE | 独立 HTTP 攻击端读取随机 Flag；PR 与 main 版本发布 E2E 均通过 |
 | Bountyhunter | SimpleXML XXE、凭据与后续服务链 | 真实 XML 解析器 |
 | Cap | IDOR、PCAP、凭据复用、Linux capability | 已拆分为 Packet Drop / Setuid Surprise 两个 Challenge |
 | Django Debug XSS | Django 1.11.4 技术错误页 XSS | 有真实浏览器与版本负向对照记录；有 `.release-blocked` |
@@ -83,14 +84,13 @@ This table is generated from the same state recorded in `catalog/web-curriculum.
 | Soccer | Tiny File Manager、WebSocket blind SQLi | Web-only；有 `.release-blocked` |
 | WonderCMS XSS | WonderCMS 属性上下文 XSS、管理员浏览器 | 有 `.release-blocked` |
 
-这里的 `full_chain_ci` 是历史目录字段，保留其原始证据含义。当前 CI 规范已经调整为构建、启动、健康检查和普通功能检查，不再把自动攻击链作为 CI 要求。
+`full_chain_ci` 表示该 Lab 有完整目标链 CI 证据；旧 Lab 的历史证据不自动等同于当前统一 E2E 标准。每台是否通过新标准，以 `catalog/web-curriculum.json` 中的 `e2e_ci_status`、运行链接和提交 SHA 为准。Bike 已按新标准通过独立攻击端验收。
 
-### 部分完成（6 台）
+### 部分完成（5 台）
 
 | Lab | 已有内容 | 仍需处理的靶机工作 |
 |---|---|---|
 | Alert | Markdown 存储型 XSS、真实 Chromium 管理员浏览器、内部文件读取 | Web Flag 目标路径仍需人工确认；有 `.release-blocked` |
-| Bike | Handlebars 4.1.2 SSTI | 核对真实模板上下文、题目目标与说明 |
 | Devvortex | Joomla 4.2.6 信息泄露 | 明确并完成 Web 专项目标；不要默认追加 Linux Root |
 | GoodGames | 登录 SQLi、凭据线索、存储型 Jinja2 SSTI | 整理单 Web Flag 目标与完整 Challenge/Writeup |
 | Funnel | FTP、SSH、PostgreSQL 隧道 | 属于非 Web 服务链，单独标识其题库归类与目标 |
@@ -110,7 +110,6 @@ This table is generated from the same state recorded in `catalog/web-curriculum.
 建议顺序：
 
 1. **Precious**：保留已通过的普通 CI，后续只补题目说明和实际 Web 目标路径缺口；不重新制作。
-2. **Bike**：核对 Handlebars 真实模板行为，完善题面和 Writeup。
 3. **GoodGames**：整理 SQLi → Jinja2 SSTI 的自然探索路径与单 Flag 目标。
 4. **Devvortex**：明确 Web-only 目标，不把原题 Linux 后半段强加进来。
 5. **Base**：补清楚认证与上传两部分的实际功能和题目目标。
