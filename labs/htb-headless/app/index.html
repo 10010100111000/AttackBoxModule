@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Headless - Under Construction</title>
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:#101820;color:#e7edf2;font-family:Arial,sans-serif}
+main{width:min(680px,calc(100% - 40px));padding:54px 42px;border:1px solid #34414c;background:#17232d;text-align:center}
+h1{margin:0 0 12px;font-size:38px;letter-spacing:.04em}p{color:#aebbc5;line-height:1.7}
+.timer{margin:28px 0;font:700 42px monospace;color:#e4a84c}
+a{display:inline-block;margin-top:18px;padding:12px 20px;color:#101820;background:#e4a84c;text-decoration:none;font-weight:700}
+</style>
+</head>
+<body><main>
+<h1>UNDER CONSTRUCTION</h1>
+<p>We are working on something new. Please check back soon.</p>
+<div class="timer" id="timer">00:00:00</div>
+<p>For questions or support, contact our team.</p>
+<a href="/support">For questions</a>
+</main>
+<script>
+let remaining=3600;const timer=document.getElementById("timer");
+setInterval(()=>{if(remaining>0)remaining--;const h=String(Math.floor(remaining/3600)).padStart(2,"0");const m=String(Math.floor((remaining%3600)/60)).padStart(2,"0");const s=String(remaining%60).padStart(2,"0");timer.textContent=h+":"+m+":"+s;},1000);
+</script></body></html>
