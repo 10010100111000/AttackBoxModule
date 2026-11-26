@@ -1,7 +1,11 @@
 name: Headless development preflight
 
-# Manual-only disposable runner. This is not the exploit-chain acceptance.
+# Disposable runner for build and non-exploit integration preflight. Not exploit-chain acceptance.
 on:
+  pull_request:
+    paths:
+      - "labs/htb-headless/**"
+      - ".github/workflows/headless-dev-preflight.yml"
   push:
     branches: [feat/htb-headless-web-machine]
     paths:
