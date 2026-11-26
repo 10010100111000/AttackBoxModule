@@ -35,7 +35,7 @@ actual_user_flag = downloaded.decode("utf-8", "replace").strip()
 if expected_user_flag:
     assert actual_user_flag == expected_user_flag
 else:
-    assert re.fullmatch(r"TTP\\{[a-z2-7]{16}\\}", actual_user_flag)
+    assert actual_user_flag.startswith("TTP{") and actual_user_flag.endswith("}") and len(actual_user_flag) == 21 and all(ch in "abcdefghijklmnopqrstuvwxyz234567" for ch in actual_user_flag[4:-1])
 ftp.quit()
 
 # A live five-second tcpdump is started by the real web app, then redirected
