@@ -27,7 +27,7 @@ Bike 已在 main 合并，代码提交为 `05f5c1048a297961e0ff42745e8fae2fbc39b
 
 Flag seed、版本 Manifest 与 Challenge 答案已由 CI 核对一致。Bike 是 Web-only 单 Flag，不包含 SSH 登录或第二阶段 Root 提权。
 
-### 最近更新：Bike
+### 上一项更新：Precious
 
 Precious 已在 `bb3d62f` 合并 main。以下两个工作流均成功：
 
