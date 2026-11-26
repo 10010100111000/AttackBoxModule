@@ -3,3 +3,4 @@ README.md
 writeup.md
 tests/
 *.log
+exploit.py
