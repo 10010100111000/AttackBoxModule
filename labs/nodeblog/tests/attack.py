@@ -14,7 +14,7 @@ EXPECTED_01 = os.environ["EXPECTED_FLAG_01"]
 EXPECTED_02 = os.environ["EXPECTED_FLAG_02"]
 EXPECTED_03 = os.environ["EXPECTED_FLAG_03"]
 for value in (EXPECTED_01, EXPECTED_02, EXPECTED_03):
-    assert value.startswith("TTP{") and value.endswith("}") and len(value) == 23 and all(c in "abcdefghijklmnopqrstuvwxyz234567" for c in value[4:-1]), "invalid expected Flag format"
+    assert value.startswith("TTP{") and value.endswith("}") and len(value) == 21 and all(c in "abcdefghijklmnopqrstuvwxyz234567" for c in value[4:-1]), "invalid expected Flag format"
 assert len({EXPECTED_01, EXPECTED_02, EXPECTED_03}) == 3, "Flags must be unique"
 
 jar = http.cookiejar.CookieJar()
