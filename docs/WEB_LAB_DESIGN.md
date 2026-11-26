@@ -38,7 +38,7 @@
 
 以 main 提交 `bb3d62f3f8f96ded4eb34b16ba2561a4a1e0f678` 为本次盘点基准：
 
-- 当前目录有 **27 台 Lab**：17 台记录为 `full_chain_ci`、6 台为 `partial`、4 台为 `unverified`。
+- 当前目录有 **27 台 Lab**：18 台记录为 `full_chain_ci`、5 台为 `partial`、4 台为 `unverified`。
 - 其中 **10 台**保留 `.release-blocked` 标记；该字段与 CI 结果分开记录。
 - 技能目录仍为 **31 个专题 / 219 个细分目标**。
 - 滚动队列为 **35 项**：4 项 done、4 项 in_progress、27 项 planned。
