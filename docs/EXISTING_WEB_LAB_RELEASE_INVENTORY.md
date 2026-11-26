@@ -31,7 +31,7 @@ Flag seed、版本 Manifest 与 Challenge 答案已由 CI 核对一致。Bike �
 
 Precious 已完成独立攻击端端到端验收。真实 PDFKit 0.8.6 / wkhtmltopdf 靶机在隔离 Docker 网络中，通过 CVE-2022-25765 以 `ruby` 身份执行命令，并读取本次 CI 生成的精确随机 Web Flag。
 
-- [独立攻击端 E2E](https://github.com/10010100111000/AttackBoxModule/actions/runs/45901870712)：命令执行身份与 Web Flag 回读均通过
+- [独立攻击端 E2E](https://github.com/10010100111000/AttackBoxModule/actions/runs/45902207628)：命令执行身份与 Web Flag 回读均通过
 - [普通 PDF 功能 smoke CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/45901579321)：首页、PDFKit 版本、健康检查和正常 PDF 转换通过
 - [镜像构建与启动检查](https://github.com/10010100111000/AttackBoxModule/actions/runs/45901579285)：通过
 - Docker 镜像约 **190.9 MB**；测试时内存约 **21 MiB**（850 MiB 限额）
