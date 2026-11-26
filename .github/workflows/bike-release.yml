@@ -84,7 +84,7 @@ jobs:
           flag = json.loads(path.read_text())["flag"]
           print(f"::add-mask::{flag}")
           with open(os.environ["GITHUB_OUTPUT"], "a") as output:
-              output.write(f"expected={flag}\\n")
+              output.write(f"expected={flag}\n")
           PY
 
       - name: Build Bike target for release acceptance
