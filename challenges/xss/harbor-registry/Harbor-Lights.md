@@ -21,7 +21,7 @@ title: Harbor Lights
 kind: flag
 prompt: |
   从公开注册功能开始调查，分析重复资料触发的异常响应，并结合编辑部的链接审核流程取得受保护的 Web 目标。
-answer: "TTP{q7m2v5k4n6p3xwaz}"
+answer: "TTP{h3e54cpfnybnemfn}"
 match: trim
 hint: 留意应用在处理重复用户名时返回的详细错误页面，以及编辑部浏览器访问投稿链接时所处的会话环境。
 ```
