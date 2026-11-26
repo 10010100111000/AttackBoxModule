@@ -2571,11 +2571,23 @@
         "For a progressive Lab, Challenge 01 may contain Flag 01; Challenge 02 may contain Flag 01 + Flag 02; Challenge 03 may contain Flag 01 + Flag 02 + Flag 03. The later Challenge provides deliberate review of prior objectives and an integrated assessment.",
         "Each Challenge's own ordered stages are submitted in sequence using the existing challenge_stages/attemptChallenge behavior. This is stage ordering inside one Challenge, not unlocking another Challenge.",
         "For unrelated vulnerabilities, create independent Challenge records with their own goals/Flags; do not copy previous Flags or impose prerequisites.",
-        "Multiple Challenge records may reference the same target_template_id. This proves shared template/image association, not necessarily one shared live target instance; inspect runtime scope before promising a shared container.",
+        "Multiple Challenge records may reference the same target_template_id. The current targetScope derives scope as target:<templateId>, and target_instances has a unique constraint on (user_id, scope), so the same user reuses the same live target instance across Challenges bound to that template. Starting a different template stops the user's other active target instance.",
         "The user progress record remains user-to-Challenge-stage completion. Do not add a separate user-to-Lab progress model or ChallengeDependency table for automatic unlocking.",
         "A Lab reset is infrastructure lifecycle behavior. It should not silently delete historical Challenge completions; whether reset clears runtime-only state or progress must be an explicit product rule, separate from Challenge selection.",
         "Worker manages Lab/sandbox lifecycle only; Web backend owns Challenge definitions, stage answers and user progress."
-      ]
+      ],
+      "runtime_verified": {
+        "source_files": [
+          "web/server/services/target-runtime.ts",
+          "web/server/db/schema/target-instances.ts",
+          "web/components/challenges/TargetControl.vue",
+          "web/composables/useTargetSession.ts"
+        ],
+        "same_user_same_template": "confirmed_shared_instance",
+        "mechanism": "targetScope returns scope target:<templateId>; target_instances unique(user_id,scope); targetOperation finds existing unexpired instance and returns inspect instead of creating a new one.",
+        "different_template": "starting a different template stops the user's other active target instances before allocating the new target.",
+        "progress": "challenge_completions remains per user_id + stage_id; no auto unlock or user-to-Lab progress table."
+      }
     }
   },
   "lab_challenge_proposals": [
