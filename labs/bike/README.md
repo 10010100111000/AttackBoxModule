@@ -47,7 +47,7 @@ docker rm -f bike-lab
 
 ## 验证完整 SSTI 漏洞链
 
-此靶机**故意**使用 Handlebars 4.1.2，并把 `POST /` 的 `email` 参数直接拼入待编译的模板源码（`server.js` 中的 `render()`）。因此它不只是回显 `{{...}}`，而是会把攻击者的 Handlebars 语法当模板执行。
+此靶机**故意**使用受影响的 Handlebars 4.1.1（4.1.2 已修复这条利用链），并把 `POST /` 的 `email` 参数直接拼入待编译的模板源码（`server.js` 中的 `render()`）。因此它不只是回显 `{{...}}`，而是会把攻击者的 Handlebars 语法当模板执行。
 
 GitHub Actions 使用独立的 Python 攻击端容器，通过仅供本次 CI 使用的内部 Docker 网络访问靶机；测试端不挂载靶机文件系统，也不使用 Docker socket。CI 会从当前 Challenge 对应的 Flag seed 读取预期答案，并实际通过 HTTP 请求走完 SSTI 到 `/root/flag.txt` 的路径。
 
