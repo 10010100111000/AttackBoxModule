@@ -21,6 +21,104 @@ Pinned source reviewed:
 - Upstream Dockerfile uses a Python 3.11 Alpine builder/runtime multi-stage layout.
 - Runtime dependencies in \`requirements.txt\`: Connexion 2.14.2, Flask 2.2.2, Flask-SQLAlchemy 3.0.3, SQLAlchemy 2.0.2, PyJWT 2.6.0, jsonschema 4.17.3 and Swagger UI bundle.
 
+
+## Stronger production-application candidate: Open WebUI (CVE-2026-45398)
+
+After the initial VAmPI pass, a stronger match for the requirement "real open-source application + real vulnerability + public writeup" was identified: **Open WebUI**, a self-hosted application with an actual published BOLA/IDOR advisory.
+
+### Primary source and exact vulnerable version
+
+- Project: https://github.com/open-webui/open-webui
+- Security advisory: https://github.com/open-webui/open-webui/security/advisories/GHSA-4g37-7p2c-38r9
+- Tenable research advisory and proof of concept: https://www.tenable.com/security/research/tra-2026-39
+- CVE: CVE-2026-45398; GHSA-4g37-7p2c-38r9; CWE-639.
+- Affected versions per advisory: <= 0.9.4; patched version: >= 0.9.5.
+- Exact reproduction commit identified by the reporter: 4d058a125b17eb57212af5eab98d683548d546e3, version 0.8.11 (2026-03-25). Use this immutable commit as the initial source pin rather than relying only on a version label.
+- Advisory severity: CVSS 7.5 High.
+
+### Verified source-level root cause
+
+At the vulnerable commit, backend/open_webui/routers/retrieval.py::_validate_collection_access():
+- immediately returns for admins;
+- checks user-memory-* collection names against the current user;
+- checks file-* collection names through has_access_to_file();
+- has no final else branch for knowledge-base UUID collection names.
+
+Knowledge base vector collections use the knowledge base UUID as their collection name. A UUID does not match either guarded prefix, so the check lets it pass. The retrieval endpoints then query the vector DB using that collection name.
+
+The affected API surface is documented by the vendor advisory:
+
+**Read**
+- POST /api/v1/retrieval/query/doc
+- POST /api/v1/retrieval/query/collection
+
+**Write**
+- POST /api/v1/retrieval/process/text
+- POST /api/v1/retrieval/process/file
+- POST /api/v1/retrieval/process/files/batch
+- POST /api/v1/retrieval/process/web
+- POST /api/v1/retrieval/process/youtube
+
+The write paths allow a non-owner to append content to another user's knowledge base or, through the web/youtube handler with overwrite=true by default, replace its contents. The advisory also documents the legitimate knowledge API denying access to the same private KB, while the retrieval API permits it. This gives a strong control-vs-exploit comparison for a learner.
+
+### Natural discovery path and writeup evidence
+
+The Tenable advisory documents how a target KB UUID can become known through normal app behavior, including shared model metadata, browser URLs, shared chats and stale group access. This is preferable to handing the UUID to the learner or inventing a hidden parameter.
+
+The advisory includes request/response proof for:
+- a control request to GET /api/v1/knowledge/{victim_kb_uuid} that is denied;
+- a retrieval query against the same UUID that returns private chunks;
+- text/file injection into the same victim collection;
+- web/youtube processing that can overwrite the collection.
+
+The PoC is attached to the GitHub advisory and Tenable report. This is a real bug in a production open-source application, not a training-only fake route.
+
+### Runtime fit
+
+Open WebUI's official deployment documentation describes the default single-instance Docker deployment as self-contained:
+- embedded SQLite for application data;
+- embedded ChromaDB (also backed by SQLite) for vector storage;
+- local file storage;
+- one Uvicorn worker;
+- no external database or Redis required for a single instance.
+
+That is compatible with the existing one-target-container model. However, this is not a tiny image:
+- the official slim image is documented at about 197 MB compressed but omits local embedding and document-processing runtimes;
+- the full image is documented at about 1.62 GB compressed;
+- the default local all-MiniLM-L6-v2 embedding runtime uses roughly 500 MB RAM per replica.
+
+Therefore the actual target image and runtime memory must be measured before approving this as the first API Lab. Do not silently replace the real embedding/vector path with a fake implementation. A possible optimization is to build from the pinned upstream Dockerfile with the smallest supported real embedding setup, but this requires a prototype and measurement.
+
+Official runtime references:
+- https://docs.openwebui.com/getting-started/advanced-topics/scaling/
+- https://docs.openwebui.com/getting-started/quick-start/
+
+### Proposed Challenge design for Open WebUI
+
+One Open WebUI Lab; all Challenge documents use lab: open-webui and separate folders/slugs. No cross-Challenge auto-unlock.
+
+Possible structure:
+1. **Private Index** — read another user's private knowledge base through the retrieval query endpoint. Primary objective: confidentiality/BOLA.
+2. **Shared Ink** — append attacker-controlled content to another user's knowledge base through the text/file processing endpoint. Primary objective: unauthorized write / integrity.
+3. **Blank Slate** — replace a victim knowledge base through the web/youtube processing handler's overwrite behavior. Primary objective: destructive authorization bypass.
+
+These are stages of the same underlying collection-authorization failure, so a cumulative model is reasonable: 1 Flag, 2 Flags, 3 Flags. However, do not finalize Flag placement until the exact app seed and API response behavior are prototyped. The lab can use generated content/knowledge records and random versioned Flags, but the learner must retrieve/verify them through the actual upstream endpoints. Avoid adding a fake endpoint solely to reveal a Flag.
+
+The UUID discovery itself should remain part of the exercise: seed a private knowledge base, create a legitimate shared model/chat or other normal UI artifact that exposes its stable identifier, then revoke access or use a second user to reproduce the retrieval-layer gap. This matches the advisory's real prerequisite.
+
+### Candidate decision update
+
+For a production-application API Access Control Lab, Open WebUI is now the **preferred research candidate** because it has:
+- a real maintained open-source application;
+- an exact vulnerable source commit;
+- a published CVE/GHSA and Tenable writeup;
+- a documented read-vs-write authorization gap across multiple real API endpoints;
+- a default single-container deployment model.
+
+VAmPI remains the **lightweight fallback** if Open WebUI's image/model footprint proves too large. VAmPI is a real open-source API project with exact source-level BOLA, mass assignment and unauthorized password-change bugs plus the author's detailed writeup, but it is purpose-built as a vulnerable API rather than a normal production application.
+
+OWASP crAPI remains a later reference: it has rich official BOLA/BFLA/mass-assignment challenges and solutions, but its minimal Compose configuration documents roughly 800 MB minimum reservations, around 2 CPUs and multi-service deployment.
+
 ## Candidate comparison
 
 | Candidate | Source and learning evidence | Runtime fit | Decision |
