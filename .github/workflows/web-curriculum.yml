@@ -9,6 +9,8 @@ on:
       - "docs/WEB_LAB_DESIGN.md"
       - "README.md"
       - "scripts/validate_web_curriculum.py"
+      - "scripts/generate_nodeblog_release.py"
+      - "labs/nodeblog/**"
       - ".github/workflows/web-curriculum.yml"
       - "labs/**/Dockerfile"
   pull_request:
@@ -33,3 +35,28 @@ jobs:
       - uses: actions/checkout@v4
       - name: Validate Academy taxonomy, existing labs and planned scenarios
         run: python3 scripts/validate_web_curriculum.py
+      - name: Check NodeBlog Flag generator determinism and Challenge stage counts
+        run: |
+          set -euo pipefail
+          python3 scripts/generate_nodeblog_release.py --version 0.0.0-ci
+          manifest=labs/nodeblog/flags/releases/0.0.0-ci.json
+          before=$(sha256sum "$manifest" | cut -d' ' -f1)
+          python3 scripts/generate_nodeblog_release.py --version 0.0.0-ci
+          after=$(sha256sum "$manifest" | cut -d' ' -f1)
+          test "$before" = "$after"
+          python3 - <<'PY'
+          import json, pathlib, re
+          flags = json.loads(pathlib.Path("labs/nodeblog/flags/releases/0.0.0-ci.json").read_text())["flags"]
+          assert len(flags) == 3 and len(set(flags.values())) == 3
+          assert all(re.fullmatch(r"TTP\{[a-z2-7]{16}\}", value) for value in flags.values())
+          docs = [
+            (pathlib.Path("challenges/authentication/nodeblog-nosql/NoSQL Authentication Bypass.md"), 1),
+            (pathlib.Path("challenges/file-security/nodeblog-xxe/XXE Source Disclosure.md"), 2),
+            (pathlib.Path("challenges/code-execution/nodeblog-deserialization/Unsafe Cookie Deserialization.md"), 3),
+          ]
+          for path, count in docs:
+            text = path.read_text()
+            assert text.count("kind: flag") == count, (path, count)
+            assert "lab: nodeblog" in text
+          print("NodeBlog generator: 3 unique Flags, stable same-version manifest, Challenge stages 1/2/3: PASS")
+          PY
