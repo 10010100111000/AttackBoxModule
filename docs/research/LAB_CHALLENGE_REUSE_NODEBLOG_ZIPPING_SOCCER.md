@@ -34,15 +34,17 @@
 - `NODEBLOG_USER_FLAG` 在入口脚本写入文件后即 unset；Worker 不负责生成、校验或判题。
 - 只有最终不安全反序列化导致的真实命令执行阶段，才获得读取该文件的能力。NoSQL 绕过和 XXE 本身没有独立 Flag。
 
-### Challenge 独立性判断
+### Challenge 拆分建议：三道递进题 + 一条综合路径
 
-不建议拆成三个 Flag Challenge。三个漏洞是严格递进的发现/利用路径，不是三个拥有独立最终目标的环境：
+这条链存在真实先后依赖，但**有依赖不等于不能拆题**。三个阶段各自训练不同的核心能力，适合分别成为 Challenge：
 
-1. NoSQL 操作符绕过登录，取得应用身份。
-2. XML 导入触发真实 XXE，读取应用源码并发现易受攻击的序列化依赖。
-3. Cookie 反序列化执行，取得 Web 服务账户能力并读取唯一 Flag。
+1. **NodeBlog 01 — NoSQL Authentication Bypass**：主考点为 MongoDB JSON 查询操作符。完成目标是通过真实登录功能进入作者区域；可用 question 答案检查用户识别到的认证边界/账号，不要求为该阶段伪造 Flag。
+2. **NodeBlog 02 — XXE Source Disclosure**：主考点为真实 libxml2 XXE。依赖 01 的登录状态；通过 XML 导入读取源码，并回答实际源码披露出的易受攻击依赖包和版本。答案必须从真实响应中取得。
+3. **NodeBlog 03 — Unsafe Cookie Deserialization**：主考点为 node-serialize 0.0.4 不安全反序列化。依赖 02 的依赖识别；最终通过真实 Web 执行路径读取现有 `/home/nodeblog/user.txt` Flag。
 
-推荐保持一个综合 Web Challenge，主考点设为 NoSQL 认证绕过，次考点为 XXE 和不安全反序列化。可在同一 Challenge 内增加非 Flag 的知识检查，例如从 XML 源码披露中识别依赖包和版本。不要为了拆题而添加没有真实来源的 Flag 文件。
+另设 **NodeBlog — Complete Web Assessment** 作为 Capstone/ChallengePath，要求完成以上三题并汇总进度；它不是额外复制一枚 Flag 的第四个漏洞目标。
+
+注意：01/02 的 question 答案需要根据实际应用响应和源码内容设计，并在开发验收时证明可观察、稳定、不会从题面直接泄露。若某阶段没有合理答案，也可以保留为无计分的学习检查点；不要为了每题都有 Flag 而增加伪造文件。
 
 ### 既有证据和限制
 
@@ -155,16 +157,17 @@ README 记录两次全新实例的 CI 完整链通过：ZIP symlink 读取源码
 
 因此，上传 foothold 和 vhost/config disclosure 本身并没有取得 Flag；它们是发现第二个 WebSocket 服务的前置侦察路径。
 
-### Challenge 独立性判断
+### Challenge 拆分建议：三道递进题 + 一条综合路径
 
-推荐一条综合 Web Challenge，主考点为 WebSocket blind SQLi，次考点为文件上传、配置泄露、WebSocket 协议侦察和布尔盲注。
+Soccer 的三个阶段同样可以拆成独立训练题，即使后两题需要前面的 foothold：
 
-在同一 Challenge 中加入两个非 Flag 的 question checkpoints：
+1. **Soccer 01 — File Manager Upload Foothold**：主考点为文件上传。通过真实 Tiny File Manager 2.4.3 建立 PHP 上传 foothold；question 答案可以要求识别实际版本或上传目录。
+2. **Soccer 02 — Virtual Host and Service Discovery**：主考点为配置/信息泄露，次考点为 WebSocket 侦察。依赖 01 的 PHP foothold；从真实 Nginx 配置中找出第二个 vhost，并识别 WebSocket 服务和消息字段。question 答案来自真实配置/协议。
+3. **Soccer 03 — WebSocket Boolean Blind SQL Injection**：主考点为 WebSocket blind SQLi。依赖 02 的服务发现；最终通过真实 MariaDB-backed WebSocket oracle 取得 `soccer_db.accounts.goal` 中的现有 Flag。
 
-1. 从真实 Nginx 配置识别第二个虚拟主机。
-2. 识别 WebSocket 的 JSON 消息字段及真/假响应。
+另设 **Soccer — Complete Web Assessment** 作为 Capstone/ChallengePath，汇总三个子题的完成情况，不复制最终 Flag。
 
-最后通过 WebSocket SQLi 提交唯一 Flag。这样保留了真实侦察过程，也没有为了上传阶段强行创建第二枚 Flag。
+前两题没有独立 Flag 并不妨碍它们成为独立 Challenge：它们可以使用自然、可验证的 question 答案。需要在开发验收中验证这些答案确实来自用户可观察的环境，而不是题面直接给出。
 
 ### 既有证据和限制
 
