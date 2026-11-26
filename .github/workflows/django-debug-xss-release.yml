@@ -1,0 +1,85 @@
+name: Django Debug XSS versioned Flag release
+
+# Manual-only release content generation. Does not build or publish an image.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Django Debug XSS release version, e.g. 1.0.0. Reusing a version reuses its Flag."
+        required: true
+        default: "0.1.0"
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: django-debug-xss-release-${{ inputs.version }}
+  cancel-in-progress: false
+
+jobs:
+  generate-and-commit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout selected branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+
+      - name: Generate or reuse release Flag
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          python3 scripts/generate_django_debug_release.py --version "$RELEASE_VERSION"
+          manifest="labs/django-debug-xss/flags/releases/$RELEASE_VERSION.json"
+          before=$(sha256sum "$manifest" | cut -d' ' -f1)
+          python3 scripts/generate_django_debug_release.py --version "$RELEASE_VERSION"
+          after=$(sha256sum "$manifest" | cut -d' ' -f1)
+          test "$before" = "$after"
+          echo "Flag generation and same-version idempotency: PASS"
+
+      - name: Validate image seed and Challenge answer match Manifest
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib, re
+          version = os.environ["RELEASE_VERSION"]
+          root = pathlib.Path(".")
+          manifest = json.loads((root / f"labs/django-debug-xss/flags/releases/{version}.json").read_text())
+          flag = manifest["flag"]
+          assert re.fullmatch(r"TTP\{[a-z2-7]{16}\}", flag)
+          assert (root / "labs/django-debug-xss/flags/user.txt").read_text().strip() == flag
+          challenge = (root / "challenges/xss/harbor-registry/Harbor-Lights.md").read_text()
+          assert challenge.count(f'answer: "{flag}"') == 1
+          assert challenge.count("kind: flag") == 1
+          assert "lab: django-debug-xss" in challenge
+          print("Manifest, image Flag seed, and Challenge answer match: PASS")
+          PY
+
+      - name: Commit generated release artifacts
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+          BRANCH_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            "labs/django-debug-xss/flags/releases/$RELEASE_VERSION.json" \
+            labs/django-debug-xss/flags/user.txt \
+            challenges/xss/harbor-registry/Harbor-Lights.md
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(django-debug-xss): generate Flags for $RELEASE_VERSION"
+            git push origin "HEAD:$BRANCH_NAME"
+          else
+            echo "Release content already matches this version."
+          fi
+
+      - name: Summarize
+        run: |
+          echo "Generated/reused one random 80-bit Flag. The same Manifest supplies the target seed and Challenge answer." >> "$GITHUB_STEP_SUMMARY"
+          echo "Re-running this version preserves the Flag; use a new version to rotate it." >> "$GITHUB_STEP_SUMMARY"
