@@ -32,7 +32,7 @@ The Worker **only** starts/stops the target image and attaches the instance-priv
 - PostgreSQL (local, 127.0.0.1): genuine duplicate-key error.
 - Chromium, launched in headless mode through Pyppeteer: editorial browser, as the separate unprivileged `reviewbot` user.
 - Django's own database-backed session cookie: authenticated editor, not a hardcoded browser token.
-- Flag stored at `/run/django/editorial.flag`, readable only by the web application account; the bot obtains it **only through the authenticated browser session**, never via filesystem reads.
+- Release Flag is stored in `labs/django-debug-xss/flags/user.txt` and copied into `/run/django/editorial.flag` during initialization. It is readable only by the web application account; the bot obtains it **only through the authenticated browser session**, never via filesystem reads. The Challenge answer and image seed use the same committed release value; a future release must rotate both together.
 - Editor password and Django signing secret generated per instance and kept in access-controlled files, not static source constants.
 - Queue stored under `/run/django/reports`, and a fresh browser profile used for each review.
 - Container reset destroys the PostgreSQL data, session database, review queue and Flag. No volumes are required.
