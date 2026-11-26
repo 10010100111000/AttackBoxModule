@@ -5,7 +5,7 @@ RUN apt-get update \
  && rm -rf /var/lib/apt/lists/*
 RUN python3 -m venv /opt/venv \
  && /opt/venv/bin/pip install --no-cache-dir \
-      Flask==2.2.2 Werkzeug==2.2.2 itsdangerous==2.1.2 playwright==1.44.0
+      Flask==2.2.2 Werkzeug==2.2.2 itsdangerous==2.1.2
 
 FROM debian:bookworm-slim AS runtime
 ENV PATH=/opt/venv/bin:$PATH PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
