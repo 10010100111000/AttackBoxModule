@@ -289,9 +289,9 @@ jobs:
           if [ "$LAB_SLUG" = "htb-headless" ]; then
             docker exec "$test_container" sh -ec '
               base="http://127.0.0.1:5000"
-              curl -fsS "$base/" -c /tmp/headless-cookies | grep -qi "UNDER CONSTRUCTION"
+              curl -fsS "$base/" | grep -qi "UNDER CONSTRUCTION"
               curl -fsS "$base/support" | grep -qi "Contact Support"
-              code=$(curl -s -o /dev/null -w "%{http_code}" -b /tmp/headless-cookies "$base/dashboard")
+              code=$(curl -s -o /dev/null -w "%{http_code}" -H "Cookie: is_admin=InVzZXIi.uAlmXlTvm8vyihjNaPDWnvB_Zfs" "$base/dashboard")
               test "$code" = "401"
               pgrep -f "[i]nspect_reports.py" >/dev/null
               ss -lnt | grep -q ":22 "
