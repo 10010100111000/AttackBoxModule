@@ -2222,7 +2222,17 @@
         "xss.blind",
         "command_injection.basic-rce"
       ],
-      "note": "One target, one independent challenge answer per stage only if the platform requires it; prefer the normal User/Root flags for this OSCP-style machine. CI must not test the exploit chain."
+      "note": "One target, one independent challenge answer per stage only if the platform requires it; prefer the normal User/Root flags for this OSCP-style machine. CI must not test the exploit chain.",
+      "priority": 36,
+      "difficulty": "intermediate",
+      "track": "web_focus",
+      "candidate_status": "in_progress",
+      "one_to_many_allowed": false,
+      "scenario_variant_focus": "One HTB-style machine with blind XSS via request-header HTML report, admin cookie theft, dashboard date command injection and a real sudo relative-path escalation.",
+      "candidate_options": [
+        "headless"
+      ],
+      "selected_candidate": "headless"
     }
   ],
   "skills_catalog": "catalog/web-competencies.json",
