@@ -12,6 +12,7 @@ permissions:
   contents: read
 jobs:
   alert-startup:
+    if: github.event_name != 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 35
     steps:
@@ -50,3 +51,123 @@ jobs:
           echo 'PASS: ordinary Markdown rendering and public access control; reviewer flow is not validated'
       - name: Record verification scope
         run: echo 'CI smoke passed; full lab flow requires separate manual acceptance.' >> "$GITHUB_STEP_SUMMARY"
+
+  alert-real-flag-acceptance:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout selected branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+
+      - name: Generate two distinct short instance Flags
+        id: flags
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import base64, secrets, os
+          def flag():
+              value = base64.b32encode(secrets.token_bytes(10)).decode().rstrip("=").lower()
+              return "TTP{" + value + "}"
+          a, b = flag(), flag()
+          while a == b:
+              b = flag()
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              for key, value in (("a", a), ("b", b)):
+                  print("::add-mask::" + value)
+                  output.write(key + "=" + value + "\n")
+          print("Generated two distinct 80-bit Flags; values are masked.")
+          PY
+
+      - name: Build Alert target image
+        run: docker build --pull --progress=plain -t ttp-alert:acceptance -f labs/alert/Dockerfile labs/alert
+
+      - name: Pull isolated HTTP player image
+        run: docker pull python:3.12-alpine
+
+      - name: Create internal-only test network
+        run: docker network create --internal alert-acceptance
+
+      - name: Run two fresh target instances and prove Flag extraction
+        env:
+          FLAG_A: ${{ steps.flags.outputs.a }}
+          FLAG_B: ${{ steps.flags.outputs.b }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          cleanup() {
+            docker rm -f alert-target-a alert-target-b 2>/dev/null || true
+            docker network rm alert-acceptance 2>/dev/null || true
+          }
+          trap cleanup EXIT
+
+          run_instance() {
+            local suffix="$1"
+            local flag="$2"
+            local name="alert-target-$suffix"
+            echo "Starting clean Alert instance $suffix"
+            docker run -d \
+              --name "$name" \
+              --network alert-acceptance \
+              --network-alias alert-target \
+              --memory 1100m --cpus 2 --pids-limit 256 \
+              --cap-drop ALL --security-opt no-new-privileges \
+              -e ALERT_USER_FLAG="$flag" \
+              ttp-alert:acceptance >/dev/null
+
+            local ready=0
+            for attempt in $(seq 1 90); do
+              local state health
+              state=$(docker inspect -f '{{.State.Status}}' "$name")
+              health=$(docker inspect -f '{{.State.Health.Status}}' "$name")
+              if [ "$state" != "running" ] || [ "$health" = "unhealthy" ]; then
+                docker logs "$name"
+                echo "Alert instance failed before becoming healthy"
+                return 1
+              fi
+              if [ "$health" = "healthy" ]; then
+                ready=1
+                break
+              fi
+              sleep 2
+            done
+            if [ "$ready" != 1 ]; then
+              docker logs "$name"
+              echo "Alert instance health timeout"
+              return 1
+            fi
+
+            docker run --rm \
+              --network alert-acceptance \
+              --network-alias attacker \
+              -v "$GITHUB_WORKSPACE/labs/alert/tests/browser_proof.py:/browser_proof.py:ro" \
+              -e TARGET_URL=http://alert-target:8080 \
+              -e EXPECTED_FLAG="$flag" \
+              python:3.12-alpine python /browser_proof.py
+
+            docker stats --no-stream "$name" \
+              --format "Instance $suffix memory={{.MemUsage}} pids={{.PIDs}}"
+            docker rm -f "$name" >/dev/null
+            echo "Alert instance $suffix: PASS"
+          }
+
+          run_instance a "$FLAG_A"
+          run_instance b "$FLAG_B"
+          test "$FLAG_A" != "$FLAG_B"
+          echo "PASS: two clean Alert instances returned their own distinct Web Flags"
+
+      - name: Record image size
+        if: always()
+        run: docker image inspect ttp-alert:acceptance --format='IMAGE_SIZE_BYTES={{.Size}}' || true
+
+      - name: Remove disposable image
+        if: always()
+        run: docker image rm ttp-alert:acceptance 2>/dev/null || true
+
+      - name: Summarize scope
+        if: always()
+        run: |
+          echo "Verified real stored Markdown XSS, target-local Chromium, loopback-only PHP path traversal, and exact Flag callback on two clean instances." >> "$GITHUB_STEP_SUMMARY"
+          echo "Production Worker lifecycle and AttackBox grading remain separate gates." >> "$GITHUB_STEP_SUMMARY"
