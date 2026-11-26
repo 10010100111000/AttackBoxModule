@@ -1,15 +1,18 @@
 name: Build and publish lab images
-# CI validates build/startup/health only. Full lab flow is reviewed manually.
+# CI validates build, startup, health and non-exploit functional integration.
+# It must never automate vulnerability exploitation or Flag extraction.
 
 on:
   pull_request:
     paths:
       - "labs/**"
+      - "challenges/**"
       - ".github/workflows/lab-images.yml"
   push:
     branches: [main]
     paths:
       - "labs/**"
+      - "challenges/**"
       - ".github/workflows/lab-images.yml"
   workflow_dispatch:
     inputs:
@@ -25,7 +28,6 @@ on:
 permissions:
   contents: read
 
-# 在教材仓库中只需调整镜像根目录。目录内每个 Dockerfile 对应一台靶机。
 env:
   IMAGE_ROOT: labs
 
@@ -73,7 +75,7 @@ jobs:
                   raise SystemExit('发布时必须指定包含 Dockerfile 的靶机目录')
               if (selected_path / '.release-blocked').is_file():
                   raise SystemExit(f'{selected}: release blocked; see {selected}/.release-blocked')
-              if len(version) > 32 or not re.fullmatch(r'(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)', version):
+              if len(version) > 32 or not re.fullmatch(r'(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)', version):
                   raise SystemExit('版本号使用三段数字，例如 1.0.0，不含 v 前缀')
               selected_dirs = {selected_path}
           else:
@@ -131,8 +133,8 @@ jobs:
 
           with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
               matrix_items = items or [{'context': '', 'slug': 'none', 'image': 'none', 'version': ''}]
-              output.write('matrix=' + json.dumps({'include': matrix_items}) + '\n')
-              output.write('has_labs=' + ('true' if items else 'false') + '\n')
+              output.write('matrix=' + json.dumps({'include': matrix_items}) + '\\n')
+              output.write('has_labs=' + ('true' if items else 'false') + '\\n')
           print('Selected lab builds:', ', '.join(item['context'] for item in items) or '(none)')
           PY
 
@@ -218,8 +220,6 @@ jobs:
           LAB_SLUG: ${{ matrix.slug }}
         run: |
           set -euo pipefail
-          # Keep all smoke-test containers disconnected from external networks.
-          # Only the explicitly selected lab receives its required capability.
           args=(--network none)
           case "$LAB_SLUG" in
             trick)
@@ -246,10 +246,6 @@ jobs:
               ;;
             intense)
               args+=(-e INTENSE_WEB_FLAG="TTP{ci_intense_smoke_only}")
-              ;;
-            htb-headless)
-              args+=(-e HEADLESS_USER_FLAG="TTP{ci_headless_user_smoke_only}"
-                -e HEADLESS_ROOT_FLAG="TTP{ci_headless_root_smoke_only}")
               ;;
           esac
           test_container=$(docker run -d "${args[@]}" "$IMAGE")
@@ -284,21 +280,11 @@ jobs:
               code=$(curl -s -o /dev/null -w "%{http_code}" -b /tmp/intense-cookies "$base/admin")
               test "$code" = "403"
             '
-            echo "PASS: Intense homepage, login form, source archive, guest login, normal message submission and guest admin access control"
+            echo "PASS: Intense normal application integration checks"
           fi
           if [ "$LAB_SLUG" = "htb-headless" ]; then
-            docker exec "$test_container" sh -ec '
-              base="http://127.0.0.1:5000"
-              curl -fsS "$base/" | grep -qi "UNDER CONSTRUCTION"
-              curl -fsS "$base/support" | grep -qi "Contact Support"
-              code=$(curl -s -o /dev/null -w "%{http_code}" -H "Cookie: is_admin=InVzZXIi.uAlmXlTvm8vyihjNaPDWnvB_Zfs" "$base/dashboard")
-              test "$code" = "401"
-              pgrep -f "[i]nspect_reports.py" >/dev/null
-              ss -lnt | grep -q ":22 "
-              test -s /home/dvir/user.txt
-              test -s /root/root.txt
-            '
-            echo "PASS: Headless homepage, support form, ordinary user authorization, Chromium reviewer, SSH listener and per-instance flag files"
+            docker exec "$test_container" /usr/local/bin/headless-smoke-test
+            echo "PASS: Headless application, report-review browser, dashboard, runtime identity, static Flags and sudo configuration"
             docker image inspect "$IMAGE" --format='HEADLESS_IMAGE_SIZE_BYTES={{.Size}}'
             docker stats --no-stream --format='HEADLESS_IDLE_MEMORY={{.MemUsage}}' "$test_container"
           fi

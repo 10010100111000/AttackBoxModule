@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Headless admin reviewer: use a real Chromium process to open saved reports."""
+"""Headless admin reviewer: open saved reports in a real Chromium process."""
 from pathlib import Path
 import subprocess
 import time
@@ -7,6 +7,7 @@ import time
 REPORTS = Path("/home/dvir/app/hacking_reports")
 BASE_URL = "http://127.0.0.1:5000"
 PROFILE = "/tmp/headless-admin-chromium"
+LAST_REVIEWED = Path("/tmp/headless-last-reviewed-report")
 
 
 def visit(url):
@@ -30,7 +31,7 @@ def visit(url):
     ]
     result = subprocess.run(
         command,
-        stdout=subprocess.DEVNULL,
+        stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
         timeout=20,
@@ -38,6 +39,7 @@ def visit(url):
     )
     if result.returncode != 0:
         raise RuntimeError("Chromium exited with " + str(result.returncode) + ": " + result.stderr[-1200:])
+    return result.stdout
 
 
 def main():
@@ -53,7 +55,11 @@ def main():
             if report.name in seen:
                 continue
             try:
-                visit(BASE_URL + "/hacking_reports/" + report.stem)
+                dom = visit(BASE_URL + "/hacking_reports/" + report.stem)
+                if "Hacking Attempt Detected" not in dom:
+                    raise RuntimeError("reviewed URL did not return the expected report page")
+                LAST_REVIEWED.write_text(report.name + "\n", encoding="utf-8")
+                print("Reviewed report:", report.name, flush=True)
                 seen.add(report.name)
             except Exception as error:
                 print("Report review failed:", report.name, repr(error), flush=True)

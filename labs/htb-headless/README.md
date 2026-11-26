@@ -1,18 +1,18 @@
 # HTB Headless — Blind XSS / Command Injection / sudo path hijack
 
-**Status: image build and ordinary CI smoke passed; manual acceptance pending.** The real Chromium reviewer readiness check passes. CI measured the image at 325,701,549 bytes (about 310.7 MiB) and idle memory at 49.89 MiB. Peak memory while reviewing a report has not yet been measured. Do not release.
+**Status: implementation and non-exploit integration checks are being completed.** This is a reconstruction of the retired HTB machine's observable application and OS configuration, not the original VM image.
 
-## Attack path
+## Intended challenge path
 
 1. Enumerate the Werkzeug web application on TCP 5000 and discover /support and /dashboard.
 2. Inspect the support form and the signed is_admin cookie.
-3. Trigger the support handler's real WAF/report path using the message field. The handler stores the HTTP headers in an HTML report.
-4. Discover that the User-Agent is rendered without escaping in hackattempt.html. The in-container Chromium reviewer visits stored reports as an admin browser; the browser is the blind-XSS victim.
-5. Use the resulting admin session cookie to access /dashboard.
-6. Inspect the report-generation request and trace the date value into os.popen(f"bash report.sh {date}").read(). This executes as the real dvir service account.
+3. Understand how the support handler stores request headers in an HTML report.
+4. Discover that the User-Agent is rendered without escaping in hackattempt.html. The real Chromium reviewer opens stored reports in the administrator browser context.
+5. Use the resulting admin session to access /dashboard.
+6. Inspect the report-generation request and trace the date value into the report helper. The handler runs as the real dvir service account.
 7. Read /home/dvir/user.txt.
 8. Enumerate sudo -l, inspect /usr/bin/syscheck, and notice its relative ./initdb.sh call.
-9. Create the expected helper in the writable working directory and invoke the real sudo-authorized script to reach /root/root.txt.
+9. Investigate the writable working directory and the root-authorized script to reach /root/root.txt.
 
 ## Runtime
 
@@ -35,40 +35,39 @@ The app's public source excerpt and exact vulnerable data flows are documented i
       --memory 768m --cpus 2 --pids-limit 192 \
       --security-opt no-new-privileges=false \
       -p 127.0.0.1:5000:5000 -p 127.0.0.1:2222:22 \
-      -e HEADLESS_USER_FLAG='TTP{local_user_flag}' \
-      -e HEADLESS_ROOT_FLAG='TTP{local_root_flag}' \
       ttp-headless:local
+
+    docker exec headless-lab /usr/local/bin/headless-smoke-test
 
     docker inspect -f '{{.State.Health.Status}}' headless-lab
 
+Flags are static challenge data copied into the image from flags/user.txt and flags/root.txt. The Worker does not generate, rotate, inject, store or grade Flags. It only manages the target container and sandbox lifecycle. The Web backend/challenge system owns challenge definitions and submitted-Flag validation.
+
 The container needs no privileged mode, host network, Docker socket or host filesystem mount. Do not expose it directly to the public Internet. The production Worker should place the target and its AttackBox on the intended private network. The Worker must not apply no-new-privileges to this target: the original sudo stage requires a normal setuid transition inside the container. This does not require privileged mode or host capabilities.
 
-## Flags and reset
+## Flag files
 
-The container accepts both opaque per-instance values from the Worker. It writes the User Flag to /home/dvir/user.txt (dvir-readable) and the Root Flag to /root/root.txt (root-only). No production Flag is embedded in the image. Destroy/recreate starts with empty report storage and new values. The challenge Markdown currently contains development placeholders; Worker-side flag generation and grader synchronization are not implemented by this lab PR and must be connected before publication.
+- flags/user.txt is copied to /home/dvir/user.txt, owner dvir, mode 0400.
+- flags/root.txt is copied to /root/root.txt, owner root, mode 0600.
+- Recreating the container recreates the same static challenge Flags. There is no Flag Rotation or per-instance Flag generation.
 
 ## CI policy
 
-CI checks only:
-- image build;
-- container startup and health;
-- homepage and support form response;
-- SSH listener;
-- Chromium admin-review process availability.
+CI is intentionally non-offensive. It checks:
 
-It must not automate XSS payloads, cookie exfiltration, command injection, reverse shells, sudo exploitation or Flag extraction. Full attack-path verification is a manual review against a fresh instance.
+- image build, container startup and Docker health;
+- homepage and support page responses;
+- ordinary user authorization denial;
+- normal support-form submission and report-file persistence;
+- real Chromium fetching and rendering the stored report page using a harmless marker;
+- normal dashboard report generation with a normal date;
+- Flask service identity, writable application directory and exact Flag file ownership/modes;
+- sudoers syntax, the allowed syscheck entry, its expected relative-path dependency and SSH listener.
 
-## CI resource measurements
+CI does **not** send XSS payloads, steal cookies, inject shell commands, open reverse shells, exploit sudo, read a Flag through the challenge path, or attempt container/host escape.
 
-- Image: 325,701,549 bytes (about 310.7 MiB)
-- Idle memory after startup: 49.89 MiB
-- Peak memory while Chromium opens a stored report has not yet been measured.
+These integration checks prove that the challenge's real services and prerequisites are connected and functioning. They do not claim to prove exploitability by themselves. Vulnerability behavior must remain source-backed and be reviewed against the disclosed original implementation; any manual acceptance record must be explicit rather than silently treating a smoke test as a completed exploit-chain test.
 
-## Known blockers
+## Resource measurements
 
-- Docker build, startup, homepage/support, ordinary user authorization, SSH listener and Chromium reviewer readiness smoke checks passed.
-- The admin reviewer has not yet been manually observed processing a malicious report; no exploit-chain test is in CI.
-- Worker-side per-instance Flag generation and grader synchronization remain unimplemented in this PR.
-- Worker must not apply no-new-privileges to this target; otherwise the sudo stage cannot elevate inside the container.
-- Flask app UID, writable report directory and syscheck working directory need smoke verification.
-- Worker network access to the AttackBox and dynamic Flag injection remain unverified.
+Re-measure image size, idle memory and peak memory while Chromium reviews a report on the CI runner. Do not treat a previous idle-only measurement as peak resource usage.

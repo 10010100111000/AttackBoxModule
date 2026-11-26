@@ -22,6 +22,8 @@ RUN apt-get update \
 
 COPY --from=python-deps /opt/venv /opt/venv
 COPY app/ /home/dvir/app/
+COPY flags/user.txt /home/dvir/user.txt
+COPY flags/root.txt /root/root.txt
 COPY config/supervisord.conf /etc/supervisor/conf.d/headless.conf
 COPY config/sshd_config /etc/ssh/sshd_config
 COPY config/sudoers-dvir /etc/sudoers.d/dvir
@@ -29,13 +31,18 @@ COPY config/dvir-mail /var/mail/dvir
 COPY scripts/entrypoint.sh /usr/local/bin/headless-entrypoint
 COPY scripts/healthcheck.sh /usr/local/bin/headless-healthcheck
 COPY scripts/syscheck /usr/bin/syscheck
+COPY scripts/smoke-test.sh /usr/local/bin/headless-smoke-test
 
 RUN set -eu; \
     chown -R dvir:dvir /home/dvir/app; \
     chmod 0755 /home/dvir/app; \
     chmod 0755 /home/dvir/app/app.py /home/dvir/app/inspect_reports.py /home/dvir/app/report.sh; \
+    chown dvir:dvir /home/dvir/user.txt; \
+    chmod 0400 /home/dvir/user.txt; \
+    chown root:root /root/root.txt; \
+    chmod 0600 /root/root.txt; \
     chown -R dvir:dvir /home/dvir/app/hacking_reports; \
-    chmod 0755 /usr/bin/syscheck /usr/local/bin/headless-entrypoint /usr/local/bin/headless-healthcheck; \
+    chmod 0755 /usr/bin/syscheck /usr/local/bin/headless-entrypoint /usr/local/bin/headless-healthcheck /usr/local/bin/headless-smoke-test; \
     chown root:root /usr/bin/syscheck /etc/sudoers.d/dvir; \
     chmod 0440 /etc/sudoers.d/dvir; \
     visudo -cf /etc/sudoers
