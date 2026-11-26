@@ -1,13 +1,6 @@
 #!/bin/sh
 set -eu
 
-# Per-instance target flags; the Worker forwards values but never judges them.
-if [ -n "$NODEBLOG_USER_FLAG" ]; then
-  printf '%s\n' "$NODEBLOG_USER_FLAG" > /home/nodeblog/user.txt
-  chmod 0600 /home/nodeblog/user.txt
-fi
-unset NODEBLOG_USER_FLAG
-
 mkdir -p /data/mongo
 mongod --bind_ip 127.0.0.1 --port 27017 --dbpath /data/mongo \
   --wiredTigerCacheSizeGB 0.25 --quiet --logpath /data/mongod.log &
@@ -31,6 +24,9 @@ until node /opt/blog/seed.js; do
   fi
   sleep 2
 done
+
+# Flag 01 is now stored in the protected MongoDB article; remove its seed file.
+rm -f /run/nodeblog/flag01.txt
 
 node /opt/blog/server.js &
 web_pid=$!
