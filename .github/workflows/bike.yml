@@ -27,6 +27,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Generate a fresh random Flag for this CI instance
+        env:
+          RELEASE_VERSION: 0.0.0-ci.${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          python3 scripts/generate_bike_release.py --version "$RELEASE_VERSION"
+
       - name: Verify target Flag and Challenge answer match
         id: flag
         shell: bash
