@@ -17,7 +17,7 @@
 ## Runtime
 
 - Debian 12 slim / Python 3.11.2
-- Flask 2.2.2, Werkzeug 2.2.2, itsdangerous 2.1.2
+- Python 3.11.2, Werkzeug 2.2.2 (observed); Flask 2.2.2 is the reconstruction pin, itsdangerous 2.1.2
 - Chromium + Playwright for the admin report-review process
 - OpenSSH server on TCP 22
 - Flask/Werkzeug on TCP 5000
@@ -41,7 +41,7 @@ The app's public source excerpt and exact vulnerable data flows are documented i
 
     docker inspect -f '{{.State.Health.Status}}' headless-lab
 
-The container needs no privileged mode, host network, Docker socket or host filesystem mount. Do not expose it directly to the public Internet. The production Worker should place the target and its AttackBox on the intended private network.
+The container needs no privileged mode, host network, Docker socket or host filesystem mount. Do not expose it directly to the public Internet. The production Worker should place the target and its AttackBox on the intended private network. The Worker must not apply no-new-privileges to this target: the original sudo stage requires a normal setuid transition inside the container. This does not require privileged mode or host capabilities.
 
 ## Flags and reset
 
