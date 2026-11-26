@@ -1,0 +1,131 @@
+name: Precious versioned Flag release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Precious release version. Re-running the same version reuses its Flag."
+        required: true
+        default: "0.1.0"
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: precious-flag-release-${{ inputs.version }}
+  cancel-in-progress: false
+
+jobs:
+  generate-build-and-commit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+
+      - name: Generate or reuse the versioned Flag
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          python3 scripts/generate_precious_release.py --version "$RELEASE_VERSION"
+          manifest="labs/precious/flags/releases/$RELEASE_VERSION.json"
+          before=$(sha256sum "$manifest" | cut -d' ' -f1)
+          python3 scripts/generate_precious_release.py --version "$RELEASE_VERSION"
+          after=$(sha256sum "$manifest" | cut -d' ' -f1)
+          test "$before" = "$after"
+          echo "Flag generation and same-version idempotency: PASS"
+
+      - name: Verify manifest, target seed and Challenge answer
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib, re
+          root = pathlib.Path(".")
+          version = os.environ["RELEASE_VERSION"]
+          manifest = json.loads((root / f"labs/precious/flags/releases/{version}.json").read_text())
+          flag = manifest["flag"]
+          assert manifest["version"] == version
+          assert re.fullmatch(r"TTP\{[a-z2-7]{16}\}", flag)
+          assert (root / "labs/precious/flags/user.txt").read_text().strip() == flag
+          challenge = (root / "challenges/integrated/precious/Precious.md").read_text()
+          assert challenge.count(f'answer: "{flag}"') == 1
+          assert challenge.count("kind: flag") == 1
+          assert "lab: precious" in challenge
+          print("Manifest, target seed and Challenge answer match: PASS")
+          PY
+
+      - name: Build target with the generated Flag
+        run: docker build --pull --progress=plain -t ttp-precious:release -f labs/precious/Dockerfile labs/precious
+
+      - name: Check startup, health and ordinary PDF behavior
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker image inspect ttp-precious:release --format 'Target image bytes: {{.Size}}'
+          docker network create --internal precious-release
+          cleanup() {
+            docker logs precious-target 2>/dev/null || true
+            docker rm -f precious-target 2>/dev/null || true
+            docker rm -f precious-content 2>/dev/null || true
+            docker network rm precious-release 2>/dev/null || true
+            docker image rm ttp-precious:release 2>/dev/null || true
+          }
+          trap cleanup EXIT
+          docker run -d --name precious-content --network precious-release --network-alias precious-content \
+            python:3.12-alpine python3 -m http.server 8000
+          docker run -d --name precious-target --network precious-release \
+            --memory 850m --cpus 2 --pids-limit 180 --security-opt no-new-privileges \
+            ttp-precious:release
+          ready=0
+          for attempt in $(seq 1 60); do
+            state=$(docker inspect -f '{{.State.Status}}' precious-target)
+            health=$(docker inspect -f '{{.State.Health.Status}}' precious-target)
+            if [ "$state" != running ] || [ "$health" = unhealthy ]; then
+              docker logs precious-target
+              exit 1
+            fi
+            if [ "$health" = healthy ]; then ready=1; break; fi
+            sleep 2
+          done
+          test "$ready" = 1
+          docker run --rm -i --network precious-release python:3.12-alpine python3 - <<'PY'
+          import urllib.parse
+          import urllib.request
+          body = urllib.parse.urlencode({"url": "http://precious-content:8000/"}).encode()
+          request = urllib.request.Request("http://precious-target:8080/", data=body)
+          with urllib.request.urlopen(request, timeout=35) as response:
+              pdf = response.read()
+          assert pdf.startswith(b"%PDF-"), "ordinary conversion failed"
+          print("PASS: release target startup, health and ordinary PDF conversion")
+          PY
+          docker stats --no-stream --format 'Target memory: {{.MemUsage}}, PIDs: {{.PIDs}}' precious-target
+
+      - name: Commit generated release artifacts
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+          BRANCH_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            "labs/precious/flags/releases/$RELEASE_VERSION.json" \
+            labs/precious/flags/user.txt \
+            challenges/integrated/precious/Precious.md
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(precious): generate Flags for $RELEASE_VERSION"
+            git push origin "HEAD:$BRANCH_NAME"
+          else
+            echo "Release artifacts already match this version."
+          fi
+
+      - name: Summarize
+        run: |
+          echo "One versioned random 80-bit Flag supplies the target file and Challenge answer." >> "$GITHUB_STEP_SUMMARY"
+          echo "Same-version runs reuse the manifest; a new version rotates the Flag." >> "$GITHUB_STEP_SUMMARY"
+          echo "Only build, startup, health and ordinary PDF conversion were checked." >> "$GITHUB_STEP_SUMMARY"

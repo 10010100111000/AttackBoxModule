@@ -1,24 +1,32 @@
 name: Precious build and ordinary PDF smoke CI
+
 on:
   pull_request:
     paths:
       - "labs/precious/**"
+      - ".github/workflows/precious.yml"
+      - "catalog/web-curriculum.json"
   push:
     branches: [main]
     paths:
       - "labs/precious/**"
+      - ".github/workflows/precious.yml"
   workflow_dispatch:
+
 permissions:
   contents: read
+
 jobs:
   precious:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
+
       - name: Build real Ruby PDFKit and wkhtmltopdf image
-        run: docker build --progress=plain -t ttp-precious:ci -f labs/precious/Dockerfile labs/precious
-      - name: Verify runtime, actual gem version, and ordinary PDF conversion
+        run: docker build --pull --progress=plain -t ttp-precious:ci -f labs/precious/Dockerfile labs/precious
+
+      - name: Verify runtime, component version, health and ordinary PDF conversion
         shell: bash
         run: |
           set -euo pipefail
@@ -31,13 +39,16 @@ jobs:
             docker network rm precious-ci 2>/dev/null || true
           }
           trap cleanup EXIT
+
           docker run -d --name precious-content --network precious-ci --network-alias precious-content \
             python:3.12-alpine python3 -m http.server 8000
+
           docker run -d --name precious-target --network precious-ci --network-alias precious-target \
             --memory 850m --cpus 2 --pids-limit 180 --security-opt no-new-privileges \
-            -e PRECIOUS_USER_FLAG='TTP{precious_ci_web_flag}' ttp-precious:ci
+            ttp-precious:ci
+
           ready=0
-          for i in $(seq 1 60); do
+          for attempt in $(seq 1 60); do
             state=$(docker inspect -f '{{.State.Status}}' precious-target)
             health=$(docker inspect -f '{{.State.Health.Status}}' precious-target)
             if [ "$state" != running ] || [ "$health" = unhealthy ]; then
@@ -48,15 +59,30 @@ jobs:
             sleep 2
           done
           test "$ready" = 1
-          docker exec precious-target ruby -e 'require "pdfkit"; abort "wrong version" unless Gem.loaded_specs["pdfkit"].version.to_s == "0.8.6"'
-          docker run --rm --network precious-ci curlimages/curl:8.11.1 -fsS \
-            http://precious-target:8080/ | grep -q 'Convert Web Page to PDF'
-          docker run --rm --network precious-ci curlimages/curl:8.11.1 -fsS \
-            -d 'url=http://precious-content:8000/' http://precious-target:8080/ \
-            -o /tmp/precious-result.pdf
+
+          docker exec precious-target ruby -e 'require "pdfkit"; abort "wrong PDFKit version" unless Gem.loaded_specs["pdfkit"].version.to_s == "0.8.6"'
           docker stats --no-stream --format 'Target memory: {{.MemUsage}}, PIDs: {{.PIDs}}' precious-target
+
+          docker run --rm -i --network precious-ci python:3.12-alpine python3 - <<'PY'
+          import urllib.parse
+          import urllib.request
+
+          with urllib.request.urlopen("http://precious-target:8080/", timeout=10) as response:
+              page = response.read()
+          assert b"Convert Web Page to PDF" in page, "homepage content missing"
+
+          body = urllib.parse.urlencode({"url": "http://precious-content:8000/"}).encode()
+          request = urllib.request.Request("http://precious-target:8080/", data=body)
+          with urllib.request.urlopen(request, timeout=35) as response:
+              pdf = response.read()
+          assert pdf.startswith(b"%PDF-"), "ordinary conversion did not return a PDF"
+          print("PASS: homepage and ordinary PDF conversion")
+          PY
+
           test "$(docker inspect -f '{{.HostConfig.Privileged}}' precious-target)" = false
           test "$(docker inspect -f '{{len .HostConfig.CapAdd}}' precious-target)" = 0
-          echo 'PASS: actual pdfkit 0.8.6 and wkhtmltopdf rendered an ordinary internal HTML page'
+
       - name: Record verification scope
-        run: echo 'CI smoke passed; full lab flow requires separate manual acceptance.' >> "$GITHUB_STEP_SUMMARY"
+        run: |
+          echo "Build, startup, healthcheck, PDFKit version and ordinary PDF conversion passed." >> "$GITHUB_STEP_SUMMARY"
+          echo "No exploit, command execution or Flag retrieval was automated." >> "$GITHUB_STEP_SUMMARY"

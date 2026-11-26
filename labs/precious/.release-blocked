@@ -1,9 +1,5 @@
-Release remains blocked.
+Release remains blocked pending the intended Web learning path being reviewed against the documented real PDFKit 0.8.6 behavior.
 
-Current policy (2026-11-25): CI only checks build, startup, health and ordinary smoke behavior.
-No automated exploitation, Flag-retrieval or privilege-chain CI is required.
-Historical CI evidence stays in the catalog; it does not become manual acceptance.
+CI scope is limited to image build, startup, healthcheck, component-version inspection and ordinary PDF conversion. It does not execute command injection, retrieve Flags or simulate an attack.
 
-当前待验收事项：人工题目流程与实例目标结果尚需验收；正常 PDF 转换成功不代表题目漏洞成立。实际 Worker/Web 集成尚需验收。
-
-需先补实际人工验收和平台证据，再经明确批准解除限制；不得将脆弱服务暴露到公网。
+The target is a deliberately vulnerable training service. Keep it on an isolated lab network; do not expose it to the public Internet.
