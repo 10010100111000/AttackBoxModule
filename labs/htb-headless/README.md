@@ -18,7 +18,7 @@
 
 - Debian 12 slim / Python 3.11.2
 - Python 3.11.2, Werkzeug 2.2.2 (observed); Flask 2.2.2 is the reconstruction pin, itsdangerous 2.1.2
-- Chromium + Playwright for the admin report-review process
+- Chromium headless CLI for the admin report-review process
 - OpenSSH server on TCP 22
 - Flask/Werkzeug on TCP 5000
 - dvir is UID/GID 1000 and owns the writable application working directory
