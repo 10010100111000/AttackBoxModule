@@ -1046,7 +1046,7 @@
       "lab_ci_status": "full_chain_ci",
       "worker_status": "not_verified",
       "release_status": "not_assessed",
-      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45901579392",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45901870712",
       "note": "真实 PDFKit 0.8.6 / wkhtmltopdf；独立 HTTP 攻击端通过 CVE-2022-25765 以 ruby 身份执行命令并读取精确随机 Web Flag。普通 PDF smoke、PR E2E 和镜像构建均通过。Web-only 单 Flag。",
       "variant_profile": {
         "technology": "Ruby, Sinatra, PDFKit 0.8.6, wkhtmltopdf",
@@ -1068,8 +1068,8 @@
       },
       "e2e_ci_status": "passed",
       "e2e_ci_workflow": ".github/workflows/precious-e2e.yml",
-      "e2e_ci_evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45901579392",
-      "e2e_ci_commit": "3d7b73a6e48444e8cd109886f3b9e062e43b0f09"
+      "e2e_ci_evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45901870712",
+      "e2e_ci_commit": "94cb2fc1ccc0f82f6e792447251f57acd0847b72"
     },
     {
       "id": "shocker",
