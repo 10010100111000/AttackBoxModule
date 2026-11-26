@@ -66,7 +66,7 @@ def main():
                 "作者区域提供文章导入功能。调查应用如何接收和处理导入内容，并找到处理流程中可取得的信息。",
                 [("Flag 01 — Staff Notes Review", "重新取得编辑团队的内部记录，提交第一枚 Flag。", flags["flag01"]),
                  ("Flag 02 — Import Result", "调查文章导入的处理结果，提交第二枚 Flag。", flags["flag02"])]),
-        ROOT / "challenges/integrated/nodeblog/Session Integrity.md":
+        ROOT / "challenges/integrated/nodeblog-complete/Complete Assessment.md":
             challenge_markdown("完整评估博客的认证、导入与会话处理流程。", "hard",
                 "对博客进行一次完整安全评估。从访问控制开始，追踪文章导入，再分析应用如何处理浏览器会话。",
                 [("Flag 01 — Authentication Review", "重新完成认证阶段，提交受保护内容中的第一枚 Flag。", flags["flag01"]),
