@@ -36,5 +36,5 @@ Remain blocked from release until independently reproduced attack-chain CI prove
 
 - [Real Chromium and source-read proof CI PASS](https://github.com/10010100111000/AttackBoxModule/actions/runs/45474730425). The attacker is a separate container and performs all inputs over HTTP. The browser is in the target image, not Worker.
 - Image: **309,343,624 bytes** (~295 MiB); idle memory **27.47 MiB**, memory recorded after browser proof **135 MiB**. These are point-in-time readings, not peak memory during browser startup.
-- No privileged Docker mode or added Linux capabilities, and no mounted Docker socket.
+- The acceptance runner uses `--cap-drop ALL` and adds only `SETUID`/`SETGID` so the entrypoint can drop to the separate `www-data` and `alertbot` service accounts; `no-new-privileges` remains enabled. No privileged Docker mode or mounted Docker socket.
 - Release block remains until an independent two-instance, rotated-Flag-to-goal test and Worker/Web grading integration are verified.
