@@ -22,7 +22,7 @@ The original machine continues through SNMP, SSH tunneling and native binary exp
 | Web process | Unprivileged `web` account |
 | Flag | Random per-instance value at `/home/analyst/user.txt` |
 
-No separate database service, SSH daemon, SNMP agent, compiler or native binary is required. No mock SQL parser, fake error response, test backdoor or simulated command execution is used.
+No separate database service, SSH daemon, SNMP agent, compiler or native binary is required. Each real SQLite connection uses a 1 MiB `SQLITE_LIMIT_LENGTH` to preserve the native `SQLITE_TOOBIG` conditional-error signal without attempting a near-gigabyte allocation in the constrained training container. No mock SQL parser, fake error response, test backdoor or simulated command execution is used.
 
 ## Build and run
 
