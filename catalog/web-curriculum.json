@@ -1611,16 +1611,16 @@
         "https://www.willsroot.io/2020/11/intense-hackthebox-writeup.html",
         "https://github.com/zweilosec/htb-writeups/blob/master/linux-machines/hard/intense-write-up.md"
       ],
-      "note": "Selected next from the existing main inventory. Independent Web-only reconstruction based on multiple public HTB writeups. Real Flask + SQLite; reflected SQLite errors and a conditional zeroblob error oracle extract the administrator secret; SHA-256 secret-prefix LWT length extension plus duplicate-key parsing forges an admin session; unchecked admin log path join reads the per-instance Web Flag. Original private source is unavailable and will not be copied. SNMP, SSH pivot and native pwn/root stages are excluded. Existing initial implementation is not yet Docker-built or covered by dedicated E2E.",
+      "note": "当前唯一进行中的 Lab。已有 Flask/SQLite Web-only 初始实现；正在补真实 SQLite 条件错误 oracle、SHA-256 长度扩展独立攻击端、随机 Web Flag 和专属 E2E。Docker build 与真实完整链尚未通过，不得标记完成。",
       "variant_profile": {
         "technology": "Python 3.12, Flask 3.1.1, Gunicorn 23.0.0, SQLite",
         "initial_discovery": "Community message board, guest login, public src.zip source archive and 140-character message submission",
         "key_constraint_or_mechanism": "SQLite INSERT interpolation with direct native error feedback; conditional CASE oracle using a genuine SQLite error; SHA-256 secret-prefix MAC length extension; duplicate session-key overwrite; admin log path traversal",
         "attack_path": "Recon/source review -> guest login -> message SQLi -> extract admin secret -> forge admin LWT cookie -> admin log viewer -> path traversal -> Web Flag",
         "incremental_learning_value": "Combines SQL error-based extraction and conditional-error blind inference with a separate cryptographic session-forgery step and final authenticated file read in one coherent Web application",
-        "confidence": "public_writeups_cross_checked; implementation_present; Docker build and isolated E2E pending"
+        "confidence": "public_writeups_cross_checked; source implementation present; Docker build and E2E pending"
       },
-      "skill_mapping_stage": "implementation_added_manual_skill_validation_pending",
+      "skill_mapping_stage": "implementation_present_docker_build_and_isolated_e2e_pending",
       "manual_validation": {
         "status": "not_reviewed",
         "commit": null,
@@ -1630,8 +1630,8 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "pending",
-      "e2e_ci_workflow": null,
+      "e2e_ci_status": "configured",
+      "e2e_ci_workflow": ".github/workflows/intense-e2e.yml",
       "e2e_ci_evidence": null,
       "e2e_ci_commit": null
     }
