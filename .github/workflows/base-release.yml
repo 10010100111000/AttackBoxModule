@@ -67,7 +67,7 @@ jobs:
       - name: Build target and attacker images
         run: |
           docker build --pull --progress=plain -t ttp-base:release -f labs/base/Dockerfile labs/base
-          docker build --pull --progress=plain -t ttp-base-attacker:release -f labs/base/tests/Dockerfile labs/base/tests
+          docker build --pull --progress=plain -t ttp-base-attacker:release -f scripts/attackers/base/Dockerfile scripts/attackers/base
 
       - name: Start target and verify both Flags through the real chain
         env:
