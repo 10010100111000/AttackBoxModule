@@ -2,12 +2,12 @@
 
 > 本文是人工阅读入口，不维护第二套状态数据。**靶机状态、CI 工作流、运行证据、提交 SHA 和 backlog 的唯一事实来源是** [`catalog/web-curriculum.json`](../catalog/web-curriculum.json)。
 >
-> 本清单快照对应 main：`5fcb2b48ea81033886c61bec500403930ad8318e`（2026-11-27）。状态变化时先更新 catalog，再按需更新本文的说明；不要手工维护重复的完整攻击链描述。
+> 本清单快照对应 main：`1dc1ac417dcfdd9b23006aa79381cb9421710931`（2026-11-27）。状态变化时先更新 catalog，再按需更新本文的说明；不要手工维护重复的完整攻击链描述。
 
 ## 当前总览
 
 - Lab：27 台
-- 当前统一 E2E：6 台通过，21 台待完成
+- 当前统一 E2E：7 台通过，20 台待完成
 - 旧字段 `lab_ci_status`：23 台 `full_chain_ci`、2 台 `partial`、2 台 `unverified`
 - `.release-blocked` 标记：10 台。它与 E2E 状态独立，不能用来判断靶机是否制作完成。
 
@@ -17,6 +17,7 @@
 
 | Lab | 目标范围 | E2E 证据 |
 |---|---|---|
+| Alert | Markdown 存储型 XSS → 管理员 Chromium → loopback 文件读取 → Web Flag | [CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/46046059969) |
 | Bike | Handlebars 4.1.1 SSTI → RCE → Web Flag | [CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/45899503806) |
 | Precious | PDFKit 0.8.6 命令注入 → ruby → Web Flag | [CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/45902207628) |
 | GoodGames | SQLite SQLi → 凭据恢复/复用 → Jinja2 SSTI → Web Flag | [CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/46011059390) |
@@ -32,7 +33,6 @@
 
 | Lab | 当前 E2E | 备注 |
 |---|---|---|
-| Alert | pending | 部分实现；真实浏览器 XSS 与内部文件读取已有证据，最终 Flag 闭环未完成 |
 | Bashed | pending | 有历史完整链 CI 记录 |
 | Bountyhunter | pending | 有历史完整链 CI 记录 |
 | Cap | pending | 有历史完整链 CI 记录 |
