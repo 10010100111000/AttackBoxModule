@@ -19,6 +19,6 @@ title: 获取 Web Flag
 kind: flag
 prompt: |
   从公开技术门户开始进行枚举，利用应用中真实存在的安全缺陷获得 Web 服务执行上下文，并读取目标账户目录中的 Flag。
-answer: "TTP{aaaaaaaaaaaaaaaa}"
+answer: "TTP{ijxgfqrlht3dvvgu}"
 match: trim
 ```
