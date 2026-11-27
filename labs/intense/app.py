@@ -22,6 +22,9 @@ def get_db():
         db = sqlite3.connect(DATABASE, timeout=5)
         db.row_factory = sqlite3.Row
         db.execute("PRAGMA busy_timeout = 5000")
+        # Preserve the real SQLite TOOBIG error oracle without allocating a
+        # near-gigabyte zeroblob that could exhaust the small training container.
+        db.setlimit(sqlite3.SQLITE_LIMIT_LENGTH, 1024 * 1024)
         g._database = db
     return db
 
