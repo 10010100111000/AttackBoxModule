@@ -1,5 +1,5 @@
 name: Build and publish lab images
-# CI validates build/startup/health only. Full lab flow is reviewed manually.
+# CI validates build/startup/health; each Lab's dedicated E2E workflow validates its full player path.
 
 on:
   pull_request:
