@@ -99,7 +99,7 @@ jobs:
           import json, pathlib, re
           manifest = json.loads(pathlib.Path("labs/goodgames/flags/releases/0.0.0-ci.json").read_text())
           flag = manifest["flag"]
-          assert re.fullmatch(r"TTP\\{[a-z2-7]{16}\\}", flag)
+          assert re.fullmatch(r"TTP\{[a-z2-7]{16}\}", flag)
           assert pathlib.Path("labs/goodgames/flags/user.txt").read_text().strip() == flag
           challenge = pathlib.Path("challenges/startpoint/goodgames/GoodGames.md").read_text()
           assert challenge.count(f'answer: "{flag}"') == 1
