@@ -2,23 +2,24 @@
 
 > 本文是人工阅读入口，不维护第二套状态数据。**靶机状态、CI 工作流、运行证据、提交 SHA 和 backlog 的唯一事实来源是** [`catalog/web-curriculum.json`](../catalog/web-curriculum.json)。
 >
-> 本清单快照对应 main：`29d273648eb269348259b29e9d4ee0b311c303b5`（2026-11-28）。状态变化时先更新 catalog，再按需更新本文的说明；不要手工维护重复的完整攻击链描述。
+> 本清单快照对应 main：`11ae45691e3cfefc42c1502576028246f07aa7b3`（2026-11-28）。状态变化时先更新 catalog，再按需更新本文的说明；不要手工维护重复的完整攻击链描述。
 
 ## 当前总览
 
 - **27 台 Lab**
-- 当前统一 E2E：9 台通过，18 台待完成
+- 当前统一 E2E：10 台通过，17 台待完成
 - 旧字段 `lab_ci_status`：25 台 `full_chain_ci`、1 台 `partial`、1 台 `unverified`
 - `.release-blocked` 标记：10 台。它与 E2E 状态独立，不能用来判断靶机是否制作完成。
 
 ### 已通过当前统一 E2E
 
-以下 8 台已经完成靶机攻击链的独立 CI 验收，不要重复制作或重新排入待办：
+以下 10 台已经完成靶机攻击链的独立 CI 验收，不要重复制作或重新排入待办：
 
 | Lab | 目标范围 | E2E 证据 |
 |---|---|---|
 | Alert | Markdown 存储型 XSS → 管理员 Chromium → loopback 文件读取 → Web Flag | [CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/46047104236) |
 | Editorial | SSRF → loopback API → SSH dev/prod → GitPython 3.1.29 → User/Root 双 Flag | [CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/46053249839) |
+| Nibbles | Nibbleblog 4.0.3 插件上传 → nibbler → sudo monitor.sh → User/Root | [CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/46061441923) |
 | Cursed Stale Policy | CSP nonce 重用 → Stored/Blind XSS → 管理员 Chromium → Web Flag | [CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/46051233295) |
 | Bike | Handlebars 4.1.1 SSTI → RCE → Web Flag | [CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/45899503806) |
 | Precious | PDFKit 0.8.6 命令注入 → ruby → Web Flag | [CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/45902207628) |
@@ -38,7 +39,7 @@
 | Bashed | pending | 有历史完整链 CI 记录 |
 | Bountyhunter | pending | 有历史完整链 CI 记录 |
 | Cap | pending | 有历史完整链 CI 记录 |
-| Nibbles | pending | 有历史完整链 CI 记录 |
+
 | OpenAdmin | pending | 有历史完整链 CI 记录 |
 | Pebbles | pending | 有历史完整链 CI 记录 |
 | Photobomb | pending | 有历史完整链 CI 记录 |
