@@ -2,16 +2,24 @@ name: Alert Web application and full-chain E2E CI
 on:
   pull_request:
     paths:
-      - "labs/alert/**"
+      - "labs/alert/Dockerfile"
+      - "labs/alert/site/**"
+      - "labs/alert/bot/**"
+      - "labs/alert/scripts/**"
+      - "labs/alert/flags/**"
+      - "labs/alert/tests/**"
       - "challenges/integrated/alert/**"
-      - "catalog/web-curriculum.json"
       - ".github/workflows/alert.yml"
   push:
     branches: [main]
     paths:
-      - "labs/alert/**"
+      - "labs/alert/Dockerfile"
+      - "labs/alert/site/**"
+      - "labs/alert/bot/**"
+      - "labs/alert/scripts/**"
+      - "labs/alert/flags/**"
+      - "labs/alert/tests/**"
       - "challenges/integrated/alert/**"
-      - "catalog/web-curriculum.json"
       - ".github/workflows/alert.yml"
   workflow_dispatch:
 permissions:
