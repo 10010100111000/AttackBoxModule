@@ -1,0 +1,111 @@
+name: Trick versioned User and Root Flag release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version; same version reuses the same Flag pair."
+        required: true
+        default: "0.1.0"
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: trick-flag-release-${{ inputs.version }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+
+      - name: Generate or reuse versioned User/Root Flag pair
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          python3 scripts/generate_trick_release.py --version "$RELEASE_VERSION"
+          manifest="labs/trick/flags/releases/$RELEASE_VERSION.json"
+          before=$(sha256sum "$manifest" | cut -d' ' -f1)
+          python3 scripts/generate_trick_release.py --version "$RELEASE_VERSION"
+          after=$(sha256sum "$manifest" | cut -d' ' -f1)
+          test "$before" = "$after"
+
+      - name: Verify release manifest and Challenge answers
+        id: flags
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib, re
+          version = os.environ["RELEASE_VERSION"]
+          manifest = json.loads(pathlib.Path(f"labs/trick/flags/releases/{version}.json").read_text())
+          user, root = manifest["user_flag"], manifest["root_flag"]
+          challenge = pathlib.Path("challenges/integrated/trick/Trick.md").read_text()
+          answers = re.findall(r'(?m)^answer:\s*"([^"]+)"$', challenge)
+          pattern = r"TTP\{[a-z2-7]{16}\}"
+          assert manifest["version"] == version
+          assert re.fullmatch(pattern, user) and re.fullmatch(pattern, root) and user != root
+          assert answers == [user, root]
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              output.write(f"user={user}\nroot={root}\n")
+          print(f"::add-mask::{user}")
+          print(f"::add-mask::{root}")
+          PY
+
+      - name: Build target and attacker
+        run: |
+          docker build --pull --progress=plain -t ttp-trick:release -f labs/trick/Dockerfile labs/trick
+          docker build --pull --progress=plain -t ttp-trick-attacker:release -f labs/trick/tests/Dockerfile.attacker labs/trick/tests
+
+      - name: Run full attack chain before release commit
+        env:
+          USER_FLAG: ${{ steps.flags.outputs.user }}
+          ROOT_FLAG: ${{ steps.flags.outputs.root }}
+        run: |
+          set -euo pipefail
+          docker network create --internal trick-release
+          cleanup() {
+            docker logs trick-target 2>/dev/null || true
+            docker rm -f trick-target 2>/dev/null || true
+            docker network rm trick-release 2>/dev/null || true
+            docker image rm ttp-trick:release ttp-trick-attacker:release 2>/dev/null || true
+          }
+          trap cleanup EXIT
+          docker run -d --name trick-target --network trick-release --network-alias trick-target \
+            --cap-add NET_ADMIN --memory 512m --cpus 2 --pids-limit 256 \
+            -e TRICK_STATIC_USER_FLAG="$USER_FLAG" -e TRICK_STATIC_ROOT_FLAG="$ROOT_FLAG" \
+            ttp-trick:release
+          ready=0
+          for attempt in $(seq 1 90); do
+            state=$(docker inspect -f '{{.State.Status}}' trick-target)
+            health=$(docker inspect -f '{{.State.Health.Status}}' trick-target)
+            if [ "$state" != running ] || [ "$health" = unhealthy ]; then docker logs trick-target; exit 1; fi
+            if [ "$health" = healthy ]; then ready=1; break; fi
+            sleep 3
+          done
+          test "$ready" = 1
+          docker run --rm --network trick-release \
+            -e TARGET=trick-target -e EXPECTED_USER_FLAG="$USER_FLAG" -e EXPECTED_ROOT_FLAG="$ROOT_FLAG" \
+            ttp-trick-attacker:release
+
+      - name: Commit verified Flag manifest and Challenge
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+          BRANCH_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "labs/trick/flags/releases/$RELEASE_VERSION.json" challenges/integrated/trick/Trick.md
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(trick): generate User and Root Flags for $RELEASE_VERSION"
+            git push origin "HEAD:$BRANCH_NAME"
+          fi
