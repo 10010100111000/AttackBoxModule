@@ -1,0 +1,129 @@
+name: GoodGames versioned Flag release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "GoodGames release version. Re-running the same version reuses its Flag."
+        required: true
+        default: "0.1.0"
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: goodgames-flag-release-${{ inputs.version }}
+  cancel-in-progress: false
+
+jobs:
+  generate-test-and-commit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+
+      - name: Generate or reuse the versioned Flag
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          python3 scripts/generate_goodgames_release.py --version "$RELEASE_VERSION"
+          manifest="labs/goodgames/flags/releases/$RELEASE_VERSION.json"
+          before=$(sha256sum "$manifest" | cut -d' ' -f1)
+          python3 scripts/generate_goodgames_release.py --version "$RELEASE_VERSION"
+          after=$(sha256sum "$manifest" | cut -d' ' -f1)
+          test "$before" = "$after"
+          echo "GoodGames Flag generation and same-version idempotency: PASS"
+
+      - name: Verify manifest, target seed and Challenge answer
+        id: release
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib, re
+          root = pathlib.Path(".")
+          version = os.environ["RELEASE_VERSION"]
+          manifest = json.loads((root / f"labs/goodgames/flags/releases/{version}.json").read_text())
+          flag = manifest["flag"]
+          assert manifest["version"] == version
+          assert re.fullmatch(r"TTP\{[a-z2-7]{16}\}", flag)
+          assert (root / "labs/goodgames/flags/user.txt").read_text().strip() == flag
+          challenge = (root / "challenges/startpoint/goodgames/GoodGames.md").read_text()
+          assert challenge.count(f'answer: "{flag}"') == 1
+          assert challenge.count("kind: flag") == 1
+          assert "lab: goodgames" in challenge
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              output.write(f"expected={flag}\n")
+          print(f"::add-mask::{flag}")
+          print("Manifest, target seed and Challenge answer match: PASS")
+          PY
+
+      - name: Build real GoodGames target
+        run: docker build --pull --progress=plain -t ttp-goodgames:release -f labs/goodgames/Dockerfile labs/goodgames
+
+      - name: Start target and run independent attacker
+        env:
+          EXPECTED_FLAG: ${{ steps.release.outputs.expected }}
+        run: |
+          set -euo pipefail
+          docker network create --internal goodgames-release
+          cleanup() {
+            docker logs goodgames-target 2>/dev/null || true
+            docker rm -f goodgames-target 2>/dev/null || true
+            docker network rm goodgames-release 2>/dev/null || true
+            docker image rm ttp-goodgames:release 2>/dev/null || true
+          }
+          trap cleanup EXIT
+          docker run -d --name goodgames-target --network goodgames-release --network-alias goodgames.htb \
+            --read-only --tmpfs /tmp:rw,size=32m --tmpfs /data:rw,size=32m \
+            --memory 700m --cpus 2 --pids-limit 160 --cap-drop ALL \
+            --security-opt no-new-privileges ttp-goodgames:release
+          ready=0
+          for attempt in $(seq 1 45); do
+            state=$(docker inspect -f '{{.State.Status}}' goodgames-target)
+            health=$(docker inspect -f '{{.State.Health.Status}}' goodgames-target)
+            if [ "$state" != running ] || [ "$health" = unhealthy ]; then
+              docker logs goodgames-target
+              exit 1
+            fi
+            if [ "$health" = healthy ]; then ready=1; break; fi
+            sleep 2
+          done
+          test "$ready" = 1
+          docker image inspect ttp-goodgames:release --format 'IMAGE_SIZE_BYTES={{.Size}}'
+          docker run --rm --network goodgames-release \
+            -v "$GITHUB_WORKSPACE/labs/goodgames/exploit.py:/exploit.py:ro" \
+            -e EXPECTED_FLAG \
+            python:3.12-alpine python /exploit.py \
+              --url http://goodgames.htb:5000 \
+              --expected-flag "$EXPECTED_FLAG"
+          docker stats --no-stream goodgames-target
+
+      - name: Commit generated release artifacts
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+          BRANCH_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            "labs/goodgames/flags/releases/$RELEASE_VERSION.json" \
+            labs/goodgames/flags/user.txt \
+            challenges/startpoint/goodgames/GoodGames.md
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(goodgames): generate Flags for $RELEASE_VERSION"
+            git push origin "HEAD:$BRANCH_NAME"
+          else
+            echo "Release artifacts already match this version."
+          fi
+
+      - name: Summarize
+        run: |
+          echo "A versioned random Flag was generated, deployed, retrieved through the real SQLi/SSTI path and compared exactly." >> "$GITHUB_STEP_SUMMARY"
+          echo "Same-version runs reuse the manifest; a new version rotates the Flag." >> "$GITHUB_STEP_SUMMARY"
