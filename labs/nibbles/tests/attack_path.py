@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 """Independent HTTP attacker for the authentic Nibbleblog 4.0.3 chain."""
-import base64
 import http.cookiejar
 import os
 import socket
