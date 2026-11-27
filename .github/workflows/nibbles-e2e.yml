@@ -1,0 +1,165 @@
+name: Nibbles two-instance CMS upload and sudo E2E
+
+on:
+  pull_request:
+    paths:
+      - "labs/nibbles/**"
+      - "challenges/startpoint/nibbles/**"
+      - ".github/workflows/nibbles-e2e.yml"
+  push:
+    branches: [main]
+    paths:
+      - "labs/nibbles/**"
+      - "challenges/startpoint/nibbles/**"
+      - ".github/workflows/nibbles-e2e.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  nibbles-full-chain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check default Flag answers and compile independent player
+        run: |
+          python3 -m py_compile labs/nibbles/tests/attack_path.py labs/nibbles/tests/reset_path.py
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          challenge = Path("challenges/startpoint/nibbles/Nibbles.md").read_text()
+          answers = re.findall(r'(?m)^answer: "([^"]+)"$', challenge)
+          user = Path("labs/nibbles/flags/user.txt").read_text().strip()
+          root = Path("labs/nibbles/flags/root.txt").read_text().strip()
+          if answers != [user, root]:
+              raise SystemExit("Default User/Root Flag seeds do not match Challenge answers")
+          print("PASS: both default target Flags match the Challenge answers")
+          PY
+
+      - name: Build authentic Nibbleblog target image
+        run: docker build --pull --progress=plain -t ttp-nibbles:ci -f labs/nibbles/Dockerfile labs/nibbles
+
+      - name: Build separate non-root attacker image
+        run: docker build --pull --progress=plain -t ttp-nibbles-attacker:ci -f labs/nibbles/tests/Dockerfile.attacker labs/nibbles/tests
+
+      - name: Generate two distinct per-instance User and Root Flags
+        id: flags
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import base64, secrets, os
+          def make_flag():
+              token = base64.b32encode(secrets.token_bytes(10)).decode().rstrip("=").lower()
+              return "TTP{" + token + "}"
+          values = [make_flag() for _ in range(4)]
+          while len(set(values)) != 4:
+              values = [make_flag() for _ in range(4)]
+          names = ("user_first", "root_first", "user_second", "root_second")
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              for name, value in zip(names, values):
+                  print("::add-mask::" + value)
+                  output.write(name + "=" + value + "\n")
+          print("Generated four distinct 80-bit instance Flags; values are masked.")
+          PY
+
+      - name: Run two isolated upload-to-Root attack chains and reset checks
+        env:
+          USER_FIRST: ${{ steps.flags.outputs.user_first }}
+          ROOT_FIRST: ${{ steps.flags.outputs.root_first }}
+          USER_SECOND: ${{ steps.flags.outputs.user_second }}
+          ROOT_SECOND: ${{ steps.flags.outputs.root_second }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          cleanup() {
+            docker logs nibbles-target-first 2>/dev/null || true
+            docker logs nibbles-target-second 2>/dev/null || true
+            docker logs nibbles-reset-first 2>/dev/null || true
+            docker logs nibbles-reset-second 2>/dev/null || true
+            docker rm -f nibbles-target-first nibbles-target-second nibbles-reset-first nibbles-reset-second 2>/dev/null || true
+            docker network rm nibbles-e2e 2>/dev/null || true
+          }
+          trap cleanup EXIT
+          docker network create --internal nibbles-e2e
+
+          wait_healthy() {
+            local name="$1"
+            local ready=0
+            for attempt in $(seq 1 60); do
+              local state health
+              state=$(docker inspect -f '{{.State.Status}}' "$name")
+              health=$(docker inspect -f '{{.State.Health.Status}}' "$name")
+              if [ "$state" != "running" ] || [ "$health" = "unhealthy" ]; then
+                docker logs "$name"
+                echo "Nibbles target failed before becoming healthy"
+                return 1
+              fi
+              if [ "$health" = "healthy" ]; then
+                ready=1
+                break
+              fi
+              sleep 2
+            done
+            test "$ready" = 1
+          }
+
+          run_instance() {
+            local suffix="$1"
+            local user_flag="$2"
+            local root_flag="$3"
+            local target="nibbles-target-$suffix"
+            local reset="nibbles-reset-$suffix"
+
+            echo "Starting clean Nibbles instance $suffix"
+            docker run -d \
+              --name "$target" \
+              --network nibbles-e2e \
+              --network-alias nibbles-target \
+              --memory 160m --cpus 1 --pids-limit 128 \
+              -e NIBBLES_REQUIRE_PRIVATE_FLAGS=1 \
+              -e NIBBLES_STATIC_USER_FLAG="$user_flag" \
+              -e NIBBLES_STATIC_ROOT_FLAG="$root_flag" \
+              ttp-nibbles:ci >/dev/null
+            wait_healthy "$target"
+
+            docker run --rm \
+              --network nibbles-e2e \
+              -e TARGET_URL=http://nibbles-target \
+              -e EXPECTED_USER_FLAG="$user_flag" \
+              -e EXPECTED_ROOT_FLAG="$root_flag" \
+              ttp-nibbles-attacker:ci
+
+            docker stats --no-stream "$target" --format "Instance $suffix memory={{.MemUsage}} pids={{.PIDs}}"
+            docker rm -f "$target" >/dev/null
+
+            echo "Recreating Nibbles instance $suffix to verify reset"
+            docker run -d \
+              --name "$reset" \
+              --network nibbles-e2e \
+              --network-alias nibbles-target \
+              --memory 160m --cpus 1 --pids-limit 128 \
+              -e NIBBLES_REQUIRE_PRIVATE_FLAGS=1 \
+              -e NIBBLES_STATIC_USER_FLAG="$user_flag" \
+              -e NIBBLES_STATIC_ROOT_FLAG="$root_flag" \
+              ttp-nibbles:ci >/dev/null
+            wait_healthy "$reset"
+            docker run --rm \
+              --network nibbles-e2e \
+              -e TARGET_URL=http://nibbles-target \
+              ttp-nibbles-attacker:ci python3 /tests/reset_path.py
+            docker rm -f "$reset" >/dev/null
+            echo "Nibbles instance $suffix: full chain and reset PASS"
+          }
+
+          run_instance first "$USER_FIRST" "$ROOT_FIRST"
+          run_instance second "$USER_SECOND" "$ROOT_SECOND"
+          test "$USER_FIRST" != "$USER_SECOND"
+          test "$ROOT_FIRST" != "$ROOT_SECOND"
+          echo "PASS: two clean instances returned their own User/Root Flags and reset to an unexploited state"
+
+      - name: Record target image size
+        if: always()
+        run: docker image inspect ttp-nibbles:ci --format='IMAGE_SIZE_BYTES={{.Size}}' || true
