@@ -1,0 +1,115 @@
+name: Devvortex real Joomla disclosure and template execution E2E
+
+on:
+  pull_request:
+    paths:
+      - "labs/devvortex/**"
+      - "challenges/startpoint/devvortex/**"
+      - "scripts/generate_devvortex_release.py"
+      - ".github/workflows/devvortex-e2e.yml"
+      - ".github/workflows/devvortex-release.yml"
+  push:
+    branches: [main]
+    paths:
+      - "labs/devvortex/**"
+      - "challenges/startpoint/devvortex/**"
+      - "scripts/generate_devvortex_release.py"
+      - ".github/workflows/devvortex-e2e.yml"
+      - ".github/workflows/devvortex-release.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  devvortex-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate a fresh random Flag for this CI instance
+        env:
+          RELEASE_VERSION: 0.0.0-ci.${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          python3 scripts/generate_devvortex_release.py --version "$RELEASE_VERSION"
+
+      - name: Verify target Flag and Challenge answer match
+        id: flag
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os, pathlib, re
+          flag = pathlib.Path("labs/devvortex/flags/user.txt").read_text().strip()
+          challenge = pathlib.Path("challenges/startpoint/devvortex/Devvortex.md").read_text()
+          answers = re.findall(r'(?m)^answer: "([^"]+)"$', challenge)
+          assert re.fullmatch(r"TTP\{[a-z2-7]{16}\}", flag)
+          assert answers == [flag], "target Flag and Challenge answer differ"
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              output.write(f"expected={flag}\n")
+          print(f"::add-mask::{flag}")
+          print("Devvortex random Flag and Challenge answer match: PASS")
+          PY
+
+      - name: Syntax-check independent player and generator
+        run: python3 -m py_compile labs/devvortex/exploit.py scripts/generate_devvortex_release.py
+
+      - name: Build real Joomla 4.2.6 target
+        run: docker build --pull --progress=plain -t ttp-devvortex:e2e -f labs/devvortex/Dockerfile labs/devvortex
+
+      - name: Start target on isolated internal network
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker network create --internal devvortex-e2e
+          docker run -d --name devvortex-target --network devvortex-e2e \
+            --network-alias devvortex.htb --network-alias dev.devvortex.htb \
+            --memory 1100m --cpus 2 --pids-limit 220 --cap-drop ALL \
+            --security-opt no-new-privileges ttp-devvortex:e2e
+          ready=0
+          for attempt in $(seq 1 100); do
+            state=$(docker inspect -f '{{.State.Status}}' devvortex-target)
+            health=$(docker inspect -f '{{.State.Health.Status}}' devvortex-target)
+            if [ "$state" != running ] || [ "$health" = unhealthy ]; then
+              docker logs devvortex-target
+              exit 1
+            fi
+            if [ "$health" = healthy ]; then ready=1; break; fi
+            sleep 3
+          done
+          test "$ready" = 1
+          docker image inspect ttp-devvortex:e2e --format 'IMAGE_SIZE_BYTES={{.Size}}'
+          docker stats --no-stream devvortex-target
+
+      - name: Run independent HTTP attacker through disclosure, Joomla editor and exact Flag
+        env:
+          EXPECTED_FLAG: ${{ steps.flag.outputs.expected }}
+        run: |
+          set -euo pipefail
+          docker run --rm --network devvortex-e2e \
+            -v "$GITHUB_WORKSPACE/labs/devvortex/exploit.py:/exploit.py:ro" \
+            -e EXPECTED_FLAG \
+            python:3.12-alpine python /exploit.py \
+              --url http://dev.devvortex.htb \
+              --expected-flag "$EXPECTED_FLAG"
+
+      - name: Record acceptance scope
+        run: |
+          echo "PASS: Joomla 4.2.6 CVE-2023-23752 disclosed configuration data; the disclosed credential authenticated to the real administrator UI." >> "$GITHUB_STEP_SUMMARY"
+          echo "PASS: the normal Cassiopeia template editor saved PHP; HTTP execution ran as www-data and returned the exact random Web Flag." >> "$GITHUB_STEP_SUMMARY"
+          echo "Web-only scope: no SSH, Apport, Root Flag, target mount, Docker socket or docker exec." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Capture diagnostics
+        if: always()
+        run: |
+          docker logs devvortex-target || true
+          docker image inspect ttp-devvortex:e2e --format='IMAGE_SIZE_BYTES={{.Size}}' || true
+          docker stats --no-stream devvortex-target || true
+
+      - name: Clean up isolated environment
+        if: always()
+        run: |
+          docker rm -f devvortex-target 2>/dev/null || true
+          docker network rm devvortex-e2e 2>/dev/null || true
+          docker image rm ttp-devvortex:e2e 2>/dev/null || true
