@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "updated_on": "2026-11-28",
-  "main_snapshot_commit": "e79452293a27629f9dd02a092bcfddcf0977d634",
+  "main_snapshot_commit": "cc3d5f8bf2ebbf7507243ee615a96a4413446e26",
   "purpose": "trytopwn Web 题库选题、覆盖率与验收状态的唯一结构化索引；每次新增靶机时维护本文件与 docs/WEB_ROADMAP.md",
   "difficulty_is_provisional": true,
   "statuses": {
@@ -659,8 +659,8 @@
       "lab_ci_status": "full_chain_ci",
       "worker_status": "not_verified",
       "release_status": "not_assessed",
-      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45073735596",
-      "note": "IDOR → PCAP → FTP/SSH 密码复用 → Python capability Root",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/46066988029",
+      "note": "Single-instance main E2E passed: unauthenticated /download/0 IDOR returns real FTP PCAP; attacker parses USER/PASS from capture, reuses credentials over FTP for exact User Flag and SSH, verifies /usr/bin/python3.8 cap_setuid, calls os.setuid(0) and retrieves exact Root Flag. Existing Packet Drop (Web foothold) and Setuid Surprise (integrated User/Root) Challenges reuse this one Lab. CI generates one random User/Root Flag pair per run; versioned 0.1.0 release manifest remains stable for Challenge answers.",
       "variant_profile": {
         "technology": "Flask, FTP, SSH",
         "initial_discovery": "数值对象 ID 与 PCAP",
@@ -669,7 +669,7 @@
         "incremental_learning_value": "IDOR 对象授权场景",
         "confidence": "from_repository_readme_or_existing_tests"
       },
-      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review",
+      "skill_mapping_stage": "authentic_idor_pcap_ftp_ssh_and_python_cap_setuid_single_instance_e2e_verified",
       "manual_validation": {
         "status": "not_reviewed",
         "commit": null,
@@ -679,10 +679,10 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "pending",
-      "e2e_ci_workflow": null,
-      "e2e_ci_evidence": null,
-      "e2e_ci_commit": null
+      "e2e_ci_status": "passed",
+      "e2e_ci_workflow": ".github/workflows/cap-e2e.yml",
+      "e2e_ci_evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/46066988029",
+      "e2e_ci_commit": "cc3d5f8bf2ebbf7507243ee615a96a4413446e26"
     },
     {
       "id": "cursed-stale-policy",
