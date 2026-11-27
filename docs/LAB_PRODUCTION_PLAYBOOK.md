@@ -25,7 +25,7 @@ Do not reinterpret these as Worker, platform synchronization or production deplo
 
 ### Next Lab
 
-Base has passed its full PHP 7.2 / Apache / OpenSSH / sudo find E2E with independently retrieved User and Root Flags. Do not rebuild it unless a regression is found. The next Lab is to be selected from the remaining main inventory, beginning with the Intense / Trick candidates after checking the design plan and actual repository readiness. Devvortex has completed its Joomla 4.2.6 Web-only E2E path; do not re-open it unless a later regression is found.
+Base has passed its full PHP 7.2 / Apache / OpenSSH / sudo find E2E with independently retrieved User and Root Flags. Do not rebuild it unless a regression is found. **Trick** is now the active Lab: its multi-service reconstruction and independent acceptance.py already exist; add/run the isolated DNS/HTTP/SSH E2E and random dual-Flag synchronization without performing Worker acceptance. Intense is deferred because it is an advanced SQLi/cryptographic composite. Devvortex has completed its Joomla 4.2.6 Web-only E2E path; do not re-open it unless a later regression is found.
 
 After Base, follow the order in `docs/EXISTING_WEB_LAB_RELEASE_INVENTORY.md`: then evaluate Intense / Trick as their scope and readiness permit. Always re-read the live inventory because the order may change after a Lab is completed.
 
