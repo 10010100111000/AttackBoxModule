@@ -1562,16 +1562,16 @@
       "worker_status": "not_verified",
       "release_status": "blocked_by_marker",
       "evidence": "",
-      "note": "HTB Trick independent reconstruction. Real BIND AXFR/PTR, PHP/MariaDB SQLi and FILE privilege, PHP-FPM LFI under michael, OpenSSH key foothold and real Fail2ban action misconfiguration. NET_ADMIN is required only inside this target's private network namespace. Awaiting independent CI and Worker verification.",
+      "note": "已有多服务真实重建：BIND AXFR/PTR、MariaDB SQLi/FILE、Marketing PHP-FPM nested traversal、OpenSSH michael、真实 Fail2ban/iptables root action。独立 DNS/HTTP/SSH 攻击端与双 Flag E2E 已接入，等待 CI 实际运行。Worker/生产发布仍由原 .release-blocked 单独标记，不属于本次验收。",
       "variant_profile": {
-        "technology": "Alpine 3.22, Nginx, PHP 8.4, MariaDB, BIND, OpenSSH, Fail2ban, iptables",
-        "initial_discovery": "Reverse DNS and AXFR reveal the Payroll virtual host; the Marketing vhost is discovered from the real Nginx configuration",
-        "key_constraint_or_mechanism": "MariaDB FILE access is limited by the mysql Unix identity; Marketing PHP-FPM runs as michael; a one-pass ../ removal is bypassed with nested ....//; Fail2ban action directory is group-writable and service restart is narrowly allowed by sudo",
-        "attack_path": "PTR/AXFR -> Payroll login SQLi -> MariaDB LOAD_FILE of Nginx config -> Marketing vhost -> nested PHP include -> michael SSH key -> Fail2ban action replacement -> root-run action discloses Root Flag",
-        "incremental_learning_value": "Adds a file-read/LFI path with a real Unix service-account boundary, nested traversal filter bypass, DNS reconnaissance and a genuine Fail2ban root action; SQLi is a discovery mechanism rather than the main learning objective",
-        "confidence": "implementation_under_independent_ci"
+        "technology": "Alpine 3.22, BIND, Nginx, PHP 8.4-FPM, MariaDB, OpenSSH, Fail2ban, iptables",
+        "initial_discovery": "Reverse DNS PTR and BIND AXFR reveal the Payroll virtual host; Marketing is discovered through database-backed configuration inference",
+        "key_constraint_or_mechanism": "MariaDB FILE privilege under mysql OS identity; PHP-FPM as michael reads files via nested path traversal; group-writable Fail2ban action directory plus narrow sudo restart",
+        "attack_path": "PTR/AXFR -> Payroll SQLi -> LOAD_FILE Nginx config -> Marketing vhost -> nested PHP include -> michael SSH private key -> SSH User Flag -> modify Fail2ban action -> trigger sshd jail -> root action reveals Root Flag",
+        "incremental_learning_value": "DNS enumeration, SQLi file inference, Unix service-account boundaries, nested traversal and service-mediated root action",
+        "confidence": "repository_implementation_and_existing_acceptance_reviewed_e2e_pending"
       },
-      "skill_mapping_stage": "implementation_under_independent_ci",
+      "skill_mapping_stage": "real_bind_axfr_mariadb_file_nested_php_include_ssh_fail2ban_e2e_pending",
       "manual_validation": {
         "status": "not_reviewed",
         "commit": null,
@@ -1581,8 +1581,8 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "pending",
-      "e2e_ci_workflow": null,
+      "e2e_ci_status": "configured",
+      "e2e_ci_workflow": ".github/workflows/trick-e2e.yml",
       "e2e_ci_evidence": null,
       "e2e_ci_commit": null
     },
