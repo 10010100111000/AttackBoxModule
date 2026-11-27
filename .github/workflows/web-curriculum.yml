@@ -23,6 +23,11 @@ on:
       - ".github/workflows/goodgames-e2e.yml"
       - ".github/workflows/goodgames-release.yml"
       - "labs/devvortex/**"
+      - "labs/intense/**"
+      - "challenges/sql-injection/09-intense/**"
+      - "scripts/generate_intense_release.py"
+      - ".github/workflows/intense-e2e.yml"
+      - ".github/workflows/intense-release.yml"
       - "challenges/startpoint/devvortex/**"
       - "scripts/generate_devvortex_release.py"
       - ".github/workflows/devvortex-e2e.yml"
@@ -57,6 +62,11 @@ on:
       - ".github/workflows/goodgames-e2e.yml"
       - ".github/workflows/goodgames-release.yml"
       - "labs/devvortex/**"
+      - "labs/intense/**"
+      - "challenges/sql-injection/09-intense/**"
+      - "scripts/generate_intense_release.py"
+      - ".github/workflows/intense-e2e.yml"
+      - ".github/workflows/intense-release.yml"
       - "challenges/startpoint/devvortex/**"
       - "scripts/generate_devvortex_release.py"
       - ".github/workflows/devvortex-e2e.yml"
@@ -174,6 +184,28 @@ jobs:
           assert challenge.count(f'answer: "{root}"') == 1
           assert challenge.count("kind: flag") == 2 and "lab: base" in challenge
           print("Base User/Root Flag pair, stable manifest and Challenge answers: PASS")
+          PY
+
+      - name: Check Intense versioned Flag generator and Challenge answer consistency
+        run: |
+          set -euo pipefail
+          python3 scripts/generate_intense_release.py --version 0.0.0-ci
+          manifest=labs/intense/flags/releases/0.0.0-ci.json
+          before=$(sha256sum "$manifest" | cut -d' ' -f1)
+          python3 scripts/generate_intense_release.py --version 0.0.0-ci
+          after=$(sha256sum "$manifest" | cut -d' ' -f1)
+          test "$before" = "$after"
+          python3 - <<'PY'
+          import json, pathlib
+          manifest = json.loads(pathlib.Path("labs/intense/flags/releases/0.0.0-ci.json").read_text())
+          flag = manifest["flag"]
+          assert flag.startswith("TTP{") and flag.endswith("}") and len(flag) == 21
+          assert all(ch in "abcdefghijklmnopqrstuvwxyz234567" for ch in flag[4:-1])
+          assert pathlib.Path("labs/intense/flags/user.txt").read_text().strip() == flag
+          challenge = pathlib.Path("challenges/sql-injection/09-intense/Intense.md").read_text()
+          assert challenge.count(f'answer: "{flag}"') == 1
+          assert challenge.count("kind: flag") == 1 and "lab: intense" in challenge
+          print("Intense random Flag, stable manifest and Challenge answer: PASS")
           PY
 
       - name: Check Cap Flag generator determinism and Challenge answer consistency

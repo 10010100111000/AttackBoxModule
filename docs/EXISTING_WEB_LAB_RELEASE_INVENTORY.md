@@ -10,9 +10,9 @@
 
 | main 中记录的 CI 状态 | 数量 | 含义 |
 |---|---:|---|
-| `full_chain_ci` | 22 | 保留历史完整目标链 CI 证据；新标准通过情况以 E2E 状态为准 |
+| `full_chain_ci` | 23 | 保留历史完整目标链 CI 证据；新标准通过情况以 E2E 状态为准 |
 | `partial` | 2 | 已有部分真实功能或目标行为检查，仍有靶机内容/目标路径缺口 |
-| `unverified` | 3 | 尚无足够的靶机目标验证记录 |
+| `unverified` | 2 | 尚无足够的靶机目标验证记录 |
 
 另有 **11 台**保留 `.release-blocked` 标记。该标记不是 CI 结果，也不等同于靶机代码不存在；未完成原因应以各自 README 和标记文件为准。
 
@@ -34,6 +34,16 @@ Base 原有 PHP 7.2 / Apache / OpenSSH / sudo find 双 Flag 靶场已存在，�
 - E2E：`.github/workflows/base-e2e.yml`（已接入，等待实际运行）
 - 发布：`.github/workflows/base-release.yml`
 - 结构化状态：`configured`，成功运行证据尚未产生。
+
+### 最近更新：Intense — E2E 已完成
+
+Intense 已通过真实 Flask/SQLite Web-only 完整攻击链 E2E：访客登录 → SQLite 条件错误 oracle 提取管理员 secret → SHA-256 长度扩展伪造 LWT 管理员会话 → 日志路径遍历 → 精确随机 Web Flag。
+
+- [独立攻击端 E2E](https://github.com/10010100111000/AttackBoxModule/actions/runs/46027395934)
+- [Docker 构建、启动与普通功能 smoke](https://github.com/10010100111000/AttackBoxModule/actions/runs/46027395947)
+- [题库一致性](https://github.com/10010100111000/AttackBoxModule/actions/runs/46027395873)
+- 镜像约 **26.5 MB**；内存上限 256 MiB
+- 仅一个 Web Flag；不包含 SNMP、SSH、native binary、Root 或 Worker 验收。
 
 ### 最近更新：Devvortex — E2E 已通过
 
@@ -102,7 +112,7 @@ This table is generated from the same state recorded in `catalog/web-curriculum.
 | `zipping` | `full_chain_ci` | `blocked_by_marker` |
 | `soccer` | `full_chain_ci` | `blocked_by_marker` |
 | `trick` | `unverified` | `blocked_by_marker` |
-| `intense` | `unverified` | `blocked_by_marker` |
+| `intense` | `full_chain_ci` | `blocked_by_marker` |
 
 ## 现有靶机状态
 
@@ -132,7 +142,7 @@ This table is generated from the same state recorded in `catalog/web-curriculum.
 | Soccer | Tiny File Manager、WebSocket blind SQLi | Web-only；有 `.release-blocked` |
 | WonderCMS XSS | WonderCMS 属性上下文 XSS、管理员浏览器 | 有 `.release-blocked` |
 
-`full_chain_ci` 表示该 Lab 有完整目标链 CI 证据；旧 Lab 的历史证据不自动等同于当前统一 E2E 标准。每台是否通过新标准，以 `catalog/web-curriculum.json` 中的 `e2e_ci_status`、运行链接和提交 SHA 为准。Bike、Precious、GoodGames、Devvortex 与 Base 均已按新标准通过独立攻击端验收。
+`full_chain_ci` 表示该 Lab 有完整目标链 CI 证据；旧 Lab 的历史证据不自动等同于当前统一 E2E 标准。每台是否通过新标准，以 `catalog/web-curriculum.json` 中的 `e2e_ci_status`、运行链接和提交 SHA 为准。Bike、Precious、GoodGames、Devvortex、Base 与 Intense 均已按新标准通过独立攻击端验收。
 
 ### 部分完成（2 台）
 
@@ -147,13 +157,13 @@ This table is generated from the same state recorded in `catalog/web-curriculum.
 |---|---|---|
 | Cursed Stale Policy | CSP、XSS、WebSocket 相关代码 | 先核对实际浏览器行为，不把代码存在当成漏洞已成立 |
 | Trick | DNS、PHP、MariaDB、LFI、Fail2ban 等真实服务 | 当前实现较复杂，先整理正常业务与题目范围，再补基础工程检查 |
-| Intense | Flask、SQLite 条件错误、LWT 会话、路径遍历 | Web-only 初始实现；先完成构建、启动与普通功能 |
+| Intense | Flask、SQLite 条件错误、LWT 会话、路径遍历 | 独立攻击端已完成 SQLi → SHA-256 长度扩展 → 管理员日志路径遍历 → Web Flag 全链路验收 |
 
 ## 接下来只处理 main 已有靶机
 
 建议顺序：
 
-1. **Intense / Trick**：先处理复杂实现的基础工程与文档，不扩展新功能。
+1. **下一项重新评估**：先检查剩余 partial main Labs（Alert、Funnel）是否能以较小改动完成完整 E2E；Trick 暂缓，因其多服务范围较大。
 
 这只是 main 现有资产的处理顺序。每台必须由专属隔离攻击端 E2E 实际走完目标路径并读取精确 Flag；只有 main 对应提交的 E2E 成功后才算完成。执行细节见 [Lab Production Playbook](LAB_PRODUCTION_PLAYBOOK.md)。
 

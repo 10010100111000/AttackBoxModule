@@ -1596,31 +1596,37 @@
         "auth_session",
         "file_read"
       ],
-      "validated_skills": [],
+      "validated_skills": [
+        "sqli.error-based",
+        "sqli.conditional-error",
+        "auth_session.login-bypass",
+        "file_read.path-traversal"
+      ],
       "implemented_skills": [
         "sqli.error-based",
         "sqli.conditional-error",
         "auth_session.login-bypass",
         "file_read.path-traversal"
       ],
-      "lab_ci_status": "unverified",
+      "lab_ci_status": "full_chain_ci",
       "worker_status": "not_verified",
       "release_status": "blocked_by_marker",
       "evidence": [
         "https://romanh.de/writeup/htb-intense",
         "https://www.willsroot.io/2020/11/intense-hackthebox-writeup.html",
-        "https://github.com/zweilosec/htb-writeups/blob/master/linux-machines/hard/intense-write-up.md"
+        "https://github.com/zweilosec/htb-writeups/blob/master/linux-machines/hard/intense-write-up.md",
+        "https://github.com/10010100111000/AttackBoxModule/actions/runs/46027395934"
       ],
-      "note": "Independent Web-only reconstruction based on multiple public HTB Intense writeups. Real Flask + SQLite; reflected SQLite errors and a conditional error oracle extract the administrator secret; SHA-256 secret-prefix LWT signature length extension plus duplicate-key parsing for admin session; unchecked admin log path join reads the per-instance Web Flag. Original private source is not copied; observable route and exploit path are preserved. SNMP, SSH pivot and native pwn/root stages are intentionally excluded. Initial implementation only: no Docker build, manual acceptance, Worker verification or release yet.",
+      "note": "Web-only Intense 已通过独立攻击端 E2E：真实 SQLite 条件错误 oracle 提取管理员 secret，SHA-256 长度扩展伪造 LWT 管理员会话，日志路径遍历读取精确随机 Web Flag。Docker build、普通功能 smoke、题库一致性均通过；镜像 26.5 MB。SNMP、SSH、native binary、Root 和 Worker 均不在本次范围。",
       "variant_profile": {
         "technology": "Python 3.12, Flask 3.1.1, Gunicorn 23.0.0, SQLite",
         "initial_discovery": "Community message board, guest login, public src.zip source archive and 140-character message submission",
         "key_constraint_or_mechanism": "SQLite INSERT interpolation with direct native error feedback; conditional CASE oracle using a genuine SQLite error; SHA-256 secret-prefix MAC length extension; duplicate session-key overwrite; admin log path traversal",
         "attack_path": "Recon/source review -> guest login -> message SQLi -> extract admin secret -> forge admin LWT cookie -> admin log viewer -> path traversal -> Web Flag",
         "incremental_learning_value": "Combines SQL error-based extraction and conditional-error blind inference with a separate cryptographic session-forgery step and final authenticated file read in one coherent Web application",
-        "confidence": "public writeups cross-checked; implementation written; runtime and exploit path not yet verified"
+        "confidence": "public_writeups_cross_checked; real SQLite and SHA-256 path independently E2E verified"
       },
-      "skill_mapping_stage": "implementation_added_manual_skill_validation_pending",
+      "skill_mapping_stage": "real_sqlite_conditional_error_sha256_length_extension_admin_log_traversal_e2e_verified",
       "manual_validation": {
         "status": "not_reviewed",
         "commit": null,
@@ -1630,10 +1636,10 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "pending",
-      "e2e_ci_workflow": null,
-      "e2e_ci_evidence": null,
-      "e2e_ci_commit": null
+      "e2e_ci_status": "passed",
+      "e2e_ci_workflow": ".github/workflows/intense-e2e.yml",
+      "e2e_ci_evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/46027395934",
+      "e2e_ci_commit": "8c82ba16b8397617a6d8cafe7f698e76b0cbe3c0"
     }
   ],
   "backlog": [
@@ -2631,11 +2637,13 @@
     "end_to_end_acceptance": "isolated_network_client_real_vulnerable_component_and_exact_flag"
   },
   "selection_policy": {
-    "preferred_start": "HTB Intense Web-only reconstruction is now the active SQL Injection composite candidate",
+    "preferred_start": "Intense Web-only reconstruction has passed its isolated E2E; choose the next single Lab from the remaining main inventory after reviewing its actual size and readiness.",
     "next_candidates": [
-      "intense"
+      "alert",
+      "funnel",
+      "trick"
     ],
-    "next_review": "Finish the Intense build and manually verify the original Web attack path before selecting another SQLi candidate. Inject remains a later path-traversal / Spring RCE research candidate.",
+    "next_review": "Intense is complete. Review the remaining partial main Labs first and choose one bounded target. Do not automatically select Trick: its DNS/PHP/MariaDB/Fail2ban multi-service scope may be too large. Continue one Lab at a time and keep Worker acceptance out of scope.",
     "selection_reason": "The existing curriculum already covers UNION, Boolean/Time Blind, second-order, FILE operations and WebSocket blind SQLi. Intense adds a distinct SQLite conditional-error oracle plus cryptographic session forgery and authenticated path traversal, creating a coherent composite Web exercise without a JVM."
   }
 }

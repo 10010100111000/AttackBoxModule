@@ -1,0 +1,108 @@
+name: Intense versioned Web Flag release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version; re-running the same version reuses its Flag."
+        required: true
+        default: "0.1.0"
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: intense-flag-release-${{ inputs.version }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+
+      - name: Generate or reuse versioned Flag
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          python3 scripts/generate_intense_release.py --version "$RELEASE_VERSION"
+          manifest="labs/intense/flags/releases/$RELEASE_VERSION.json"
+          before=$(sha256sum "$manifest" | cut -d' ' -f1)
+          python3 scripts/generate_intense_release.py --version "$RELEASE_VERSION"
+          after=$(sha256sum "$manifest" | cut -d' ' -f1)
+          test "$before" = "$after"
+
+      - name: Verify manifest, target seed and Challenge answer
+        id: release
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib, re
+          version = os.environ["RELEASE_VERSION"]
+          manifest = json.loads(pathlib.Path(f"labs/intense/flags/releases/{version}.json").read_text())
+          flag = manifest["flag"]
+          assert manifest["version"] == version
+          assert re.fullmatch(r"TTP\{[a-z2-7]{16}\}", flag)
+          assert pathlib.Path("labs/intense/flags/user.txt").read_text().strip() == flag
+          challenge = pathlib.Path("challenges/sql-injection/09-intense/Intense.md").read_text()
+          assert challenge.count(f'answer: "{flag}"') == 1
+          assert challenge.count("kind: flag") == 1 and "lab: intense" in challenge
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              output.write(f"expected={flag}\n")
+          print(f"::add-mask::{flag}")
+          PY
+
+      - name: Build real target
+        run: docker build --pull --progress=plain -t ttp-intense:release -f labs/intense/Dockerfile labs/intense
+
+      - name: Run actual attacker before committing release artifacts
+        env:
+          EXPECTED_FLAG: ${{ steps.release.outputs.expected }}
+        run: |
+          set -euo pipefail
+          docker network create --internal intense-release
+          cleanup() {
+            docker logs intense-target 2>/dev/null || true
+            docker rm -f intense-target 2>/dev/null || true
+            docker network rm intense-release 2>/dev/null || true
+            docker image rm ttp-intense:release 2>/dev/null || true
+          }
+          trap cleanup EXIT
+          docker run -d --name intense-target --network intense-release --network-alias intense-target \
+            --memory 256m --cpus 1 --pids-limit 128 --security-opt no-new-privileges \
+            -e INTENSE_WEB_FLAG="$EXPECTED_FLAG" ttp-intense:release
+          ready=0
+          for attempt in $(seq 1 40); do
+            state=$(docker inspect -f '{{.State.Status}}' intense-target)
+            health=$(docker inspect -f '{{.State.Health.Status}}' intense-target)
+            if [ "$state" != running ] || [ "$health" = unhealthy ]; then docker logs intense-target; exit 1; fi
+            if [ "$health" = healthy ]; then ready=1; break; fi
+            sleep 2
+          done
+          test "$ready" = 1
+          docker run --rm --network intense-release \
+            -v "$GITHUB_WORKSPACE/labs/intense/exploit.py:/exploit.py:ro" \
+            -e EXPECTED_FLAG \
+            python:3.12-alpine python /exploit.py \
+              --url http://intense-target:8080 --expected-flag "$EXPECTED_FLAG"
+
+      - name: Commit verified release artifacts
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+          BRANCH_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "labs/intense/flags/releases/$RELEASE_VERSION.json" labs/intense/flags/user.txt challenges/sql-injection/09-intense/Intense.md
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(intense): generate Web Flag for $RELEASE_VERSION"
+            git push origin "HEAD:$BRANCH_NAME"
+          fi

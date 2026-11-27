@@ -1,0 +1,134 @@
+name: Intense real SQLite and SHA-256 length-extension end-to-end acceptance
+
+on:
+  pull_request:
+    paths:
+      - "labs/intense/**"
+      - "challenges/sql-injection/09-intense/**"
+      - "scripts/generate_intense_release.py"
+      - ".github/workflows/intense-e2e.yml"
+      - ".github/workflows/intense-release.yml"
+  push:
+    branches: [main]
+    paths:
+      - "labs/intense/**"
+      - "challenges/sql-injection/09-intense/**"
+      - "scripts/generate_intense_release.py"
+      - ".github/workflows/intense-e2e.yml"
+      - ".github/workflows/intense-release.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  intense-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate a fresh random Web Flag for this CI instance
+        env:
+          RELEASE_VERSION: 0.0.0-ci.${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          python3 scripts/generate_intense_release.py --version "$RELEASE_VERSION"
+
+      - name: Verify target seed, manifest and Challenge answer
+        id: flag
+        env:
+          RELEASE_VERSION: 0.0.0-ci.${{ github.run_id }}
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib, re
+          version = os.environ["RELEASE_VERSION"]
+          manifest = json.loads(pathlib.Path(f"labs/intense/flags/releases/{version}.json").read_text())
+          flag = manifest["flag"]
+          assert manifest["version"] == version
+          assert re.fullmatch(r"TTP\{[a-z2-7]{16}\}", flag)
+          assert pathlib.Path("labs/intense/flags/user.txt").read_text().strip() == flag
+          challenge = pathlib.Path("challenges/sql-injection/09-intense/Intense.md").read_text()
+          assert challenge.count(f'answer: "{flag}"') == 1
+          assert challenge.count("kind: flag") == 1 and "lab: intense" in challenge
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              output.write(f"expected={flag}\n")
+          print(f"::add-mask::{flag}")
+          print("Intense target seed, release manifest and Challenge answer match: PASS")
+          PY
+
+      - name: Syntax-check player and generator
+        run: python3 -m py_compile labs/intense/exploit.py scripts/generate_intense_release.py
+
+      - name: Verify SHA-256 length-extension implementation
+        run: |
+          python3 - <<'PY'
+          import hashlib, sys
+          sys.path.insert(0, "labs/intense")
+          from exploit import sha256_length_extend
+          for key_length in range(8, 16):
+              key = bytes(range(key_length))
+              original = b"username=guest;secret=" + b"a" * 64 + b";"
+              append = b";username=admin;secret=" + b"b" * 64 + b";"
+              digest = hashlib.sha256(key + original).digest()
+              extended_digest, forged = sha256_length_extend(digest, original, append, key_length)
+              assert hashlib.sha256(key + forged).digest() == extended_digest, key_length
+          print("SHA-256 extension matches hashlib for every supported key length: PASS")
+          PY
+
+      - name: Build the real Flask and SQLite target
+        run: docker build --pull --progress=plain -t ttp-intense:e2e -f labs/intense/Dockerfile labs/intense
+
+      - name: Start target on an isolated internal network
+        run: |
+          set -euo pipefail
+          docker network create --internal intense-e2e
+          docker run -d --name intense-target --network intense-e2e --network-alias intense-target \
+            --memory 256m --cpus 1 --pids-limit 128 --security-opt no-new-privileges \
+            -e INTENSE_WEB_FLAG="${{ steps.flag.outputs.expected }}" \
+            ttp-intense:e2e
+          ready=0
+          for attempt in $(seq 1 40); do
+            state=$(docker inspect -f '{{.State.Status}}' intense-target)
+            health=$(docker inspect -f '{{.State.Health.Status}}' intense-target)
+            if [ "$state" != running ] || [ "$health" = unhealthy ]; then
+              docker logs intense-target
+              exit 1
+            fi
+            if [ "$health" = healthy ]; then ready=1; break; fi
+            sleep 2
+          done
+          test "$ready" = 1
+          docker image inspect ttp-intense:e2e --format 'IMAGE_SIZE_BYTES={{.Size}}'
+          docker stats --no-stream intense-target
+
+      - name: Run independent attacker through SQLi, length extension and exact Flag retrieval
+        env:
+          EXPECTED_FLAG: ${{ steps.flag.outputs.expected }}
+        run: |
+          set -euo pipefail
+          docker run --rm --network intense-e2e \
+            -v "$GITHUB_WORKSPACE/labs/intense/exploit.py:/exploit.py:ro" \
+            -e EXPECTED_FLAG \
+            python:3.12-alpine python /exploit.py \
+              --url http://intense-target:8080 \
+              --expected-flag "$EXPECTED_FLAG"
+
+      - name: Record acceptance scope
+        run: |
+          echo "PASS: public source discovery, guest login, SQLite native conditional-error oracle and administrator secret extraction." >> "$GITHUB_STEP_SUMMARY"
+          echo "PASS: SHA-256 length extension forged an administrator session; log path traversal returned the exact random Web Flag." >> "$GITHUB_STEP_SUMMARY"
+          echo "Web-only scope: no SNMP, SSH, native binary exploitation, Root Flag, target mount, Docker socket or docker exec." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Capture target diagnostics
+        if: always()
+        run: |
+          docker logs intense-target || true
+          docker image inspect ttp-intense:e2e --format='IMAGE_SIZE_BYTES={{.Size}}' || true
+          docker stats --no-stream intense-target || true
+
+      - name: Clean up isolated environment
+        if: always()
+        run: |
+          docker rm -f intense-target 2>/dev/null || true
+          docker network rm intense-e2e 2>/dev/null || true
+          docker image rm ttp-intense:e2e 2>/dev/null || true
