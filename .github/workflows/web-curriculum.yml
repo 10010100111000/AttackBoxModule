@@ -12,6 +12,11 @@ on:
       - "scripts/validate_web_curriculum.py"
       - "scripts/generate_bike_release.py"
       - "labs/bike/**"
+      - "labs/base/**"
+      - "challenges/startpoint/base/**"
+      - "scripts/generate_base_release.py"
+      - ".github/workflows/base-e2e.yml"
+      - ".github/workflows/base-release.yml"
       - "labs/goodgames/**"
       - "challenges/startpoint/goodgames/**"
       - "scripts/generate_goodgames_release.py"
@@ -30,6 +35,11 @@ on:
       - "scripts/generate_cap_release.py"
       - "scripts/generate_bike_release.py"
       - "labs/bike/**"
+      - "labs/base/**"
+      - "challenges/startpoint/base/**"
+      - "scripts/generate_base_release.py"
+      - ".github/workflows/base-e2e.yml"
+      - ".github/workflows/base-release.yml"
       - "challenges/startpoint/bike/**"
       - ".github/workflows/bike.yml"
       - ".github/workflows/bike-release.yml"
@@ -138,6 +148,32 @@ jobs:
           assert challenge.count(f'answer: "{flag}"') == 1
           assert challenge.count("kind: flag") == 1 and "lab: devvortex" in challenge
           print("Devvortex random Flag, stable manifest and Challenge answer: PASS")
+          PY
+
+      - name: Check Base versioned User and Root Flag generator and Challenge consistency
+        run: |
+          set -euo pipefail
+          python3 scripts/generate_base_release.py --version 0.0.0-ci
+          manifest=labs/base/flags/releases/0.0.0-ci.json
+          before=$(sha256sum "$manifest" | cut -d' ' -f1)
+          python3 scripts/generate_base_release.py --version 0.0.0-ci
+          after=$(sha256sum "$manifest" | cut -d' ' -f1)
+          test "$before" = "$after"
+          python3 - <<'PY'
+          import json, pathlib
+          manifest = json.loads(pathlib.Path("labs/base/flags/releases/0.0.0-ci.json").read_text())
+          user = manifest["user_flag"]
+          root = manifest["root_flag"]
+          assert user.startswith("TTP{") and user.endswith("}") and len(user) == 21
+          assert root.startswith("TTP{") and root.endswith("}") and len(root) == 21
+          assert user != root
+          assert pathlib.Path("labs/base/user_flag.txt").read_text().strip() == user
+          assert pathlib.Path("labs/base/root_flag.txt").read_text().strip() == root
+          challenge = pathlib.Path("challenges/startpoint/base/Base.md").read_text()
+          assert challenge.count(f'answer: "{user}"') == 1
+          assert challenge.count(f'answer: "{root}"') == 1
+          assert challenge.count("kind: flag") == 2 and "lab: base" in challenge
+          print("Base User/Root Flag pair, stable manifest and Challenge answers: PASS")
           PY
 
       - name: Check Cap Flag generator determinism and Challenge answer consistency
