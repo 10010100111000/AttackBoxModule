@@ -2638,13 +2638,11 @@
     "end_to_end_acceptance": "isolated_network_client_real_vulnerable_component_and_exact_flag"
   },
   "selection_policy": {
-    "preferred_start": "Intense Web-only reconstruction has passed its isolated E2E; choose the next single Lab from the remaining main inventory after reviewing its actual size and readiness.",
+    "preferred_start": "Alert is selected as the next Web Lab: its real Chromium stored-XSS and loopback traversal path already works; complete automatic random-Flag E2E and Challenge synchronization.",
     "next_candidates": [
-      "alert",
-      "funnel",
-      "trick"
+      "alert"
     ],
-    "next_review": "Intense is complete. Review the remaining partial main Labs first and choose one bounded target. Do not automatically select Trick: its DNS/PHP/MariaDB/Fail2ban multi-service scope may be too large. Continue one Lab at a time and keep Worker acceptance out of scope.",
+    "next_review": "Complete Alert's two-instance independent browser E2E and random Web Flag synchronization before selecting another Lab. Funnel is a service-track FTP/SSH/PostgreSQL exercise, not a Web Lab, and Trick remains deferred because its multi-service scope is large. Keep Worker acceptance out of scope.",
     "selection_reason": "The existing curriculum already covers UNION, Boolean/Time Blind, second-order, FILE operations and WebSocket blind SQLi. Intense adds a distinct SQLite conditional-error oracle plus cryptographic session forgery and authenticated path traversal, creating a coherent composite Web exercise without a JVM."
   }
 }
