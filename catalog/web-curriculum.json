@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
-  "updated_on": "2026-11-27",
-  "main_snapshot_commit": "e7b64bc1846ddbd802d96d8d5fc33de02cf52175",
+  "updated_on": "2026-11-28",
+  "main_snapshot_commit": "5fcb2b48ea81033886c61bec500403930ad8318e",
   "purpose": "trytopwn Web 题库选题、覆盖率与验收状态的唯一结构化索引；每次新增靶机时维护本文件与 docs/WEB_ROADMAP.md",
   "difficulty_is_provisional": true,
   "statuses": {
@@ -1659,14 +1659,9 @@
       "scope": "repeatable_skill_variant_requirement",
       "one_to_many_allowed": true,
       "scenario_variant_focus": "真实旧版 Django 报错页反射型 XSS（优先），同时评估 WonderCMS 的真实 XSS；避免直接部署笨重的 Juice Shop 全家桶",
-      "candidate_options": [
-        "django-debug-xss",
-        "dsvw",
-        "wondercms-xss"
-      ],
       "selected_candidate": "django-debug-xss",
-      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45474730425",
-      "note": "Django 1.11.4 DEBUG technical-500 reflected XSS is implemented and its target-local authenticated browser callback / per-instance Flag flow passed CI. Manual acceptance remains not_reviewed; production Worker remains not_verified."
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45233000605",
+      "note": "Django 1.11.4 DEBUG technical-500 reflected XSS; historical browser/Flag callback CI passed. This is historical Lab CI evidence; the machine's current unified e2e_ci_status remains pending."
     },
     {
       "id": "file-read-basic",
@@ -1684,11 +1679,9 @@
       "one_to_many_allowed": true,
       "scenario_variant_focus": "相对路径、嵌套遍历和完整 LFI 可拆成不同难度",
       "candidate_options": [
-        "trick",
-        "inject",
-        "zipping"
+        "inject"
       ],
-      "note": "Zipping is intermediate ZIP symlink file-read plus SQLi + LFI, not a substitute for a separate basic dot-dot traversal lab"
+      "note": "Trick and Zipping are already existing main Labs but do not replace this beginner traversal objective: Trick focuses nested filter bypass/LFI; Zipping focuses ZIP symlink disclosure and a composite SQLi/LFI chain. Keep this skill requirement open; Inject remains an external candidate for further source review."
     },
     {
       "id": "nosql-basic",
@@ -1705,11 +1698,9 @@
       "scope": "repeatable_skill_variant_requirement",
       "one_to_many_allowed": true,
       "scenario_variant_focus": "Express/MongoDB 的 JSON 操作符；其他语言/输入结构可继续重复",
-      "candidate_options": [
-        "nodeblog"
-      ],
       "selected_candidate": "nodeblog",
-      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45466022851"
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45466022851",
+      "note": "NodeBlog is implemented in main: MongoDB operator auth bypass, libxml2 XXE and node-serialize 0.0.4 deserialization chain passed historical two-fresh-instance black-box CI. Current unified Lab E2E remains pending."
     },
     {
       "id": "sqli-blind",
@@ -1727,12 +1718,9 @@
       "scope": "repeatable_skill_variant_requirement",
       "one_to_many_allowed": true,
       "scenario_variant_focus": "POST email + CSRF/session + MySQL; boolean extraction and time-based delay each have separate black-box assertions",
-      "candidate_options": [
-        "usage"
-      ],
       "selected_candidate": "usage",
       "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45386437038",
-      "note": "Usage reconstruction covers real MySQL boolean and time-based blind SQLi in the password-recovery flow with separate black-box assertions. Manual acceptance remains not_reviewed; production Worker remains not_verified."
+      "note": "Usage is implemented in main. Historical independent CI separately asserts MySQL boolean and time-based blind SQLi in the password-recovery flow. Current unified Lab E2E remains pending."
     },
     {
       "id": "xss-stored-admin",
@@ -1744,18 +1732,16 @@
         "xss.stored"
       ],
       "status": "in_progress",
-      "candidate_status": "source_not_selected",
+      "candidate_status": "in_progress",
       "objective": "真实持久化输入 + 管理员浏览器访问，验证会话/权限边界而非 alert 字符串",
       "scope": "repeatable_skill_variant_requirement",
       "one_to_many_allowed": true,
       "scenario_variant_focus": "真实 Markdown/评论被管理员浏览器打开造成跨用户执行；需区分 XSS 是存储于服务端还是来自可分享链接",
       "candidate_options": [
-        "alert",
-        "headless",
-        "wondercms-xss"
+        "headless"
       ],
       "selected_candidate": "alert",
-      "note": "Real browser and loopback traversal CI pass, but full per-instance Web Flag extraction not yet independently validated"
+      "note": "Continue the existing Alert Lab in main. Real Chromium execution and loopback-only PHP traversal are verified, but the independent player has not yet retrieved the intended Web Flag. Headless remains an external alternative; do not create another Lab before resolving Alert."
     },
     {
       "id": "deserialize-component",
@@ -1767,16 +1753,15 @@
         "deserialization.unsafe-parse",
         "deserialization.dependency-gadget"
       ],
-      "status": "planned",
-      "candidate_status": "source_not_selected",
+      "status": "done",
+      "candidate_status": "lab_ci_verified",
       "objective": "使用受影响版本与真实组件，完整反序列化利用链；可对照 NodeBlog/Precious",
       "scope": "repeatable_skill_variant_requirement",
       "one_to_many_allowed": true,
       "scenario_variant_focus": "PHP/Ruby/Node 不同真实反序列化依赖可有多台",
-      "candidate_options": [
-        "precious",
-        "nodeblog"
-      ]
+      "selected_candidate": "nodeblog",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45466022851",
+      "note": "NodeBlog already implements the real node-serialize 0.0.4 unsafe deserialization and dependency-gadget path; historical two-fresh-instance attack-chain CI passed. Current unified Lab E2E remains pending."
     },
     {
       "id": "xss-csp-blind",
@@ -1788,15 +1773,14 @@
         "xss.blind",
         "xss.csp-bypass"
       ],
-      "status": "planned",
-      "candidate_status": "source_not_selected",
+      "status": "in_progress",
+      "candidate_status": "implementation_started",
       "objective": "真实浏览器 Bot、CSP 和跨请求影响；先评估现有 Cursed Stale Policy 是否可升级验收",
       "scope": "repeatable_skill_variant_requirement",
       "one_to_many_allowed": true,
       "scenario_variant_focus": "先验证原有 Cursed Stale Policy，再考虑新增不同 CSP 场景",
-      "candidate_options": [
-        "cursed-stale-policy"
-      ]
+      "selected_candidate": "cursed-stale-policy",
+      "note": "Cursed Stale Policy already exists in main and contains Fastify/Redis/Chromium CSP/XSS code, but has no verified browser attack chain. This is an audit/validation task for the existing Lab, not a new candidate or a claim that CSP bypass works."
     },
     {
       "id": "sqli-websocket",
@@ -1814,11 +1798,8 @@
       "scope": "repeatable_skill_variant_requirement",
       "one_to_many_allowed": true,
       "scenario_variant_focus": "真实 WS 通道和盲注反馈，不是 HTTP 表单的同一题换皮",
-      "candidate_options": [
-        "soccer"
-      ],
       "selected_candidate": "soccer",
-      "note": "Actual upstream Tiny File Manager and native ws/MariaDB SQL interpolation; two fresh black-box CI runs required before marking done",
+      "note": "Soccer is implemented in main. Historical two-fresh-instance black-box CI passed the real Tiny File Manager foothold, vhost discovery and WebSocket/MariaDB boolean blind SQLi path. Current unified Lab E2E remains pending.",
       "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45478649027"
     },
     {
@@ -1848,13 +1829,15 @@
       "required_skill_coverage": [
         "xss.reflected-attribute"
       ],
-      "status": "planned",
-      "candidate_status": "research_required",
+      "status": "done",
+      "candidate_status": "lab_ci_verified",
       "scope": "repeatable_skill_variant_requirement",
       "one_to_many_allowed": true,
       "scenario_variant_focus": "属性/事件/引用符上下文；区别于 HTML 正文反射型 XSS",
-      "candidate_options": [],
-      "objective": "属性/事件/引用符上下文；区别于 HTML 正文反射型 XSS"
+      "objective": "属性/事件/引用符上下文；区别于 HTML 正文反射型 XSS",
+      "selected_candidate": "wondercms-xss",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45229393592",
+      "note": "WonderCMS 3.4.2 CVE-2023-41425 attribute-context XSS with a real administrator browser and protected Flag callback passed historical full-chain CI. Current unified Lab E2E remains pending."
     },
     {
       "id": "xss-dom-source",
@@ -1883,16 +1866,17 @@
         "xss.blind",
         "xss.cross-user-action"
       ],
-      "status": "planned",
-      "candidate_status": "research_required",
+      "status": "in_progress",
+      "candidate_status": "in_progress",
       "scope": "repeatable_skill_variant_requirement",
       "one_to_many_allowed": true,
       "scenario_variant_focus": "真实管理员浏览器的异步执行与权限变化",
       "candidate_options": [
-        "alert",
         "headless"
       ],
-      "objective": "真实管理员浏览器的异步执行与权限变化"
+      "objective": "真实管理员浏览器的异步执行与权限变化",
+      "selected_candidate": "alert",
+      "note": "Share the existing Alert Lab with xss-stored-admin; validate the real administrator-browser execution and intended cross-user impact as part of the same target. Headless remains an external alternative only if Alert cannot meet the blind-XSS objective. Alert's final Flag path is still pending."
     },
     {
       "id": "sqli-union-alt-stack",
@@ -1927,10 +1911,10 @@
       "one_to_many_allowed": true,
       "scenario_variant_focus": "Cookie 或隐藏 API 入口上的实际布尔盲注",
       "candidate_options": [
-        "shared",
-        "trick"
+        "shared"
       ],
-      "objective": "Cookie 或隐藏 API 入口上的实际布尔盲注"
+      "objective": "Cookie 或隐藏 API 入口上的实际布尔盲注",
+      "note": "Shared remains an external research candidate. Trick already exists in main but its current implementation is a form/login SQLi and nested-LFI chain; do not assume it covers Cookie-based boolean blind SQLi without source and behavior evidence."
     },
     {
       "id": "sqli-time-blind",
@@ -1941,13 +1925,15 @@
       "required_skill_coverage": [
         "sqli.time-blind"
       ],
-      "status": "planned",
-      "candidate_status": "research_required",
+      "status": "done",
+      "candidate_status": "lab_ci_verified",
       "scope": "repeatable_skill_variant_requirement",
       "one_to_many_allowed": true,
       "scenario_variant_focus": "独立计时观测、延时噪声、真实 DB 提取",
-      "candidate_options": [],
-      "objective": "独立计时观测、延时噪声、真实 DB 提取"
+      "objective": "独立计时观测、延时噪声、真实 DB 提取",
+      "selected_candidate": "usage",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45386437038",
+      "note": "Usage's historical independent CI includes a separate time-based SQLi assertion using real MySQL SLEEP() behavior. Current unified Lab E2E remains pending."
     },
     {
       "id": "sqli-oast",
@@ -2266,14 +2252,13 @@
         "file_read.lfi"
       ],
       "status": "in_progress",
-      "candidate_status": "in_progress",
+      "candidate_status": "implementation_started",
       "objective": "HTB Trick reconstruction: real PHP nested traversal and local file inclusion, discovered through DNS, SQLi FILE and virtual-host enumeration",
       "scope": "repeatable_skill_variant_requirement",
       "one_to_many_allowed": true,
       "scenario_variant_focus": "PHP str_replace('../','', path normalization; nested ....// traversal; PHP-FPM worker identity determines which files can be read",
-      "candidate_options": [
-        "trick"
-      ]
+      "selected_candidate": "trick",
+      "note": "Trick already exists in main with nested ....// traversal and PHP-FPM LFI. Keep this objective attached to that existing Lab; its current catalog status is unverified and it still needs dedicated isolated E2E."
     },
     {
       "id": "sqli-error-conditional-intense",
@@ -2287,17 +2272,15 @@
         "auth_session.login-bypass",
         "file_read.path-traversal"
       ],
-      "status": "in_progress",
-      "candidate_status": "implementation_started",
+      "status": "done",
+      "candidate_status": "lab_ci_verified",
       "objective": "HTB Intense Web-only reconstruction: SQLite INSERT error feedback and conditional-error oracle -> administrator secret extraction -> SHA-256 secret-prefix MAC length-extension session forgery -> admin log path traversal -> one Web Flag",
       "scope": "single_application_composite_lab",
       "one_to_many_allowed": true,
       "scenario_variant_focus": "SQLite-specific conditional error oracle, no multi-statement execution, source-disclosed app, custom LWT cookie and authenticated path traversal; distinguish direct DB error reflection from conditional error inference",
-      "candidate_options": [
-        "intense"
-      ],
       "selected_candidate": "intense",
-      "note": "Based on multiple public writeups. Original private Flask source is unavailable and will not be copied. Recreate the same observable routes, request behavior, SQLite error oracle, weak cookie signature and final LFI path. Web-only: exclude SNMP, SSH, binary exploitation and Linux Root. One final Flag is sufficient; intermediate skills are learned through the path rather than forced into separate flags."
+      "note": "Intense Web-only reconstruction is complete: SQLite conditional-error oracle, SHA-256 length-extension session forgery, authenticated log traversal and exact Web Flag all passed the current unified E2E. No SNMP, SSH pivot, native binary, Root or Worker scope.",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/46028110921"
     }
   ],
   "skills_catalog": "catalog/web-competencies.json",
@@ -2376,61 +2359,8 @@
       ],
       "signature": "User-Agent blind XSS -> admin browser/session -> OS command injection",
       "source_status": "official_synopsis_verified",
-      "review_status": "research_required"
-    },
-    {
-      "id": "trick",
-      "platform": "HTB",
-      "url": "https://www.hackthebox.com/machines/trick",
-      "skills": [
-        "file_read.nested-traversal",
-        "sqli.file-operations"
-      ],
-      "signature": "PTR/AXFR -> payroll SQLi/LOAD_FILE -> marketing nested LFI -> SSH -> Fail2ban action",
-      "source_status": "public_writeup_observed",
-      "review_status": "in_progress"
-    },
-    {
-      "id": "nodeblog",
-      "platform": "HTB",
-      "url": "https://www.hackthebox.com/machines/nodeblog",
-      "skills": [
-        "nosql.operator-auth-bypass",
-        "deserialization.unsafe-parse"
-      ],
-      "signature": "Express/MongoDB JSON operator -> XML/source -> node-serialize",
-      "source_status": "official_machine_plus_2022_public_writeups_and_CVE_advisory",
-      "review_status": "lab_ci_verified"
-    },
-    {
-      "id": "precious",
-      "platform": "HTB",
-      "url": "https://www.hackthebox.com/machines/precious",
-      "skills": [
-        "deserialization.unsafe-parse",
-        "command_injection.basic-rce"
-      ],
-      "signature": "genuine Ruby PDFKit -> Ruby YAML deserialization",
-      "source_status": "official_and_public_writeups_verified",
-      "review_status": "in_progress",
-      "scope": "web_only_pdfkit_rce_excludes_yaml_root"
-    },
-    {
-      "id": "soccer",
-      "platform": "HTB",
-      "url": "https://www.hackthebox.com/machines/Soccer",
-      "skills": [
-        "websockets.blind-sqli",
-        "sqli.boolean-blind"
-      ],
-      "signature": "Tiny File Manager -> WebSocket blind SQLi -> SSH -> doas/dstat",
-      "source_status": "official_synopsis_verified",
-      "review_status": "lab_ci_verified",
-      "evidence_urls": [
-        "https://github.com/10010100111000/AttackBoxModule/actions/runs/45478649027",
-        "https://github.com/10010100111000/AttackBoxModule/pull/23"
-      ],
-      "training_scope": "Web-only PHP upload -> vhost -> real WebSocket boolean SQLi; OS root stages intentionally out of scope"
+      "review_status": "research_required",
+      "review_note": "External alternative for a genuine User-Agent blind-XSS/admin-browser scenario. Review only if the existing Alert Lab cannot meet the required objective."
     },
     {
       "id": "inject",
@@ -2444,19 +2374,6 @@
       "review_status": "research_required",
       "supplemental_objective": "Recommended next candidate for focused review. Web-only scope: discover image-viewer path traversal, use file reads to identify the real Spring Cloud Function dependency/version, then reproduce CVE-2022-22963 through the actual /functionRouter endpoint to obtain the Web goal. Exclude SSH lateral movement, phil credential pivot and Ansible/root stages.",
       "review_note": "HTB official synopsis confirms upload-related LFI revealing the vulnerable Spring-Cloud-Function-Web version and CVE-2022-22963 RCE. Public writeups independently identify the LFI file-read path, pom.xml dependency and routing-expression header. Before implementation pin the exact vulnerable upstream dependency version and compatible Spring Boot/JDK build, reproduce the actual HTTP behavior, then measure image size and runtime. Do not copy any source-specific claim as an original HTB app source."
-    },
-    {
-      "id": "zipping",
-      "platform": "HTB",
-      "url": "https://www.hackthebox.com/machines/zipping",
-      "skills": [
-        "file_read.file-to-rce",
-        "sqli.file-operations"
-      ],
-      "signature": "ZIP symlink file read -> SQLi file write -> LFI; archive symlink is not automatically a server parser-mismatch bug",
-      "source_status": "official_synopsis_and_public_writeups_verified",
-      "review_status": "lab_ci_verified",
-      "extractor_variance": "Original HTB p7zip differs from the actual Info-ZIP extractor in reconstruction"
     },
     {
       "id": "codify",
@@ -2492,56 +2409,6 @@
       "supplemental_objective": "真实 PDO SQLi + YAML 工作流，YAML 是否构成不安全反序列化需后续证据确认"
     },
     {
-      "id": "django-debug-xss",
-      "platform": "Vulhub",
-      "url": "https://github.com/vulhub/vulhub/blob/master/django/CVE-2017-12794/README.md",
-      "skills": [
-        "xss.reflected"
-      ],
-      "signature": "Django 1.11.4 DEBUG 500 error page reflected XSS, CVE-2017-12794; real template/error handling, no MySQL service needed for actual app deployment design to be checked",
-      "source_status": "upstream_advisory_and_vulhub_repro_verified",
-      "review_status": "lab_ci_verified",
-      "size_policy": "small_docker_candidate_build_measurement_required",
-      "priority_hint": "beginner_xss_first",
-      "evidence_urls": [
-        "https://github.com/10010100111000/AttackBoxModule/actions/runs/45474730425"
-      ]
-    },
-    {
-      "id": "wondercms-xss",
-      "platform": "Upstream OSS",
-      "url": "https://github.com/WonderCMS/wondercms/releases/tag/3.4.2",
-      "skills": [
-        "xss.reflected",
-        "xss.cross-user-action"
-      ],
-      "signature": "WonderCMS 3.4.2 CVE-2023-41425: real CMS XSS with administrator action and module installer privilege boundary; confirm exact injection context in original version",
-      "source_status": "upstream_342_and_patched_343_confirmed",
-      "review_status": "lab_ci_verified",
-      "size_policy": "flat_file_php_cms_no_database_server_measure_runtime",
-      "priority_hint": "intermediate_xss_second",
-      "evidence_urls": [
-        "https://github.com/10010100111000/AttackBoxModule/actions/runs/45474730425"
-      ]
-    },
-    {
-      "id": "alert",
-      "platform": "HTB",
-      "url": "https://0xdf.gitlab.io/2025/03/22/htb-alert.html",
-      "skills": [
-        "xss.stored",
-        "xss.cross-user-action",
-        "file_read.path-traversal"
-      ],
-      "signature": "Markdown upload -> XSS when admin opens shared link -> internal file read via browser -> SSH -> cron privilege boundary; browser automation and original observables required",
-      "source_status": "original_machine_public_writeups_verified",
-      "review_status": "in_progress",
-      "size_policy": "php_http_ssh_cron_plus_attacker_browser_measure_runtime",
-      "priority_hint": "integrated_xss_third",
-      "ci_browser_evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45474730425",
-      "note": "Real Chromium execution and localhost traversal have CI evidence; end-to-end Web Flag extraction remains pending. Manual acceptance and Worker verification remain separate."
-    },
-    {
       "id": "dsvw",
       "platform": "OWASP VWAD",
       "url": "https://vwad.owasp.org/app/damn-small-vulnerable-web-dsvw/",
@@ -2554,63 +2421,16 @@
       "review_status": "research_required",
       "size_policy": "stdlib_python_extremely_small_source_measure_runtime",
       "priority_hint": "optional_basic_micro_lesson"
-    },
-    {
-      "id": "usage",
-      "platform": "HTB",
-      "url": "https://www.hackthebox.com/machines/usage",
-      "skills": [
-        "sqli.boolean-blind",
-        "sqli.time-blind",
-        "sqli.db-enumeration",
-        "file_upload.unrestricted-upload",
-        "file_upload.polyglot",
-        "auth_session.password-reset"
-      ],
-      "signature": "Laravel password recovery POST email boolean-based blind SQLi -> genuine MySQL admin_users -> Laravel-Admin avatar upload -> dash shell -> monit creds -> xander -> sudo 7za wildcard file read",
-      "source_status": "original_HTB_writeups_and_IppSec_video_reviewed_not_original_private_app_source",
-      "review_status": "lab_ci_verified",
-      "evidence_urls": [
-        "https://www.youtube.com/watch?v=cx9Da-PoXG4",
-        "https://www.cipherbuu.net/posts/Usage-Walkthrough/",
-        "https://www.brunorochamoura.com/posts/usage/",
-        "https://github.com/10010100111000/AttackBoxModule/actions/runs/45386437038"
-      ],
-      "origin_notes": "Writeups identify /forget-password email POST and boolean-based blind SQLi; some observed Laravel-Admin version strings differ among reports (1.8.17 versus 1.8.19). Confirm exact vulnerable upstream Laravel-Admin release and CVE-2023-24249 before implementation. Password reset SQLi is in target-specific application code, not a general Laravel framework CVE.",
-      "reconstruction_gate": "Do not invent a password-recovery SQLi endpoint and call it authentic HTB Usage. Obtain credible application/DB behavior evidence, preserve CSRF/session and genuine database blind-response distinction; original private code cannot be claimed. Upstream Laravel-Admin must be an actual vulnerable version and tested with real upload handling. Preserve later Unix escalation only if reproducible under Docker without privileged/host access.",
-      "training_scope": "Separate CI assertions for boolean and time-based blind SQLi; actual Laravel-admin upload package and p7zip root-read chain; main app source and root helper deviation explicitly documented.",
-      "worker_status": "not_verified"
-    },
-    {
-      "id": "intense",
-      "platform": "HTB",
-      "url": "https://www.hackthebox.com/machines/intense",
-      "skills": [
-        "sqli.error-based",
-        "sqli.conditional-error",
-        "auth_session.login-bypass",
-        "file_read.path-traversal"
-      ],
-      "signature": "SQLite INSERT error oracle -> admin secret -> SHA-256 secret-prefix LWT length extension -> admin log path traversal",
-      "source_status": "multiple_public_writeups_cross_checked",
-      "review_status": "in_progress",
-      "training_scope": "Web-only Flask/SQLite reconstruction; preserve public source archive, guest message form, native SQLite errors, conditional error oracle, forged admin cookie and authenticated log file read. Omit SNMP, SSH, binary pwn and Root.",
-      "evidence_urls": [
-        "https://romanh.de/writeup/htb-intense",
-        "https://www.willsroot.io/2020/11/intense-hackthebox-writeup.html",
-        "https://github.com/zweilosec/htb-writeups/blob/master/linux-machines/hard/intense-write-up.md"
-      ],
-      "reconstruction_note": "Do not copy original private source. Recreate observable behavior and attack path using genuine Flask, SQLite and SHA-256; verify all stages manually after container build."
     }
   ],
   "lightweight_selection_policy": {
-    "preferred_start": "django-debug-xss",
+    "preferred_start": "Review existing main XSS Labs first: Django Debug XSS and WonderCMS have historical full-chain CI; Alert has a partial browser-XSS chain; Cursed Stale Policy still needs its browser behavior verified. Do not add a duplicate XSS Lab before reviewing these.",
     "next_candidates": [
-      "wondercms-xss",
-      "alert"
+      "alert",
+      "cursed-stale-policy"
     ],
-    "scope": "针对 XSS，优先独立的真实受影响组件与最少必要服务；避免为基础题打包整套 Juice Shop 课程应用",
-    "sources_distinction": "VulnHub=完整下载 VM；Vulhub=按 CVE 构建的 Docker 复现环境；不要混为一谈",
+    "scope": "针对 XSS，优先独立的真实受影响组件与最少必要服务；避免为基础题打包整套 Juice Shop 全家桶",
+    "sources_distinction": "VulnHub 是完整下载 VM；Vulhub 是按 CVE 构建的 Docker 复现环境，不要混为一谈",
     "performance": "须经 CI 实测镜像字节数、启动内存与浏览器 Bot 额外资源；未构建不得宣称实际镜像大小",
     "fidelity": "XSS 必须在真实浏览器中执行，不能仅通过 HTTP 响应包含脚本证明"
   },
@@ -2638,13 +2458,13 @@
     "end_to_end_acceptance": "isolated_network_client_real_vulnerable_component_and_exact_flag"
   },
   "selection_policy": {
-    "preferred_start": "Intense Web-only reconstruction has passed its isolated E2E; choose the next single Lab from the remaining main inventory after reviewing its actual size and readiness.",
+    "preferred_start": "Continue with one existing pending Lab from main. Review Alert and Funnel as the remaining partial Labs; defer Trick until its multi-service scope and actual implementation are inspected.",
     "next_candidates": [
       "alert",
       "funnel",
       "trick"
     ],
-    "next_review": "Intense is complete. Review the remaining partial main Labs first and choose one bounded target. Do not automatically select Trick: its DNS/PHP/MariaDB/Fail2ban multi-service scope may be too large. Continue one Lab at a time and keep Worker acceptance out of scope.",
-    "selection_reason": "The existing curriculum already covers UNION, Boolean/Time Blind, second-order, FILE operations and WebSocket blind SQLi. Intense adds a distinct SQLite conditional-error oracle plus cryptographic session forgery and authenticated path traversal, creating a coherent composite Web exercise without a JVM."
+    "next_review": "These are existing main Labs, not new candidate projects. Choose one bounded target at a time. Alert has a verified browser-XSS/loopback traversal foothold but its final Web Flag path remains pending; Funnel is a non-Web FTP/SSH/PostgreSQL service chain; Trick is a larger DNS/PHP/MariaDB/Fail2ban reconstruction and should remain deferred until its scope is justified.",
+    "selection_reason": "Prioritize completing bounded existing main Labs and their actual target objectives before adding new projects. Do not reopen the six Labs already recorded as current unified E2E-passed."
   }
 }
