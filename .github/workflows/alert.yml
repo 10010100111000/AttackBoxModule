@@ -1,4 +1,4 @@
-name: Alert Web application and browser startup CI
+name: Alert Web application and full-chain E2E CI
 on:
   pull_request:
     paths:
@@ -56,7 +56,7 @@ jobs:
           test "$(docker inspect -f '{{.HostConfig.Privileged}}' alert-ci)" = false
           test "$(docker inspect -f '{{len .HostConfig.CapAdd}}' alert-ci)" = 0
           docker stats --no-stream --format 'Target memory: {{.MemUsage}}, PIDs: {{.PIDs}}' alert-ci
-          echo 'PASS: ordinary Markdown rendering and public access control; reviewer flow is not validated'
+          echo 'PASS: ordinary Markdown rendering and public access control; full reviewer flow is covered by the dedicated E2E job'
       - name: Record verification scope
         run: echo 'CI smoke passed; full lab flow requires separate manual acceptance.' >> "$GITHUB_STEP_SUMMARY"
 
@@ -64,10 +64,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
-      - name: Checkout selected branch
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.ref_name }}
+      - uses: actions/checkout@v4
 
       - name: Generate two distinct short instance Flags
         id: flags
@@ -92,13 +89,14 @@ jobs:
         shell: bash
         run: |
           python3 - <<'PY'
-          import pathlib, re
+          import pathlib
           target = pathlib.Path('labs/alert/flags/user.txt').read_text().strip()
           challenge = pathlib.Path('challenges/integrated/alert/Blind-Review.md').read_text()
-          match = re.search(r"(?m)^answer:\\s*['\"]?([^'\"\\s]+)['\"]?\\s*$", challenge)
-          if not match:
+          answer_line = next((line for line in challenge.splitlines() if line.startswith('answer:')), None)
+          if answer_line is None:
               raise SystemExit('Challenge Flag answer was not found')
-          if target != match.group(1):
+          answer = answer_line.split(':', 1)[1].strip().strip('"').strip("'")
+          if target != answer:
               raise SystemExit('Target Flag seed and Challenge answer do not match')
           print('PASS: default target Flag and Challenge answer match')
           PY
