@@ -24,6 +24,8 @@ Devvortex 已完成 Web-only 目标并通过独立攻击端验收。目标使用
 - [题库一致性检查](https://github.com/10010100111000/AttackBoxModule/actions/runs/46015597031)：通过
 - [镜像构建与发布检查](https://github.com/10010100111000/AttackBoxModule/actions/runs/46015597183)：通过
 - Docker 镜像大小：约 **152.3 MB**
+- [0.1.0 版本化 Flag 发布](https://github.com/10010100111000/AttackBoxModule/actions/runs/46018450388)：生成随机 Flag，构建真实 Joomla 镜像，通过同一 HTTP 利用链读取精确 Flag 后才提交 Manifest、目标 seed 和 Challenge 答案
+- 正式 Flag 文件、Manifest 与 Challenge 答案已核对一致
 
 已移除原题中不属于本平台范围的 SSH、Apport、Linux 用户切换和 Root Flag。该 Lab 的 `e2e_ci_status` 为 `passed`；合并后仍需核对 main 分支运行证据。
 
