@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "updated_on": "2026-11-28",
-  "main_snapshot_commit": "4e6f13b0d251ad27d516036c869988c46b75ec0d",
+  "main_snapshot_commit": "e671eb2c64ca85142f7b610b79a64c076a84e349",
   "purpose": "trytopwn Web 题库选题、覆盖率与验收状态的唯一结构化索引；每次新增靶机时维护本文件与 docs/WEB_ROADMAP.md",
   "difficulty_is_provisional": true,
   "statuses": {
@@ -693,15 +693,23 @@
       "secondary_categories": [
         "http_protocol"
       ],
-      "validated_skills": [],
-      "implemented_skills": [
-        "xss.csp-bypass"
+      "validated_skills": [
+        "xss.stored",
+        "xss.csp-bypass",
+        "xss.blind",
+        "xss.cross-user-action"
       ],
-      "lab_ci_status": "unverified",
+      "implemented_skills": [
+        "xss.stored",
+        "xss.csp-bypass",
+        "xss.blind",
+        "xss.cross-user-action"
+      ],
+      "lab_ci_status": "full_chain_ci",
       "worker_status": "not_verified",
       "release_status": "not_assessed",
-      "evidence": "",
-      "note": "有 CSP/XSS/WebSocket 代码；尚无可确认的浏览器攻击链验收，不能算高级 XSS 已覆盖",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/46051233295",
+      "note": "Real Fastify/Redis/Bull/Puppeteer/Chromium chain passed on two clean instances with different random Flags: observe CSP nonce reuse across responses, retrieve cached policy through WebSocket, submit nonce-bearing stored payload, target-local administrator Chromium executes it, and callback request log exposes the exact per-instance Flag. Browser proof and exact Flag assertions passed. Image 435,988,496 bytes (~416 MiB); instance memory 299.3-301.8 MiB, 141 PIDs. Worker/platform grading is separate.",
       "variant_profile": {
         "technology": "Fastify, Redis, Chromium",
         "initial_discovery": "浏览器消息、CSP 环境",
@@ -710,7 +718,7 @@
         "incremental_learning_value": "不将存在 CSP 代码当成功绕过",
         "confidence": "from_repository_readme_or_existing_tests"
       },
-      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review",
+      "skill_mapping_stage": "real_browser_stored_blind_xss_csp_nonce_reuse_two_instance_e2e_verified",
       "manual_validation": {
         "status": "not_reviewed",
         "commit": null,
@@ -720,10 +728,10 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "pending",
-      "e2e_ci_workflow": null,
-      "e2e_ci_evidence": null,
-      "e2e_ci_commit": null
+      "e2e_ci_status": "passed",
+      "e2e_ci_workflow": ".github/workflows/cursed-stale-policy.yml",
+      "e2e_ci_evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/46051233295",
+      "e2e_ci_commit": "555d09a1c5d8ef847b6c6cbb1352cc74a432efeb"
     },
     {
       "id": "devvortex",
@@ -1778,14 +1786,15 @@
         "xss.blind",
         "xss.csp-bypass"
       ],
-      "status": "in_progress",
-      "candidate_status": "implementation_started",
+      "status": "done",
+      "candidate_status": "lab_ci_verified",
       "objective": "真实浏览器 Bot、CSP 和跨请求影响；先评估现有 Cursed Stale Policy 是否可升级验收",
       "scope": "repeatable_skill_variant_requirement",
       "one_to_many_allowed": true,
       "scenario_variant_focus": "先验证原有 Cursed Stale Policy，再考虑新增不同 CSP 场景",
       "selected_candidate": "cursed-stale-policy",
-      "note": "Cursed Stale Policy already exists in main and contains Fastify/Redis/Chromium CSP/XSS code, but has no verified browser attack chain. This is an audit/validation task for the existing Lab, not a new candidate or a claim that CSP bypass works."
+      "note": "Cursed Stale Policy passed current two-instance real-browser E2E. Verified stored cross-user XSS, CSP nonce reuse/bypass, genuine Puppeteer Chromium execution and exact per-instance administrator Flag recovery through the callback log. No separate new Lab is needed for this combined scenario.",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/46051233295"
     },
     {
       "id": "sqli-websocket",
