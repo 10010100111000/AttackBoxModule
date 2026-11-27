@@ -1,23 +1,24 @@
 ---
-summary: 某游戏门户网站上线了展示门户与内部管理控制台。你需要利用 SQL 注入突破外围认证并破解凭据，进一步通过模板注入漏洞达成代码执行并获取立足点。
-level: medium
+summary: 一家游戏门户网站提供公开的游戏资讯和会员服务，另有一个供内部人员使用的管理站点。检查应用的认证流程与账户功能，找到通往目标文件的路径。
+level: intermediate
 lab: goodgames
 ---
 
 # 场景
 
-某游戏门户网站上线了展示门户与内部管理控制台。你需要利用 SQL 注入突破外围认证并破解凭据，进一步通过模板注入漏洞达成代码执行并获取立足点。
+一家游戏门户网站提供公开的游戏资讯和会员服务。网站还链接到一个供内部人员使用的管理站点，但它的访问方式和前台并不完全相同。
+
+请从公开页面开始，检查应用的请求、响应和账户行为，逐步了解不同站点之间的关系。
 
 # 任务
 
-对游戏门户网站进行渗透测试，利用 SQL 注入漏洞获取内部管理凭据；登录内部管理后台，利用存储型服务端模板注入（SSTI）获取底层系统命令执行权限并获取 Flag。
+完成对该应用的安全评估，取得 Web 服务账户权限范围内的 Flag。
 
 ```quiz
-title: 获取用户权限 (User Flag)
+title: 获取 Web Flag
 kind: flag
 prompt: |
-  分析前台登录接口中的 SQL 注入漏洞并转储管理用户哈希，解密凭据后访问内部管理后台（internal-administration.goodgames.htb）；在个人资料设置中注入 Jinja2 模板执行系统命令，读取 `/home/augustus/user.txt` 中的 Flag 并提交。
-answer: "HTB{replace_this_with_your_goodgames_user_flag}"
+  从公开游戏门户开始调查，沿着应用提供的账户与管理功能寻找可利用的安全缺陷，最终读取 Web 服务账户目录中的 Flag。
+answer: "TTP{aaaaaaaaaaaaaaaa}"
 match: trim
-hint: 注入前台登录提取 MD5 哈希，在内部管理后台用户资料处构造 {{ ... }} 模板执行 payload。
 ```
