@@ -140,8 +140,9 @@ jobs:
               sshpass -P "Enter passphrase for key" -p bloodninjas ssh \
                 -i /tmp/joanna_id_rsa -o StrictHostKeyChecking=no \
                 -o UserKnownHostsFile=/dev/null joanna@openadmin-target \
-                "id -un; cat /home/joanna/user.txt" |
-                grep -E "^(joanna|$EXPECTED_USER_FLAG)$"
+                "id -un; cat /home/joanna/user.txt" > /tmp/joanna-user-proof
+              grep -Fx "joanna" /tmp/joanna-user-proof
+              grep -Fx "$EXPECTED_USER_FLAG" /tmp/joanna-user-proof
 
               expect /tests/nano-root.exp || echo "Nano closed the SSH channel; validating independent root proofs"
               root_proof=$(sshpass -P "Enter passphrase for key" -p bloodninjas ssh \
