@@ -38,7 +38,7 @@
 
 以 main 提交 `bb3d62f3f8f96ded4eb34b16ba2561a4a1e0f678` 为本次盘点基准：
 
-- 当前目录有 **27 台 Lab**：21 台记录为 `full_chain_ci`、2 台为 `partial`、4 台为 `unverified`。
+- 当前目录有 **27 台 Lab**：22 台记录为 `full_chain_ci`、2 台为 `partial`、3 台为 `unverified`。
 - 端到端 CI：**Bike、Precious、GoodGames、Devvortex 与 Base 5 台 passed、22 台 pending**；Devvortex 的 0.1.0 版本化 Flag 也已通过真实攻击链发布验收。
 - 其中 **10 台**保留 `.release-blocked` 标记；该字段与 CI 结果分开记录。
 - 技能目录仍为 **31 个专题 / 219 个细分目标**。
