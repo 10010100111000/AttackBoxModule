@@ -1,4 +1,4 @@
-import { triggerXSSQueue } from '../workers/worker.js';
+import { triggerXSSQueue } from '../queue.js';
 import { broadcastMessage } from '../routes/websocket.js';
 import crypto from 'crypto';
 import Redis from 'ioredis';
@@ -11,7 +11,6 @@ async function submitViolation(violation) {
   await redis.set('last_violation', JSON.stringify(violation));
 
   const violations = await getViolationHistory();
-
   broadcastMessage('update_violations', violations);
 }
 
@@ -35,58 +34,42 @@ async function handleCallback(req) {
   };
 
   await redis.rpush('request_logs', JSON.stringify(logEntry));
-
-  const logs = await getLogs();
-
-  broadcastMessage('update_logs', logs);
-
+  broadcastMessage('update_logs', await getLogs());
   return { status: 'received' };
 }
 
 async function triggerXSS(payload) {
-  try {
-    console.log('Adding job to the queue with payload:', payload);
-    await storeXSSPayload(payload);
-
-    const job = await triggerXSSQueue.add({ xssPayload: payload });
-
-    return { status: 'queued', job_id: job.id };
-  } catch (error) {
-    console.error('Error triggering XSS:', error);
-    throw error;
+  if (typeof payload !== 'string' || payload.length === 0 || payload.length > 16384) {
+    throw new Error('XSS payload must be a non-empty string of at most 16 KiB');
   }
+
+  const jobId = crypto.randomBytes(16).toString('hex');
+  await redis.set(`xss_payload:${jobId}`, payload, 'EX', 300);
+  const job = await triggerXSSQueue.add({ xssPayload: payload }, { jobId });
+  return { status: 'queued', job_id: job.id };
 }
 
-async function storeXSSPayload(payload) {
-  if (!payload) return;
-
-  await redis.rpush('xss_payloads', payload);
-}
-
-async function getLatestXSSPayload() {
-  const latestPayload = await redis.lindex('xss_payloads', -1);
-  return latestPayload || '';
+async function getXSSPayload(jobId) {
+  if (typeof jobId !== 'string' || !/^[a-f0-9]{32}$/.test(jobId)) return '';
+  return (await redis.get(`xss_payload:${jobId}`)) || '';
 }
 
 export async function fetchDefaultCSP() {
-    const cachedCSP = await redis.get('cachedCSPHeader');
-    return cachedCSP || '';
-} 
+  return (await redis.get('cachedCSPHeader')) || '';
+}
 
 export async function getCachedCSP() {
-    let cachedCSP = await redis.get('cachedCSPHeader');
-  
-    if (cachedCSP) {
-      return cachedCSP; // TOOD: Should we cache the CSP header?
-    } else {
-      const nonce = crypto.randomBytes(16).toString('hex');
-      const cspWithNonce = `default-src 'self'; script-src 'self' 'nonce-${nonce}'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; object-src 'none'; base-uri 'none'; report-uri /csp-report`;
-  
-      await redis.set('cachedCSPHeader', cspWithNonce);
-  
-      return cspWithNonce;
-    }
+  const cachedCSP = await redis.get('cachedCSPHeader');
+  if (cachedCSP) {
+    // Intentionally vulnerable: the same nonce is reused across responses.
+    return cachedCSP;
   }
+
+  const nonce = crypto.randomBytes(16).toString('hex');
+  const cspWithNonce = `default-src 'self'; script-src 'self' 'nonce-${nonce}'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; object-src 'none'; base-uri 'none'; report-uri /csp-report`;
+  await redis.set('cachedCSPHeader', cspWithNonce);
+  return cspWithNonce;
+}
 
 export {
   redis,
@@ -95,6 +78,5 @@ export {
   getViolationHistory,
   getLogs,
   triggerXSS,
-  storeXSSPayload,
-  getLatestXSSPayload
+  getXSSPayload
 };
