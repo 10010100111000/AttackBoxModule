@@ -817,16 +817,19 @@
         "ssti",
         "auth_session"
       ],
-      "validated_skills": [],
+      "validated_skills": [
+        "sqli.auth-bypass",
+        "ssti.object-access"
+      ],
       "implemented_skills": [
         "sqli.auth-bypass",
         "ssti.object-access"
       ],
-      "lab_ci_status": "partial",
+      "lab_ci_status": "full_chain_ci",
       "worker_status": "not_verified",
       "release_status": "not_assessed",
-      "evidence": "",
-      "note": "真实 Flask/SQLite 登录 SQLi、弱 MD5 管理员凭据与存储型 Jinja2 SSTI；独立攻击端 E2E 已接入，等待 CI 实际运行。Web-only 单 Flag，以 augustus 身份读取。",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/46011059390",
+      "note": "真实 Flask/SQLite 登录 SQLi 抽取管理员 MD5、弱口令恢复并复用至内部管理站点；存储型 Jinja2 SSTI 以 augustus 身份执行命令并读取精确随机 Web Flag。PR 与 main 独立攻击端 E2E、目录一致性和镜像构建均通过。Web-only 单 Flag。",
       "variant_profile": {
         "technology": "Flask, SQLite, Jinja2, Game Warrior frontend and Volt admin UI",
         "initial_discovery": "Public gaming portal login and separate internal administration host",
@@ -835,7 +838,7 @@
         "incremental_learning_value": "Combines authentication SQLi with a distinct stored server-side template sink and keeps the final scope at the unprivileged Web account",
         "confidence": "repository_implementation_reviewed_e2e_pending"
       },
-      "skill_mapping_stage": "real_login_sqli_and_stored_jinja2_e2e_pending",
+      "skill_mapping_stage": "real_sqlite_login_sqli_hash_recovery_stored_jinja2_rce_e2e_verified",
       "manual_validation": {
         "status": "not_reviewed",
         "commit": null,
@@ -845,10 +848,10 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "configured",
+      "e2e_ci_status": "passed",
       "e2e_ci_workflow": ".github/workflows/goodgames-e2e.yml",
-      "e2e_ci_evidence": null,
-      "e2e_ci_commit": null
+      "e2e_ci_evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/46011059390",
+      "e2e_ci_commit": "15f616bfbb1c1b0a4d76e99cb207c59797469095"
     },
     {
       "id": "nibbles",
