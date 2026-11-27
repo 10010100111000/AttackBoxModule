@@ -293,6 +293,75 @@ jobs:
             '
             echo "PASS: Intense homepage, login form, source archive, guest login, normal message submission and guest admin access control"
           fi
+      - name: Run BountyHunter full E2E for pull request validation
+        if: github.event_name == 'pull_request' && matrix.slug == 'bountyhunter'
+        env:
+          IMAGE: ${{ matrix.image }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker build --pull -t ttp-bountyhunter-attacker:pr -f labs/bountyhunter/tests/Dockerfile.attacker labs/bountyhunter/tests
+
+          mapfile -t flags < <(python3 - <<'PY'
+          import base64, secrets
+          def make_flag():
+              token = base64.b32encode(secrets.token_bytes(10)).decode().rstrip("=").lower()
+              return "TTP{" + token + "}"
+          user, root = make_flag(), make_flag()
+          while user == root:
+              root = make_flag()
+          print(user)
+          print(root)
+          PY
+          )
+          USER_FLAG="${flags[0]}"
+          ROOT_FLAG="${flags[1]}"
+          echo "::add-mask::$USER_FLAG"
+          echo "::add-mask::$ROOT_FLAG"
+
+          cleanup() {
+            docker logs bountyhunter-pr-target 2>/dev/null || true
+            docker rm -f bountyhunter-pr-target 2>/dev/null || true
+            docker network rm bountyhunter-pr-e2e 2>/dev/null || true
+          }
+          trap cleanup EXIT
+          docker network create --internal bountyhunter-pr-e2e
+
+          docker run -d \
+            --name bountyhunter-pr-target \
+            --network bountyhunter-pr-e2e \
+            --network-alias bountyhunter-target \
+            --memory 192m --cpus 1 --pids-limit 128 \
+            -e BOUNTYHUNTER_REQUIRE_PRIVATE_FLAGS=1 \
+            -e BOUNTYHUNTER_STATIC_USER_FLAG="$USER_FLAG" \
+            -e BOUNTYHUNTER_STATIC_ROOT_FLAG="$ROOT_FLAG" \
+            "$IMAGE" >/dev/null
+
+          ready=0
+          for attempt in $(seq 1 60); do
+            state=$(docker inspect -f '{{.State.Status}}' bountyhunter-pr-target)
+            health=$(docker inspect -f '{{.State.Health.Status}}' bountyhunter-pr-target)
+            if [ "$state" != "running" ] || [ "$health" = "unhealthy" ]; then
+              docker logs bountyhunter-pr-target
+              echo "BountyHunter target failed before becoming healthy"
+              exit 1
+            fi
+            if [ "$health" = "healthy" ]; then
+              ready=1
+              break
+            fi
+            sleep 2
+          done
+          test "$ready" = 1
+
+          docker run --rm \
+            --network bountyhunter-pr-e2e \
+            -e TARGET_URL=http://bountyhunter-target \
+            -e EXPECTED_USER_FLAG="$USER_FLAG" \
+            -e EXPECTED_ROOT_FLAG="$ROOT_FLAG" \
+            ttp-bountyhunter-attacker:pr
+
+          echo "PASS: BountyHunter full XXE -> SSH -> sudo eval chain on one PR instance"
       - name: Publish tested image
         if: github.event_name == 'workflow_dispatch'
         env:
