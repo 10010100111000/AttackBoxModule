@@ -1,6 +1,6 @@
 # Alert — Markdown XSS administrator browser exercise
 
-**Status: real browser and privileged-localhost traversal CI PASS. Final Web Flag extraction CI remains pending.** Not an official HTB distribution.
+**Status: real browser, loopback traversal and two-instance random Web Flag E2E are now automated; Worker integration remains out of scope.** Not an official HTB distribution.
 
 ## Web-only learning objective
 
@@ -24,17 +24,17 @@ docker run -d --name ttp-alert --memory 1100m --cpus 2 --pids-limit 256 \
 docker inspect -f '{{.State.Health.Status}}' ttp-alert
 ```
 
-The private goal is a normal file under /opt/alert/private, not an HTTP handler that returns a Flag. An optional instance flag variable replaces the static development placeholder on startup. Removing and recreating the target discards uploaded Markdown and contact messages, and can rotate this flag.
+The private goal is a normal file under /opt/alert/private, not an HTTP handler that returns a Flag. `ALERT_USER_FLAG` is required at startup and replaces the checked-in development seed. CI supplies a fresh random value to each instance; reusing a release version keeps its manifest Flag stable. Removing and recreating the target discards uploaded Markdown and contact messages, and can rotate this flag.
 
 ## Verification and release boundary
 
-GitHub Actions now builds the genuine PHP/Markdown/Chromium image and an entirely separate HTTP-only player. The player uploads a Markdown document containing browser JavaScript, shares the resulting link through the contact form, and receives a non-sensitive callback **only after genuine target-local Chromium executes the page and retrieves PHP source through the loopback-only messages.php directory traversal**. Public direct calls to messages.php remain forbidden. This demonstrates real stored XSS, cross-user review and native filesystem traversal, but does not establish end-to-end Flag extraction or platform grading.
+GitHub Actions now builds the genuine PHP/Markdown/Chromium image and an entirely separate HTTP-only player. The player uploads a Markdown document containing browser JavaScript, shares the resulting link through the contact form, and receives a non-sensitive callback **only after genuine target-local Chromium executes the page and retrieves PHP source through the loopback-only messages.php directory traversal**. Public direct calls to messages.php remain forbidden. This demonstrates real stored XSS, cross-user review, native filesystem traversal and exact per-instance Web Flag extraction. The two-instance test verifies that fresh instances return their own distinct Flag.
 
-Remain blocked from release until independently reproduced attack-chain CI proves actual JavaScript execution in Chromium, local-only message path traversal, extraction of the correctly rotated Web goal from two clean instances, and resource usage during review. Worker integration and platform flag submission are separate additional gates.
+The versioned release workflow must still be run for a production release. Worker integration and platform flag submission are separate gates and are not part of this Lab E2E acceptance.
 
 ## Observed CI results
 
 - [Real Chromium and source-read proof CI PASS](https://github.com/10010100111000/AttackBoxModule/actions/runs/45474730425). The attacker is a separate container and performs all inputs over HTTP. The browser is in the target image, not Worker.
 - Image: **309,343,624 bytes** (~295 MiB); idle memory **27.47 MiB**, memory recorded after browser proof **135 MiB**. These are point-in-time readings, not peak memory during browser startup.
 - The acceptance runner uses `--cap-drop ALL` and adds only `SETUID`/`SETGID` so the entrypoint can drop to the separate `www-data` and `alertbot` service accounts; `no-new-privileges` remains enabled. No privileged Docker mode or mounted Docker socket.
-- Release block remains until an independent two-instance, rotated-Flag-to-goal test and Worker/Web grading integration are verified.
+- The E2E acceptance proves the Web Flag path on two distinct fresh instances; Worker/Web grading is deliberately not tested here.
