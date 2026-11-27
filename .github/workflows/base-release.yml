@@ -13,7 +13,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: base-flag-release-\${{ inputs.version }}
+  group: base-flag-release-${{ inputs.version }}
   cancel-in-progress: false
 
 jobs:
@@ -23,12 +23,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: \${{ github.ref_name }}
+          ref: ${{ github.ref_name }}
           fetch-depth: 0
 
       - name: Generate or reuse versioned User and Root Flags
         env:
-          RELEASE_VERSION: \${{ inputs.version }}
+          RELEASE_VERSION: ${{ inputs.version }}
         run: |
           set -euo pipefail
           python3 scripts/generate_base_release.py --version "$RELEASE_VERSION"
@@ -42,7 +42,7 @@ jobs:
       - name: Verify Manifest, target files and Challenge answers
         id: flags
         env:
-          RELEASE_VERSION: \${{ inputs.version }}
+          RELEASE_VERSION: ${{ inputs.version }}
         run: |
           python3 - <<'PY'
           import json, os, pathlib, re
@@ -71,8 +71,8 @@ jobs:
 
       - name: Start target and verify both Flags through the real chain
         env:
-          EXPECTED_USER_FLAG: \${{ steps.flags.outputs.user }}
-          EXPECTED_ROOT_FLAG: \${{ steps.flags.outputs.root }}
+          EXPECTED_USER_FLAG: ${{ steps.flags.outputs.user }}
+          EXPECTED_ROOT_FLAG: ${{ steps.flags.outputs.root }}
         run: |
           set -euo pipefail
           docker network create --internal base-release
@@ -104,8 +104,8 @@ jobs:
 
       - name: Commit verified release artifacts
         env:
-          RELEASE_VERSION: \${{ inputs.version }}
-          BRANCH_NAME: \${{ github.ref_name }}
+          RELEASE_VERSION: ${{ inputs.version }}
+          BRANCH_NAME: ${{ github.ref_name }}
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
