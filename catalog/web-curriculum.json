@@ -734,22 +734,24 @@
       "validated_skills": [],
       "implemented_skills": [
         "cms_vulnerability.information-disclosure",
-        "cms_vulnerability.versioned-cve"
+        "cms_vulnerability.versioned-cve",
+        "auth_session.credential-disclosure",
+        "webshell.template-editor"
       ],
       "lab_ci_status": "partial",
       "worker_status": "not_verified",
       "release_status": "not_assessed",
       "evidence": "",
-      "note": "Joomla 4.2.6 信息泄露；真实 Apport Root 交互链未通过端到端验收",
+      "note": "Joomla 4.2.6 / CVE-2023-23752；范围收敛为 Web-only：匿名配置泄露→管理员登录→Cassiopeia 模板编辑→www-data Web Flag。SSH/Apport/Root 已从目标范围移除；独立攻击端 E2E 已接入，等待实际运行。",
       "variant_profile": {
-        "technology": "Joomla 4.2.6",
-        "initial_discovery": "虚拟主机/公开接口",
-        "key_constraint_or_mechanism": "CVE 信息泄露",
-        "attack_path": "信息泄露→CMS后台→SSH，Apport Root 仍未完整验收",
-        "incremental_learning_value": "旧版本 CMS 真实实现",
-        "confidence": "from_repository_readme_or_existing_tests"
+        "technology": "Ubuntu 22.04, nginx, PHP 8.1-FPM, MariaDB, official Joomla 4.2.6",
+        "initial_discovery": "Host-header virtual hosts, Joomla administrator and version manifest",
+        "key_constraint_or_mechanism": "CVE-2023-23752 unauthenticated webservice configuration disclosure",
+        "attack_path": "vhost discovery -> Joomla version -> anonymous config disclosure -> admin login -> Cassiopeia template PHP editor -> www-data Web Flag",
+        "incremental_learning_value": "CMS version fingerprinting, unauthenticated configuration disclosure and authenticated template modification",
+        "confidence": "upstream_cve_and_joomla_source_verified_e2e_pending"
       },
-      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review",
+      "skill_mapping_stage": "real_joomla_cve_2023_23752_and_template_editor_e2e_pending",
       "manual_validation": {
         "status": "not_reviewed",
         "commit": null,
@@ -759,8 +761,8 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "pending",
-      "e2e_ci_workflow": null,
+      "e2e_ci_status": "configured",
+      "e2e_ci_workflow": ".github/workflows/devvortex-e2e.yml",
       "e2e_ci_evidence": null,
       "e2e_ci_commit": null
     },
