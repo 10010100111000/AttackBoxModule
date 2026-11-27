@@ -7,7 +7,7 @@
 ## 当前总览
 
 - **27 台 Lab**
-- 当前统一 E2E：14 台通过，13 台待完成
+- 当前统一 E2E：14 台通过，12 台待完成，1 台已配置待运行
 - 旧字段 `lab_ci_status`：25 台 `full_chain_ci`、1 台 `partial`、1 台 `unverified`
 - `.release-blocked` 标记：10 台。它与 E2E 状态独立，不能用来判断靶机是否制作完成。
 
@@ -43,7 +43,7 @@
 
 | OpenAdmin | merged / partial | PR #65 已合并；真实 xajax → Jimmy → 内网应用 → Joanna/User 路径已由当前 CI 验证，Root 阶段因 Expect 测试脚本私钥路径不一致未完成验证。靶机已纳入 main，可进入平台集成；不宣称本次完整 E2E passed。 |
 | Pebbles | pending | 有历史完整链 CI 记录 |
-| Photobomb | pending | 有历史完整链 CI 记录 |
+| Photobomb | configured | 新增单实例独立攻击端 E2E，验证 ImageMagick 命令注入与 sudo PATH 劫持；等待首次 CI 运行 |
 | Union | pending | 有历史完整链 CI 记录 |
 | Validation | pending | 有历史完整链 CI 记录 |
 | Funnel | pending | 部分实现；FTP / SSH / PostgreSQL 服务链，非 Web 主线 |
