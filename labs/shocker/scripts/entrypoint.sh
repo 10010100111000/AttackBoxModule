@@ -16,6 +16,7 @@ fi
 if [ -n "$root_flag" ]; then
   umask 077
   printf '%s\n' "$root_flag" > /root/root.txt
+  chown root:root /root/root.txt
   chmod 0600 /root/root.txt
 fi
 unset user_flag root_flag require SHOCKER_STATIC_USER_FLAG SHOCKER_STATIC_ROOT_FLAG SHOCKER_REQUIRE_PRIVATE_FLAGS
