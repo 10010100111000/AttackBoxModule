@@ -33,6 +33,16 @@ The image keeps the original vulnerable Bash binary and Apache CGI behavior. It 
 
 Default files are development seeds only: /home/shelly/user.txt and /root/root.txt. For an isolated instance, inject SHOCKER_STATIC_USER_FLAG, SHOCKER_STATIC_ROOT_FLAG and SHOCKER_REQUIRE_PRIVATE_FLAGS=1. The entrypoint writes the values with deliberate ownership/permissions and removes the variables before launching the services.
 
+## Challenge reuse
+
+Three learner-facing Challenges reuse this one Lab and the same Bash 4.3 / Apache CGI environment:
+
+- [Shocker](../../challenges/startpoint/shocker/Shocker.md): integrated User and Root path.
+- [CGI Environment](../../challenges/command-injection/shocker/cgi-shellshock.md): focused Shellshock foothold objective.
+- [Perl Maintenance](../../challenges/linux-privilege-escalation/shocker/sudo-perl.md): focused sudo/Perl privilege objective.
+
+The focused Challenges intentionally reuse the same User or Root Flag as the corresponding stage of the integrated Challenge; they do not require separate target images.
+
 ## Automated acceptance
 
 The dedicated workflow .github/workflows/shocker-e2e.yml builds the target and a separate non-root HTTP attacker, then runs the complete Shellshock -> User Flag -> sudo Perl -> Root Flag path against one clean instance on an internal-only Docker network. The CI creates one random User Flag and one random Root Flag for that run and checks their exact values through the real CGI exploit. It does not start a second target instance.
