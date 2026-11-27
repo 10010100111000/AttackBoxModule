@@ -2,18 +2,18 @@
 
 > 本文是人工阅读入口，不维护第二套状态数据。**靶机状态、CI 工作流、运行证据、提交 SHA 和 backlog 的唯一事实来源是** [`catalog/web-curriculum.json`](../catalog/web-curriculum.json)。
 >
-> 本清单快照对应 main：`1dc1ac417dcfdd9b23006aa79381cb9421710931`（2026-11-27）。状态变化时先更新 catalog，再按需更新本文的说明；不要手工维护重复的完整攻击链描述。
+> 本清单快照对应 main：`1dc1ac417dcfdd9b23006aa79381cb9421710931`（2026-11-28）。状态变化时先更新 catalog，再按需更新本文的说明；不要手工维护重复的完整攻击链描述。
 
 ## 当前总览
 
 - Lab：27 台
 - 当前统一 E2E：7 台通过，20 台待完成
-- 旧字段 `lab_ci_status`：23 台 `full_chain_ci`、2 台 `partial`、2 台 `unverified`
+- 旧字段 `lab_ci_status`：24 台 `full_chain_ci`、1 台 `partial`、2 台 `unverified`
 - `.release-blocked` 标记：10 台。它与 E2E 状态独立，不能用来判断靶机是否制作完成。
 
 ### 已通过当前统一 E2E
 
-以下 6 台已经完成靶机攻击链的独立 CI 验收，不要重复制作或重新排入待办：
+以下 7 台已经完成靶机攻击链的独立 CI 验收，不要重复制作或重新排入待办：
 
 | Lab | 目标范围 | E2E 证据 |
 |---|---|---|
@@ -64,7 +64,7 @@
 
 ## 下一步
 
-继续优先处理 main 已有 Lab，一次只做一台。当前先从 [playbook](LAB_PRODUCTION_PLAYBOOK.md) 的交接说明和 catalog 的 `selection_policy` 选择下一项；不要新增无关 Lab，也不要重复制作上面 6 台已通过的靶机。
+继续优先处理 main 已有 Web Lab，一次只做一台。Alert 已完成；下一项先比较 Cursed Stale Policy 的真实浏览器行为与 Editorial 的 SSRF 攻击链。Funnel 是非 Web 服务链，Trick 范围较大，暂不自动选入。具体选择以 catalog 的 `selection_policy` 和 playbook 交接为准。
 
 ## 文档入口
 
