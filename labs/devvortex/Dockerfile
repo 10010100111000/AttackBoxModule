@@ -7,7 +7,7 @@ RUN set -eux; mkdir -p /opt/artifacts/joomla; curl --fail --location --retry 3 -
 
 FROM ubuntu:22.04 AS runtime
 ENV DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC
-RUN set -eux; apt-get update; apt-get install -y --no-install-recommends nginx mariadb-server mariadb-client php8.1-fpm php8.1-cli php8.1-mysql php8.1-xml php8.1-mbstring php8.1-curl php8.1-zip php8.1-gd php8.1-intl curl; rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*.deb /var/log/apt/* /var/log/dpkg.log; mkdir -p /var/www/dev.devvortex.htb /var/www/devvortex.htb /run/php
+RUN set -eux; apt-get update; apt-get install -y --no-install-recommends nginx mariadb-server mariadb-client php8.1-fpm php8.1-cli php8.1-mysql php8.1-xml php8.1-mbstring php8.1-curl php8.1-zip php8.1-gd php8.1-intl curl procps; rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*.deb /var/log/apt/* /var/log/dpkg.log; mkdir -p /var/www/dev.devvortex.htb /var/www/devvortex.htb /run/php
 
 COPY --from=artifacts --chown=www-data:www-data /opt/artifacts/joomla/ /var/www/dev.devvortex.htb/
 COPY config/nginx.conf /etc/nginx/sites-available/default
