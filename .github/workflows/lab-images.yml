@@ -271,8 +271,10 @@ jobs:
           if [ "$LAB_SLUG" = "intense" ]; then
             docker exec "$test_container" sh -ec '
               base="http://127.0.0.1:8080"
-              curl -fsS "$base/" | grep -q "A small community space"
-              curl -fsS "$base/login" | grep -q "name=\\"username\\""
+              curl -fsS "$base/" -o /tmp/intense-home.html
+              grep -q "A small community space" /tmp/intense-home.html
+              curl -fsS "$base/login" -o /tmp/intense-login.html
+              grep -q "name=\\"username\\"" /tmp/intense-login.html
               curl -fsS "$base/src.zip" -o /tmp/intense-source.zip
               python -c "import zipfile; assert zipfile.is_zipfile(\\"/tmp/intense-source.zip\\")"
               curl -fsS -c /tmp/intense-cookies -b /tmp/intense-cookies -d "username=guest&password=guest" "$base/postlogin" | grep -q "OK"
