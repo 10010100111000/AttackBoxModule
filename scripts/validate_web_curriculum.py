@@ -138,7 +138,10 @@ def main() -> None:
          "inventory current E2E totals do not match catalog")
 
     completed_section = inventory.split("### 已通过当前统一 E2E", 1)[1].split("\n## 其余 main Lab", 1)[0]
-    completed_rows = re.findall(r"^\\| ([^|]+) \\| .+ \\| \\[CI\\]\\(", completed_section, re.MULTILINE)
+    completed_rows = [
+        line for line in completed_section.splitlines()
+        if line.startswith("|") and "[CI](" in line
+    ]
     need(len(completed_rows) == len(passed),
          "inventory completed-Lab list does not match catalog E2E passes")
     for machine in passed:
@@ -148,7 +151,10 @@ def main() -> None:
              f"inventory is missing E2E evidence for {machine['id']}")
 
     pending_section = inventory.split("## 其余 main Lab", 1)[1].split("\n## 状态定义", 1)[0]
-    pending_rows = re.findall(r"^\\| ([^|]+) \\| pending \\|", pending_section, re.MULTILINE)
+    pending_rows = [
+        line for line in pending_section.splitlines()
+        if line.startswith("|") and "| pending |" in line
+    ]
     need(len(pending_rows) == len(pending),
          "inventory pending-Lab list does not match catalog")
 
