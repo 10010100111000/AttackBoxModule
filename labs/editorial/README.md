@@ -40,7 +40,7 @@ Do not publish the target ports to the public Internet. No privileged mode, host
 
 ## Automated acceptance
 
-`.github/workflows/editorial-e2e.yml` builds the target and a separate attacker image. The independent attacker runs on an internal-only Docker network and verifies the full path from the public cover-preview workflow through the private metadata API, real SSH accounts and historical Git credential to the vulnerable GitPython deployment helper. It checks the exact User and Root Flag values supplied to each instance and repeats the test on two clean instances with different values.
+`.github/workflows/editorial-e2e.yml` builds the target and a separate attacker image. The independent attacker runs on an internal-only Docker network and verifies the full path from the public cover-preview workflow through the private metadata API, real SSH accounts and historical Git credential to the vulnerable GitPython deployment helper. It checks the exact User and Root Flag values supplied to each instance and repeats the test on two clean instances with different values. [Latest two-instance E2E passed](https://github.com/10010100111000/AttackBoxModule/actions/runs/46053249839). The target image measured 87,773,952 bytes (~83.7 MiB); runtime memory after the attack chain measured 81.43–81.66 MiB with 12 PIDs.
 
 ## Release boundary
 
