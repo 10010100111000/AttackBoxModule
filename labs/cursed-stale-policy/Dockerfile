@@ -7,7 +7,7 @@ RUN npm config set registry https://registry.npmjs.org/ \
  && npm install --legacy-peer-deps --no-audit --no-fund --fetch-retries=5 --fetch-timeout=600000
 
 COPY challenge/frontend ./
-RUN yarn build
+RUN npm run build
 
 FROM node:22-slim AS runtime
 ENV NODE_ENV=production \
