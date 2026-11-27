@@ -15,7 +15,6 @@ on:
       - "challenges/startpoint/bountyhunter/**"
       - "challenges/file-security/bountyhunter/**"
       - "challenges/linux-privilege-escalation/bountyhunter/**"
-      - ".github/workflows/bountyhunter-e2e.yml"
   workflow_dispatch:
 
 permissions:
