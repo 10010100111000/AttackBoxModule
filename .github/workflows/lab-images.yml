@@ -274,11 +274,13 @@ jobs:
               curl -fsS "$base/" -o /tmp/intense-home.html
               grep -q "A small community space" /tmp/intense-home.html
               curl -fsS "$base/login" -o /tmp/intense-login.html
-              grep -q "name=\\"username\\"" /tmp/intense-login.html
+              grep -Fq 'name="username"' /tmp/intense-login.html
               curl -fsS "$base/src.zip" -o /tmp/intense-source.zip
               python -c "import zipfile; assert zipfile.is_zipfile(\\"/tmp/intense-source.zip\\")"
-              curl -fsS -c /tmp/intense-cookies -b /tmp/intense-cookies -d "username=guest&password=guest" "$base/postlogin" | grep -q "OK"
-              curl -fsS -b /tmp/intense-cookies -d "message=ordinary+community+message" "$base/submitmessage" | grep -q "OK"
+              curl -fsS -c /tmp/intense-cookies -b /tmp/intense-cookies -d "username=guest&password=guest" "$base/postlogin" -o /tmp/intense-login-result.txt
+              grep -Fq "OK" /tmp/intense-login-result.txt
+              curl -fsS -b /tmp/intense-cookies -d "message=ordinary+community+message" "$base/submitmessage" -o /tmp/intense-submit-result.txt
+              grep -Fq "OK" /tmp/intense-submit-result.txt
               code=$(curl -s -o /dev/null -w "%{http_code}" -b /tmp/intense-cookies "$base/admin")
               test "$code" = "403"
             '
