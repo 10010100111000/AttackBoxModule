@@ -10,11 +10,19 @@
 
 | main 中记录的 CI 状态 | 数量 | 含义 |
 |---|---:|---|
-| `full_chain_ci` | 20 | 保留了历史完整目标链 CI 证据；不代表当前 CI 会继续自动执行攻击链 |
+| `full_chain_ci` | 20 | 保留历史完整目标链 CI 证据；新标准通过情况以 E2E 状态为准 |
 | `partial` | 3 | 已有部分真实功能或目标行为检查，仍有靶机内容/目标路径缺口 |
 | `unverified` | 4 | 尚无足够的靶机目标验证记录 |
 
 另有 **11 台**保留 `.release-blocked` 标记。该标记不是 CI 结果，也不等同于靶机代码不存在；未完成原因应以各自 README 和标记文件为准。
+
+### 最近更新：Devvortex（当前进行中）
+
+Devvortex 正在收敛为 Web-only：真实 Joomla 4.2.6 / CVE-2023-23752 配置泄露 → Joomla 管理员登录 → Cassiopeia 模板编辑 → `www-data` 单 Web Flag。原来混入的 SSH、Apport 和 Root Flag 不属于本平台这台靶机的验收范围。
+
+- 独立攻击端工作流：`.github/workflows/devvortex-e2e.yml`（已接入，等待实际 CI 结果）
+- 版本化 Flag 工作流：`.github/workflows/devvortex-release.yml`
+- 当前状态：`configured`，尚未通过实际 E2E，不得标记完成。
 
 ### 最近更新：Bike
 
@@ -105,7 +113,7 @@ This table is generated from the same state recorded in `catalog/web-curriculum.
 | Lab | 已有内容 | 仍需处理的靶机工作 |
 |---|---|---|
 | Alert | Markdown 存储型 XSS、真实 Chromium 管理员浏览器、内部文件读取 | Web Flag 目标路径仍需人工确认；有 `.release-blocked` |
-| Devvortex | Joomla 4.2.6 信息泄露 | 明确并完成 Web 专项目标；不要默认追加 Linux Root |
+| Devvortex | Joomla 4.2.6 / CVE-2023-23752 → 管理后台模板编辑 | Web-only 单 Flag；独立攻击端 E2E 已接入，等待真实 Flag 回读 |
 | Funnel | FTP、SSH、PostgreSQL 隧道 | 属于非 Web 服务链，单独标识其题库归类与目标 |
 
 ### 尚未充分验证（4 台）
