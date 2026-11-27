@@ -25,7 +25,7 @@ Do not reinterpret these as Worker, platform synchronization or production deplo
 
 ### Next Lab
 
-**Base** is the current active Lab. Its PHP 7.2 / Apache / OpenSSH / sudo find implementation already exists; do not rebuild the challenge or front end. Add and run the independent full-chain E2E, random dual-Flag release flow and complete catalog evidence. Devvortex has completed its Joomla 4.2.6 Web-only E2E path; do not re-open it unless a later regression is found.
+Base has passed its full PHP 7.2 / Apache / OpenSSH / sudo find E2E with independently retrieved User and Root Flags. Do not rebuild it unless a regression is found. The next Lab is to be selected from the remaining main inventory, beginning with the Intense / Trick candidates after checking the design plan and actual repository readiness. Devvortex has completed its Joomla 4.2.6 Web-only E2E path; do not re-open it unless a later regression is found.
 
 After Base, follow the order in `docs/EXISTING_WEB_LAB_RELEASE_INVENTORY.md`: then evaluate Intense / Trick as their scope and readiness permit. Always re-read the live inventory because the order may change after a Lab is completed.
 
@@ -176,4 +176,4 @@ When continuing this project in a new conversation:
 6. Do not ask the user to repeat the requirements in this document.
 7. At the end, report only the meaningful result: what changed, E2E evidence, merge/main status, and the next Lab.
 
-**Current handoff at creation:** Bike, Precious, GoodGames and Devvortex are the four Labs recorded as E2E-passed. The active Lab is Base; it is existing implementation with E2E acceptance in progress. Re-check main before relying on this snapshot.
+**Current handoff at creation:** Bike, Precious, GoodGames and Devvortex are the four Labs recorded as E2E-passed. Base is now complete under the current E2E standard. Re-read the design plan and inventory to choose the next single Lab. Re-check main before relying on this snapshot.
