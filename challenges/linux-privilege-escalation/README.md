@@ -11,5 +11,6 @@
 - [Nibbles — System Monitor](nibbles/sudo-monitor.md)：复用 labs/nibbles，考察用户可写 sudo 脚本。
 - [Shocker — Perl Maintenance](shocker/sudo-perl.md)：复用 labs/shocker，考察 sudo 授权 Perl 的权限边界。
 - [Bashed — Scheduled Maintenance](bashed/root-cron.md)：复用 labs/bashed，考察 scriptmanager 可写脚本与 root cron 执行边界。
+- [BountyHunter — Skytrain Ticket Validation](bountyhunter/skytrain-eval.md)：复用 labs/bountyhunter，考察 sudo 授权 Python 程序中的 eval。
 
 多个 Challenge 可以映射到同一个 Lab；不要为同一运行环境复制 Docker 镜像。README.md 用于专题索引，不会作为挑战导入。
