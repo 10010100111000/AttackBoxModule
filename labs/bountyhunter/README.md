@@ -1,40 +1,48 @@
-# BountyHunter — PHP XXE and Skytrain ticket validation
+# BountyHunter — PHP/libxml XXE and Skytrain ticket validation
 
-This is an **independent reconstruction** of the retired 2021 Hack The Box BountyHunter (Linux/Easy). The original source code and static site assets were not released; routes, layout and behavior are based on archived observations. No claim of byte-for-byte fidelity.
+This is an independent reconstruction of the retired HTB BountyHunter machine. The original website source and static assets were not published; the page layout and report workflow are reconstructed from public observations. The vulnerable components and attack behavior are real.
 
-## Recon and discovery
+## Real components and boundaries
 
-The target exposes a real Apache/PHP service on TCP 80 and OpenSSH on TCP 22. The landing page is a Bounty Hunters program website, not an exploit demonstration. Visitors can follow Portal to an under-development reporting system, whose form loads resources/bountylog.js. The JavaScript transmits base64-encoded XML to tracker_diRbPr00f314.php.
+- Apache with PHP 8.3 FPM and native SimpleXML/libxml.
+- The beta report tracker accepts base64-encoded XML and parses it with entity substitution enabled.
+- XXE can read local files through the actual PHP/libxml parser. The PHP configuration file contains the credential reused by the development SSH account.
+- Native OpenSSH provides the development account.
+- Native sudoers permits development to run one specific Python ticket validator as root.
+- The real Skytrain validator evaluates ticket content using Python eval() in the sudo process.
 
-The backend uses genuine PHP SimpleXML/libxml parsing with intentionally unsafe entity expansion. The /db.php configuration source remains blank when accessed as a normal PHP page. Public writeups show how the original parser could read local files and recover the test database credential, also reused for the development account's SSH password. The production database is not actually active in this retired beta-flow reconstruction; the original website likewise advertised that database integration was unfinished.
+## Challenge reuse
 
-Inside the development account, Skytrain's ticketValidator.py is a real Python script. The dedicated sudoers rule allows that exact command. It evaluates a field in a Markdown ticket, reproducing the original unsafe Python eval behavior rather than a mock privilege-escalation endpoint. Its system Python version is the Alpine-supplied Python 3 (not the original Ubuntu Python 3.8).
+Three learner Challenges reuse this one Lab image and the same PHP/SSH/Skytrain environment:
 
-## Fidelity and limitations
+- [BountyHunter](../../challenges/startpoint/bountyhunter/Bountyhunter.md): integrated XXE → SSH → sudo eval path.
+- [Report Parser](../../challenges/file-security/bountyhunter/xxe-file-read.md): focused XXE file-read and credential recovery.
+- [Skytrain Validator](../../challenges/linux-privilege-escalation/bountyhunter/skytrain-eval.md): focused Python eval privilege escalation.
 
-- **Original observations:** Apache 2.4.41 on Ubuntu 20.04; two open ports (22, 80); portal.php; log_submit.php; tracker_diRbPr00f314.php; resources/bountylog.js; db.php; development user; /opt/skytrain_inc/ticketValidator.py
-- **This reconstruction:** Alpine 3.20, Apache, PHP 8.3 FPM and genuine libxml, native OpenSSH, sudo and Python.
-- Page markup/CSS and report confirmation text are independently authored to preserve the published user flow while keeping the Docker image compact.
-- Static demo flags are only placeholders. Instance startup accepts BOUNTYHUNTER_STATIC_USER_FLAG and BOUNTYHUNTER_STATIC_ROOT_FLAG, with BOUNTYHUNTER_REQUIRE_PRIVATE_FLAGS=1 in Worker/CI.
-- Avoid publishing these purposely vulnerable ports on the Internet. Each instance needs a dedicated isolated internal bridge and no privileged Docker mode.
+The focused Challenges reuse the corresponding User or Root Flag from the integrated Challenge. They do not create separate images or duplicate the application.
 
-Independent public evidence:
-- https://pencer.io/ctf/ctf-htb-bountyhunter/
-- https://khaoticdev.net/hack-the-box-bountyhunter/
-- https://www.youtube.com/watch?v=5axsDhumfhU
+## Build
 
-## Build and health
+~~~sh
+docker build -f labs/bountyhunter/Dockerfile -t ttp-bountyhunter:dev labs/bountyhunter
+docker network create --internal bountyhunter-dev
+docker run -d --name bountyhunter-target --network bountyhunter-dev \
+  --memory 192m --pids-limit 128 \
+  -e BOUNTYHUNTER_REQUIRE_PRIVATE_FLAGS=1 \
+  -e BOUNTYHUNTER_STATIC_USER_FLAG='TTP{instance_user}' \
+  -e BOUNTYHUNTER_STATIC_ROOT_FLAG='TTP{instance_root}' \
+  ttp-bountyhunter:dev
+docker inspect -f '{{.State.Health.Status}}' bountyhunter-target
+~~~
 
-    docker build -f labs/bountyhunter/Dockerfile -t ttp-bountyhunter:dev labs/bountyhunter
+Do not expose the vulnerable target to the public Internet. It does not require privileged mode, host networking, Docker socket access or host filesystem mounts.
 
-Example isolated instance:
+## Flags
 
-    docker network create --internal bountyhunter-dev
-    docker run -d --name bountyhunter-target --network bountyhunter-dev \
-      --memory 192m --pids-limit 128 \
-      -e BOUNTYHUNTER_REQUIRE_PRIVATE_FLAGS=1 \
-      -e BOUNTYHUNTER_STATIC_USER_FLAG='TTP{private_user}' \
-      -e BOUNTYHUNTER_STATIC_ROOT_FLAG='TTP{private_root}' \
-      ttp-bountyhunter:dev
+The files in flags/ are development seeds only. Isolated instances must provide BOUNTYHUNTER_STATIC_USER_FLAG, BOUNTYHUNTER_STATIC_ROOT_FLAG and BOUNTYHUNTER_REQUIRE_PRIVATE_FLAGS=1. The entrypoint writes the values with deliberate ownership and permissions and removes the variables before starting services.
 
-The CI workflow checks the image build, HTTP flow, genuine PHP XML parsing with harmless data, SSH banner, the PHP config page's normal behavior, private flag initialization and recreation/reset. **Full independent web-to-root exploitation testing and Worker rollout are separate release gates; a green smoke CI does not signify completed fidelity validation.**
+## Automated acceptance
+
+The dedicated .github/workflows/bountyhunter-e2e.yml builds one target image and a separate non-root attacker. The attacker follows the real report form, uses the native XML parser to read the PHP config and recover the development SSH credential, logs in to retrieve the exact User Flag, then uses the real sudo-authorized Skytrain validator to execute as root and retrieve the exact Root Flag.
+
+CI generates one random User/Root Flag pair for a single clean target instance, masks the values and compares them byte-for-byte. It does not use docker exec for exploitation or start a second target instance. Worker lifecycle and production grading remain separate.
