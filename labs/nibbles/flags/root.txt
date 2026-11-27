@@ -1,1 +1,1 @@
-TTP{nibbles_DEMO_root_replace_before_publishing}
+TTP{nibbles_root_default}

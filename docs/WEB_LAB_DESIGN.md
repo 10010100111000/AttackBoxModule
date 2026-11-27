@@ -40,6 +40,19 @@
 
 不要在本设计文档中维护第二份机器完成列表、CI 统计或下一台靶机队列。2026-11-28 的 main 快照包含 27 台 Lab，其中 Alert、Bike、Precious、GoodGames、Devvortex、Base、Intense、Cursed Stale Policy、Editorial 九台通过当前统一 E2E。其余状态以 catalog 实时字段为准。
 
+## Challenge 与 Lab 的复用关系
+
+**Challenge 是训练目标，Lab 是可复用的真实运行环境。两者必须分开规划。**
+
+- 多个 Challenge 可以通过相同的 `lab: <slug>` front matter 指向同一个 Lab。
+- 每个 Challenge 只考察自己定义的技能子集；不要因为一个 Lab 同时包含多个漏洞，就强迫学员一次完成全部攻击链。
+- 同一 Lab 可以同时承载基础专项、单一漏洞专项和综合挑战。综合挑战可以复习前面 Challenge 的步骤，也可以设置额外 Flag。
+- 不同 Challenge 可以使用不同 Flag；如果是递进式复习，也可以有意复用前置 Flag。Flag 归属应由 Challenge 目标决定，不由 Docker 镜像数量决定。
+- 新增 Challenge 时先检查现有 Lab 是否已有真实组件、漏洞路径和状态可供复用。只有运行环境、依赖或隔离边界确实不同，才考虑新建 Lab。
+- CI 以 Lab 为单位构建镜像，以 Challenge 为单位定义验收目标。一次构建可验证同一 Lab 下多个 Challenge；默认单实例完成所选目标，不为每个 Challenge 复制容器镜像或启动额外实例。
+
+NodeBlog 是仓库内的既有示例：`Backstage Pass`、`Paper Trail` 和 `Ghost Session` 都通过 `lab: nodeblog` 复用同一套应用环境，分别考察认证、XXE/导入和综合会话流程。
+
 ## 如何用这份文档选择下一台靶机
 
 **2026-11-25 Web 专项规则（用户确认）**：默认任务是 Web 目标攻击链的完成，不要求 SSH、sudo、Linux root 或双 Flag。典型闭环包括认证绕过、文件读取、脚本执行、Web 端 RCE、受害者浏览器动作或读取指定 Web 目标。只在用户明确要求“完整靶机”时复现独立的 Linux 提权链；不要因原题后半段涉及 Linux 而误判 Web 专项为未完成。Flag 的数量和位置服从实际 Web 目标。题库候选同时覆盖 HTB、OffSec/PG 与公开可信的其他真实靶机，以知识点难度从基础到高阶推进；不为凑数量发明漏洞或强制 root。
@@ -71,7 +84,7 @@
 
 以前的规划很容易变成 SQLi 三台、XSS 三台，完成数量后便停止。同一类别内部包含彼此完全不同的攻击机制；即使相同机制，也可能在输入面、回显方式、限制条件和数据库语法上存在值得反复训练的变体。
 
-**新的基础结构：`专题（topic） → 细分知识点（skill） → 场景变体（variant） → 真实靶机（lab） → 独立验收证据（evidence）`。**
+**新的基础结构：`专题（topic） → 细分知识点（skill） → 场景变体（variant） → Challenge ↔ Lab → 独立验收证据（evidence）`。Challenge 与 Lab 是多对多关系，不是一对一层级。
 
 - **专题数不等于覆盖率**：某台机器含 SQLi，只说明它涉及 SQLi，不代表盲注、报错、OAST 都覆盖。
 - **知识点不限制重复次数**：同一 `skill_id` 可以关联多台真实机器，每个场景记录 `variant_id` 与明确的教学增量。

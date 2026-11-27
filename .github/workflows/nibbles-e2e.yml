@@ -1,0 +1,142 @@
+name: Nibbles single-instance CMS upload and sudo E2E
+
+on:
+  pull_request:
+    paths:
+      - "labs/nibbles/**"
+      - "challenges/startpoint/nibbles/**"
+      - "challenges/file-security/nibbles/**"
+      - "challenges/linux-privilege-escalation/nibbles/**"
+      - ".github/workflows/nibbles-e2e.yml"
+  push:
+    branches: [main]
+    paths:
+      - "labs/nibbles/**"
+      - "challenges/startpoint/nibbles/**"
+      - "challenges/file-security/nibbles/**"
+      - "challenges/linux-privilege-escalation/nibbles/**"
+      - ".github/workflows/nibbles-e2e.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  nibbles-full-chain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check all Challenge answers and compile independent player
+        run: |
+          python3 -m py_compile labs/nibbles/tests/attack_path.py
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+
+          user = Path("labs/nibbles/flags/user.txt").read_text().strip()
+          root = Path("labs/nibbles/flags/root.txt").read_text().strip()
+          challenge_paths = [
+              Path("challenges/startpoint/nibbles/Nibbles.md"),
+              Path("challenges/file-security/nibbles/my-image-upload.md"),
+              Path("challenges/linux-privilege-escalation/nibbles/sudo-monitor.md"),
+          ]
+          for path in challenge_paths:
+              text = path.read_text()
+              answers = re.findall(r'(?m)^answer: "([^"]+)"$', text)
+              expected = [user, root] if path.name == "Nibbles.md" else (
+                  [user] if path.name == "my-image-upload.md" else [root]
+              )
+              if answers != expected:
+                  raise SystemExit(f"Challenge answer mismatch: {path}")
+              if not re.search(r"(?m)^lab: nibbles$", text):
+                  raise SystemExit(f"Challenge does not map to the shared Nibbles Lab: {path}")
+          print("PASS: integrated and focused Challenges map to one Lab and match its Flag seeds")
+          PY
+
+      - name: Build authentic Nibbleblog target image once
+        run: docker build --pull --progress=plain -t ttp-nibbles:ci -f labs/nibbles/Dockerfile labs/nibbles
+
+      - name: Build separate non-root attacker image
+        run: docker build --pull --progress=plain -t ttp-nibbles-attacker:ci -f labs/nibbles/tests/Dockerfile.attacker labs/nibbles/tests
+
+      - name: Generate per-instance User and Root Flags
+        id: flags
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import base64, secrets, os
+          def make_flag():
+              token = base64.b32encode(secrets.token_bytes(10)).decode().rstrip("=").lower()
+              return "TTP{" + token + "}"
+          user, root = make_flag(), make_flag()
+          while user == root:
+              root = make_flag()
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              for name, value in (("user", user), ("root", root)):
+                  print("::add-mask::" + value)
+                  output.write(name + "=" + value + "\n")
+          print("Generated one instance's distinct 80-bit User and Root Flags; values are masked.")
+          PY
+
+      - name: Run full upload-to-Root attack chain on one clean instance
+        env:
+          USER_FLAG: ${{ steps.flags.outputs.user }}
+          ROOT_FLAG: ${{ steps.flags.outputs.root }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          cleanup() {
+            docker logs nibbles-target 2>/dev/null || true
+            docker rm -f nibbles-target 2>/dev/null || true
+            docker network rm nibbles-e2e 2>/dev/null || true
+          }
+          trap cleanup EXIT
+          docker network create --internal nibbles-e2e
+
+          wait_healthy() {
+            local name="$1"
+            local ready=0
+            for attempt in $(seq 1 60); do
+              local state health
+              state=$(docker inspect -f '{{.State.Status}}' "$name")
+              health=$(docker inspect -f '{{.State.Health.Status}}' "$name")
+              if [ "$state" != "running" ] || [ "$health" = "unhealthy" ]; then
+                docker logs "$name"
+                echo "Nibbles target failed before becoming healthy"
+                return 1
+              fi
+              if [ "$health" = "healthy" ]; then
+                ready=1
+                break
+              fi
+              sleep 2
+            done
+            test "$ready" = 1
+          }
+
+          docker run -d \
+            --name nibbles-target \
+            --network nibbles-e2e \
+            --network-alias nibbles-target \
+            --memory 160m --cpus 1 --pids-limit 128 \
+            -e NIBBLES_REQUIRE_PRIVATE_FLAGS=1 \
+            -e NIBBLES_STATIC_USER_FLAG="$USER_FLAG" \
+            -e NIBBLES_STATIC_ROOT_FLAG="$ROOT_FLAG" \
+            ttp-nibbles:ci >/dev/null
+          wait_healthy nibbles-target
+
+          docker run --rm \
+            --network nibbles-e2e \
+            -e TARGET_URL=http://nibbles-target \
+            -e EXPECTED_USER_FLAG="$USER_FLAG" \
+            -e EXPECTED_ROOT_FLAG="$ROOT_FLAG" \
+            ttp-nibbles-attacker:ci
+
+          docker stats --no-stream nibbles-target --format "Nibbles memory={{.MemUsage}} pids={{.PIDs}}"
+          echo "PASS: one fresh instance completed the full User/Root attack chain"
+
+      - name: Record target image size
+        if: always()
+        run: docker image inspect ttp-nibbles:ci --format='IMAGE_SIZE_BYTES={{.Size}}' || true
