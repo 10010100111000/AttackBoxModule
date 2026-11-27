@@ -1,6 +1,6 @@
 ---
 summary: 某科技公司正在开发新的技术门户。检查公开站点及其内容管理系统，了解应用暴露的信息，并取得 Web 服务的初始访问权限。
-level: easy
+level: intermediate
 lab: devvortex
 ---
 
