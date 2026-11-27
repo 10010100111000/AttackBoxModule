@@ -2,7 +2,7 @@
 
 > **唯一内容规划入口** · v3 · 2026-11-27
 >
-> 面向 PortSwigger Web Security Academy 风格的 **Web 技术分类、细分技能、难度递进、真实靶机选择、当前覆盖缺口、下一台决策与完整验收**。这不是仅描述 Docker 或 Worker 的工程规范。保留原有 31 专题、219 技能和全部历史候选，不推倒重做。
+> 面向 PortSwigger Web Security Academy 风格的 **Web 技术分类、细分技能、难度递进、真实靶机选择、当前覆盖缺口、下一台决策与完整验收**。这不是仅描述 Docker 或 Worker 的工程规范。保留 31 个专题和 219 个技能目标；候选及其研究状态统一维护在结构化 catalog。
 >
 > **长期数据真值**：[31 专题/219 技能能力矩阵](../catalog/web-competencies.json) · [机器状态/候选/滚动 backlog](../catalog/web-curriculum.json)。逐台执行、E2E、合并和新会话交接流程见 [Lab Production Playbook](LAB_PRODUCTION_PLAYBOOK.md)。当前 main 机器状态以结构化清单为准。
 
@@ -48,7 +48,7 @@
 2. 在 **滚动开发路线与知识缺口** 查已有机器、人工验收记录、历史 CI 证据、难度和缺口；*已有完整链 CI ≠ 该机器涉及的全部技能均已独立验收*。
 3. 在 **选题评审与真实靶机候选** 比较原版技术/公开 Writeup、输入面、数据库或浏览器行为、镜像资源。不得用假接口或冒充真实 CVE。
 4. 把决定与后续证据写回 `catalog/web-curriculum.json`，选题的唯一主/次 `skill_id` 均来自 `catalog/web-competencies.json`。同技能可以重复，但必须说明增量。
-5. 完成真实 Docker、启动/健康检查与基础 CI。题目完整流程与 Flag 由专属端到端 CI 自动验收并记录；没有实际运行证据不能汇报为验收通过。Worker 实机、Web 判题对接与正式发布另行验收。
+5. 完成真实 Docker、启动/健康检查与基础 CI。题目完整流程与 Flag 由专属端到端 CI 自动验收并记录；没有实际运行证据不能汇报为验收通过。Worker 同步、平台部署与生产验收不属于本制作流程。
 
 **后续开发优先逻辑**：先补有意义的知识缺口 → 对照已实现机器 → 验证真实候选与原始版本 → 制作/CI → 更新覆盖数据 → 再选下一台。禁止按固定靶机数量配额规划课程。
 
@@ -259,11 +259,11 @@ Editorial 已对 SSRF 基本与内网 API 访问做了完整攻击链 CI，但**
 具体候选评审字段、评分方法和原题来源核查规则统一见下一节 [选题评审与真实靶机候选](#选题评审与真实靶机候选)。当前开发队列只看结构化 catalog，不复制到课程设计文档。
 ## 选题评审与真实靶机候选
 
-版本：2026-11-23 / v2。**本文件解决“知道缺哪个知识点，但不知道该选哪台机器”的问题。**
+本节定义候选评审方法；具体候选列表与研究状态只维护在结构化 catalog。
 
 配套：
 - [31 个官方专题、219 个自编知识目标](../catalog/web-competencies.json)
-- [现有 17 台机器及选题队列](../catalog/web-curriculum.json)
+- [当前靶机、候选与开发队列](../catalog/web-curriculum.json)
 - [知识点与三级难度](#技术分类与训练梯度)
 - [滚动路线图](#滚动开发路线与知识缺口)
 
@@ -334,7 +334,7 @@ Editorial 已对 SSRF 基本与内网 API 访问做了完整攻击链 CI，但**
 - `container`：真实需要的服务、典型 RAM/镜像目标、端口、capability、禁止 host 权限的实现。
 - `acceptance`：独立容器看到的 HTTP/浏览器/协议证据、真实 UID、Flag 与重置。
 - `risk`：未公开的源代码需要重建哪些可观察行为？哪些细节尚未证实？
-- `decision`：`researching` → `source_verified` → `feasible` → `in_progress` → `lab_ci_verified` → `worker_verified`。
+- `decision`：`researching` → `source_verified` → `feasible` → `in_progress` → `lab_ci_verified`。
 
 #### 4. 候选机器与 backlog
 
