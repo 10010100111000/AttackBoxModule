@@ -38,7 +38,7 @@
 
 机器数量、E2E 通过状态、CI 证据、release marker 和开发队列均以 [`catalog/web-curriculum.json`](../catalog/web-curriculum.json) 为准；人类可读的当前清单见 [`EXISTING_WEB_LAB_RELEASE_INVENTORY.md`](EXISTING_WEB_LAB_RELEASE_INVENTORY.md)。
 
-不要在本设计文档中维护第二份机器完成列表、CI 统计或下一台靶机队列。2026-11-28 的 main 快照包含 27 台 Lab，其中 Alert、Bike、Precious、GoodGames、Devvortex、Base、Intense、Cursed Stale Policy、Editorial、Nibbles、Shocker、Bashed 十二台通过当前统一 E2E。其余状态以 catalog 实时字段为准。
+不要在本设计文档中维护第二份机器完成列表、CI 统计或下一台靶机队列。2026-11-28 的 main 快照包含 27 台 Lab，其中 Alert、Bike、Precious、GoodGames、Devvortex、Base、Intense、Cursed Stale Policy、Editorial、Nibbles、Shocker、Bashed 十三台通过当前统一 E2E。其余状态以 catalog 实时字段为准。
 
 ## Challenge 与 Lab 的复用关系
 
