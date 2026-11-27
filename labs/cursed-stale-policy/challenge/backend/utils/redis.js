@@ -43,13 +43,14 @@ async function triggerXSS(payload) {
     throw new Error('XSS payload must be a non-empty string of at most 16 KiB');
   }
 
-  const job = await triggerXSSQueue.add({ xssPayload: payload });
-  await redis.set(`xss_payload:${job.id}`, payload, 'EX', 300);
+  const jobId = crypto.randomBytes(16).toString('hex');
+  await redis.set(`xss_payload:${jobId}`, payload, 'EX', 300);
+  const job = await triggerXSSQueue.add({ xssPayload: payload }, { jobId });
   return { status: 'queued', job_id: job.id };
 }
 
 async function getXSSPayload(jobId) {
-  if (typeof jobId !== 'string' || !/^[0-9]+$/.test(jobId)) return '';
+  if (typeof jobId !== 'string' || !/^[a-f0-9]{32}$/.test(jobId)) return '';
   return (await redis.get(`xss_payload:${jobId}`)) || '';
 }
 
