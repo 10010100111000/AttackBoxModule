@@ -10,13 +10,24 @@
 
 | main 中记录的 CI 状态 | 数量 | 含义 |
 |---|---:|---|
-| `full_chain_ci` | 21 | 保留历史完整目标链 CI 证据；新标准通过情况以 E2E 状态为准 |
+| `full_chain_ci` | 22 | 保留历史完整目标链 CI 证据；新标准通过情况以 E2E 状态为准 |
 | `partial` | 2 | 已有部分真实功能或目标行为检查，仍有靶机内容/目标路径缺口 |
-| `unverified` | 4 | 尚无足够的靶机目标验证记录 |
+| `unverified` | 3 | 尚无足够的靶机目标验证记录 |
 
 另有 **11 台**保留 `.release-blocked` 标记。该标记不是 CI 结果，也不等同于靶机代码不存在；未完成原因应以各自 README 和标记文件为准。
 
-### 当前进行中：Base — 现有实现的 E2E 接入
+### 最近更新：Base — 完整双 Flag E2E 已通过
+
+Base 原有靶场实现未重做；这次为真实 PHP 7.2 / Apache / OpenSSH / sudo find 攻击链补齐独立攻击端与随机双 Flag。
+
+- [main 完整 E2E](https://github.com/10010100111000/AttackBoxModule/actions/runs/46022242878)：Vim swap 发现 → PHP 7.2 strcmp 数组绕过 → PHP 上传 → www-data 命令执行 → 配置凭据复用 → SSH john → User Flag → sudo find → UID 0 → Root Flag，全部通过
+- [main 题库一致性检查](https://github.com/10010100111000/AttackBoxModule/actions/runs/46022242968)：通过，包含双 Flag generator 幂等性和 Challenge 答案核对
+- [main 镜像构建与启动检查](https://github.com/10010100111000/AttackBoxModule/actions/runs/46022243138)：通过
+- Docker 目标镜像约 **153.3 MB**；测试时内存约 **10.9 MiB**（500 MiB 限额）
+
+User / Root Flag 分别由随机版本化 manifest 生成，且由真实 HTTP/SSH/sudo 路径读取，不使用 docker exec、Docker socket 或目标文件系统挂载。Base 保留原本两阶段目标，不是 Web-only。
+
+
 
 Base 原有 PHP 7.2 / Apache / OpenSSH / sudo find 双 Flag 靶场已存在，不重新制作。当前补充独立 HTTP+SSH 攻击端、随机 User/Root Flag、Writeup 与专属 E2E；必须真实完成 PHP strcmp 数组绕过、上传 PHP、www-data 命令执行、凭据复用、SSH john、User Flag、sudo find 和 Root Flag 才能标记通过。
 
@@ -120,7 +131,7 @@ This table is generated from the same state recorded in `catalog/web-curriculum.
 | Soccer | Tiny File Manager、WebSocket blind SQLi | Web-only；有 `.release-blocked` |
 | WonderCMS XSS | WonderCMS 属性上下文 XSS、管理员浏览器 | 有 `.release-blocked` |
 
-`full_chain_ci` 表示该 Lab 有完整目标链 CI 证据；旧 Lab 的历史证据不自动等同于当前统一 E2E 标准。每台是否通过新标准，以 `catalog/web-curriculum.json` 中的 `e2e_ci_status`、运行链接和提交 SHA 为准。Bike、Precious 与 GoodGames 均已按新标准通过独立攻击端验收。
+`full_chain_ci` 表示该 Lab 有完整目标链 CI 证据；旧 Lab 的历史证据不自动等同于当前统一 E2E 标准。每台是否通过新标准，以 `catalog/web-curriculum.json` 中的 `e2e_ci_status`、运行链接和提交 SHA 为准。Bike、Precious、GoodGames、Devvortex 与 Base 均已按新标准通过独立攻击端验收。
 
 ### 部分完成（2 台）
 
@@ -129,11 +140,10 @@ This table is generated from the same state recorded in `catalog/web-curriculum.
 | Alert | Markdown 存储型 XSS、真实 Chromium 管理员浏览器、内部文件读取 | Web Flag 目标路径仍需人工确认；有 `.release-blocked` |
 | Funnel | FTP、SSH、PostgreSQL 隧道 | 属于非 Web 服务链，单独标识其题库归类与目标 |
 
-### 尚未充分验证（4 台）
+### 尚未充分验证（3 台）
 
 | Lab | 当前实现 | 下一步关注 |
 |---|---|---|
-| Base | PHP 7.2 strcmp 认证逻辑、文件上传 | 明确真实请求处理和 Flag 目标 |
 | Cursed Stale Policy | CSP、XSS、WebSocket 相关代码 | 先核对实际浏览器行为，不把代码存在当成漏洞已成立 |
 | Trick | DNS、PHP、MariaDB、LFI、Fail2ban 等真实服务 | 当前实现较复杂，先整理正常业务与题目范围，再补基础工程检查 |
 | Intense | Flask、SQLite 条件错误、LWT 会话、路径遍历 | Web-only 初始实现；先完成构建、启动与普通功能 |
@@ -142,8 +152,7 @@ This table is generated from the same state recorded in `catalog/web-curriculum.
 
 建议顺序：
 
-1. **Base**：现有实现不重做，完成双 Flag 的独立 HTTP+SSH E2E 验收。
-2. **Intense / Trick**：先处理复杂实现的基础工程与文档，不扩展新功能。
+1. **Intense / Trick**：先处理复杂实现的基础工程与文档，不扩展新功能。
 
 这只是 main 现有资产的处理顺序。每台必须由专属隔离攻击端 E2E 实际走完目标路径并读取精确 Flag；只有 main 对应提交的 E2E 成功后才算完成。执行细节见 [Lab Production Playbook](LAB_PRODUCTION_PLAYBOOK.md)。
 
