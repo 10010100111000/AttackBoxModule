@@ -1,6 +1,6 @@
 # Alert — Markdown XSS administrator browser exercise
 
-**Status: real browser and loopback traversal proof exists; automated two-instance Flag acceptance is being enabled.** Not an official HTB distribution.
+**Status: full-chain E2E passed.** Two clean instances with different random Flags were solved by the independent HTTP attacker through real target-local Chromium, stored Markdown XSS and loopback-only PHP path traversal. Not an official HTB distribution.
 
 ## Web-only learning objective
 
@@ -30,11 +30,11 @@ The private goal is a normal file under /opt/alert/private, not an HTTP handler 
 
 GitHub Actions builds the genuine PHP/Markdown/Chromium image and an entirely separate HTTP-only player. The player uploads Markdown containing browser JavaScript, shares the resulting link through the contact form, and receives the exact instance Flag **only after genuine target-local Chromium executes the page and reads the private file through the loopback-only messages.php path traversal**. Public direct calls to messages.php remain forbidden. The dedicated E2E runs against two clean instances with different random Flags; it also checks that the default image Flag seed matches the learner Challenge answer.
 
-Remain blocked from release until independently reproduced attack-chain CI proves actual JavaScript execution in Chromium, local-only message path traversal, extraction of the correctly rotated Web goal from two clean instances, and resource usage during review. Worker integration and platform flag submission are separate additional gates.
+The current Lab E2E gate is passed. The `.release-blocked` marker remains only for separate platform Worker/Web grading and production integration gates; those are outside this Lab-production task.
 
 ## Observed CI results
 
-- [Real Chromium and source-read proof CI PASS](https://github.com/10010100111000/AttackBoxModule/actions/runs/45474730425). The attacker is a separate container and performs all inputs over HTTP. The browser is in the target image, not Worker.
-- Image: **309,343,624 bytes** (~295 MiB); idle memory **27.47 MiB**, memory recorded after browser proof **135 MiB**. These are point-in-time readings, not peak memory during browser startup.
+- [Full-chain two-instance Flag E2E PASS](https://github.com/10010100111000/AttackBoxModule/actions/runs/46046059969). The attacker is a separate container and performs all inputs over HTTP. The target-local browser is part of the target image, not Worker.
+- Latest image: **309,342,395 bytes** (~295 MiB); memory after browser proof was **136.6–137.1 MiB** with 57 PIDs (1.1 GiB limit). These are point-in-time readings, not measured peak memory.
 - The acceptance runner uses `--cap-drop ALL` and adds only `SETUID`/`SETGID` so the entrypoint can drop to the separate `www-data` and `alertbot` service accounts; `no-new-privileges` remains enabled. No privileged Docker mode or mounted Docker socket.
 - Release block remains until an independent two-instance, rotated-Flag-to-goal test and Worker/Web grading integration are verified.
