@@ -336,48 +336,28 @@ Editorial 已对 SSRF 基本与内网 API 访问做了完整攻击链 CI，但**
 - `risk`：未公开的源代码需要重建哪些可观察行为？哪些细节尚未证实？
 - `decision`：`researching` → `source_verified` → `feasible` → `in_progress` → `lab_ci_verified` → `worker_verified`。
 
-#### 4. 已有公开证据的真实机器候选（不是制作承诺）
+#### 4. 候选机器与 backlog
 
-下表是**选题候选**，要先再审具体 Writeup、依赖版本、许可证和 Docker 工程可行性。官方所标难度仅供参考，trytopwn 难度要按自身体验另评估。
+候选机器、公开来源、研究进度和后续开发优先级统一维护在 [`catalog/web-curriculum.json`](../catalog/web-curriculum.json) 的 `candidate_shortlist` 与 `backlog` 中。本设计文档不再复制候选机器表，避免候选已进入 main 或完成后仍残留为“待选题”。
 
-| 候选机器（官方/历史资料） | 适合补的知识点变体 | 需要保留的真实链 | 选题备注 |
-| --- | --- | --- | --- |
-| [HTB Headless](https://www.hackthebox.com/machines/headless) | `xss.blind`，管理员浏览器；HTTP User-Agent 输入面 | 支持表单 → Blind XSS → 管理员会话 → 命令注入 | **中高优先**；必须有真实管理员浏览器，不可硬编码 cookie |
-| [HTB Trick](https://www.hackthebox.com/machines/trick) | `file_read.nested-traversal`，`sqli.file-operations` | DNS/vhost → SQLi/读取配置 → LFI → SSH → fail2ban | **高优先**；多服务内存/时间成本需审查 |
-| [HTB NodeBlog](https://www.hackthebox.com/machines/nodeblog) | `nosql.operator-auth-bypass`，`deserialization.unsafe-parse` | Express + MongoDB 操作符、真实 XML 解析与 node-serialize | **高优先**；必须使用原始危险依赖及真实 DB |
-| [HTB Precious](https://www.hackthebox.com/machines/precious) | `deserialization.unsafe-parse`，Ruby/YAML | PDFKit 文件转换 → Ruby 凭据 → YAML 反序列化 | **高优先**；保留真实 PDF 转换而非模拟返回 |
-| [HTB Soccer](https://www.hackthebox.com/machines/Soccer) | `websockets.blind-sqli`，`sqli.boolean-blind` | Tiny File Manager → WS 盲注 → SSH → doas/dstat | **高优先**；不是普通 PHP UNION 的重复 |
-| [HTB Inject](https://www.hackthebox.com/machines/inject) | `file_read.lfi`，Java 组件漏洞 | 上传功能的 LFI → 真实 Spring Cloud Function → SSH/Ansible | Java 内存、漏洞版本与原版环境必须核实 |
-| [HTB Zipping](https://www.hackthebox.com/machines/zipping) | `file_read.path-traversal`，`file_read.file-to-rce` | ZIP 符号链接文件读取 → SQLi → LFI/执行 | 与普通 PHP 文件上传区别明显 |
-| [HTB Codify](https://www.hackthebox.com/machines/codify) | **补充专题** JavaScript vm2 沙箱逃逸 | JS 测试器 → 真实 vm2 → SQLite → Bash | 属于应用沙箱，不是 Docker 容器逃逸；不是 XSS |
-| [HTB Shared](https://www.hackthebox.com/machines/shared) | Cookie 输入面 SQLi | Cookie SQLi → 真实后续服务利用 | 与常规表单 SQLi 场景不同；后续细节待核对 |
-| [HTB Gavel](https://www.hackthebox.com/machines/gavel) | PHP PDO SQLi 与 YAML 解析链 | PDO 错用 → PHP 代码执行 → YAML/后台工作流 | 中高级候选，重点审查版本与 Worker 隔离 |
-
-候选有的已具备官方机器概要，有的后续仍需 Writeup 和源码对照；本文件不将它们写为已验证、在制作或已经满足 Docker 约束。
-
+候选进入制作前，必须完成下一节定义的来源核查、真实版本确认、技术增量评估和 Docker/CI 可行性评估。目录中的候选状态不等于已批准开发，也不等于已验证漏洞。
+ 
 #### 5. 实际制作顺序：持续滚动，不以“9 台完成”为终点
 
 1. 先检查 [细分知识目录](../catalog/web-competencies.json) 中尚无独立测试的目标，并确定场景变体；**优先补薄弱基础，但不限制重复数量**。
 2. 对比上表的公开候选，选择最容易核实真实技术、侦察真实且 Docker 可行的一台；必要时对同一知识点选多台不同复杂度。
 3. 只为选中的机器创建开发 PR；更新 [主清单](../catalog/web-curriculum.json) 的 `backlog`，在 PR 中放入 `candidate_review`。
 4. 先通过靶机专属的外部入口 → 利用 → 目标 Flag/权限 CI；记录运行镜像字节数、内存、隔离和重置。
-5. 再单独确认 Worker 的网络、权限与多用户资源调度；Flag 的出现路径由靶机负责，正确性由 Web 后端校验，Worker 不参与判题。对需要管理员浏览器的 XSS，浏览器与审阅流程由题目自身设计，不是 Worker 的业务。详见 [职责边界](#平台-flag-与管理员-bot-责任边界)。
+5. Worker 同步、平台部署和多用户资源调度不属于本靶机制作流程。Flag 的出现路径由靶机负责，答案由 Web 后端校验；需要管理员浏览器的 XSS，其浏览器与审阅流程属于靶机自身。详见 [职责边界](#平台-flag-与管理员-bot-责任边界)。
 
 **选题优先级 = 缺少的知识训练价值 + 与已有靶机的有意义差异 + 真实可复现性，不是“这个漏洞已有 1 台所以禁止再选”。**
 
-#### 6. 小型 XSS 靶机候选（2026-11-23 增补）
+#### 6. XSS 场景选择
 
-优先使用小型、真实受影响的软件，**不推荐为单一 XSS 技能打包整个 Juice Shop**。这里区分两个易混名称：VulnHub 是可下载的完整虚拟机库；Vulhub 是按 CVE 提供 Docker 漏洞复现的项目。
+XSS 候选与研究状态统一记录在 catalog，不在此处重复列出具体机器。选择时优先区分 HTML 正文、属性、JavaScript 字符串、DOM source/sink、存储型、管理员浏览器和 CSP 场景。小型专项应优先使用真实受影响组件；不要为了单一 XSS 技能打包整套大型教学应用，也不要把教学源码伪装成真实产品 CVE。
 
-| 选题优先 | 上游与可核实漏洞 | 预期训练能力 | 工程与教学限制 |
-| --- | --- | --- | --- |
-| 1：[Vulhub Django CVE-2017-12794](https://github.com/vulhub/vulhub/blob/master/django/CVE-2017-12794/README.md) | Django 1.11.4 在 DEBUG 500 页的真实 XSS；[官方依赖安全公告](https://github.com/advisories/GHSA-9r8w-6x8c-6jr9) | **初级**：反射型 XSS 与错误页的浏览器 HTML 上下文 | 仅复现原版 Django 错误页的特定触发条件，不伪装成普通搜索页漏洞；镜像体积须实测 |
-| 2：[WonderCMS 3.4.2](https://github.com/WonderCMS/wondercms/releases/tag/3.4.2) | PHP/JSON 平面文件 CMS、真实 [CVE-2023-41425](https://github.com/advisories/GHSA-58rr-37rr-r6h5)，3.4.3 已修复 | **中级**：真实 XSS + 管理员操作 + 插件权限边界 | 不需数据库服务；必须证实原版输入上下文与实际管理员浏览器交互，不能只验证 JS 字符串 |
-| 3：[HTB Alert](https://0xdf.gitlab.io/2025/03/22/htb-alert.html) | Markdown → 浏览器 XSS → 敏感文件读取 → SSH → Cron Root 的公开真实链 | **中级综合靶机**：跨用户浏览器行为与多阶段侦察 | 原站点源码未公开，重建时如实标明；需要管理员浏览器，Bot 运行资源单独测量 |
-| 可选：[OWASP DSVW](https://vwad.owasp.org/app/damn-small-vulnerable-web-dsvw/) | 少于 100 行 Python 的教学源码 | **初级微型专项**：XSS/DOM 入门 | 尽管极小，但界面直接展示漏洞，不符合偏好自然侦察的综合靶机要求，不能硬称真实产品 CVE |
-
-**历史选题记录（2026-11-25）**：当时曾将 HTB Intense 作为 SQLi 分类候选，目标为 SQLite 条件错误 Oracle → 管理员 Secret → SHA-256 LWT 长度扩展 → 管理员日志路径遍历 → Web Flag。该记录保留为历史规划，不覆盖后续已确认的 main 存量靶机优先顺序。
-
+浏览器相关场景必须在真实浏览器中验证脚本执行及预期权限影响。管理员上下文题需要真实受害者浏览器访问流程；不能通过硬编码 Cookie、检查 payload 字符串或直接返回 Flag 来替代。
+ 
 ## 平台 Flag 与管理员 Bot 责任边界
 
 更新：2026-11-23。以实际 `10010100111000/attackbox` 的 `main` 分支代码为准，不要凭另一类 CTF 平台的架构猜测 Worker 的职责。
