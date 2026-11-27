@@ -1,8 +1,10 @@
 # AttackBoxModule — trytopwn Web 靶机题库
 
+**逐台制作与新会话交接手册：[Lab Production Playbook](docs/LAB_PRODUCTION_PLAYBOOK.md)。** 每次继续下一台前先读这份手册，再核对 main 的实时清单。
+
 **统一的 Web 靶机设计与开发计划：[《Web 靶机全套设计与开发计划》](docs/WEB_LAB_DESIGN.md)。**
 
-这是每次“继续下一台靶机”必须先阅读的入口：**31 类技术专题、219 个细分知识目标、初/中/高训练梯度、现有覆盖、尚缺场景、真实 HTB/OffSec/Vulhub 原题候选与下一台选题流程。** Docker、Flag、CI、Worker 是选题落地的验收条件，不是题库设计的主体。
+这是题库规划入口；逐台执行顺序、E2E 验收步骤、GitHub 合并流程和新会话交接以 [Lab Production Playbook](docs/LAB_PRODUCTION_PLAYBOOK.md) 为准。**31 类技术专题、219 个细分知识目标、初/中/高训练梯度、现有覆盖、尚缺场景、真实 HTB/OffSec/Vulhub 原题候选与下一台选题流程。** Docker、Flag、CI、Worker 是选题落地的验收条件，不是题库设计的主体。
 
 机器及候选的**实时主清单**：[catalog/web-curriculum.json](catalog/web-curriculum.json)；技术知识的**唯一技能库**：[catalog/web-competencies.json](catalog/web-competencies.json)。机器实现位于 [labs/](labs/)，平台挑战正文位于 [challenges/](challenges/)，所有 CI 的实际结果请查看 [.github/workflows/](.github/workflows/)。
 

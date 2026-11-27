@@ -4,7 +4,7 @@
 >
 > 面向 PortSwigger Web Security Academy 风格的 **Web 技术分类、细分技能、难度递进、真实靶机选择、当前覆盖缺口、下一台决策与完整验收**。这不是仅描述 Docker 或 Worker 的工程规范。保留原有 31 专题、219 技能和全部历史候选，不推倒重做。
 >
-> **长期数据真值**：[31 专题/219 技能能力矩阵](../catalog/web-competencies.json) · [机器状态/候选/滚动 backlog](../catalog/web-curriculum.json)。当前 main 机器状态以结构化清单为准；本文后续的 17 台表格是历史快照，不代表当前全部存量。
+> **长期数据真值**：[31 专题/219 技能能力矩阵](../catalog/web-competencies.json) · [机器状态/候选/滚动 backlog](../catalog/web-curriculum.json)。逐台执行、E2E、合并和新会话交接流程见 [Lab Production Playbook](LAB_PRODUCTION_PLAYBOOK.md)。当前 main 机器状态以结构化清单为准。
 
 ## 验证职责调整（2026-11-27，当前规则）
 
