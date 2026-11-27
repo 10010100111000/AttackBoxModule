@@ -99,6 +99,7 @@ This table is generated from the same state recorded in `catalog/web-curriculum.
 | Pebbles | ZoneMinder SQLi、数据库文件操作 | 历史依赖栈较复杂 |
 | Photobomb | ImageMagick 命令注入 | Sinatra / ImageMagick |
 | GoodGames | SQLite 登录 SQLi → 弱 MD5 凭据 → 存储型 Jinja2 SSTI | 独立攻击端读取随机 Web Flag；PR 与 main E2E 均通过 |
+| Devvortex | Joomla 4.2.6 / CVE-2023-23752 → Cassiopeia 模板编辑 | 独立攻击端通过匿名配置泄露、管理员认证、www-data 执行并读取随机 Web Flag；Web-only 单 Flag |
 | Shocker | Bash CGI Shellshock | 真实 GNU Bash 4.3 |
 | Union | MariaDB UNION / LOAD_FILE | 后续链涉及网络权限边界 |
 | Validation | 二阶 SQLi、MariaDB FILE | 真实 MariaDB 与 PHP |
