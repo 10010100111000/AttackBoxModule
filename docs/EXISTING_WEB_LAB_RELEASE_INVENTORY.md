@@ -41,7 +41,7 @@
 | Lab | 当前 E2E | 备注 |
 |---|---|---|
 
-| OpenAdmin | merged / partial | PR #65 已合并；真实 xajax → Jimmy → 内网应用 → Joanna/User 路径已由当前 CI 验证，Root 阶段因 Expect 测试脚本私钥路径不一致未完成验证。靶机已纳入 main，可进入平台集成；不宣称本次完整 E2E passed。 |
+| OpenAdmin | pending | PR #65 已合并；真实 xajax → Jimmy → 内网应用 → Joanna/User 路径已由当前 CI 验证，Root 阶段因 Expect 测试脚本私钥路径不一致未完成本次验证。靶机已纳入 main，不宣称本次完整 E2E passed。 |
 | Pebbles | pending | 有历史完整链 CI 记录 |
 | Photobomb | pending | 已配置单实例独立攻击端 E2E，验证 ImageMagick 命令注入与 sudo PATH 劫持；等待首次 CI 运行 |
 | Union | pending | 有历史完整链 CI 记录 |
