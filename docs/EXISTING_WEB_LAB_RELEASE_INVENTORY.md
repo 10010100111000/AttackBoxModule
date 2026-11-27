@@ -2,7 +2,7 @@
 
 > 本文是人工阅读入口，不维护第二套状态数据。**靶机状态、CI 工作流、运行证据、提交 SHA 和 backlog 的唯一事实来源是** [`catalog/web-curriculum.json`](../catalog/web-curriculum.json)。
 >
-> 本清单快照对应 main：`1dc1ac417dcfdd9b23006aa79381cb9421710931`（2026-11-28）。状态变化时先更新 catalog，再按需更新本文的说明；不要手工维护重复的完整攻击链描述。
+> 本清单快照对应 main：`a11155e2115afa72f800949b937d7b5c520557e0`（2026-11-28）。状态变化时先更新 catalog，再按需更新本文的说明；不要手工维护重复的完整攻击链描述。
 
 ## 当前总览
 
@@ -17,7 +17,7 @@
 
 | Lab | 目标范围 | E2E 证据 |
 |---|---|---|
-| Alert | Markdown 存储型 XSS → 管理员 Chromium → loopback 文件读取 → Web Flag | [CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/46046059969) |
+| Alert | Markdown 存储型 XSS → 管理员 Chromium → loopback 文件读取 → Web Flag | [CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/46046614896) |
 | Bike | Handlebars 4.1.1 SSTI → RCE → Web Flag | [CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/45899503806) |
 | Precious | PDFKit 0.8.6 命令注入 → ruby → Web Flag | [CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/45902207628) |
 | GoodGames | SQLite SQLi → 凭据恢复/复用 → Jinja2 SSTI → Web Flag | [CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/46011059390) |
