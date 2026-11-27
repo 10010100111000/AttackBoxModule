@@ -20,14 +20,18 @@
 | Precious | PDFKit 0.8.6 / CVE-2022-25765 → command execution as ruby → one Web Flag | `passed` |
 | GoodGames | SQLite login SQLi → weak MD5 recovery → reused admin credential → stored Jinja2 SSTI as augustus → one Web Flag | `passed` |
 | Devvortex | Joomla 4.2.6 CVE-2023-23752 → admin template editor → www-data → one Web Flag; release `0.1.0` verified | `passed` |
+| Base | PHP 7.2 authentication bypass → upload → SSH → sudo `find` → User and Root Flags | `passed` |
+| Intense | SQLite conditional-error SQLi → SHA-256 length extension → admin log path traversal → one Web Flag | `passed` |
 
 Do not reinterpret these as Worker, platform synchronization or production deployment acceptance. Those are explicitly outside this workflow.
 
 ### Next Lab
 
-Base has passed its full PHP 7.2 / Apache / OpenSSH / sudo find E2E with independently retrieved User and Root Flags. Do not rebuild it unless a regression is found. The next Lab is to be selected from the remaining main inventory, beginning with the Intense / Trick candidates after checking the design plan and actual repository readiness. Devvortex has completed its Joomla 4.2.6 Web-only E2E path; do not re-open it unless a later regression is found.
+Intense has now passed its complete Web-only E2E. Do not add the original SNMP, SSH pivot, native binary exploitation or Root stages.
 
-After Base, follow the order in `docs/EXISTING_WEB_LAB_RELEASE_INVENTORY.md`: then evaluate Intense / Trick as their scope and readiness permit. Always re-read the live inventory because the order may change after a Lab is completed.
+The next selection should come from the remaining partial Labs on `main`: review **Alert** and **Funnel** first, inspect their actual code and CI, then choose the smaller bounded task. Keep **Trick** deferred because its DNS/PHP/MariaDB/Fail2ban multi-service scope may be too large. Do not start multiple Labs in parallel.
+
+After choosing, update `catalog/web-curriculum.json`, `docs/EXISTING_WEB_LAB_RELEASE_INVENTORY.md`, this playbook and `docs/WEB_LAB_DESIGN.md` so the next handoff is explicit. Always re-read the live main inventory before starting.
 
 ## 2. Non-negotiable user requirements
 
