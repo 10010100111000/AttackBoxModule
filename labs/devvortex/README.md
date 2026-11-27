@@ -49,7 +49,7 @@ Do not publish this intentionally vulnerable service to a public interface. Use 
 - `labs/devvortex/flags/releases/0.1.0.json`
 - `challenges/startpoint/devvortex/Devvortex.md`
 
-Re-running the same version reuses its manifest Flag. A new version creates a new Flag. The Dockerfile copies the generated file to `/home/www-data/user.txt`, owned by `www-data` with mode `0400`.
+Re-running the same version reuses its manifest Flag. A new version creates a new Flag. Merging `labs/devvortex/release.json` to `main` automatically starts the release workflow; it commits the versioned Flag and Challenge answer only after the real HTTP exploit retrieves the exact Flag. The workflow can also be started manually with another version. The Dockerfile copies the generated file to `/home/www-data/user.txt`, owned by `www-data` with mode `0400`.
 
 ## Checks
 
