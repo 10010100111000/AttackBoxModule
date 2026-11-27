@@ -29,7 +29,7 @@ jobs:
 
       - name: Generate a fresh random User and Root Flag pair
         env:
-          RELEASE_VERSION: \${{ github.run_id }}
+          RELEASE_VERSION: ${{ github.run_id }}
         run: |
           set -euo pipefail
           python3 scripts/generate_base_release.py --version "0.0.0-ci.$RELEASE_VERSION"
@@ -92,8 +92,8 @@ jobs:
 
       - name: Run independent attacker through both Flags
         env:
-          EXPECTED_USER_FLAG: \${{ steps.flags.outputs.user }}
-          EXPECTED_ROOT_FLAG: \${{ steps.flags.outputs.root }}
+          EXPECTED_USER_FLAG: ${{ steps.flags.outputs.user }}
+          EXPECTED_ROOT_FLAG: ${{ steps.flags.outputs.root }}
         run: |
           set -euo pipefail
           docker run --rm --network base-e2e \
