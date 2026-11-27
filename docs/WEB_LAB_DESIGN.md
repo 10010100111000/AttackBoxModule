@@ -497,7 +497,7 @@ Editorial 已对 SSRF 基本与内网 API 访问做了完整攻击链 CI，但**
 
 ## 当前逐台制作顺序（2026-11-27）
 
-当前按 main 存量清单逐台完成，不并行制作。已完成新标准 E2E 的是 Bike、Precious、GoodGames、Devvortex；Base 已完成双 Flag 完整 E2E；下一步从 main 存量中评审 **Intense / Trick**，按现有复杂度和学习覆盖选择一台。Devvortex 的范围为 Joomla 4.2.6 / CVE-2023-23752 Web-only 单 Flag，不包含 SSH、Apport 或 Linux Root 阶段。
+当前按 main 存量清单逐台完成，不并行制作。已完成新标准 E2E 的是 Bike、Precious、GoodGames、Devvortex；Base 已完成双 Flag 完整 E2E；下一台明确选择 **Intense**（Flask + SQLite Web-only），先完成现有实现的 Docker 构建与独立攻击端 E2E；Trick 暂列后续候选，不并行制作。Devvortex 的范围为 Joomla 4.2.6 / CVE-2023-23752 Web-only 单 Flag，不包含 SSH、Apport 或 Linux Root 阶段。
 
 执行细节与验收门槛以 [Lab Production Playbook](LAB_PRODUCTION_PLAYBOOK.md) 为准；状态与成功运行证据以 `catalog/web-curriculum.json` 为准。
 
