@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "updated_on": "2026-11-27",
-  "main_snapshot_commit": "cf2c1f9d12fec0b59205ee8583a477e311401a00",
+  "main_snapshot_commit": "49e0d5a76d0923b265bfcd263f7f5d03d7791ec7",
   "purpose": "trytopwn Web 题库选题、覆盖率与验收状态的唯一结构化索引；每次新增靶机时维护本文件与 docs/WEB_ROADMAP.md",
   "difficulty_is_provisional": true,
   "statuses": {
@@ -765,7 +765,10 @@
       "e2e_ci_status": "passed",
       "e2e_ci_workflow": ".github/workflows/devvortex-e2e.yml",
       "e2e_ci_evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/46017292203",
-      "e2e_ci_commit": "cf2c1f9d12fec0b59205ee8583a477e311401a00"
+      "e2e_ci_commit": "cf2c1f9d12fec0b59205ee8583a477e311401a00",
+      "release_version": "0.1.0",
+      "release_evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/46018450388",
+      "release_manifest": "labs/devvortex/flags/releases/0.1.0.json"
     },
     {
       "id": "editorial",
