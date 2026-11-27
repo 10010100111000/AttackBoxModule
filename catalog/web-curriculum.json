@@ -731,18 +731,19 @@
       "secondary_categories": [
         "auth_session"
       ],
-      "validated_skills": [],
-      "implemented_skills": [
-        "cms_vulnerability.information-disclosure",
-        "cms_vulnerability.versioned-cve",
-        "auth_session.credential-disclosure",
-        "webshell.template-editor"
+      "validated_skills": [
+        "information_disclosure.config-leak",
+        "information_disclosure.chain-credential"
       ],
-      "lab_ci_status": "partial",
+      "implemented_skills": [
+        "information_disclosure.config-leak",
+        "information_disclosure.chain-credential"
+      ],
+      "lab_ci_status": "full_chain_ci",
       "worker_status": "not_verified",
       "release_status": "not_assessed",
-      "evidence": "",
-      "note": "Joomla 4.2.6 / CVE-2023-23752；范围收敛为 Web-only：匿名配置泄露→管理员登录→Cassiopeia 模板编辑→www-data Web Flag。SSH/Apport/Root 已从目标范围移除；独立攻击端 E2E 已接入，等待实际运行。",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/46015597083",
+      "note": "真实 Joomla 4.2.6 / CVE-2023-23752；独立 HTTP 攻击端完成匿名配置泄露、管理员认证、Cassiopeia 模板编辑、www-data 命令执行并读取精确随机 Web Flag。Web-only 单 Flag，不包含 SSH/Apport/Root。",
       "variant_profile": {
         "technology": "Ubuntu 22.04, nginx, PHP 8.1-FPM, MariaDB, official Joomla 4.2.6",
         "initial_discovery": "Host-header virtual hosts, Joomla administrator and version manifest",
@@ -751,7 +752,7 @@
         "incremental_learning_value": "CMS version fingerprinting, unauthenticated configuration disclosure and authenticated template modification",
         "confidence": "upstream_cve_and_joomla_source_verified_e2e_pending"
       },
-      "skill_mapping_stage": "real_joomla_cve_2023_23752_and_template_editor_e2e_pending",
+      "skill_mapping_stage": "real_joomla_cve_2023_23752_admin_template_editor_web_flag_e2e_verified",
       "manual_validation": {
         "status": "not_reviewed",
         "commit": null,
@@ -761,10 +762,10 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "configured",
+      "e2e_ci_status": "passed",
       "e2e_ci_workflow": ".github/workflows/devvortex-e2e.yml",
-      "e2e_ci_evidence": null,
-      "e2e_ci_commit": null
+      "e2e_ci_evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/46015597083",
+      "e2e_ci_commit": "6c6dbca2438bc6e0ccaf5bde76b06efc5eb21368"
     },
     {
       "id": "editorial",
