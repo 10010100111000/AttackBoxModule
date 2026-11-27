@@ -7,13 +7,13 @@
 ## 当前总览
 
 - **27 台 Lab**
-- 当前统一 E2E：13 台通过，14 台待完成
+- 当前统一 E2E：14 台通过，13 台待完成
 - 旧字段 `lab_ci_status`：25 台 `full_chain_ci`、1 台 `partial`、1 台 `unverified`
 - `.release-blocked` 标记：10 台。它与 E2E 状态独立，不能用来判断靶机是否制作完成。
 
 ### 已通过当前统一 E2E
 
-以下 13 台已经完成靶机攻击链的独立 CI 验收，不要重复制作或重新排入待办：
+以下 14 台已经完成靶机攻击链的独立 CI 验收，不要重复制作或重新排入待办：
 
 | Lab | 目标范围 | E2E 证据 |
 |---|---|---|
@@ -21,6 +21,7 @@
 | Editorial | SSRF → loopback API → SSH dev/prod → GitPython 3.1.29 → User/Root 双 Flag | [CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/46053249839) |
 | Nibbles | Nibbleblog 4.0.3 插件上传 → nibbler → sudo monitor.sh → User/Root | [CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/46061441923) |
 | BountyHunter | PHP SimpleXML XXE → php://filter 配置读取 → SSH development → sudo Skytrain Python eval → User/Root | [CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/46066236397) |
+| Cap | Dashboard IDOR → real FTP PCAP → credential reuse → SSH → Python cap_setuid → User/Root | [CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/46066988029) |
 | Shocker | GNU Bash 4.3 Apache CGI Shellshock → shelly → sudo Perl → User/Root | [CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/46062735563) |
 | Bashed | 原版 phpbash → www-data → scriptmanager → root cron → User/Root | [CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/46064377547) |
 | Bashed | 原版 phpbash → www-data → scriptmanager → root cron → User/Root | [CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/46064377547) |
@@ -40,7 +41,6 @@
 
 | Lab | 当前 E2E | 备注 |
 |---|---|---|
-| Cap | pending | 有历史完整链 CI 记录 |
 
 | OpenAdmin | pending | 有历史完整链 CI 记录 |
 | Pebbles | pending | 有历史完整链 CI 记录 |
@@ -66,7 +66,7 @@
 
 ## 下一步
 
-BountyHunter 已通过 main 单实例 E2E。下一项优先检查 Cap 的真实 IDOR → PCAP → SSH → capability Root 链，确认现有实现、挑战文件与历史 CI 是否能直接复用；一次只做一台。Funnel 是非 Web 服务链，Trick 范围较大，暂不优先。
+Cap 已通过 main 单实例 E2E。下一项优先检查 OpenAdmin 的真实 xajax RCE 与内网服务转折，核对现有实现、题面与历史 CI，再决定是否需要补充独立攻击端；一次只做一台。Funnel 是非 Web 服务链，Trick 范围较大，暂不优先。
 
 ## 文档入口
 
