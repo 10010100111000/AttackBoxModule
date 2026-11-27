@@ -7,8 +7,8 @@
 ## 当前总览
 
 - **27 台 Lab**
-- 当前统一 E2E：14 台通过，12 台待完成，1 台已配置待运行
-- 旧字段 `lab_ci_status`：25 台 `full_chain_ci`、1 台 `partial`、1 台 `unverified`
+- 当前统一 E2E：14 台通过，13 台待完成（其中 Photobomb 已配置工作流，等待首次运行）
+- 旧字段 `lab_ci_status`：24 台 `full_chain_ci`、2 台 `partial`、1 台 `unverified`
 - `.release-blocked` 标记：10 台。它与 E2E 状态独立，不能用来判断靶机是否制作完成。
 
 ### 已通过当前统一 E2E
