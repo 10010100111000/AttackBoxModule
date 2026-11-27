@@ -13,6 +13,11 @@ on:
       - "scripts/generate_bike_release.py"
       - "labs/bike/**"
       - "labs/base/**"
+      - "labs/trick/**"
+      - "challenges/integrated/trick/**"
+      - "scripts/generate_trick_release.py"
+      - ".github/workflows/trick-e2e.yml"
+      - ".github/workflows/trick-release.yml"
       - "challenges/startpoint/base/**"
       - "scripts/generate_base_release.py"
       - ".github/workflows/base-e2e.yml"
@@ -36,6 +41,11 @@ on:
       - "scripts/generate_bike_release.py"
       - "labs/bike/**"
       - "labs/base/**"
+      - "labs/trick/**"
+      - "challenges/integrated/trick/**"
+      - "scripts/generate_trick_release.py"
+      - ".github/workflows/trick-e2e.yml"
+      - ".github/workflows/trick-release.yml"
       - "challenges/startpoint/base/**"
       - "scripts/generate_base_release.py"
       - ".github/workflows/base-e2e.yml"
@@ -174,6 +184,29 @@ jobs:
           assert challenge.count(f'answer: "{root}"') == 1
           assert challenge.count("kind: flag") == 2 and "lab: base" in challenge
           print("Base User/Root Flag pair, stable manifest and Challenge answers: PASS")
+          PY
+
+      - name: Check Trick versioned User and Root Flag generator and Challenge consistency
+        run: |
+          set -euo pipefail
+          python3 scripts/generate_trick_release.py --version 0.0.0-ci
+          manifest=labs/trick/flags/releases/0.0.0-ci.json
+          before=$(sha256sum "$manifest" | cut -d' ' -f1)
+          python3 scripts/generate_trick_release.py --version 0.0.0-ci
+          after=$(sha256sum "$manifest" | cut -d' ' -f1)
+          test "$before" = "$after"
+          python3 - <<'PY'
+          import json, pathlib
+          manifest = json.loads(pathlib.Path("labs/trick/flags/releases/0.0.0-ci.json").read_text())
+          user, root = manifest["user_flag"], manifest["root_flag"]
+          assert user.startswith("TTP{") and user.endswith("}") and len(user) == 21
+          assert root.startswith("TTP{") and root.endswith("}") and len(root) == 21
+          assert user != root
+          challenge = pathlib.Path("challenges/integrated/trick/Trick.md").read_text()
+          assert challenge.count(f'answer: "{user}"') == 1
+          assert challenge.count(f'answer: "{root}"') == 1
+          assert challenge.count("kind: flag") == 2 and "lab: trick" in challenge
+          print("Trick random User/Root Flag pair, stable manifest and Challenge answers: PASS")
           PY
 
       - name: Check Cap Flag generator determinism and Challenge answer consistency
