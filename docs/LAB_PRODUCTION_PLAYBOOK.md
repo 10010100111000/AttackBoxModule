@@ -18,7 +18,8 @@
 |---|---|---|
 | Bike | Handlebars 4.1.1 SSTI → command execution → one Web Flag | `passed` |
 | Precious | PDFKit 0.8.6 / CVE-2022-25765 → command execution as ruby → one Web Flag | `passed` |
-| GoodGames | SQLite login SQLi → weak MD5 recovery → reused admin credential → stored Jinja2 SSTI as augustus → one Web Flag | `passed` |\n| Devvortex | Joomla 4.2.6 CVE-2023-23752 → admin template editor → www-data → one Web Flag | `passed` |
+| GoodGames | SQLite login SQLi → weak MD5 recovery → reused admin credential → stored Jinja2 SSTI as augustus → one Web Flag | `passed` |
+| Devvortex | Joomla 4.2.6 CVE-2023-23752 → admin template editor → www-data → one Web Flag | `passed` |
 
 Do not reinterpret these as Worker, platform synchronization or production deployment acceptance. Those are explicitly outside this workflow.
 
