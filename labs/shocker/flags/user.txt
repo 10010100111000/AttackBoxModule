@@ -1,1 +1,1 @@
-TTP{shocker_DEMO_user_change_before_publishing}
+TTP{shocker_user_default}
