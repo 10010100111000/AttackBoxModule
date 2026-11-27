@@ -48,7 +48,7 @@ Do not publish the vulnerable services to the public Internet. The target requir
 
 `.github/workflows/nibbles-e2e.yml` builds the target and a separate non-root HTTP attacker. The attacker uses the real CMS login and plugin upload route, then continues through the PHP execution context to verify the actual nibbler identity, User Flag, sudo permission, UID 0 and Root Flag.
 
-The workflow uses one clean instance with distinct random User and Root Flags, runs the complete chain once, then recreates that same Lab and checks that the uploaded PHP file is gone. The target and attacker share only an internal Docker network.
+The workflow uses one clean instance with distinct random User and Root Flags, runs the complete chain once, without launching a second instance. The target and attacker share only an internal Docker network.
 
 ## Resource profile
 
