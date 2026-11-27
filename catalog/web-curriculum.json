@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "updated_on": "2026-11-28",
-  "main_snapshot_commit": "11ae45691e3cfefc42c1502576028246f07aa7b3",
+  "main_snapshot_commit": "11f20e865c6b813e5017091ad1d92b85f4a1f6c4",
   "purpose": "trytopwn Web 题库选题、覆盖率与验收状态的唯一结构化索引；每次新增靶机时维护本文件与 docs/WEB_ROADMAP.md",
   "difficulty_is_provisional": true,
   "statuses": {
@@ -1109,8 +1109,8 @@
       "lab_ci_status": "full_chain_ci",
       "worker_status": "not_verified",
       "release_status": "not_assessed",
-      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/44955028484",
-      "note": "真实 GNU Bash 4.3 Apache CGI Shellshock → sudo Perl Root",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/46062735563",
+      "note": "Single-instance main E2E passed: genuine GNU Bash 4.3 / Apache mod_cgi CVE-2014-6271 request-header execution as shelly, exact User Flag, real sudoers NOPASSWD Perl and exact Root Flag. Integrated Shocker Challenge plus focused CGI Shellshock and sudo Perl Challenges all reuse this Lab and same image. CI generates one random User/Root Flag pair per run; Challenge answers remain static release seeds.",
       "variant_profile": {
         "technology": "Bash 4.3, Apache CGI",
         "initial_discovery": "cgi-bin 用户脚本",
@@ -1119,7 +1119,7 @@
         "incremental_learning_value": "与 CGI 之外的命令参数注入不同",
         "confidence": "from_repository_readme_or_existing_tests"
       },
-      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review",
+      "skill_mapping_stage": "authentic_bash_4_3_apache_cgi_shellshock_and_sudo_perl_single_instance_e2e_verified",
       "manual_validation": {
         "status": "not_reviewed",
         "commit": null,
@@ -1129,10 +1129,10 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "pending",
-      "e2e_ci_workflow": null,
-      "e2e_ci_evidence": null,
-      "e2e_ci_commit": null
+      "e2e_ci_status": "passed",
+      "e2e_ci_workflow": ".github/workflows/shocker-e2e.yml",
+      "e2e_ci_evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/46062735563",
+      "e2e_ci_commit": "11f20e865c6b813e5017091ad1d92b85f4a1f6c4"
     },
     {
       "id": "union",
