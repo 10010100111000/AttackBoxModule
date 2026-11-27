@@ -1,6 +1,6 @@
 #!/bin/sh
 set -eu
-FLAG="${INTENSE_WEB_FLAG:-TTP{intense_local_smoke_only}}"
+FLAG="${INTENSE_WEB_FLAG:?INTENSE_WEB_FLAG must be set to a per-instance random Flag}"
 case "$FLAG" in TTP\{*\}) ;; *) echo "INTENSE_WEB_FLAG must use TTP{...} format" >&2; exit 1;; esac
 case "$FLAG" in *[!A-Za-z0-9_{}-]* ) echo "INTENSE_WEB_FLAG contains unsupported characters" >&2; exit 1;; esac
 mkdir -p /var/lib/intense /app/logs /home/analyst
