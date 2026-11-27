@@ -1,0 +1,108 @@
+name: Alert versioned Web Flag release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version; rerunning the same version reuses its Flag."
+        required: true
+        default: "0.1.0"
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: alert-flag-release-${{ inputs.version }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+
+      - name: Generate or reuse the versioned Flag
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          python3 scripts/generate_alert_release.py --version "$RELEASE_VERSION"
+          manifest="labs/alert/flags/releases/$RELEASE_VERSION.json"
+          before=$(sha256sum "$manifest" | cut -d' ' -f1)
+          python3 scripts/generate_alert_release.py --version "$RELEASE_VERSION"
+          after=$(sha256sum "$manifest" | cut -d' ' -f1)
+          test "$before" = "$after"
+
+      - name: Verify manifest, target seed and Challenge answer
+        id: release
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib, re
+          version = os.environ["RELEASE_VERSION"]
+          manifest = json.loads(pathlib.Path(f"labs/alert/flags/releases/{version}.json").read_text())
+          flag = manifest["flag"]
+          assert manifest["version"] == version
+          assert re.fullmatch(r"TTP\{[a-z2-7]{16}\}", flag)
+          assert pathlib.Path("labs/alert/flags/user.txt").read_text().strip() == flag
+          challenge = pathlib.Path("challenges/integrated/alert/Blind-Review.md").read_text()
+          assert challenge.count(f'answer: "{flag}"') == 1
+          assert challenge.count("kind: flag") == 1 and "lab: alert" in challenge
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              output.write(f"expected={flag}\n")
+          print(f"::add-mask::{flag}")
+          PY
+
+      - name: Build genuine PHP and Chromium target
+        run: docker build --pull --progress=plain -t ttp-alert:release -f labs/alert/Dockerfile labs/alert
+
+      - name: Run actual browser exploit before committing release
+        env:
+          EXPECTED_FLAG: ${{ steps.release.outputs.expected }}
+        run: |
+          set -euo pipefail
+          docker network create --internal alert-release
+          cleanup() {
+            docker logs alert-target 2>/dev/null || true
+            docker rm -f alert-target 2>/dev/null || true
+            docker network rm alert-release 2>/dev/null || true
+            docker image rm ttp-alert:release 2>/dev/null || true
+          }
+          trap cleanup EXIT
+          docker run -d --name alert-target --network alert-release --network-alias alert-target \
+            --memory 1100m --cpus 2 --pids-limit 256 \
+            --cap-drop ALL --cap-add SETUID --cap-add SETGID --security-opt no-new-privileges \
+            -e ALERT_USER_FLAG="$EXPECTED_FLAG" ttp-alert:release >/dev/null
+          ready=0
+          for attempt in $(seq 1 90); do
+            state=$(docker inspect -f '{{.State.Status}}' alert-target)
+            health=$(docker inspect -f '{{.State.Health.Status}}' alert-target)
+            if [ "$state" != running ] || [ "$health" = unhealthy ]; then docker logs alert-target; exit 1; fi
+            if [ "$health" = healthy ]; then ready=1; break; fi
+            sleep 2
+          done
+          test "$ready" = 1
+          docker run --rm --network alert-release --network-alias attacker \
+            -v "$GITHUB_WORKSPACE/labs/alert/tests/browser_proof.py:/browser_proof.py:ro" \
+            -e TARGET_URL=http://alert-target:8080 -e EXPECTED_FLAG="$EXPECTED_FLAG" \
+            python:3.12-alpine python /browser_proof.py
+
+      - name: Commit verified release artifacts
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+          BRANCH_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "labs/alert/flags/releases/$RELEASE_VERSION.json" labs/alert/flags/user.txt challenges/integrated/alert/Blind-Review.md
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(alert): generate Web Flag for $RELEASE_VERSION"
+            git push origin "HEAD:$BRANCH_NAME"
+          fi
