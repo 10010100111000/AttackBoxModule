@@ -4,3 +4,4 @@ tests
 README.md
 .release-blocked
 WORKER_COMPATIBILITY.md
+flags/
