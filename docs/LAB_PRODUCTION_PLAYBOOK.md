@@ -27,7 +27,7 @@ Do not reinterpret these as Worker, platform synchronization or production deplo
 
 ### Next Lab
 
-**Alert** is next. Its real PHP-Markdown + target-local Chromium flow already has evidence for stored XSS, cross-user review and loopback-only PHP source traversal. The remaining bounded task is to make the two-clean-instance, rotated Web Flag proof an automatic PR/push E2E gate and synchronize the Challenge answer with a versioned random Flag.
+**Alert** is the current Lab. Its real PHP-Markdown + target-local Chromium flow already has evidence for stored XSS, cross-user review and loopback-only PHP source traversal. The bounded task is to make the two-clean-instance, rotated Web Flag proof an automatic PR/push E2E gate and synchronize the Challenge answer with a versioned random Flag. The workflow is configured but must pass before merge.
 
 Keep this Lab Web-only: no SSH, Linux privilege escalation, cron or Root stage. Do not perform Worker acceptance. Funnel is a separate FTP/SSH/PostgreSQL service-track exercise, not the next Web Lab; Trick remains deferred because of its larger multi-service scope.
 
