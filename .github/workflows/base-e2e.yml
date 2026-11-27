@@ -67,7 +67,7 @@ jobs:
         run: docker build --pull --progress=plain -t ttp-base:e2e -f labs/base/Dockerfile labs/base
 
       - name: Build the independent attacker image
-        run: docker build --pull --progress=plain -t ttp-base-attacker:e2e -f labs/base/tests/Dockerfile labs/base/tests
+        run: docker build --pull --progress=plain -t ttp-base-attacker:e2e -f scripts/attackers/base/Dockerfile scripts/attackers/base
 
       - name: Start target on an isolated internal network
         run: |
