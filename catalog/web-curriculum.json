@@ -1268,13 +1268,17 @@
       "provisional_difficulty": "beginner",
       "primary_category": "xss",
       "secondary_categories": [],
-      "validated_skills": [],
-      "implemented_skills": [],
+      "validated_skills": [
+        "xss.reflected"
+      ],
+      "implemented_skills": [
+        "xss.reflected"
+      ],
       "lab_ci_status": "full_chain_ci",
       "worker_status": "not_verified",
       "release_status": "blocked_by_marker",
       "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45233000605",
-      "note": "Native PostgreSQL unique constraint -> actual Django 1.11.4 technical-500 XSS -> authenticated headless editor -> Flag callback; patched Django 1.11.5 negative control and rebuilt-instance Flag rotation pass",
+      "note": "Native PostgreSQL unique constraint -> real Django 1.11.4 DEBUG technical-500 reflected XSS (CVE-2017-12794) -> authenticated headless editor -> Flag callback. Historical full-chain CI and patched Django 1.11.5 negative control passed. The current unified e2e_ci_status remains pending.",
       "variant_profile": {
         "technology": "Django 1.11.4, Python, PostgreSQL",
         "initial_discovery": "Normal public registry form and repeated handle registration",
@@ -1283,7 +1287,7 @@
         "incremental_learning_value": "Contrasts WonderCMS admin-session XSS by exercising Django's framework error-page context without an admin bot",
         "confidence": "verified_by_independent_black_box_ci"
       },
-      "skill_mapping_stage": "browser_and_full_chain_ci_verified",
+      "skill_mapping_stage": "historical_full_chain_ci_verified",
       "manual_validation": {
         "status": "not_reviewed",
         "commit": null,
