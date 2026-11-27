@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "updated_on": "2026-11-28",
-  "main_snapshot_commit": "11f20e865c6b813e5017091ad1d92b85f4a1f6c4",
+  "main_snapshot_commit": "c377a3a684e9eca6ed938c546390b6fc0e15109b",
   "purpose": "trytopwn Web 题库选题、覆盖率与验收状态的唯一结构化索引；每次新增靶机时维护本文件与 docs/WEB_ROADMAP.md",
   "difficulty_is_provisional": true,
   "statuses": {
@@ -534,8 +534,8 @@
       "lab_ci_status": "full_chain_ci",
       "worker_status": "not_verified",
       "release_status": "not_assessed",
-      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45073735584",
-      "note": "原版 phpbash → sudo scriptmanager → root cron；独立 CI",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/46064377547",
+      "note": "Single-instance main E2E passed: genuine Arrexel/phpbash executes PHP shell_exec as www-data, native sudo pivots to scriptmanager, attacker modifies the actual /scripts/test.py, and real root cron executes it to retrieve the exact per-instance Root Flag. Integrated Bashed plus focused Developer Console and Scheduled Maintenance Challenges all reuse this Lab image. Runtime 13.69 MiB, 9 PIDs; image 72,651,195 bytes.",
       "variant_profile": {
         "technology": "PHP, Apache, cron",
         "initial_discovery": "通过目录枚举找到真实 phpbash",
@@ -544,7 +544,7 @@
         "incremental_learning_value": "主要训练 Web 暴露入口，而非普通命令注入表单",
         "confidence": "from_repository_readme_or_existing_tests"
       },
-      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review",
+      "skill_mapping_stage": "authentic_phpbash_shell_exec_sudo_scriptmanager_and_real_root_cron_single_instance_e2e_verified",
       "manual_validation": {
         "status": "not_reviewed",
         "commit": null,
@@ -554,10 +554,10 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "pending",
-      "e2e_ci_workflow": null,
-      "e2e_ci_evidence": null,
-      "e2e_ci_commit": null
+      "e2e_ci_status": "passed",
+      "e2e_ci_workflow": ".github/workflows/bashed-e2e.yml",
+      "e2e_ci_evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/46064377547",
+      "e2e_ci_commit": "c377a3a684e9eca6ed938c546390b6fc0e15109b"
     },
     {
       "id": "bike",
