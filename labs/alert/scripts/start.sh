@@ -1,6 +1,7 @@
 #!/bin/sh
 set -eu
 umask 027
+: "${ALERT_USER_FLAG:?ALERT_USER_FLAG must be set to a per-instance random Web Flag}"
 if [ -n "${ALERT_USER_FLAG:-}" ]; then
   su-exec www-data sh -c 'printf "%s\n" "$ALERT_USER_FLAG" > /opt/alert/private/web-flag.txt && chmod 0400 /opt/alert/private/web-flag.txt'
 fi
