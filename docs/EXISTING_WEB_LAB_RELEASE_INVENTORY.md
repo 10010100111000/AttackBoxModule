@@ -41,7 +41,7 @@
 | Lab | 当前 E2E | 备注 |
 |---|---|---|
 
-| OpenAdmin | pending | 当前单实例 E2E 已验证至 Joanna/User Flag；Root 阶段因 Expect 未使用传入的临时私钥路径而失败，修复后需重新跑完整攻击链；Catalog 保持 pending |
+| OpenAdmin | merged / partial | PR #65 已合并；真实 xajax → Jimmy → 内网应用 → Joanna/User 路径已由当前 CI 验证，Root 阶段因 Expect 测试脚本私钥路径不一致未完成验证。靶机已纳入 main，可进入平台集成；不宣称本次完整 E2E passed。 |
 | Pebbles | pending | 有历史完整链 CI 记录 |
 | Photobomb | pending | 有历史完整链 CI 记录 |
 | Union | pending | 有历史完整链 CI 记录 |
@@ -65,7 +65,7 @@
 
 ## 下一步
 
-Cap 已通过 main 单实例 E2E。下一项优先检查 OpenAdmin 的真实 xajax RCE 与内网服务转折，核对现有实现、题面与历史 CI，再决定是否需要补充独立攻击端；一次只做一台。Funnel 是非 Web 服务链，Trick 范围较大，暂不优先。
+Cap 与 OpenAdmin 已完成当前阶段的仓库集成。OpenAdmin 的完整 Root E2E 未重新验证，但不阻塞靶机进入平台集成。下一台按 Catalog 中尚未处理的 Lab 顺序选择；Funnel 是非 Web 服务链，Trick 范围较大，暂不优先。
 
 ## 文档入口
 
