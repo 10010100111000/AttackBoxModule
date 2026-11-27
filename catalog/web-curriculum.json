@@ -449,16 +449,16 @@
       "worker_status": "not_verified",
       "release_status": "blocked_by_marker",
       "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45474730425",
-      "note": "Real Chromium target-local admin opens shared Markdown following contact messages; independent attacker confirmed JS execution plus actual localhost-only PHP source read via ../ traversal. Not yet independently verified end-to-end target Web Flag extraction; Worker unverified; release blocked.",
+      "note": "下一台进行中的 Web Lab。已有真实 Chromium Stored XSS、跨用户审阅与 loopback-only PHP 文件读取证明；当前将既有双实例随机 Flag 攻击端验收改为 PR/push 自动 E2E，并增加版本化 Flag 与 Challenge 同步。尚未取得新标准下的实际 CI 通过记录。Worker/平台判题不在本次范围。",
       "variant_profile": {
         "technology": "PHP 8.2 Alpine, Python-Markdown 3.7, instance-local headless Chromium",
         "initial_discovery": "Markdown upload and share plus contact form with administrator visits",
         "key_constraint_or_mechanism": "Raw HTML persisted by Markdown parser; contact-link review in true browser; loopback-only PHP reader with unchecked filename concatenation",
         "attack_path": "Recon -> shared Markdown XSS -> local browser review -> internal message read -> traversed file read -> Web flag",
         "incremental_learning_value": "Stored XSS and loopback-only administrator browser capability with real filesystem traversal; distinct from reflected WonderCMS",
-        "confidence": "real_browser_and_traversal_verified_flag_chain_pending"
+        "confidence": "real_browser_and_traversal_verified; two-instance exact Flag E2E configured pending"
       },
-      "skill_mapping_stage": "real_browser_traversal_ci_verified_flag_pending",
+      "skill_mapping_stage": "real_browser_stored_xss_loopback_traversal_flag_e2e_pending",
       "manual_validation": {
         "status": "not_reviewed",
         "commit": null,
@@ -468,8 +468,8 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "pending",
-      "e2e_ci_workflow": null,
+      "e2e_ci_status": "configured",
+      "e2e_ci_workflow": ".github/workflows/alert.yml",
       "e2e_ci_evidence": null,
       "e2e_ci_commit": null
     },
