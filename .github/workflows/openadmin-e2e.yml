@@ -1,0 +1,160 @@
+name: OpenAdmin single-instance ONA xajax and nano E2E
+
+on:
+  pull_request:
+    paths:
+      - "labs/openadmin/**"
+      - "challenges/startpoint/openadmin/**"
+      - "challenges/command-injection/openadmin/**"
+      - "challenges/linux-privilege-escalation/openadmin/**"
+      - ".github/workflows/openadmin-e2e.yml"
+  push:
+    branches: [main]
+    paths:
+      - "labs/openadmin/**"
+      - "challenges/startpoint/openadmin/**"
+      - "challenges/command-injection/openadmin/**"
+      - "challenges/linux-privilege-escalation/openadmin/**"
+      - ".github/workflows/openadmin-e2e.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  openadmin-full-chain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check integrated and focused Challenge answers
+        run: |
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          user = Path("labs/openadmin/flags/user.txt").read_text().strip()
+          root = Path("labs/openadmin/flags/root.txt").read_text().strip()
+          expected = {
+              "challenges/startpoint/openadmin/OpenAdmin.md": [user, root],
+              "challenges/command-injection/openadmin/ona-xajax-rce.md": [user],
+              "challenges/linux-privilege-escalation/openadmin/nano-sudo.md": [root],
+          }
+          for filename, expected_answers in expected.items():
+              content = Path(filename).read_text()
+              answers = re.findall(r'(?m)^answer: "([^"]+)"$', content)
+              if answers != expected_answers:
+                  raise SystemExit(f"Challenge answer mismatch: {filename}")
+              if not re.search(r"(?m)^lab: openadmin$", content):
+                  raise SystemExit(f"Challenge does not reuse the OpenAdmin Lab: {filename}")
+          print("PASS: integrated and focused Challenges share one Lab and match default Flag seeds")
+          PY
+
+      - name: Build authentic OpenNetAdmin target
+        run: docker build --pull --progress=plain -t ttp-openadmin:ci -f labs/openadmin/Dockerfile labs/openadmin
+
+      - name: Build independent attacker tools
+        run: docker build --pull --progress=plain -t ttp-openadmin-attacker:ci -f labs/openadmin/tests/Dockerfile.attacker labs/openadmin/tests
+
+      - name: Generate one instance's User and Root Flags
+        id: flags
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import base64, secrets, os
+          def make_flag():
+              token = base64.b32encode(secrets.token_bytes(10)).decode().rstrip("=").lower()
+              return "TTP{" + token + "}"
+          user, root = make_flag(), make_flag()
+          while user == root:
+              root = make_flag()
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              for name, value in (("user", user), ("root", root)):
+                  print("::add-mask::" + value)
+                  output.write(name + "=" + value + "\n")
+          print("Generated one instance's distinct 80-bit User and Root Flags; values are masked.")
+          PY
+
+      - name: Run full ONA to nano Root path on one clean instance
+        env:
+          USER_FLAG: ${{ steps.flags.outputs.user }}
+          ROOT_FLAG: ${{ steps.flags.outputs.root }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          network=openadmin-e2e
+          target=openadmin-target
+          cleanup() {
+            docker logs --tail 120 "$target" 2>/dev/null || true
+            docker rm -f "$target" 2>/dev/null || true
+            docker network rm "$network" 2>/dev/null || true
+          }
+          trap cleanup EXIT
+          docker network create --internal "$network"
+
+          docker run -d --name "$target" --network "$network" \
+            --memory 768m --pids-limit 512 --cpus 2 \
+            -e OPENADMIN_REQUIRE_PRIVATE_FLAGS=1 \
+            -e OPENADMIN_STATIC_USER_FLAG="$USER_FLAG" \
+            -e OPENADMIN_STATIC_ROOT_FLAG="$ROOT_FLAG" \
+            ttp-openadmin:ci >/dev/null
+
+          ready=0
+          for attempt in $(seq 1 90); do
+            state=$(docker inspect -f '{{.State.Status}}' "$target")
+            health=$(docker inspect -f '{{.State.Health.Status}}' "$target")
+            if [ "$state" != "running" ] || [ "$health" = "unhealthy" ]; then
+              docker logs "$target"
+              echo "OpenAdmin failed before becoming healthy"
+              exit 1
+            fi
+            if [ "$health" = "healthy" ]; then
+              ready=1
+              break
+            fi
+            sleep 2
+          done
+          test "$ready" = 1
+
+          docker run --rm --network "$network" \
+            -v "$PWD/labs/openadmin/tests:/tests:ro" \
+            ttp-openadmin-attacker:ci python3 /tests/attack_path.py
+
+          docker run --rm --network "$network" \
+            -v "$PWD/labs/openadmin/tests:/tests:ro" \
+            -e EXPECTED_USER_FLAG="$USER_FLAG" \
+            -e EXPECTED_ROOT_FLAG="$ROOT_FLAG" \
+            ttp-openadmin-attacker:ci bash -lc '
+              set -euo pipefail
+              sshpass -p "n1nj4W4rri0R!" ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null jimmy@openadmin-target "id -un" | grep -Fx jimmy
+
+              sshpass -p "n1nj4W4rri0R!" ssh -N -L 52846:127.0.0.1:52846 \
+                -o ExitOnForwardFailure=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null jimmy@openadmin-target &
+              tunnel=$!
+              trap "kill $tunnel 2>/dev/null || true" EXIT
+              for attempt in $(seq 1 30); do
+                python3 -c "import socket; s=socket.socket(); s.settimeout(1); s.connect((\"127.0.0.1\",52846)); s.close()" && break || sleep 1
+              done
+              python3 /tests/internal_key.py
+
+              sshpass -P "Enter passphrase for key" -p bloodninjas ssh \
+                -i /tmp/joanna_id_rsa -o StrictHostKeyChecking=no \
+                -o UserKnownHostsFile=/dev/null joanna@openadmin-target \
+                "id -un; cat /home/joanna/user.txt" |
+                grep -E "^(joanna|$EXPECTED_USER_FLAG)$"
+
+              expect /tests/nano-root.exp || echo "Nano closed the SSH channel; validating independent root proofs"
+              root_proof=$(sshpass -P "Enter passphrase for key" -p bloodninjas ssh \
+                -i /tmp/joanna_id_rsa -o StrictHostKeyChecking=no \
+                -o UserKnownHostsFile=/dev/null joanna@openadmin-target \
+                "cat /tmp/openadmin-root-proof; cat /tmp/openadmin-root-flag-proof")
+              printf "%s\\n" "$root_proof" | grep -F "uid=0(root)"
+              printf "%s\\n" "$root_proof" | grep -Fx "$EXPECTED_ROOT_FLAG"
+            '
+
+          docker stats --no-stream "$target" --format "OpenAdmin memory={{.MemUsage}} pids={{.PIDs}}"
+          echo "PASS: one fresh instance completed ONA xajax RCE -> Jimmy -> SSH tunnel -> Joanna -> sudo nano UID 0 -> exact User/Root Flags"
+
+      - name: Record target image size
+        if: always()
+        run: docker image inspect ttp-openadmin:ci --format='IMAGE_SIZE_BYTES={{.Size}}' || true
