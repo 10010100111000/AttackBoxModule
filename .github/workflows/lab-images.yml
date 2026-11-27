@@ -280,7 +280,7 @@ jobs:
               grep -Fq username /tmp/intense-login.html
               echo "CHECK source archive"
               curl -fsS "$base/src.zip" -o /tmp/intense-source.zip
-              python -c "import zipfile; assert zipfile.is_zipfile(\\"/tmp/intense-source.zip\\")"
+              python -c "import zipfile; assert zipfile.is_zipfile('/tmp/intense-source.zip')"
               echo "CHECK guest login"
               curl -fsS -c /tmp/intense-cookies -b /tmp/intense-cookies -d "username=guest&password=guest" "$base/postlogin" -o /tmp/intense-login-result.txt
               grep -Fq "OK" /tmp/intense-login-result.txt
