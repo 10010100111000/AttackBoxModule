@@ -29,7 +29,7 @@ User / Root Flag 分别由随机版本化 manifest 生成，且由真实 HTTP/SS
 
 
 
-Base 原有 PHP 7.2 / Apache / OpenSSH / sudo find 双 Flag 靶场已存在，不重新制作。当前补充独立 HTTP+SSH 攻击端、随机 User/Root Flag、Writeup 与专属 E2E；必须真实完成 PHP strcmp 数组绕过、上传 PHP、www-data 命令执行、凭据复用、SSH john、User Flag、sudo find 和 Root Flag 才能标记通过。
+Base 原有 PHP 7.2 / Apache / OpenSSH / sudo find 双 Flag 靶场已存在，未重做；独立 HTTP+SSH 攻击端已通过真实完整链并精确读取随机 User/Root 双 Flag。
 
 - E2E：`.github/workflows/base-e2e.yml`（已接入，等待实际运行）
 - 发布：`.github/workflows/base-release.yml`
@@ -77,7 +77,7 @@ This table is generated from the same state recorded in `catalog/web-curriculum.
 | Lab ID | Catalog CI status | Release marker status |
 |---|---|---|
 | `alert` | `partial` | `blocked_by_marker` |
-| `base` | `unverified` | `not_assessed` |
+| `base` | `full_chain_ci` | `not_assessed` |
 | `bashed` | `full_chain_ci` | `not_assessed` |
 | `bike` | `full_chain_ci` | `not_assessed` |
 | `bountyhunter` | `full_chain_ci` | `not_assessed` |
@@ -106,11 +106,12 @@ This table is generated from the same state recorded in `catalog/web-curriculum.
 
 ## 现有靶机状态
 
-### 已有完整目标链 CI 记录（20 台）
+### 已有完整目标链 CI 记录（21 台）
 
 | Lab | 主要技术/目标 | 备注 |
 |---|---|---|
 | Bashed | phpbash 暴露入口、sudo/cron | 原版 phpbash 组件 |
+| Base | PHP 7.2 strcmp 绕过 → PHP 上传 → SSH john → sudo find | 独立 HTTP+SSH E2E 读取随机 User/Root 双 Flag；main E2E 已通过 |
 | Bike | Handlebars 4.1.1 SSTI → RCE | 独立 HTTP 攻击端读取随机 Flag；PR 与 main 版本发布 E2E 均通过 |
 | Bountyhunter | SimpleXML XXE、凭据与后续服务链 | 真实 XML 解析器 |
 | Cap | IDOR、PCAP、凭据复用、Linux capability | 已拆分为 Packet Drop / Setuid Surprise 两个 Challenge |
