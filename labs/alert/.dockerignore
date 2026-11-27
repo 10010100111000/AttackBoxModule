@@ -2,3 +2,6 @@
 README.md
 tests/
 *.log
+writeup.md
+flags/releases/
+exploit.py
