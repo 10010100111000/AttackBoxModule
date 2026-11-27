@@ -15,6 +15,7 @@ FROM node:22-slim AS backend-deps
 WORKDIR /app/backend
 RUN apt-get update \
  && apt-get install -y --no-install-recommends git python3 make g++ \
+ && git config --global url.\"https://github.com/\".insteadOf ssh://git@github.com/ \
  && rm -rf /var/lib/apt/lists/*
 COPY challenge/backend/package.json ./
 RUN npm config set registry https://registry.npmjs.org/ \
