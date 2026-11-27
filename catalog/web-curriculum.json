@@ -1026,7 +1026,7 @@
       "worker_status": "not_verified",
       "release_status": "not_assessed",
       "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45073735570",
-      "note": "Sinatra/ImageMagick 命令注入 → sudo PATH 劫持",
+      "note": "Sinatra / ImageMagick 的真实 system() 命令拼接与 sudo SETENV PATH 劫持。新增三道 Challenge 共用一个 Lab；独立非 root attacker 的单实例 E2E 已配置，验证普通图片转换、通过命令注入取得 wizard User Flag，以及通过真实 cleanup.sh / PATH 劫持取得 UID 0 和 Root Flag。等待首次 CI 运行。",
       "variant_profile": {
         "technology": "Ruby Sinatra, ImageMagick",
         "initial_discovery": "图片格式参数",
@@ -1035,7 +1035,7 @@
         "incremental_learning_value": "文件处理输入面的命令注入",
         "confidence": "from_repository_readme_or_existing_tests"
       },
-      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review",
+      "skill_mapping_stage": "single_instance_network_attacker_workflow_configured",
       "manual_validation": {
         "status": "not_reviewed",
         "commit": null,
@@ -1045,8 +1045,8 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "pending",
-      "e2e_ci_workflow": null,
+      "e2e_ci_status": "configured",
+      "e2e_ci_workflow": ".github/workflows/photobomb-e2e.yml",
       "e2e_ci_evidence": null,
       "e2e_ci_commit": null
     },
