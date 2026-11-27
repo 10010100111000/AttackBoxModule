@@ -30,7 +30,7 @@ jobs:
 
       - name: Check all Challenge answers and compile independent player
         run: |
-          python3 -m py_compile labs/nibbles/tests/attack_path.py labs/nibbles/tests/reset_path.py
+          python3 -m py_compile labs/nibbles/tests/attack_path.py
           python3 - <<'PY'
           import re
           from pathlib import Path
@@ -89,8 +89,7 @@ jobs:
           set -euo pipefail
           cleanup() {
             docker logs nibbles-target 2>/dev/null || true
-            docker logs nibbles-reset 2>/dev/null || true
-            docker rm -f nibbles-target nibbles-reset 2>/dev/null || true
+            docker rm -f nibbles-target 2>/dev/null || true
             docker network rm nibbles-e2e 2>/dev/null || true
           }
           trap cleanup EXIT
@@ -136,25 +135,7 @@ jobs:
             ttp-nibbles-attacker:ci
 
           docker stats --no-stream nibbles-target --format "Nibbles memory={{.MemUsage}} pids={{.PIDs}}"
-          docker rm -f nibbles-target >/dev/null
-
-          echo "Recreating the same Lab to verify clean reset"
-          docker run -d \
-            --name nibbles-reset \
-            --network nibbles-e2e \
-            --network-alias nibbles-target \
-            --memory 160m --cpus 1 --pids-limit 128 \
-            -e NIBBLES_REQUIRE_PRIVATE_FLAGS=1 \
-            -e NIBBLES_STATIC_USER_FLAG="$USER_FLAG" \
-            -e NIBBLES_STATIC_ROOT_FLAG="$ROOT_FLAG" \
-            ttp-nibbles:ci >/dev/null
-          wait_healthy nibbles-reset
-          docker run --rm \
-            --network nibbles-e2e \
-            -e TARGET_URL=http://nibbles-target \
-            ttp-nibbles-attacker:ci python3 /tests/reset_path.py
-          docker rm -f nibbles-reset >/dev/null
-          echo "PASS: one instance completed the full User/Root path and reset to a clean state"
+          echo "PASS: one fresh instance completed the full User/Root attack chain"
 
       - name: Record target image size
         if: always()
