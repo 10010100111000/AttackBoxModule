@@ -3,7 +3,7 @@ FROM node:22-slim AS frontend-builder
 WORKDIR /build
 
 COPY challenge/frontend/package.json ./
-RUN yarn install --frozen-lockfile 2>/dev/null || yarn install
+RUN set -e; for attempt in 1 2 3; do yarn install --network-timeout 600000 --network-concurrency 1 && break || { if [ "$attempt" -eq 3 ]; then exit 1; fi; sleep 5; }; done
 
 COPY challenge/frontend ./
 RUN yarn build
@@ -20,8 +20,7 @@ RUN apt-get update \
 
 WORKDIR /app/backend
 COPY challenge/backend/package.json ./
-RUN yarn install --production --frozen-lockfile 2>/dev/null || yarn install --production \
- && yarn cache clean
+RUN set -e; for attempt in 1 2 3; do yarn install --production --network-timeout 600000 --network-concurrency 1 && break || { if [ "$attempt" -eq 3 ]; then exit 1; fi; sleep 5; }; done && yarn cache clean
 
 COPY challenge/backend ./
 COPY --from=frontend-builder /app/backend/static/dist ./static/dist
