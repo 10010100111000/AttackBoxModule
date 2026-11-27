@@ -1611,14 +1611,14 @@
         "https://www.willsroot.io/2020/11/intense-hackthebox-writeup.html",
         "https://github.com/zweilosec/htb-writeups/blob/master/linux-machines/hard/intense-write-up.md"
       ],
-      "note": "Independent Web-only reconstruction based on multiple public HTB Intense writeups. Real Flask + SQLite; reflected SQLite errors and a conditional error oracle extract the administrator secret; SHA-256 secret-prefix LWT signature length extension plus duplicate-key parsing for admin session; unchecked admin log path join reads the per-instance Web Flag. Original private source is not copied; observable route and exploit path are preserved. SNMP, SSH pivot and native pwn/root stages are intentionally excluded. Initial implementation only: no Docker build, manual acceptance, Worker verification or release yet.",
+      "note": "Selected next from the existing main inventory. Independent Web-only reconstruction based on multiple public HTB writeups. Real Flask + SQLite; reflected SQLite errors and a conditional zeroblob error oracle extract the administrator secret; SHA-256 secret-prefix LWT length extension plus duplicate-key parsing forges an admin session; unchecked admin log path join reads the per-instance Web Flag. Original private source is unavailable and will not be copied. SNMP, SSH pivot and native pwn/root stages are excluded. Existing initial implementation is not yet Docker-built or covered by dedicated E2E.",
       "variant_profile": {
         "technology": "Python 3.12, Flask 3.1.1, Gunicorn 23.0.0, SQLite",
         "initial_discovery": "Community message board, guest login, public src.zip source archive and 140-character message submission",
         "key_constraint_or_mechanism": "SQLite INSERT interpolation with direct native error feedback; conditional CASE oracle using a genuine SQLite error; SHA-256 secret-prefix MAC length extension; duplicate session-key overwrite; admin log path traversal",
         "attack_path": "Recon/source review -> guest login -> message SQLi -> extract admin secret -> forge admin LWT cookie -> admin log viewer -> path traversal -> Web Flag",
         "incremental_learning_value": "Combines SQL error-based extraction and conditional-error blind inference with a separate cryptographic session-forgery step and final authenticated file read in one coherent Web application",
-        "confidence": "public writeups cross-checked; implementation written; runtime and exploit path not yet verified"
+        "confidence": "public_writeups_cross_checked; implementation_present; Docker build and isolated E2E pending"
       },
       "skill_mapping_stage": "implementation_added_manual_skill_validation_pending",
       "manual_validation": {
@@ -2631,11 +2631,11 @@
     "end_to_end_acceptance": "isolated_network_client_real_vulnerable_component_and_exact_flag"
   },
   "selection_policy": {
-    "preferred_start": "HTB Intense Web-only reconstruction is now the active SQL Injection composite candidate",
+    "preferred_start": "HTB Intense Web-only reconstruction is the single active Lab; Base has already passed its full dual-Flag E2E.",
     "next_candidates": [
       "intense"
     ],
-    "next_review": "Finish the Intense build and manually verify the original Web attack path before selecting another SQLi candidate. Inject remains a later path-traversal / Spring RCE research candidate.",
+    "next_review": "Complete the Intense Docker build, isolated attacker E2E and random Web Flag verification before selecting another Lab. Do not request manual player acceptance; the dedicated CI is the acceptance gate.",
     "selection_reason": "The existing curriculum already covers UNION, Boolean/Time Blind, second-order, FILE operations and WebSocket blind SQLi. Intense adds a distinct SQLite conditional-error oracle plus cryptographic session forgery and authenticated path traversal, creating a coherent composite Web exercise without a JVM."
   }
 }
