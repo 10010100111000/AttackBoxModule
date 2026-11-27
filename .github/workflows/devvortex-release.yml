@@ -78,7 +78,7 @@ jobs:
           trap cleanup EXIT
           docker run -d --name devvortex-target --network devvortex-release \
             --network-alias devvortex.htb --network-alias dev.devvortex.htb \
-            --memory 1100m --cpus 2 --pids-limit 220 --cap-drop ALL \
+            --memory 1100m --cpus 2 --pids-limit 220 \
             --security-opt no-new-privileges ttp-devvortex:release
           ready=0
           for attempt in $(seq 1 100); do
