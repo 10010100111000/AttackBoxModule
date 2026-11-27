@@ -12,6 +12,11 @@ on:
       - "scripts/validate_web_curriculum.py"
       - "scripts/generate_bike_release.py"
       - "labs/bike/**"
+      - "labs/goodgames/**"
+      - "challenges/startpoint/goodgames/**"
+      - "scripts/generate_goodgames_release.py"
+      - ".github/workflows/goodgames-e2e.yml"
+      - ".github/workflows/goodgames-release.yml"
       - "challenges/startpoint/bike/**"
       - ".github/workflows/bike.yml"
       - ".github/workflows/bike-release.yml"
@@ -31,6 +36,11 @@ on:
       - "labs/nodeblog/**"
       - ".github/workflows/web-curriculum.yml"
       - "labs/**/Dockerfile"
+      - "labs/goodgames/**"
+      - "challenges/startpoint/goodgames/**"
+      - "scripts/generate_goodgames_release.py"
+      - ".github/workflows/goodgames-e2e.yml"
+      - ".github/workflows/goodgames-release.yml"
   pull_request:
     paths:
       - "catalog/web-competencies.json"
@@ -74,6 +84,28 @@ jobs:
           assert challenge.count("kind: flag") == 1
           assert "lab: bike" in challenge
           print("Bike random Flag, stable release manifest and Challenge answer: PASS")
+          PY
+
+      - name: Check GoodGames versioned Flag generator and Challenge answer consistency
+        run: |
+          set -euo pipefail
+          python3 scripts/generate_goodgames_release.py --version 0.0.0-ci
+          manifest=labs/goodgames/flags/releases/0.0.0-ci.json
+          before=$(sha256sum "$manifest" | cut -d' ' -f1)
+          python3 scripts/generate_goodgames_release.py --version 0.0.0-ci
+          after=$(sha256sum "$manifest" | cut -d' ' -f1)
+          test "$before" = "$after"
+          python3 - <<'PY'
+          import json, pathlib, re
+          manifest = json.loads(pathlib.Path("labs/goodgames/flags/releases/0.0.0-ci.json").read_text())
+          flag = manifest["flag"]
+          assert re.fullmatch(r"TTP\\{[a-z2-7]{16}\\}", flag)
+          assert pathlib.Path("labs/goodgames/flags/user.txt").read_text().strip() == flag
+          challenge = pathlib.Path("challenges/startpoint/goodgames/GoodGames.md").read_text()
+          assert challenge.count(f'answer: "{flag}"') == 1
+          assert challenge.count("kind: flag") == 1
+          assert "lab: goodgames" in challenge
+          print("GoodGames random Flag, stable manifest and Challenge answer: PASS")
           PY
 
       - name: Check Cap Flag generator determinism and Challenge answer consistency
