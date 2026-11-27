@@ -35,6 +35,14 @@ Base 原有 PHP 7.2 / Apache / OpenSSH / sudo find 双 Flag 靶场已存在，�
 - 发布：`.github/workflows/base-release.yml`
 - 结构化状态：`configured`，成功运行证据尚未产生。
 
+### 最近更新：Intense — 当前进行中
+
+Intense 已选为 Base 之后的下一台。保留现有 Flask/SQLite Web-only 实现，当前补齐真实条件错误 SQLi、SHA-256 长度扩展独立攻击端、随机单 Web Flag 和 E2E。当前状态为 `configured`，Docker build 和真实攻击链尚未通过。
+
+- E2E：`.github/workflows/intense-e2e.yml`
+- 版本化 Flag 发布：`.github/workflows/intense-release.yml`
+- 仅 Web Flag；不包含 SNMP、SSH、native binary 或 Root。
+
 ### 最近更新：Devvortex — E2E 已通过
 
 Devvortex 已完成 Web-only 目标并通过独立攻击端验收。目标使用真实 Joomla 4.2.6，完整路径为虚拟主机与版本识别 → CVE-2023-23752 匿名配置泄露 → Joomla 管理员认证 → Cassiopeia 模板编辑 → 以 `www-data` 执行命令并读取单个 Web Flag。
