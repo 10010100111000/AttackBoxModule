@@ -19,6 +19,16 @@
 - HTB's internal `index.php`/`main.php` PHP app is not published as an official source tree; the small internal site is an explicit reconstruction of the observed login/hash/private-key behavior. The SHA-512 digest, password reuse, internal port, key passphrase and nano sudo rule follow public writeups.
 - Host is Ubuntu 18.04 with PHP 7.2 and MySQL 5.7; package fingerprints may differ from the original host. No vulnerable ONA PHP source or xajax code is replaced.
 
+## Challenge reuse
+
+The following learner Challenges share this one Lab image and the same OpenNetAdmin / internal PHP / SSH environment:
+
+- [OpenAdmin](../../challenges/startpoint/openadmin/OpenAdmin.md): integrated xajax → credential pivot → Joanna → nano root path.
+- [Network Diagnostics](../../challenges/command-injection/openadmin/ona-xajax-rce.md): focused OpenNetAdmin xajax command-injection and credential-discovery objective.
+- [Restricted Editor](../../challenges/linux-privilege-escalation/openadmin/nano-sudo.md): focused sudo nano privilege-boundary objective.
+
+The focused Challenges reuse the corresponding User or Root Flag from the integrated Challenge; they do not create separate Docker images or duplicate the vulnerable environment.
+
 ## Build and test
 
 ```bash
@@ -27,6 +37,6 @@ docker run --rm -d --name openadmin --network none ttp-openadmin:dev
 docker inspect -f '{{.State.Health.Status}}' openadmin
 ```
 
-CI starts actual ONA, MySQL, Apache and SSH services on a private Docker network. A separate attacker container checks xajax RCE as `www-data`, the real DB configuration leak, SSH password reuse, SSH local forwarding to port 52846, the internal app's encrypted key, SSH login as Joanna and the real nano command-execution privilege boundary. It also verifies static flags, a second isolated instance and fresh-container reset.
+The dedicated `.github/workflows/openadmin-e2e.yml` starts actual ONA, MySQL, Apache and SSH services on one private Docker network. A separate non-root attacker verifies xajax RCE as `www-data`, the real DB configuration leak, SSH password reuse, SSH local forwarding to port 52846, the internal app's encrypted key, SSH login as Joanna and the real nano command-execution privilege boundary. It checks the exact random User and Root Flags generated for that single CI instance. It does not start a second target instance or use `docker exec` as the attacker.
 
 Static demo flags only: `/home/joanna/user.txt` and `/root/root.txt`. Production Worker instances must inject `OPENADMIN_STATIC_USER_FLAG`, `OPENADMIN_STATIC_ROOT_FLAG`, and `OPENADMIN_REQUIRE_PRIVATE_FLAGS=1`. Keep production answers outside Git and public GHCR images.
