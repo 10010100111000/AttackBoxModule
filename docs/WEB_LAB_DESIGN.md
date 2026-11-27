@@ -493,7 +493,13 @@ Editorial 已对 SSRF 基本与内网 API 访问做了完整攻击链 CI，但**
 | 3：[HTB Alert](https://0xdf.gitlab.io/2025/03/22/htb-alert.html) | Markdown → 浏览器 XSS → 敏感文件读取 → SSH → Cron Root 的公开真实链 | **中级综合靶机**：跨用户浏览器行为与多阶段侦察 | 原站点源码未公开，重建时如实标明；需要管理员浏览器，Bot 运行资源单独测量 |
 | 可选：[OWASP DSVW](https://vwad.owasp.org/app/damn-small-vulnerable-web-dsvw/) | 少于 100 行 Python 的教学源码 | **初级微型专项**：XSS/DOM 入门 | 尽管极小，但界面直接展示漏洞，不符合偏好自然侦察的综合靶机要求，不能硬称真实产品 CVE |
 
-**选题顺序更新（2026-11-25）**：SQLi 分类下一台已选 HTB Intense，正在 `feat/web-intense-sqli-error-lwt-lfi` 开发分支进行 Web-only 重建。目标为 SQLite 条件错误 Oracle → 管理员 Secret → SHA-256 LWT 长度扩展 → 管理员日志路径遍历 → Web Flag。Inject 保留为后续独立 LFI / Spring Cloud Function CVE 候选，不是当前下一台。
+**历史选题记录（2026-11-25）**：当时曾将 HTB Intense 作为 SQLi 分类候选，目标为 SQLite 条件错误 Oracle → 管理员 Secret → SHA-256 LWT 长度扩展 → 管理员日志路径遍历 → Web Flag。该记录保留为历史规划，不覆盖后续已确认的 main 存量靶机优先顺序。
+
+## 当前逐台制作顺序（2026-11-27）
+
+当前按 main 存量清单逐台完成，不并行制作。已完成新标准 E2E 的是 Bike、Precious、GoodGames；当前正在处理 **Devvortex**，之后按现有清单处理 Base，再评估 Intense / Trick。Devvortex 的范围为 Joomla 4.2.6 / CVE-2023-23752 Web-only 单 Flag，不包含 SSH、Apport 或 Linux Root 阶段。
+
+执行细节与验收门槛以 [Lab Production Playbook](LAB_PRODUCTION_PLAYBOOK.md) 为准；状态与成功运行证据以 `catalog/web-curriculum.json` 为准。
 
 ## 平台 Flag 与管理员 Bot 责任边界
 
@@ -612,7 +618,7 @@ WonderCMS 3.4.2 **原版反射型属性 XSS 已通过真实 Chromium CI**。但�
 参考内容编写规范：`attackbox/docs/content-authoring.md`（另一个仓库）；本仓库已有 `challenges/startpoint/` 与 `labs/` 结构可作样例。
 
 
-## 2026-11-25 — Active SQLi composite: HTB Intense
+## 2026-11-25 — Historical SQLi composite candidate: HTB Intense
 
 **Selected for implementation:** [HTB Intense](https://www.hackthebox.com/machines/intense). The current inventory already contains UNION, Boolean/Time Blind, second-order, database FILE operations and WebSocket blind SQLi. Intense adds a distinct SQLite conditional-error oracle, followed by a cryptographic session-forgery step and authenticated path traversal.
 
