@@ -118,6 +118,8 @@ jobs:
 
           docker run --rm --network "$network" \
             -v "$PWD/labs/openadmin/tests:/tests:ro" \
+            -e EXPECTED_USER_FLAG="$USER_FLAG" \
+            -e EXPECTED_ROOT_FLAG="$ROOT_FLAG" \
             ttp-openadmin-attacker:ci python3 /tests/attack_path.py
 
           docker run --rm --network "$network" \
