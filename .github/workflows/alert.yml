@@ -3,10 +3,16 @@ on:
   pull_request:
     paths:
       - "labs/alert/**"
+      - "challenges/integrated/alert/**"
+      - "catalog/web-curriculum.json"
+      - ".github/workflows/alert.yml"
   push:
     branches: [main]
     paths:
       - "labs/alert/**"
+      - "challenges/integrated/alert/**"
+      - "catalog/web-curriculum.json"
+      - ".github/workflows/alert.yml"
   workflow_dispatch:
 permissions:
   contents: read
@@ -55,7 +61,6 @@ jobs:
         run: echo 'CI smoke passed; full lab flow requires separate manual acceptance.' >> "$GITHUB_STEP_SUMMARY"
 
   alert-real-flag-acceptance:
-    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -83,6 +88,20 @@ jobs:
           print("Generated two distinct 80-bit Flags; values are masked.")
           PY
 
+      - name: Verify default target Flag matches the learner Challenge answer
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import pathlib, re
+          target = pathlib.Path('labs/alert/flags/user.txt').read_text().strip()
+          challenge = pathlib.Path('challenges/integrated/alert/Blind-Review.md').read_text()
+          match = re.search(r"(?m)^answer:\\s*['\"]?([^'\"\\s]+)['\"]?\\s*$", challenge)
+          if not match:
+              raise SystemExit('Challenge Flag answer was not found')
+          if target != match.group(1):
+              raise SystemExit('Target Flag seed and Challenge answer do not match')
+          print('PASS: default target Flag and Challenge answer match')
+          PY
       - name: Build Alert target image
         run: docker build --pull --progress=plain -t ttp-alert:acceptance -f labs/alert/Dockerfile labs/alert
 
