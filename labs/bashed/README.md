@@ -1,30 +1,39 @@
-# Bashed — genuine phpbash web shell → sudo scriptmanager → root cron
+# Bashed — genuine Arrexel/phpbash and root cron
 
-> Retired HTB Linux machine reconstruction. Uses the original Arrexel/phpbash project under Apache/PHP. Not an official HTB image; isolated Docker network only.
+Retired HTB Linux machine reconstruction using the original Arrexel/phpbash project under Apache/PHP. Not an official HTB image; the HTB landing page source was not published, so the public homepage is a small independent reconstruction.
 
-## Player discovery path
+## Real components and trust boundaries
 
-1. Scan reveals HTTP/80 only. Browse the ordinary Bashed landing page; it does not link to the developer web shell.
-2. Directory enumeration discovers `/dev/phpbash.php`. This is the genuine Arrexel/phpbash 1-file web shell, not a replacement command endpoint. Its original PHP code calls `shell_exec($_POST['cmd'])` and provides a terminal-style browser interface.
-3. Commands execute as Apache `www-data`. `sudo -l` reveals `NOPASSWD: ALL` as `scriptmanager`, allowing a shell as that user.
-4. Enumerate `/scripts`: `test.py` is owned by scriptmanager and writes to `test.txt`, whose owner is root. A real root cron entry executes every Python file in `/scripts` once per minute. Modify `test.py`, wait for the scheduled execution and obtain Root.
-5. User flag is `/home/arrexel/user.txt`; root flag is `/root/root.txt`.
+- Original Arrexel/phpbash single-file web shell, pinned by Git object hash dd7ff714ad62ddcf2a06a7a44af9c342b7d83552; Apache License 2.0 retained.
+- Apache/PHP invokes the original shell_exec() implementation as www-data.
+- Native sudoers permits www-data to switch to scriptmanager without a password.
+- A real root cron entry executes every Python file in /scripts once per minute.
+- /scripts/test.py is owned and writable by scriptmanager; the cron process runs it as root.
 
-## Upstream and fidelity
+## Challenge reuse
 
-- Original web shell: https://github.com/Arrexel/phpbash — the exact upstream `phpbash.php` blob is pinned by Git object hash `dd7ff714ad62ddcf2a06a7a44af9c342b7d83552`; Apache License 2.0 is retained.
-- Original writeups: https://0xdf.gitlab.io/2018/12/08/htb-bashed.html ; https://trophyroom.thomaslaurenson.com/hackthebox/bashed/ ; https://adversarial.work/blog/writeup-bashed/
-- HTB did not publish its full website source. The public landing page is a small reconstruction; the vulnerable web shell itself is the authentic upstream code. The root cron schedule and file ownership are based on the observed `/scripts/test.py` behavior.
-- Runtime is Ubuntu 18.04/PHP 7.2/Apache, whereas the retired host used Ubuntu 16.04. The web shell source and privilege boundary are preserved; package fingerprints may differ.
+The following learner Challenges share this one Lab image and the same runtime environment:
 
-## Build and acceptance
+- [Bashed](../../challenges/startpoint/bashed/Bashed.md): integrated Web foothold and root cron path.
+- [Developer Console](../../challenges/code-execution/bashed/phpbash-webshell.md): focused phpbash discovery and www-data execution.
+- [Scheduled Maintenance](../../challenges/linux-privilege-escalation/bashed/root-cron.md): focused scriptmanager/root cron privilege boundary.
 
-```bash
+The focused Challenges intentionally reuse the corresponding User or Root Flag from the integrated Challenge. They do not create separate Docker images or duplicate the vulnerable application.
+
+## Build
+
+~~~sh
 docker build -f labs/bashed/Dockerfile -t ttp-bashed:dev labs/bashed
-docker run --rm -d --name bashed --network none ttp-bashed:dev
+docker run -d --name bashed --network none --memory 256m --pids-limit 192 ttp-bashed:dev
 docker inspect -f '{{.State.Health.Status}}' bashed
-```
+~~~
 
-CI uses an independent attacker container. It calls the real phpbash HTTP POST interface as `www-data`, validates the sudo pivot to `scriptmanager`, modifies the actual `/scripts/test.py`, and waits for the real root cron service to execute it. It does not directly execute the modified script as root. The CI then verifies both static flags, per-instance isolation and clean reset.
+## Flags
 
-Static demo flags only: `/home/arrexel/user.txt` and `/root/root.txt`. Production Worker instances must inject `BASHED_STATIC_USER_FLAG`, `BASHED_STATIC_ROOT_FLAG`, and `BASHED_REQUIRE_PRIVATE_FLAGS=1`. Keep production answers outside Git and public GHCR images.
+Default files are development seeds only: /home/arrexel/user.txt and /root/root.txt. For isolated instances, inject BASHED_STATIC_USER_FLAG, BASHED_STATIC_ROOT_FLAG and BASHED_REQUIRE_PRIVATE_FLAGS=1. The entrypoint writes them with deliberate ownership and permissions and removes the variables before starting Apache and cron.
+
+## Automated acceptance
+
+The dedicated workflow .github/workflows/bashed-e2e.yml builds one target image and a separate non-root attacker. The attacker discovers the original phpbash interface over HTTP, proves execution as www-data, pivots to scriptmanager, modifies the actual /scripts/test.py and waits for the real root cron job to run it. The test retrieves and byte-compares the exact random User and Root Flags generated for that single CI instance. It does not execute the script directly as root or start a second target instance.
+
+The Lab E2E is separate from Worker lifecycle, platform scheduling and backend grading.
