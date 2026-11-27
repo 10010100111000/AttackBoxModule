@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "updated_on": "2026-11-28",
-  "main_snapshot_commit": "29d273648eb269348259b29e9d4ee0b311c303b5",
+  "main_snapshot_commit": "11ae45691e3cfefc42c1502576028246f07aa7b3",
   "purpose": "trytopwn Web 题库选题、覆盖率与验收状态的唯一结构化索引；每次新增靶机时维护本文件与 docs/WEB_ROADMAP.md",
   "difficulty_is_provisional": true,
   "statuses": {
@@ -890,8 +890,8 @@
       "lab_ci_status": "full_chain_ci",
       "worker_status": "not_verified",
       "release_status": "not_assessed",
-      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/44954697830",
-      "note": "原版 Nibbleblog 4.0.3 插件上传 → sudo Root",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/46061441923",
+      "note": "Single-instance E2E passed on main: authentic Nibbleblog 4.0.3 My Image upload (CVE-2015-6967) -> PHP execution as nibbler -> exact User Flag -> writable sudo-authorized monitor.sh -> native sudo UID 0 -> exact Root Flag. The integrated Nibbles Challenge and focused My Image / System Monitor Challenges all map to this one Lab. Runtime CI Flags are generated per run; committed Challenge answers remain the static release values.",
       "variant_profile": {
         "technology": "Apache/PHP, Nibbleblog",
         "initial_discovery": "CMS 插件后台文件上传",
@@ -900,7 +900,7 @@
         "incremental_learning_value": "与 Base 的无限制上传处于不同授权边界",
         "confidence": "from_repository_readme_or_existing_tests"
       },
-      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review",
+      "skill_mapping_stage": "authentic_nibbleblog_4_0_3_upload_and_sudo_chain_single_instance_e2e_verified",
       "manual_validation": {
         "status": "not_reviewed",
         "commit": null,
@@ -910,10 +910,10 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "pending",
-      "e2e_ci_workflow": null,
-      "e2e_ci_evidence": null,
-      "e2e_ci_commit": null
+      "e2e_ci_status": "passed",
+      "e2e_ci_workflow": ".github/workflows/nibbles-e2e.yml",
+      "e2e_ci_evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/46061441923",
+      "e2e_ci_commit": "11ae45691e3cfefc42c1502576028246f07aa7b3"
     },
     {
       "id": "openadmin",
