@@ -58,7 +58,7 @@ jobs:
           docker stats --no-stream --format 'Target memory: {{.MemUsage}}, PIDs: {{.PIDs}}' alert-ci
           echo 'PASS: ordinary Markdown rendering and public access control; full reviewer flow is covered by the dedicated E2E job'
       - name: Record verification scope
-        run: echo 'CI smoke passed; full lab flow requires separate manual acceptance.' >> "$GITHUB_STEP_SUMMARY"
+        run: echo 'CI smoke passed; full lab flow is validated by the dedicated two-instance attacker E2E job.' >> "$GITHUB_STEP_SUMMARY"
 
   alert-real-flag-acceptance:
     runs-on: ubuntu-latest
