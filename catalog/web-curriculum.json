@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "updated_on": "2026-11-28",
-  "main_snapshot_commit": "a11155e2115afa72f800949b937d7b5c520557e0",
+  "main_snapshot_commit": "4e6f13b0d251ad27d516036c869988c46b75ec0d",
   "purpose": "trytopwn Web 题库选题、覆盖率与验收状态的唯一结构化索引；每次新增靶机时维护本文件与 docs/WEB_ROADMAP.md",
   "difficulty_is_provisional": true,
   "statuses": {
@@ -470,8 +470,8 @@
       },
       "e2e_ci_status": "passed",
       "e2e_ci_workflow": ".github/workflows/alert.yml",
-      "e2e_ci_evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/46046614896",
-      "e2e_ci_commit": "67c7c302bec4f373b41b8e11a29a55dd10ecc0f9"
+      "e2e_ci_evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/46047104236",
+      "e2e_ci_commit": "4e6f13b0d251ad27d516036c869988c46b75ec0d"
     },
     {
       "id": "base",
@@ -1746,7 +1746,7 @@
       ],
       "selected_candidate": "alert",
       "note": "Alert now passes current unified E2E: persistent Markdown XSS executes in genuine target-local admin Chromium, then reads the exact per-instance Web Flag through the loopback-only vulnerable PHP reader. Two clean instances with distinct random Flags passed.",
-      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/46046614896"
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/46047104236"
     },
     {
       "id": "deserialize-component",
@@ -1882,7 +1882,7 @@
       "objective": "真实管理员浏览器的异步执行与权限变化",
       "selected_candidate": "alert",
       "note": "Alert passes current unified E2E: Contact-triggered administrator Chromium opens the attacker-controlled stored Markdown link asynchronously; the script reads the private Web Flag and sends the exact value to an independent attacker callback. Two clean instances with distinct random Flags passed.",
-      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/46046614896"
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/46047104236"
     },
     {
       "id": "sqli-union-alt-stack",
