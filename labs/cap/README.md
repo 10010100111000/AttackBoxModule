@@ -25,7 +25,7 @@ docker run --rm -d --name cap --network none ttp-cap:dev
 docker inspect -f '{{.State.Health.Status}}' cap
 ```
 
-CI uses an independent attacker container and verifies real FTP/SSH banners, unauthenticated PCAP IDOR, FTP credentials in the actual capture, password reuse against vsftpd, a live five-second capture, the Python file capability, Root Flag access, static Flag injection and fresh-container reset.
+Dedicated single-instance E2E uses a separate non-root attacker container and verifies the complete path over real network interfaces: unauthenticated PCAP IDOR, credentials parsed from the actual FTP control stream, FTP retrieval of the exact per-instance User Flag, SSH password reuse, the real Python file capability and exact Root Flag retrieval after os.setuid(0). It also checks the live five-second tcpdump capture. The CI generates one random User/Root Flag pair for its one target instance; it does not start a second target instance. The versioned release workflow remains the source of stable Challenge answer values.
 
 Resource target: **<= 120 MiB image, <= 128 MiB memory, <= 128 PIDs**. CI reports measured values; these are targets, not estimates. The Python file capability is essential; do not apply `no-new-privileges` or remove `CAP_SETUID` from the target's capability bounding set. The container does not require `--privileged` or host networking.
 
