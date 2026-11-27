@@ -94,7 +94,6 @@ jobs:
               --network editorial-e2e \
               --network-alias editorial-target \
               --memory 512m --cpus 1 --pids-limit 192 --shm-size 64m \
-              --security-opt no-new-privileges \
               -e EDITORIAL_REQUIRE_PRIVATE_FLAGS=1 \
               -e EDITORIAL_STATIC_USER_FLAG="$user_flag" \
               -e EDITORIAL_STATIC_ROOT_FLAG="$root_flag" \
