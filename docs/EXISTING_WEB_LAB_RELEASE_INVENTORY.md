@@ -153,7 +153,7 @@ This table is generated from the same state recorded in `catalog/web-curriculum.
 
 建议顺序：
 
-1. **Intense / Trick**：先处理复杂实现的基础工程与文档，不扩展新功能。
+1. **Intense**：完成 Flask/SQLite Web-only 现有实现的 Docker 构建、独立攻击端 E2E 和随机 Web Flag 验收。Trick 暂缓，避免多服务靶机并行。
 
 这只是 main 现有资产的处理顺序。每台必须由专属隔离攻击端 E2E 实际走完目标路径并读取精确 Flag；只有 main 对应提交的 E2E 成功后才算完成。执行细节见 [Lab Production Playbook](LAB_PRODUCTION_PLAYBOOK.md)。
 
