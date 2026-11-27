@@ -3,3 +3,8 @@ __pycache__/
 *.db
 .venv/
 .env
+README.md
+writeup.md
+exploit.py
+tests/
+flags/releases/
