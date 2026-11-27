@@ -932,11 +932,11 @@
         "command_injection.basic-rce",
         "cms_vulnerability.versioned-cve"
       ],
-      "lab_ci_status": "full_chain_ci",
+      "lab_ci_status": "partial",
       "worker_status": "not_verified",
       "release_status": "not_assessed",
-      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45166657718",
-      "note": "ONA 18.1.1 xajax RCE → 内网服务 → SSH → nano Root",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/46070810263",
+      "note": "OpenNetAdmin 18.1.1 原生 xajax、SSH、内部应用和 sudo nano 链保留。当前单实例 E2E 的 Challenge 一致性及两个镜像构建通过，独立攻击端已验证至 Joanna/User Flag；Root 阶段因 Expect 脚本未使用调用方传入的临时私钥路径而失败。修复并重新通过完整 E2E 前不得标记 passed。",
       "variant_profile": {
         "technology": "Apache/PHP, ONA",
         "initial_discovery": "xajax 自然暴露接口",
@@ -945,7 +945,7 @@
         "incremental_learning_value": "依赖原始 ONA 受影响版本",
         "confidence": "from_repository_readme_or_existing_tests"
       },
-      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review",
+      "skill_mapping_stage": "single_instance_e2e_reaches_joanna_user_flag_root_nano_expect_path_bug",
       "manual_validation": {
         "status": "not_reviewed",
         "commit": null,
@@ -956,9 +956,9 @@
         "failure_reason": null
       },
       "e2e_ci_status": "pending",
-      "e2e_ci_workflow": null,
-      "e2e_ci_evidence": null,
-      "e2e_ci_commit": null
+      "e2e_ci_workflow": ".github/workflows/openadmin-e2e.yml",
+      "e2e_ci_evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/46070810263",
+      "e2e_ci_commit": "d445ed83ef656201a916f86c0a07da238377f0b0"
     },
     {
       "id": "pebbles",
