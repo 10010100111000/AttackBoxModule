@@ -1,1 +1,1 @@
-TTP{bashed_demo_root_replace_before_publish}
+TTP{bashed_root_default}
