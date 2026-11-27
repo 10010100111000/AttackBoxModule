@@ -34,7 +34,7 @@ curl -i -b cookies.txt -d 'message=hello community' http://<TARGET>:8080/submitm
 
 检查 `app.py` 中的消息提交处理，以及 `utils.py` 中的过滤逻辑。输入被直接插入 SQL 字符串，且 SQLite 原生错误会返回到 HTTP 响应。
 
-消息长度限制为 140 字符，并过滤少数指定词语。利用 SQLite `INSERT` 表达式上下文，可以将查询结果放入 `CASE` 条件中；当条件成立时调用超出 SQLite BLOB 大小限制的 `zeroblob()`，从而产生可区分的原生数据库错误。
+消息长度限制为 140 字符，并过滤少数指定词语。利用 SQLite `INSERT` 表达式上下文，可以将查询结果放入 `CASE` 条件中；当条件成立时调用超出当前连接 `SQLITE_LIMIT_LENGTH` 的 `zeroblob()`，从而产生可区分的原生 `SQLITE_TOOBIG` 错误。靶场将该连接上限设为 1 MiB，以保留真实 SQLite 错误语义，同时避免在小内存容器中分配近 1 GB 的 BLOB。
 
 ## 3. 使用条件错误 Oracle 提取管理员 secret
 
