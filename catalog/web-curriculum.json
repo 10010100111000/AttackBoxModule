@@ -826,16 +826,16 @@
       "worker_status": "not_verified",
       "release_status": "not_assessed",
       "evidence": "",
-      "note": "登录 SQLi → MD5 凭据 → 存储型 Jinja2 SSTI；刻意只有 User Flag，完整独立验收待补",
+      "note": "真实 Flask/SQLite 登录 SQLi、弱 MD5 管理员凭据与存储型 Jinja2 SSTI；独立攻击端 E2E 已接入，等待 CI 实际运行。Web-only 单 Flag，以 augustus 身份读取。",
       "variant_profile": {
-        "technology": "Flask, SQLite, Jinja2",
-        "initial_discovery": "登录表单",
-        "key_constraint_or_mechanism": "SQLi 与存储模板上下文",
-        "attack_path": "凭据→后台模板执行（User）",
-        "incremental_learning_value": "不强行增加容器逃逸/root",
-        "confidence": "from_repository_readme_or_existing_tests"
+        "technology": "Flask, SQLite, Jinja2, Game Warrior frontend and Volt admin UI",
+        "initial_discovery": "Public gaming portal login and separate internal administration host",
+        "key_constraint_or_mechanism": "SQLi leaks weak MD5 hash; reused credential opens internal host; stored username is evaluated with render_template_string",
+        "attack_path": "Login SQLi -> hash extraction -> offline password recovery -> internal admin login -> stored Jinja2 SSTI -> Web Flag",
+        "incremental_learning_value": "Combines authentication SQLi with a distinct stored server-side template sink and keeps the final scope at the unprivileged Web account",
+        "confidence": "repository_implementation_reviewed_e2e_pending"
       },
-      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review",
+      "skill_mapping_stage": "real_login_sqli_and_stored_jinja2_e2e_pending",
       "manual_validation": {
         "status": "not_reviewed",
         "commit": null,
@@ -845,8 +845,8 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "pending",
-      "e2e_ci_workflow": null,
+      "e2e_ci_status": "configured",
+      "e2e_ci_workflow": ".github/workflows/goodgames-e2e.yml",
       "e2e_ci_evidence": null,
       "e2e_ci_commit": null
     },

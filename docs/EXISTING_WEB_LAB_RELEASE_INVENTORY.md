@@ -105,7 +105,7 @@ This table is generated from the same state recorded in `catalog/web-curriculum.
 |---|---|---|
 | Alert | Markdown 存储型 XSS、真实 Chromium 管理员浏览器、内部文件读取 | Web Flag 目标路径仍需人工确认；有 `.release-blocked` |
 | Devvortex | Joomla 4.2.6 信息泄露 | 明确并完成 Web 专项目标；不要默认追加 Linux Root |
-| GoodGames | 登录 SQLi、凭据线索、存储型 Jinja2 SSTI | 整理单 Web Flag 目标与完整 Challenge/Writeup |
+| GoodGames | 登录 SQLi、弱 MD5 凭据恢复、存储型 Jinja2 SSTI | 独立攻击端 E2E 已接入，等待真实 Flag 回读验收 |
 | Funnel | FTP、SSH、PostgreSQL 隧道 | 属于非 Web 服务链，单独标识其题库归类与目标 |
 
 ### 尚未充分验证（4 台）
@@ -121,7 +121,7 @@ This table is generated from the same state recorded in `catalog/web-curriculum.
 
 建议顺序：
 
-1. **GoodGames**：整理 SQLi → Jinja2 SSTI 的自然探索路径与单 Flag 目标。
+1. **GoodGames**：正在验证 SQLi → 弱 MD5 凭据恢复 → 存储型 Jinja2 SSTI 的完整 Web Flag 路径。
 2. **Devvortex**：明确 Web-only 目标，不把原题 Linux 后半段强加进来。
 3. **Base**：补清楚认证与上传两部分的实际功能和题目目标。
 4. **Intense / Trick**：先处理复杂实现的基础工程与文档，不扩展新功能。
