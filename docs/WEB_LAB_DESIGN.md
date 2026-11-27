@@ -39,7 +39,7 @@
 以 main 提交 `bb3d62f3f8f96ded4eb34b16ba2561a4a1e0f678` 为本次盘点基准：
 
 - 当前目录有 **27 台 Lab**：21 台记录为 `full_chain_ci`、2 台为 `partial`、4 台为 `unverified`。
-- 端到端 CI：**Bike、Precious、GoodGames 与 Devvortex 4 台 passed、23 台 pending**；Devvortex 的 0.1.0 版本化 Flag 也已通过真实攻击链发布验收。
+- 端到端 CI：**Bike、Precious、GoodGames 与 Devvortex 4 台 passed、Base 1 台 configured、22 台 pending**；Devvortex 的 0.1.0 版本化 Flag 也已通过真实攻击链发布验收。
 - 其中 **10 台**保留 `.release-blocked` 标记；该字段与 CI 结果分开记录。
 - 技能目录仍为 **31 个专题 / 219 个细分目标**。
 - 滚动队列为 **35 项**：4 项 done、4 项 in_progress、27 项 planned。
@@ -497,7 +497,7 @@ Editorial 已对 SSRF 基本与内网 API 访问做了完整攻击链 CI，但**
 
 ## 当前逐台制作顺序（2026-11-27）
 
-当前按 main 存量清单逐台完成，不并行制作。已完成新标准 E2E 的是 Bike、Precious、GoodGames、Devvortex；下一台是 **Base**，之后再评估 Intense / Trick。Devvortex 的范围为 Joomla 4.2.6 / CVE-2023-23752 Web-only 单 Flag，不包含 SSH、Apport 或 Linux Root 阶段。
+当前按 main 存量清单逐台完成，不并行制作。已完成新标准 E2E 的是 Bike、Precious、GoodGames、Devvortex；当前正在处理 **Base**（已有实现，只补双 Flag 完整 E2E），通过后再评估 Intense / Trick。Devvortex 的范围为 Joomla 4.2.6 / CVE-2023-23752 Web-only 单 Flag，不包含 SSH、Apport 或 Linux Root 阶段。
 
 执行细节与验收门槛以 [Lab Production Playbook](LAB_PRODUCTION_PLAYBOOK.md) 为准；状态与成功运行证据以 `catalog/web-curriculum.json` 为准。
 

@@ -491,16 +491,16 @@
       "worker_status": "not_verified",
       "release_status": "not_assessed",
       "evidence": "",
-      "note": "PHP 7.2 strcmp 认证逻辑及上传；缺独立完整验收",
+      "note": "已有真实 PHP 7.2 / Apache / OpenSSH / sudo find 实现，不重做靶机；当前只接入独立 HTTP+SSH 攻击端，验证 Vim swap 线索→strcmp 数组绕过→PHP 上传→www-data→配置凭据复用→SSH john→User Flag→sudo find→Root Flag。",
       "variant_profile": {
-        "technology": "PHP 7.2",
-        "initial_discovery": "登录请求里的 PHP 类型/字符串处理",
-        "key_constraint_or_mechanism": "原生文件上传",
-        "attack_path": "登录→上传",
-        "incremental_learning_value": "相同栈其他例子可比较 JSON/数组输入",
-        "confidence": "from_repository_readme_or_existing_tests"
+        "technology": "PHP 7.2 Apache, OpenSSH, sudo, GNU find",
+        "initial_discovery": "Apache /login directory listing and exposed Vim swap file",
+        "key_constraint_or_mechanism": "strcmp(array, string) returns NULL on PHP 7.2; loose comparison with zero accepts it; uploaded PHP code executes",
+        "attack_path": "swap source disclosure -> array-parameter login bypass -> unrestricted PHP upload -> www-data command execution -> config credential reuse -> SSH john -> User Flag -> sudo find -> root Flag",
+        "incremental_learning_value": "PHP type juggling, file upload execution, credential reuse and sudo GTFOBins privilege escalation",
+        "confidence": "source_and_original_writeup_reviewed_e2e_pending"
       },
-      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review",
+      "skill_mapping_stage": "real_php72_strcmp_array_bypass_unrestricted_upload_ssh_credential_reuse_sudo_find_e2e_pending",
       "manual_validation": {
         "status": "not_reviewed",
         "commit": null,
@@ -510,8 +510,8 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "pending",
-      "e2e_ci_workflow": null,
+      "e2e_ci_status": "configured",
+      "e2e_ci_workflow": ".github/workflows/base-e2e.yml",
       "e2e_ci_evidence": null,
       "e2e_ci_commit": null
     },

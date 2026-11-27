@@ -6,3 +6,8 @@ compose.yml
 *.tar
 *.tar.gz
 .DS_Store
+README.md
+writeup.md
+exploit.py
+tests/
+flags/

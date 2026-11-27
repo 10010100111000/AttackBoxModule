@@ -1,0 +1,125 @@
+name: Base real PHP authentication, upload, SSH and sudo find E2E
+
+on:
+  pull_request:
+    paths:
+      - "labs/base/**"
+      - "challenges/startpoint/base/**"
+      - "scripts/generate_base_release.py"
+      - ".github/workflows/base-e2e.yml"
+      - ".github/workflows/base-release.yml"
+  push:
+    branches: [main]
+    paths:
+      - "labs/base/**"
+      - "challenges/startpoint/base/**"
+      - "scripts/generate_base_release.py"
+      - ".github/workflows/base-e2e.yml"
+      - ".github/workflows/base-release.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  base-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate a fresh random User and Root Flag pair
+        env:
+          RELEASE_VERSION: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          python3 scripts/generate_base_release.py --version "0.0.0-ci.$RELEASE_VERSION"
+
+      - name: Verify target Flags, manifest and Challenge answers
+        id: flags
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os, pathlib, re
+          user = pathlib.Path("labs/base/user_flag.txt").read_text().strip()
+          root = pathlib.Path("labs/base/root_flag.txt").read_text().strip()
+          manifest_path = next(pathlib.Path("labs/base/flags/releases").glob("0.0.0-ci.*.json"))
+          manifest = json.loads(manifest_path.read_text())
+          challenge = pathlib.Path("challenges/startpoint/base/Base.md").read_text()
+          answers = re.findall(r'(?m)^answer:\s*"([^"]+)"$', challenge)
+          pattern = r"TTP\{[a-z2-7]{16}\}"
+          assert re.fullmatch(pattern, user) and re.fullmatch(pattern, root)
+          assert user != root
+          assert manifest["user_flag"] == user and manifest["root_flag"] == root
+          assert answers == [user, root], "Challenge answers must match User and Root Flag order"
+          assert challenge.count("kind: flag") == 2 and "lab: base" in challenge
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              output.write(f"user={user}\nroot={root}\n")
+          print(f"::add-mask::{user}")
+          print(f"::add-mask::{root}")
+          print("Base User/Root Flag pair, manifest and Challenge answers match: PASS")
+          PY
+
+      - name: Syntax-check attacker and generator
+        run: python3 -m py_compile labs/base/exploit.py scripts/generate_base_release.py
+
+      - name: Build the existing PHP 7.2 target
+        run: docker build --pull --progress=plain -t ttp-base:e2e -f labs/base/Dockerfile labs/base
+
+      - name: Build the independent attacker image
+        run: docker build --pull --progress=plain -t ttp-base-attacker:e2e -f scripts/attackers/base/Dockerfile scripts/attackers/base
+
+      - name: Start target on an isolated internal network
+        run: |
+          set -euo pipefail
+          docker network create --internal base-e2e
+          docker run -d --name base-target --network base-e2e --network-alias base-target \
+            --memory 500m --cpus 2 --pids-limit 160 ttp-base:e2e
+          ready=0
+          for attempt in $(seq 1 45); do
+            state=$(docker inspect -f '{{.State.Status}}' base-target)
+            health=$(docker inspect -f '{{.State.Health.Status}}' base-target)
+            if [ "$state" != running ] || [ "$health" = unhealthy ]; then
+              docker logs base-target
+              exit 1
+            fi
+            if [ "$health" = healthy ]; then ready=1; break; fi
+            sleep 2
+          done
+          test "$ready" = 1
+          docker image inspect ttp-base:e2e --format 'TARGET_IMAGE_SIZE_BYTES={{.Size}}'
+          docker stats --no-stream base-target
+
+      - name: Run independent attacker through both Flags
+        env:
+          EXPECTED_USER_FLAG: ${{ steps.flags.outputs.user }}
+          EXPECTED_ROOT_FLAG: ${{ steps.flags.outputs.root }}
+        run: |
+          set -euo pipefail
+          docker run --rm --network base-e2e \
+            -v "$GITHUB_WORKSPACE/labs/base/exploit.py:/exploit.py:ro" \
+            -e EXPECTED_USER_FLAG -e EXPECTED_ROOT_FLAG \
+            ttp-base-attacker:e2e python /exploit.py \
+              --url http://base-target \
+              --ssh-host base-target \
+              --expected-user-flag "$EXPECTED_USER_FLAG" \
+              --expected-root-flag "$EXPECTED_ROOT_FLAG"
+
+      - name: Record full-chain acceptance
+        run: |
+          echo "PASS: exposed Vim swap file -> PHP 7.2 strcmp array bypass -> unrestricted PHP upload -> www-data -> config credential reuse -> SSH john -> User Flag -> sudo find -> UID 0 -> Root Flag." >> "$GITHUB_STEP_SUMMARY"
+          echo "Both Flag values were retrieved over the target's normal HTTP/SSH services and compared exactly. No target mount, Docker socket or docker exec was used." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Capture target diagnostics
+        if: always()
+        run: |
+          docker logs base-target || true
+          docker image inspect ttp-base:e2e --format='TARGET_IMAGE_SIZE_BYTES={{.Size}}' || true
+          docker stats --no-stream base-target || true
+
+      - name: Clean up
+        if: always()
+        run: |
+          docker rm -f base-target 2>/dev/null || true
+          docker network rm base-e2e 2>/dev/null || true
+          docker image rm ttp-base:e2e ttp-base-attacker:e2e 2>/dev/null || true
