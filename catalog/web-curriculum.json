@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "updated_on": "2026-11-28",
-  "main_snapshot_commit": "c377a3a684e9eca6ed938c546390b6fc0e15109b",
+  "main_snapshot_commit": "e79452293a27629f9dd02a092bcfddcf0977d634",
   "purpose": "trytopwn Web 题库选题、覆盖率与验收状态的唯一结构化索引；每次新增靶机时维护本文件与 docs/WEB_ROADMAP.md",
   "difficulty_is_provisional": true,
   "statuses": {
@@ -616,8 +616,8 @@
       "lab_ci_status": "full_chain_ci",
       "worker_status": "not_verified",
       "release_status": "not_assessed",
-      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45166657846",
-      "note": "真实 SimpleXML/XXE、SSH、Skytrain Python eval；源码重建",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/46066236397",
+      "note": "Single-instance main E2E passed: real PHP SimpleXML/libxml XXE and php://filter read db.php, recover development SSH credential, exact User Flag, then actual sudo Skytrain ticketValidator.py Python eval as UID 0 and exact Root Flag. Integrated BountyHunter Challenge plus focused XML External Entity and Skytrain Ticket Validation Challenges all reuse this Lab and same image. CI generates one random User/Root Flag pair per run; Challenge answers remain static release seeds.",
       "variant_profile": {
         "technology": "Apache, PHP SimpleXML",
         "initial_discovery": "表单的 Base64 XML",
@@ -626,7 +626,7 @@
         "incremental_learning_value": "与反序列化不同，不以 eval 当反序列化覆盖",
         "confidence": "from_repository_readme_or_existing_tests"
       },
-      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review",
+      "skill_mapping_stage": "authentic_php_simplexml_xxe_php_filter_ssh_and_sudo_python_eval_single_instance_e2e_verified",
       "manual_validation": {
         "status": "not_reviewed",
         "commit": null,
@@ -636,10 +636,10 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "pending",
-      "e2e_ci_workflow": null,
-      "e2e_ci_evidence": null,
-      "e2e_ci_commit": null
+      "e2e_ci_status": "passed",
+      "e2e_ci_workflow": ".github/workflows/bountyhunter-e2e.yml",
+      "e2e_ci_evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/46066236397",
+      "e2e_ci_commit": "e79452293a27629f9dd02a092bcfddcf0977d634"
     },
     {
       "id": "cap",
