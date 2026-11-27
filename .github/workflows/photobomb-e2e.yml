@@ -1,0 +1,129 @@
+name: Photobomb single-instance command injection and sudo PATH E2E
+
+on:
+  pull_request:
+    paths:
+      - "labs/photobomb/**"
+      - "challenges/startpoint/photobomb/**"
+      - "challenges/command-injection/photobomb/**"
+      - "challenges/linux-privilege-escalation/photobomb/**"
+      - ".github/workflows/photobomb-e2e.yml"
+  push:
+    branches: [main]
+    paths:
+      - "labs/photobomb/**"
+      - "challenges/startpoint/photobomb/**"
+      - "challenges/command-injection/photobomb/**"
+      - "challenges/linux-privilege-escalation/photobomb/**"
+      - ".github/workflows/photobomb-e2e.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  photobomb-full-chain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check Challenge answers and syntax
+        run: |
+          python3 -m py_compile labs/photobomb/tests/attack_path.py
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          user = Path("labs/photobomb/flags/user.txt").read_text().strip()
+          root = Path("labs/photobomb/flags/root.txt").read_text().strip()
+          expected = {
+              "challenges/startpoint/photobomb/Photobomb.md": [user, root],
+              "challenges/command-injection/photobomb/image-conversion.md": [user],
+              "challenges/linux-privilege-escalation/photobomb/path-hijack.md": [root],
+          }
+          for filename, answers_expected in expected.items():
+              content = Path(filename).read_text()
+              answers = re.findall(r'(?m)^answer: "([^"]+)"$', content)
+              if answers != answers_expected:
+                  raise SystemExit(f"Challenge answer mismatch: {filename}")
+              if not re.search(r"(?m)^lab: photobomb$", content):
+                  raise SystemExit(f"Challenge does not reuse Photobomb Lab: {filename}")
+          print("PASS: integrated and focused Challenges share one Lab and match Flag seeds")
+          PY
+
+      - name: Build Photobomb target
+        run: docker build --pull --progress=plain -t ttp-photobomb:ci -f labs/photobomb/Dockerfile labs/photobomb
+
+      - name: Build separate non-root attacker
+        run: docker build --pull --progress=plain -t ttp-photobomb-attacker:ci -f labs/photobomb/tests/Dockerfile.attacker labs/photobomb/tests
+
+      - name: Generate one instance's User and Root Flags
+        id: flags
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import base64, secrets, os
+          def make_flag():
+              token = base64.b32encode(secrets.token_bytes(10)).decode().rstrip("=")
+              return "TTP{" + token.lower() + "}"
+          user, root = make_flag(), make_flag()
+          while user == root:
+              root = make_flag()
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              for name, value in (("user", user), ("root", root)):
+                  print("::add-mask::" + value)
+                  output.write(name + "=" + value + "\n")
+          print("Generated one instance's distinct User and Root Flags; values are masked.")
+          PY
+
+      - name: Run the complete network-only attack path on one clean instance
+        env:
+          USER_FLAG: ${{ steps.flags.outputs.user }}
+          ROOT_FLAG: ${{ steps.flags.outputs.root }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          cleanup() {
+            docker logs --tail 120 photobomb-target 2>/dev/null || true
+            docker rm -f photobomb-attacker photobomb-target 2>/dev/null || true
+            docker network rm photobomb-e2e 2>/dev/null || true
+          }
+          trap cleanup EXIT
+          docker network create --internal photobomb-e2e
+
+          docker run -d --name photobomb-target --network photobomb-e2e \
+            --network-alias photobomb-target --memory 192m --cpus 1 --pids-limit 128 \
+            -e PHOTOBOMB_REQUIRE_PRIVATE_FLAGS=1 \
+            -e PHOTOBOMB_STATIC_USER_FLAG="$USER_FLAG" \
+            -e PHOTOBOMB_STATIC_ROOT_FLAG="$ROOT_FLAG" \
+            ttp-photobomb:ci >/dev/null
+
+          ready=0
+          for attempt in $(seq 1 60); do
+            state=$(docker inspect -f '{{.State.Status}}' photobomb-target)
+            health=$(docker inspect -f '{{.State.Health.Status}}' photobomb-target)
+            if [ "$state" != "running" ] || [ "$health" = "unhealthy" ]; then
+              docker logs photobomb-target
+              echo "Photobomb failed before becoming healthy"
+              exit 1
+            fi
+            if [ "$health" = "healthy" ]; then
+              ready=1
+              break
+            fi
+            sleep 2
+          done
+          test "$ready" = 1
+
+          docker run --rm --name photobomb-attacker --network photobomb-e2e \
+            -e TARGET_URL=http://photobomb-target \
+            -e EXPECTED_USER_FLAG="$USER_FLAG" \
+            -e EXPECTED_ROOT_FLAG="$ROOT_FLAG" \
+            ttp-photobomb-attacker:ci
+
+          docker stats --no-stream photobomb-target --format "Photobomb memory={{.MemUsage}} pids={{.PIDs}}"
+          echo "PASS: one fresh instance completed recon -> real ImageMagick command injection -> wizard User Flag -> sudo PATH hijack -> UID 0 Root Flag"
+
+      - name: Record target image size
+        if: always()
+        run: docker image inspect ttp-photobomb:ci --format='IMAGE_SIZE_BYTES={{.Size}}' || true
