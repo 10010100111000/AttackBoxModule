@@ -2,7 +2,7 @@
 
 > 本文是人工阅读入口，不维护第二套状态数据。**靶机状态、CI 工作流、运行证据、提交 SHA 和 backlog 的唯一事实来源是** [`catalog/web-curriculum.json`](../catalog/web-curriculum.json)。
 >
-> 本清单快照对应 main：`e7b64bc1846ddbd802d96d8d5fc33de02cf52175`（2026-11-27）。状态变化时先更新 catalog，再按需更新本文的说明；不要手工维护重复的完整攻击链描述。
+> 本清单快照对应 main：`5fcb2b48ea81033886c61bec500403930ad8318e`（2026-11-27）。状态变化时先更新 catalog，再按需更新本文的说明；不要手工维护重复的完整攻击链描述。
 
 ## 当前总览
 
