@@ -3,7 +3,8 @@ FROM node:22-slim AS frontend-builder
 WORKDIR /build
 
 COPY challenge/frontend/package.json ./
-RUN set -e; for attempt in 1 2 3; do yarn install --network-timeout 600000 --network-concurrency 1 && break || { if [ "$attempt" -eq 3 ]; then exit 1; fi; sleep 5; }; done
+RUN npm config set registry https://registry.npmjs.org/ \
+ && npm install --legacy-peer-deps --no-audit --no-fund --fetch-retries=5 --fetch-timeout=600000
 
 COPY challenge/frontend ./
 RUN yarn build
@@ -20,7 +21,9 @@ RUN apt-get update \
 
 WORKDIR /app/backend
 COPY challenge/backend/package.json ./
-RUN set -e; for attempt in 1 2 3; do yarn install --production --network-timeout 600000 --network-concurrency 1 && break || { if [ "$attempt" -eq 3 ]; then exit 1; fi; sleep 5; }; done && yarn cache clean
+RUN npm config set registry https://registry.npmjs.org/ \
+ && npm install --omit=dev --legacy-peer-deps --no-audit --no-fund --fetch-retries=5 --fetch-timeout=600000 \
+ && npm cache clean --force
 
 COPY challenge/backend ./
 COPY --from=frontend-builder /app/backend/static/dist ./static/dist
