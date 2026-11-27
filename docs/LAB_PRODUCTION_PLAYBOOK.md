@@ -27,11 +27,9 @@ Do not reinterpret these as Worker, platform synchronization or production deplo
 
 ### Next Lab
 
-Intense has now passed its complete Web-only E2E. Do not add the original SNMP, SSH pivot, native binary exploitation or Root stages.
+**Alert** is next. Its real PHP-Markdown + target-local Chromium flow already has evidence for stored XSS, cross-user review and loopback-only PHP source traversal. The remaining bounded task is to make the two-clean-instance, rotated Web Flag proof an automatic PR/push E2E gate and synchronize the Challenge answer with a versioned random Flag.
 
-The next selection should come from the remaining partial Labs on `main`: review **Alert** and **Funnel** first, inspect their actual code and CI, then choose the smaller bounded task. Keep **Trick** deferred because its DNS/PHP/MariaDB/Fail2ban multi-service scope may be too large. Do not start multiple Labs in parallel.
-
-After choosing, update `catalog/web-curriculum.json`, `docs/EXISTING_WEB_LAB_RELEASE_INVENTORY.md`, this playbook and `docs/WEB_LAB_DESIGN.md` so the next handoff is explicit. Always re-read the live main inventory before starting.
+Keep this Lab Web-only: no SSH, Linux privilege escalation, cron or Root stage. Do not perform Worker acceptance. Funnel is a separate FTP/SSH/PostgreSQL service-track exercise, not the next Web Lab; Trick remains deferred because of its larger multi-service scope.
 
 ## 2. Non-negotiable user requirements
 
