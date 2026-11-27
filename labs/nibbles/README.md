@@ -1,50 +1,55 @@
-# Nibbles — 原版 Nibbleblog 4.0.3（测试中）
+# Nibbles — authentic Nibbleblog 4.0.3
 
-> 实现分支：`test/nibbles-authentic-small`。**已通过 Docker CI 的真实漏洞和重置测试，但尚未在正式 Worker 验收，不发布。** 不是 HTB 官方镜像。
+An independent Linux Docker reconstruction based on the retired Hack The Box Nibbles machine. It is not an official HTB image, and the unpublished original home page and `personal.zip` contents are not claimed to have been recovered.
 
-## 为什么选择这台
+## Real vulnerable components
 
-上一台 Pebbles 同时运行 MySQL、ZoneMinder 和 Tomcat，资源占用较高。Nibbles 原题使用真正的 **Nibbleblog 4.0.3**，它通过 XML 文件存储信息，完全不需要数据库服务器或 Java。我们固定的是上游 2014-04-01 发布的原始 Git Commit，使用它自己的 PHP 前端、安装程序和 My Image 插件，而不是编写自制漏洞页面。
+- Upstream Nibbleblog 4.0.3, pinned to commit `6fe138276e82ed604bb35a960327a4ac0b485097`.
+- Original PHP CMS login, XML-backed users/configuration and My Image plugin.
+- The original plugin configuration controller uses `move_uploaded_file()` without restricting executable extensions (CVE-2015-6967).
+- Apache/PHP runs as the unprivileged `nibbler` account.
+- Native sudoers rule permits the user to execute a fixed monitoring script as root; the script itself is user-writable.
 
-### 玩家真实发现路径
+The original Nibbleblog source, license and copyright files are retained. The container uses Alpine 3.15 and PHP 7.4 rather than the original Ubuntu 16.04 environment; this OS/PHP difference is intentional and not hidden behind a forged version fingerprint.
 
-1. 扫描实际目标：22/tcp SSH 与 80/tcp Apache；首页仅有 `Hello world!`，HTML 源码中留有 `/nibbleblog/` 注释。
-2. 访问该目录后枚举真正 Nibbleblog CMS 的 README、config.xml、users.xml、admin.php；根据原始信息识别版本与用户。
-3. 经 CMS 原生登录页面进入管理界面，安装 / 配置 My Image 插件。
-4. 插件真实的 `admin/controllers/plugins/config.bit` 使用 `move_uploaded_file()`，未限制文件的可执行扩展名。按照 CVE-2015-6967 能上传并运行 PHP 文件，PHP 子进程作为 `nibbler`（UID 1001）运行。
-5. 取得 `/home/nibbler/user.txt`，发现 `personal.zip` 与 sudoers 对 `monitor.sh` 的特殊许可；解压后编辑具有写权限的监控脚本，用真正的 sudo 执行获得 UID 0，再取得 `/root/root.txt`。
+Public references:
+- [Upstream Nibbleblog commit](https://github.com/dignajar/nibbleblog/commit/6fe138276e82ed604bb35a960327a4ac0b485097)
+- [CVE-2015-6967 advisory](https://github.com/advisories/GHSA-jc49-pxch-59wj)
+- [Original machine writeup](https://cornfield.sh/htb-nibbles/)
 
-原题首页及 `personal.zip` 的确切原始内容未公开，所以这两部分是**可说明的行为重建**，不是偷换原版漏洞或模拟提权。用户后台和不安全上传 PHP 处理代码来自真正的上游软件，未编写替代接口。
+## Discovery path
 
-## 真实软件与许可证
+1. Inspect the simple home page and its HTML source to discover the CMS directory.
+2. Identify the real CMS version from its public README/configuration and inspect the native login.
+3. Enter the CMS and investigate the My Image plugin.
+4. Exploit the original upload handler to execute PHP as `nibbler`.
+5. Inspect the user's archive and the sudo rule for the monitoring script.
+6. Modify the user-writable script, run it through the permitted sudo command and obtain root.
 
-- 上游发布提交：https://github.com/dignajar/nibbleblog/commit/6fe138276e82ed604bb35a960327a4ac0b485097
-- 官方 SourceForge 归档：https://sourceforge.net/projects/nibbleblog/files/v4.0/nibbleblog-v4.0.3.zip/download
-- 漏洞公告：https://github.com/advisories/GHSA-jc49-pxch-59wj
-- 原题 Writeup：https://cornfield.sh/htb-nibbles/
-- 第二份 Writeup：https://trophyroom.thomaslaurenson.com/hackthebox/nibbles/
+## Build and local isolated use
 
-原版 `LICENSE.txt` 和 `COPYRIGHT.txt` 均保留在镜像中。仅上游 4.0.3 提交中遗留的 README 版本元数据从 “Beta on Github” 修正为同一版本常量所代表的 4.0.3；未修改 PHP 漏洞代码。原题采用 Ubuntu 16.04，本复现为减小体积使用 Alpine 3.15/Apache/PHP 7.4，**OS 与 PHP 版本差异公开标注**，不会伪造版本指纹。
+From the repository root:
 
-## Docker 工程
-
-在仓库根目录运行：
-
-```bash
+~~~sh
 docker build -f labs/nibbles/Dockerfile -t ttp-nibbles:dev labs/nibbles
-docker run --rm -d --name nibbles --network none --memory 160m --pids-limit 128 ttp-nibbles:dev
-docker inspect -f '{{.State.Health.Status}}' nibbles
-```
+docker network create --internal nibbles-lab
+docker run -d --name nibbles-target --network nibbles-lab \
+  --memory 160m --pids-limit 128 \
+  -e NIBBLES_REQUIRE_PRIVATE_FLAGS=1 \
+  -e NIBBLES_STATIC_USER_FLAG='TTP{instance_user_answer}' \
+  -e NIBBLES_STATIC_ROOT_FLAG='TTP{instance_root_answer}' \
+  ttp-nibbles:dev
+docker inspect -f '{{.State.Health.Status}}' nibbles-target
+~~~
 
-上述 `--network none` 仅供镜像/健康检查。CI 使用隔离私有 Docker 桥与独立的攻击容器检查 HTTP 枚举、真实插件上传、系统用户/Root 及实例重置。任何故意有漏洞的服务禁止公网映射。
+Do not publish the vulnerable services to the public Internet. The target requires no privileged mode, host networking, Docker socket or host filesystem mount.
 
-静态 Flag（仓库内仅演示值）：普通权限 `/home/nibbler/user.txt`；Root 只读 `/root/root.txt`。正式平台实例应通过现有 Worker 运行环境注入 `NIBBLES_STATIC_USER_FLAG`、`NIBBLES_STATIC_ROOT_FLAG`、`NIBBLES_REQUIRE_PRIVATE_FLAGS=1`，并配置同样的服务端静态判题答案，绝不将正式答案提交到公共 Git。
+## Automated acceptance
 
-## 占用目标与验收
+`.github/workflows/nibbles-e2e.yml` builds the target and a separate non-root HTTP attacker. The attacker uses the real CMS login and plugin upload route, then continues through the PHP execution context to verify the actual nibbler identity, User Flag, sudo permission, UID 0 and Root Flag.
 
-- **实测镜像 25.0 MiB，CI 快照内存 17.2 MiB、8 PIDs**；CI 限制 160 MiB 和 128 PIDs，单 Docker 实例。数据为一次运行快照，不是并发峰值。
-- 完整构建和原版 CMS 上传 → native sudo Root → 两枚静态 Flag → 清除状态：**CI 通过**。https://github.com/10010100111000/AttackBoxModule/actions/runs/44954697830
-- 不安装 MySQL、MariaDB、Java/Tomcat、Python 或 GUI。
-- CI 必须测试原生 CMS 版本及 PHP 登录、My Image 上传、以 UID 1001 执行、sudo UID 0、两枚静态 Flag、停止删除再建的重置流程。
-- 不将测试用 Python 或 Exploit 脚本复制到最终运行镜像。
-- 在 CI 验证结束之前，不作“已完成”的宣传，不合并主分支、不自动发布。
+The workflow repeats the chain on two clean instances with distinct random User and Root Flags, then recreates each instance and checks that the uploaded PHP file is gone. The target and attacker share only an internal Docker network.
+
+## Resource profile
+
+The previous image-only CI measured approximately 25 MiB and 17.2 MiB runtime memory with 8 PIDs. The new full-chain workflow records its own image size and per-instance memory after the attack; use those measurements as the current baseline.
