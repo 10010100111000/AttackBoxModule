@@ -1,1 +1,1 @@
-TTP{shocker_DEMO_root_change_before_publishing}
+TTP{shocker_root_default}
