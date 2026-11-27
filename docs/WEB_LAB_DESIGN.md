@@ -34,18 +34,11 @@
 
 状态字段：`pending`（未接入）、`configured`（已有专属工作流，尚未按当前版本确认通过）、`passed`（当前工作流端到端成功）、`failed`（最近验收失败并记录原因）。不得因普通 smoke 成功而标记端到端通过。
 
-## 当前验收状态核对（2026-11-27）
+## 当前项目状态
 
-以 main 提交 `bb3d62f3f8f96ded4eb34b16ba2561a4a1e0f678` 为本次盘点基准：
+机器数量、E2E 通过状态、CI 证据、release marker 和开发队列均以 [`catalog/web-curriculum.json`](../catalog/web-curriculum.json) 为准；人类可读的当前清单见 [`EXISTING_WEB_LAB_RELEASE_INVENTORY.md`](EXISTING_WEB_LAB_RELEASE_INVENTORY.md)。
 
-- 当前目录有 **27 台 Lab**：23 台记录为 `full_chain_ci`、2 台为 `partial`、2 台为 `unverified`。
-- 端到端 CI：**Bike、Precious、GoodGames、Devvortex、Base 与 Intense 6 台 passed、21 台 pending**；Intense 的 SQLite 条件错误、SHA-256 长度扩展及最终 Web Flag 均已通过独立攻击端验收。
-- 其中 **10 台**保留 `.release-blocked` 标记；该字段与 CI 结果分开记录。
-- 技能目录仍为 **31 个专题 / 219 个细分目标**。
-- 滚动队列为 **35 项**：4 项 done、4 项 in_progress、27 项 planned。
-- Precious 已通过专属普通功能 CI、镜像构建和独立攻击端 E2E。端到端测试通过真实 PDFKit 0.8.6 命令注入，以 `ruby` 身份读取本次随机 Web Flag；不包含 SSH、YAML 反序列化或 Root 阶段。
-
-本次清单与执行顺序见 [现有 main 靶机清单](EXISTING_WEB_LAB_RELEASE_INVENTORY.md)。不要再使用 2026-11-25 之前的机器数量、CI 分类或候选顺序作为当前状态。
+不要在本设计文档中维护第二份机器完成列表、CI 统计或下一台靶机队列。2026-11-27 的 main 快照包含 27 台 Lab，其中 Bike、Precious、GoodGames、Devvortex、Base、Intense 六台通过当前统一 E2E。其余状态以 catalog 实时字段为准。
 
 ## 如何用这份文档选择下一台靶机
 
@@ -66,7 +59,7 @@
 | --- | --- |
 | **本文件** | Web 分类、教学/训练梯度、历史候选与选择规则、覆盖及选题优先级、交付边界 |
 | `catalog/web-competencies.json` | 31 类/219 个细分技能的结构化权威列表，包含每个 skill 的验收要求 |
-| `catalog/web-curriculum.json` | 当前机器、候选与 backlog、CI/Worker 状态（实时记录） |
+| `catalog/web-curriculum.json` | 当前机器、候选、backlog、CI 状态与证据（唯一结构化状态来源） |
 | `labs/<slug>/README.md` | 该靶机真实源码/配置、利用路径、Docker、镜像、测试与风险证据 |
 | `challenges/<category>/<slug>/<title>.md` | 平台实际给学员的题面（不暴露答案） |
 | `.github/workflows/` | CI 与发布门禁；不通过不能声称靶机完成 |

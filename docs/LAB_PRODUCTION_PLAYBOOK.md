@@ -12,26 +12,13 @@
 - `catalog/web-competencies.json` is the canonical skill taxonomy.
 - This playbook defines the execution procedure and user constraints.
 
-### Current completed Labs
+### Current status and handoff
 
-| Lab | Actual target path | E2E status |
-|---|---|---|
-| Bike | Handlebars 4.1.1 SSTI → command execution → one Web Flag | `passed` |
-| Precious | PDFKit 0.8.6 / CVE-2022-25765 → command execution as ruby → one Web Flag | `passed` |
-| GoodGames | SQLite login SQLi → weak MD5 recovery → reused admin credential → stored Jinja2 SSTI as augustus → one Web Flag | `passed` |
-| Devvortex | Joomla 4.2.6 CVE-2023-23752 → admin template editor → www-data → one Web Flag; release `0.1.0` verified | `passed` |
-| Base | PHP 7.2 authentication bypass → upload → SSH → sudo `find` → User and Root Flags | `passed` |
-| Intense | SQLite conditional-error SQLi → SHA-256 length extension → admin log path traversal → one Web Flag | `passed` |
+The live machine inventory and all per-Lab evidence are maintained only in [`docs/EXISTING_WEB_LAB_RELEASE_INVENTORY.md`](EXISTING_WEB_LAB_RELEASE_INVENTORY.md) and [`catalog/web-curriculum.json`](../catalog/web-curriculum.json). Do not duplicate the completed-Lab table here.
 
-Do not reinterpret these as Worker, platform synchronization or production deployment acceptance. Those are explicitly outside this workflow.
+At the 2026-11-27 main snapshot, six Labs have passed the current independent-attacker E2E: Bike, Precious, GoodGames, Devvortex, Base and Intense. Twenty-one existing Labs remain pending under the current E2E field. This is a CI-status distinction, not a claim that all pending Labs are unimplemented.
 
-### Next Lab
-
-Intense has now passed its complete Web-only E2E. Do not add the original SNMP, SSH pivot, native binary exploitation or Root stages.
-
-The next selection should come from the remaining partial Labs on `main`: review **Alert** and **Funnel** first, inspect their actual code and CI, then choose the smaller bounded task. Keep **Trick** deferred because its DNS/PHP/MariaDB/Fail2ban multi-service scope may be too large. Do not start multiple Labs in parallel.
-
-After choosing, update `catalog/web-curriculum.json`, `docs/EXISTING_WEB_LAB_RELEASE_INVENTORY.md`, this playbook and `docs/WEB_LAB_DESIGN.md` so the next handoff is explicit. Always re-read the live main inventory before starting.
+**Next action:** choose one existing pending Lab from the current catalog and inspect its actual implementation, challenge files and workflow before editing. Alert has a known incomplete final Flag path; Funnel is a non-Web service chain; Trick is a larger multi-service target. Do not assume the next target from an old prose queue—re-read the catalog and inventory first.
 
 ## 2. Non-negotiable user requirements
 
@@ -180,4 +167,4 @@ When continuing this project in a new conversation:
 6. Do not ask the user to repeat the requirements in this document.
 7. At the end, report only the meaningful result: what changed, E2E evidence, merge/main status, and the next Lab.
 
-**Current handoff at creation:** Bike, Precious, GoodGames and Devvortex are the four Labs recorded as E2E-passed. Base is now complete under the current E2E standard. Re-read the design plan and inventory to choose the next single Lab. Re-check main before relying on this snapshot.
+**Handoff rule:** always read the live catalog and inventory at the start of a session. They are the only source for completed/pending status and next-Lab selection.\n

@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "updated_on": "2026-11-27",
-  "main_snapshot_commit": "49e0d5a76d0923b265bfcd263f7f5d03d7791ec7",
+  "main_snapshot_commit": "e7b64bc1846ddbd802d96d8d5fc33de02cf52175",
   "purpose": "trytopwn Web 题库选题、覆盖率与验收状态的唯一结构化索引；每次新增靶机时维护本文件与 docs/WEB_ROADMAP.md",
   "difficulty_is_provisional": true,
   "statuses": {

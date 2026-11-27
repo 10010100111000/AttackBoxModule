@@ -1,179 +1,75 @@
-# main 分支现有靶机清单
+# main 分支靶机清单
 
-**快照日期：2026-11-27**  
-**动态状态来源：** `catalog/web-curriculum.json`（本文件是人工可读快照；继续工作前以 main 最新版本为准）。  
-**范围：** 只盘点 `main` 已有的 Lab 代码、Challenge 内容、CI 证据与尚未完成的靶机本身。不管理 Worker、平台同步或生产发布流程。
+> 本文是人工阅读入口，不维护第二套状态数据。**靶机状态、CI 工作流、运行证据、提交 SHA 和 backlog 的唯一事实来源是** [`catalog/web-curriculum.json`](../catalog/web-curriculum.json)。
+>
+> 本清单快照对应 main：`e7b64bc1846ddbd802d96d8d5fc33de02cf52175`（2026-11-27）。状态变化时先更新 catalog，再按需更新本文的说明；不要手工维护重复的完整攻击链描述。
 
-## 总览
+## 当前总览
 
-当前目录清单有 **27 台 Lab**：
+- Lab：27 台
+- 当前统一 E2E：6 台通过，21 台待完成
+- 旧字段 `lab_ci_status`：23 台 `full_chain_ci`、2 台 `partial`、2 台 `unverified`
+- `.release-blocked` 标记：10 台。它与 E2E 状态独立，不能用来判断靶机是否制作完成。
 
-| main 中记录的 CI 状态 | 数量 | 含义 |
-|---|---:|---|
-| `full_chain_ci` | 23 | 保留历史完整目标链 CI 证据；新标准通过情况以 E2E 状态为准 |
-| `partial` | 2 | 已有部分真实功能或目标行为检查，仍有靶机内容/目标路径缺口 |
-| `unverified` | 2 | 尚无足够的靶机目标验证记录 |
+### 已通过当前统一 E2E
 
-另有 **11 台**保留 `.release-blocked` 标记。该标记不是 CI 结果，也不等同于靶机代码不存在；未完成原因应以各自 README 和标记文件为准。
+以下 6 台已经完成靶机攻击链的独立 CI 验收，不要重复制作或重新排入待办：
 
-### 最近更新：Base — 完整双 Flag E2E 已通过
-
-Base 原有靶场实现未重做；这次为真实 PHP 7.2 / Apache / OpenSSH / sudo find 攻击链补齐独立攻击端与随机双 Flag。
-
-- [main 完整 E2E](https://github.com/10010100111000/AttackBoxModule/actions/runs/46022242878)：Vim swap 发现 → PHP 7.2 strcmp 数组绕过 → PHP 上传 → www-data 命令执行 → 配置凭据复用 → SSH john → User Flag → sudo find → UID 0 → Root Flag，全部通过
-- [main 题库一致性检查](https://github.com/10010100111000/AttackBoxModule/actions/runs/46022242968)：通过，包含双 Flag generator 幂等性和 Challenge 答案核对
-- [main 镜像构建与启动检查](https://github.com/10010100111000/AttackBoxModule/actions/runs/46022243138)：通过
-- Docker 目标镜像约 **153.3 MB**；测试时内存约 **10.9 MiB**（500 MiB 限额）
-
-User / Root Flag 分别由随机版本化 manifest 生成，且由真实 HTTP/SSH/sudo 路径读取，不使用 docker exec、Docker socket 或目标文件系统挂载。Base 保留原本两阶段目标，不是 Web-only。
-
-
-
-Base 原有 PHP 7.2 / Apache / OpenSSH / sudo find 双 Flag 靶场已存在，未重做；独立 HTTP+SSH 攻击端已通过真实完整链并精确读取随机 User/Root 双 Flag。
-
-- E2E：`.github/workflows/base-e2e.yml`（已接入，等待实际运行）
-- 发布：`.github/workflows/base-release.yml`
-- 结构化状态：`configured`，成功运行证据尚未产生。
-
-### 最近更新：Intense — E2E 已完成
-
-Intense 已通过真实 Flask/SQLite Web-only 完整攻击链 E2E：访客登录 → SQLite 条件错误 oracle 提取管理员 secret → SHA-256 长度扩展伪造 LWT 管理员会话 → 日志路径遍历 → 精确随机 Web Flag。
-
-- [独立攻击端 E2E](https://github.com/10010100111000/AttackBoxModule/actions/runs/46027395934)
-- [Docker 构建、启动与普通功能 smoke](https://github.com/10010100111000/AttackBoxModule/actions/runs/46027395947)
-- [题库一致性](https://github.com/10010100111000/AttackBoxModule/actions/runs/46027395873)
-- 镜像约 **26.5 MB**；内存上限 256 MiB
-- 仅一个 Web Flag；不包含 SNMP、SSH、native binary、Root 或 Worker 验收。
-
-### 最近更新：Devvortex — E2E 已通过
-
-Devvortex 已完成 Web-only 目标并通过独立攻击端验收。目标使用真实 Joomla 4.2.6，完整路径为虚拟主机与版本识别 → CVE-2023-23752 匿名配置泄露 → Joomla 管理员认证 → Cassiopeia 模板编辑 → 以 `www-data` 执行命令并读取单个 Web Flag。
-
-- [PR / 最新 E2E](https://github.com/10010100111000/AttackBoxModule/actions/runs/46017292203)：全部步骤通过，Flag 与当前 CI 随机答案精确一致
-- [题库一致性检查](https://github.com/10010100111000/AttackBoxModule/actions/runs/46015597031)：通过
-- [镜像构建与发布检查](https://github.com/10010100111000/AttackBoxModule/actions/runs/46015597183)：通过
-- Docker 镜像大小：约 **152.3 MB**
-- [0.1.0 版本化 Flag 发布](https://github.com/10010100111000/AttackBoxModule/actions/runs/46018450388)：生成随机 Flag，构建真实 Joomla 镜像，通过同一 HTTP 利用链读取精确 Flag 后才提交 Manifest、目标 seed 和 Challenge 答案
-- 正式 Flag 文件、Manifest 与 Challenge 答案已核对一致
-
-已移除原题中不属于本平台范围的 SSH、Apport、Linux 用户切换和 Root Flag。该 Lab 的 `e2e_ci_status` 为 `passed`；合并后仍需核对 main 分支运行证据。
-
-### 最近更新：Bike
-
-Bike 已在 main 合并，代码提交为 `05f5c1048a297961e0ff42745e8fae2fbc39bfe2`。使用受影响的 Handlebars 4.1.1，独立 HTTP 攻击端从 Web 入口完成 SSTI 命令执行并读取随机 Flag。
-
-- [PR 独立攻击端 E2E](https://github.com/10010100111000/AttackBoxModule/actions/runs/45899322346)：包含题目验证器和 Writeup 独立利用脚本
-- [main 版本化 Flag 发布 E2E](https://github.com/10010100111000/AttackBoxModule/actions/runs/45899503806)：生成 0.1.0 随机 Flag，实际读取并验证后提交发布文件
-- [main 题库目录一致性 CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/45899891027)：通过
-- 镜像大小约 **80.8 MB**；测试时容器内存约 **18.4 MiB**（700 MiB 限额）
-
-Flag seed、版本 Manifest 与 Challenge 答案已由 CI 核对一致。Bike 是 Web-only 单 Flag，不包含 SSH 登录或第二阶段 Root 提权。
-
-### Precious 完整 E2E 验收
-
-Precious 已完成独立攻击端端到端验收。真实 PDFKit 0.8.6 / wkhtmltopdf 靶机在隔离 Docker 网络中，通过 CVE-2022-25765 以 `ruby` 身份执行命令，并读取本次 CI 生成的精确随机 Web Flag。
-
-- [独立攻击端 E2E](https://github.com/10010100111000/AttackBoxModule/actions/runs/45902207628)：命令执行身份与 Web Flag 回读均通过
-- [普通 PDF 功能 smoke CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/45901579321)：首页、PDFKit 版本、健康检查和正常 PDF 转换通过
-- [镜像构建与启动检查](https://github.com/10010100111000/AttackBoxModule/actions/runs/45901579285)：通过
-- Docker 镜像约 **190.9 MB**；测试时内存约 **21 MiB**（850 MiB 限额）
-
-Flag 由每次 CI 独立生成，并核对目标文件与 Challenge 答案一致。题目仍为 Web-only 单 Flag，不包含 SSH、YAML 反序列化或 Linux Root 阶段。
-
-## CI machine index
-
-This table is generated from the same state recorded in `catalog/web-curriculum.json`. The curriculum CI compares every row, count and release marker; update this table whenever the catalog changes.
-
-| Lab ID | Catalog CI status | Release marker status |
+| Lab | 目标范围 | E2E 证据 |
 |---|---|---|
-| `alert` | `partial` | `blocked_by_marker` |
-| `base` | `full_chain_ci` | `not_assessed` |
-| `bashed` | `full_chain_ci` | `not_assessed` |
-| `bike` | `full_chain_ci` | `not_assessed` |
-| `bountyhunter` | `full_chain_ci` | `not_assessed` |
-| `cap` | `full_chain_ci` | `not_assessed` |
-| `cursed-stale-policy` | `unverified` | `not_assessed` |
-| `devvortex` | `full_chain_ci` | `not_assessed` |
-| `editorial` | `full_chain_ci` | `blocked_by_marker` |
-| `goodgames` | `full_chain_ci` | `not_assessed` |
-| `nibbles` | `full_chain_ci` | `not_assessed` |
-| `openadmin` | `full_chain_ci` | `not_assessed` |
-| `pebbles` | `full_chain_ci` | `not_assessed` |
-| `photobomb` | `full_chain_ci` | `not_assessed` |
-| `precious` | `full_chain_ci` | `not_assessed` |
-| `shocker` | `full_chain_ci` | `not_assessed` |
-| `union` | `full_chain_ci` | `not_assessed` |
-| `validation` | `full_chain_ci` | `not_assessed` |
-| `funnel` | `partial` | `not_assessed` |
-| `django-debug-xss` | `full_chain_ci` | `blocked_by_marker` |
-| `wondercms-xss` | `full_chain_ci` | `blocked_by_marker` |
-| `usage` | `full_chain_ci` | `blocked_by_marker` |
-| `nodeblog` | `full_chain_ci` | `blocked_by_marker` |
-| `zipping` | `full_chain_ci` | `blocked_by_marker` |
-| `soccer` | `full_chain_ci` | `blocked_by_marker` |
-| `trick` | `unverified` | `blocked_by_marker` |
-| `intense` | `full_chain_ci` | `blocked_by_marker` |
+| Bike | Handlebars 4.1.1 SSTI → RCE → Web Flag | [CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/45899503806) |
+| Precious | PDFKit 0.8.6 命令注入 → ruby → Web Flag | [CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/45902207628) |
+| GoodGames | SQLite SQLi → 凭据恢复/复用 → Jinja2 SSTI → Web Flag | [CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/46011059390) |
+| Devvortex | Joomla 4.2.6 配置泄露 → 管理员模板编辑 → Web Flag | [CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/46017292203) |
+| Base | PHP 7.2 登录绕过 → 上传 → SSH → sudo find → User/Root 双 Flag | [CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/46022242878) |
+| Intense | SQLite 条件错误 SQLi → SHA-256 长度扩展 → 日志路径遍历 → Web Flag | [CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/46028110921) |
 
-## 现有靶机状态
+这里的“通过”只表示对应提交的靶机 E2E 已按真实网络攻击路径取回精确 Flag。它不代表 Worker、平台同步或生产部署验收；这些工作不属于本流程。
 
-### 已有完整目标链 CI 记录（21 台）
+## 其余 main Lab
 
-| Lab | 主要技术/目标 | 备注 |
+下表只显示待处理 Lab 的当前 E2E 状态。不要从 `full_chain_ci` 推断新标准 E2E 已通过；历史完整链记录和当前统一 E2E 是两个不同字段。
+
+| Lab | 当前 E2E | 备注 |
 |---|---|---|
-| Bashed | phpbash 暴露入口、sudo/cron | 原版 phpbash 组件 |
-| Base | PHP 7.2 strcmp 绕过 → PHP 上传 → SSH john → sudo find | 独立 HTTP+SSH E2E 读取随机 User/Root 双 Flag；main E2E 已通过 |
-| Bike | Handlebars 4.1.1 SSTI → RCE | 独立 HTTP 攻击端读取随机 Flag；PR 与 main 版本发布 E2E 均通过 |
-| Bountyhunter | SimpleXML XXE、凭据与后续服务链 | 真实 XML 解析器 |
-| Cap | IDOR、PCAP、凭据复用、Linux capability | 已拆分为 Packet Drop / Setuid Surprise 两个 Challenge |
-| Django Debug XSS | Django 1.11.4 技术错误页 XSS | 有真实浏览器与版本负向对照记录；有 `.release-blocked` |
-| Nibbles | Nibbleblog 插件上传 | 真实 Nibbleblog 4.0.3 |
-| OpenAdmin | OpenNetAdmin xajax RCE | 真实 ONA 18.1.1 |
-| Pebbles | ZoneMinder SQLi、数据库文件操作 | 历史依赖栈较复杂 |
-| Photobomb | ImageMagick 命令注入 | Sinatra / ImageMagick |
-| GoodGames | SQLite 登录 SQLi → 弱 MD5 凭据 → 存储型 Jinja2 SSTI | 独立攻击端读取随机 Web Flag；PR 与 main E2E 均通过 |
-| Devvortex | Joomla 4.2.6 / CVE-2023-23752 → Cassiopeia 模板编辑 | 独立攻击端通过匿名配置泄露、管理员认证、www-data 执行并读取随机 Web Flag；Web-only 单 Flag |
-| Shocker | Bash CGI Shellshock | 真实 GNU Bash 4.3 |
-| Union | MariaDB UNION / LOAD_FILE | 后续链涉及网络权限边界 |
-| Validation | 二阶 SQLi、MariaDB FILE | 真实 MariaDB 与 PHP |
-| Editorial | SSRF、内部 API、GitPython | 有 `.release-blocked` |
-| Usage | Laravel password recovery SQLi | 有 `.release-blocked` |
-| NodeBlog | MongoDB NoSQLi、XXE、node-serialize | Web-only，多阶段 Challenge；有 `.release-blocked` |
-| Zipping | ZIP symlink、SQLi/FILE、PHP LFI | 使用的解压组件与原题存在差异；有 `.release-blocked` |
-| Soccer | Tiny File Manager、WebSocket blind SQLi | Web-only；有 `.release-blocked` |
-| WonderCMS XSS | WonderCMS 属性上下文 XSS、管理员浏览器 | 有 `.release-blocked` |
+| Alert | pending | 部分实现；真实浏览器 XSS 与内部文件读取已有证据，最终 Flag 闭环未完成 |
+| Bashed | pending | 有历史完整链 CI 记录 |
+| Bountyhunter | pending | 有历史完整链 CI 记录 |
+| Cap | pending | 有历史完整链 CI 记录 |
+| Cursed Stale Policy | pending | 尚需确认真实浏览器行为 |
+| Editorial | pending | 有历史完整链 CI 记录；存在 release-blocked 标记 |
+| Nibbles | pending | 有历史完整链 CI 记录 |
+| OpenAdmin | pending | 有历史完整链 CI 记录 |
+| Pebbles | pending | 有历史完整链 CI 记录 |
+| Photobomb | pending | 有历史完整链 CI 记录 |
+| Shocker | pending | 有历史完整链 CI 记录 |
+| Union | pending | 有历史完整链 CI 记录 |
+| Validation | pending | 有历史完整链 CI 记录 |
+| Funnel | pending | 部分实现；FTP / SSH / PostgreSQL 服务链，非 Web 主线 |
+| Django Debug XSS | pending | 有历史完整链 CI 记录；存在 release-blocked 标记 |
+| WonderCMS XSS | pending | 有历史完整链 CI 记录；存在 release-blocked 标记 |
+| Usage | pending | 有历史完整链 CI 记录；存在 release-blocked 标记 |
+| NodeBlog | pending | 有历史完整链 CI 记录；存在 release-blocked 标记 |
+| Zipping | pending | 有历史完整链 CI 记录；存在 release-blocked 标记，另有 ZIP symlink 目标争议 |
+| Soccer | pending | 有历史完整链 CI 记录；存在 release-blocked 标记 |
+| Trick | pending | 尚未完成统一 E2E；多服务链，暂缓优先处理 |
 
-`full_chain_ci` 表示该 Lab 有完整目标链 CI 证据；旧 Lab 的历史证据不自动等同于当前统一 E2E 标准。每台是否通过新标准，以 `catalog/web-curriculum.json` 中的 `e2e_ci_status`、运行链接和提交 SHA 为准。Bike、Precious、GoodGames、Devvortex、Base 与 Intense 均已按新标准通过独立攻击端验收。
+## 状态定义
 
-### 部分完成（2 台）
+- `lab_ci_status`：保留既有目录/历史 CI 分类，不能代替当前 E2E 状态。
+- `e2e_ci_status=passed`：该 Lab 的独立攻击端通过真实网络入口完成预期路径，并精确取回当前 Flag。
+- `e2e_ci_status=pending`：尚无当前统一标准下的通过记录。
+- `release_status=blocked_by_marker`：仓库仍有发布阻塞标记；需结合该 Lab 的具体原因判断，不等于 E2E 失败，也不等于代码未完成。
+- `worker_status`：不在本项目靶机制作与 CI 工作范围内。
 
-| Lab | 已有内容 | 仍需处理的靶机工作 |
-|---|---|---|
-| Alert | Markdown 存储型 XSS、真实 Chromium 管理员浏览器、内部文件读取 | Web Flag 目标路径仍需人工确认；有 `.release-blocked` |
-| Funnel | FTP、SSH、PostgreSQL 隧道 | 属于非 Web 服务链，单独标识其题库归类与目标 |
+## 下一步
 
-### 尚未充分验证（3 台）
+继续优先处理 main 已有 Lab，一次只做一台。当前先从 [playbook](LAB_PRODUCTION_PLAYBOOK.md) 的交接说明和 catalog 的 `selection_policy` 选择下一项；不要新增无关 Lab，也不要重复制作上面 6 台已通过的靶机。
 
-| Lab | 当前实现 | 下一步关注 |
-|---|---|---|
-| Cursed Stale Policy | CSP、XSS、WebSocket 相关代码 | 先核对实际浏览器行为，不把代码存在当成漏洞已成立 |
-| Trick | DNS、PHP、MariaDB、LFI、Fail2ban 等真实服务 | 当前实现较复杂，先整理正常业务与题目范围，再补基础工程检查 |
-| Intense | Flask、SQLite 条件错误、LWT 会话、路径遍历 | 独立攻击端已完成 SQLi → SHA-256 长度扩展 → 管理员日志路径遍历 → Web Flag 全链路验收 |
+## 文档入口
 
-## 接下来只处理 main 已有靶机
-
-建议顺序：
-
-1. **下一项重新评估**：先检查剩余 partial main Labs（Alert、Funnel）是否能以较小改动完成完整 E2E；Trick 暂缓，因其多服务范围较大。
-
-这只是 main 现有资产的处理顺序。每台必须由专属隔离攻击端 E2E 实际走完目标路径并读取精确 Flag；只有 main 对应提交的 E2E 成功后才算完成。执行细节见 [Lab Production Playbook](LAB_PRODUCTION_PLAYBOOK.md)。
-
-## 维护规则
-
-- `catalog/web-curriculum.json` 是 Lab 状态、候选与 backlog 的结构化主清单。
-- `catalog/web-competencies.json` 是技能分类和验收目标的唯一来源。
-- `labs/<slug>/README.md` 记录该 Lab 的真实组件版本、部署、功能和已知差异。
-- `challenges/` 存放玩家题面；适合的题目附带 `writeup.md`。
-- 每台 Lab 必须有独立攻击端 E2E：真实漏洞利用、真实网络入口、精确 Flag 回读；普通 smoke 不等于 E2E。
-- E2E 禁止挂载靶机文件系统、Docker socket、`docker exec` 取 Flag 或模拟漏洞。
-- 不要求用户手动打靶；不做 Worker、平台同步或生产部署验收。
-- 暂停新增 Lab；优先完成以上 main 已有靶机。
+- [靶机制作与 CI 操作规程](LAB_PRODUCTION_PLAYBOOK.md)：唯一执行流程、工程约束和会话交接。
+- [Web 靶机课程设计](WEB_LAB_DESIGN.md)：知识分类、技能梯度、选题原则与教学规划。
+- [结构化靶机状态与 backlog](../catalog/web-curriculum.json)：机器状态、证据、候选与队列。
+- [技能分类表](../catalog/web-competencies.json)：技能 ID 和验收目标。
+- `labs/<slug>/README.md` 与 `writeup.md`：各靶机自己的实现说明与完整解题记录。
