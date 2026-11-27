@@ -45,7 +45,8 @@ print("PASS: native sudo pivot to scriptmanager", flush=True)
 
 user_output = cmd("cat /home/arrexel/user.txt")
 assert EXPECTED_USER_FLAG in user_output, "Exact per-instance User Flag mismatch"
-assert cmd("test -r /root/root.txt; echo $?").strip().endswith("1")
+permission_check = cmd("if [ -r /root/root.txt ]; then echo ROOT_READABLE; else echo ROOT_DENIED; fi")
+assert "ROOT_DENIED" in permission_check and "ROOT_READABLE" not in permission_check
 print("PASS: exact User Flag recovered; Root Flag is not readable before cron path", flush=True)
 
 payload = (
