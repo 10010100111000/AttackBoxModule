@@ -10,8 +10,8 @@
 
 | main 中记录的 CI 状态 | 数量 | 含义 |
 |---|---:|---|
-| `full_chain_ci` | 19 | 保留了历史完整目标链 CI 证据；不代表当前 CI 会继续自动执行攻击链 |
-| `partial` | 4 | 已有部分真实功能或目标行为检查，仍有靶机内容/目标路径缺口 |
+| `full_chain_ci` | 20 | 保留了历史完整目标链 CI 证据；不代表当前 CI 会继续自动执行攻击链 |
+| `partial` | 3 | 已有部分真实功能或目标行为检查，仍有靶机内容/目标路径缺口 |
 | `unverified` | 4 | 尚无足够的靶机目标验证记录 |
 
 另有 **11 台**保留 `.release-blocked` 标记。该标记不是 CI 结果，也不等同于靶机代码不存在；未完成原因应以各自 README 和标记文件为准。
@@ -53,7 +53,7 @@ This table is generated from the same state recorded in `catalog/web-curriculum.
 | `cursed-stale-policy` | `unverified` | `not_assessed` |
 | `devvortex` | `partial` | `not_assessed` |
 | `editorial` | `full_chain_ci` | `blocked_by_marker` |
-| `goodgames` | `partial` | `not_assessed` |
+| `goodgames` | `full_chain_ci` | `not_assessed` |
 | `nibbles` | `full_chain_ci` | `not_assessed` |
 | `openadmin` | `full_chain_ci` | `not_assessed` |
 | `pebbles` | `full_chain_ci` | `not_assessed` |
@@ -74,7 +74,7 @@ This table is generated from the same state recorded in `catalog/web-curriculum.
 
 ## 现有靶机状态
 
-### 已有完整目标链 CI 记录（19 台）
+### 已有完整目标链 CI 记录（20 台）
 
 | Lab | 主要技术/目标 | 备注 |
 |---|---|---|
@@ -87,6 +87,7 @@ This table is generated from the same state recorded in `catalog/web-curriculum.
 | OpenAdmin | OpenNetAdmin xajax RCE | 真实 ONA 18.1.1 |
 | Pebbles | ZoneMinder SQLi、数据库文件操作 | 历史依赖栈较复杂 |
 | Photobomb | ImageMagick 命令注入 | Sinatra / ImageMagick |
+| GoodGames | SQLite 登录 SQLi → 弱 MD5 凭据 → 存储型 Jinja2 SSTI | 独立攻击端读取随机 Web Flag；PR 与 main E2E 均通过 |
 | Shocker | Bash CGI Shellshock | 真实 GNU Bash 4.3 |
 | Union | MariaDB UNION / LOAD_FILE | 后续链涉及网络权限边界 |
 | Validation | 二阶 SQLi、MariaDB FILE | 真实 MariaDB 与 PHP |
@@ -97,15 +98,14 @@ This table is generated from the same state recorded in `catalog/web-curriculum.
 | Soccer | Tiny File Manager、WebSocket blind SQLi | Web-only；有 `.release-blocked` |
 | WonderCMS XSS | WonderCMS 属性上下文 XSS、管理员浏览器 | 有 `.release-blocked` |
 
-`full_chain_ci` 表示该 Lab 有完整目标链 CI 证据；旧 Lab 的历史证据不自动等同于当前统一 E2E 标准。每台是否通过新标准，以 `catalog/web-curriculum.json` 中的 `e2e_ci_status`、运行链接和提交 SHA 为准。Bike 与 Precious 均已按新标准通过独立攻击端验收。
+`full_chain_ci` 表示该 Lab 有完整目标链 CI 证据；旧 Lab 的历史证据不自动等同于当前统一 E2E 标准。每台是否通过新标准，以 `catalog/web-curriculum.json` 中的 `e2e_ci_status`、运行链接和提交 SHA 为准。Bike、Precious 与 GoodGames 均已按新标准通过独立攻击端验收。
 
-### 部分完成（4 台）
+### 部分完成（3 台）
 
 | Lab | 已有内容 | 仍需处理的靶机工作 |
 |---|---|---|
 | Alert | Markdown 存储型 XSS、真实 Chromium 管理员浏览器、内部文件读取 | Web Flag 目标路径仍需人工确认；有 `.release-blocked` |
 | Devvortex | Joomla 4.2.6 信息泄露 | 明确并完成 Web 专项目标；不要默认追加 Linux Root |
-| GoodGames | 登录 SQLi、弱 MD5 凭据恢复、存储型 Jinja2 SSTI | 独立攻击端 E2E 已接入，等待真实 Flag 回读验收 |
 | Funnel | FTP、SSH、PostgreSQL 隧道 | 属于非 Web 服务链，单独标识其题库归类与目标 |
 
 ### 尚未充分验证（4 台）
@@ -121,7 +121,6 @@ This table is generated from the same state recorded in `catalog/web-curriculum.
 
 建议顺序：
 
-1. **GoodGames**：正在验证 SQLi → 弱 MD5 凭据恢复 → 存储型 Jinja2 SSTI 的完整 Web Flag 路径。
 2. **Devvortex**：明确 Web-only 目标，不把原题 Linux 后半段强加进来。
 3. **Base**：补清楚认证与上传两部分的实际功能和题目目标。
 4. **Intense / Trick**：先处理复杂实现的基础工程与文档，不扩展新功能。
