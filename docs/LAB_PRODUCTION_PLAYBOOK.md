@@ -16,7 +16,7 @@
 
 The live machine inventory and all per-Lab evidence are maintained only in [`docs/EXISTING_WEB_LAB_RELEASE_INVENTORY.md`](EXISTING_WEB_LAB_RELEASE_INVENTORY.md) and [`catalog/web-curriculum.json`](../catalog/web-curriculum.json). Do not duplicate the completed-Lab table here.
 
-At the 2026-11-28 main snapshot, thirteen Labs have passed the current independent-attacker E2E: Bike, Precious, GoodGames, Devvortex, Base, Intense, Alert, Cursed Stale Policy, Editorial, Nibbles, Shocker, Bashed and the previously completed set. Fourteen existing Labs remain pending under the current E2E field. This is a CI-status distinction, not a claim that all pending Labs are unimplemented.
+At the 2026-11-28 main snapshot, twelve Labs have passed the current independent-attacker E2E: Bike, Precious, GoodGames, Devvortex, Base, Intense, Alert, Cursed Stale Policy, Editorial, Nibbles, Shocker, Bashed and the previously completed set. Fifteen existing Labs remain pending under the current E2E field. This is a CI-status distinction, not a claim that all pending Labs are unimplemented.
 
 **Next action:** Alert is complete; choose one remaining pending Web Lab after inspecting its actual implementation, challenge files and workflow. Cursed Stale Policy and Editorial are complete; Shocker and Bashed are complete; next inspect Bountyhunter's actual XXE, credential-reuse and Skytrain eval chain before proceeding. Funnel is a non-Web service chain; Trick is a larger multi-service target and should remain deferred until its scope is inspected. Do not assume the next target from an old prose queue—re-read the catalog and inventory first.
 
