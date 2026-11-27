@@ -41,7 +41,7 @@
 | Lab | 当前 E2E | 备注 |
 |---|---|---|
 
-| OpenAdmin | pending | 有历史完整链 CI 记录 |
+| OpenAdmin | pending | 当前单实例 E2E 已验证至 Joanna/User Flag；Root 阶段因 Expect 未使用传入的临时私钥路径而失败，修复后需重新跑完整攻击链；Catalog 保持 pending |
 | Pebbles | pending | 有历史完整链 CI 记录 |
 | Photobomb | pending | 有历史完整链 CI 记录 |
 | Union | pending | 有历史完整链 CI 记录 |
