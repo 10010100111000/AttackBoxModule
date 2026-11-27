@@ -117,7 +117,6 @@ This table is generated from the same state recorded in `catalog/web-curriculum.
 | Lab | 已有内容 | 仍需处理的靶机工作 |
 |---|---|---|
 | Alert | Markdown 存储型 XSS、真实 Chromium 管理员浏览器、内部文件读取 | Web Flag 目标路径仍需人工确认；有 `.release-blocked` |
-| Devvortex | Joomla 4.2.6 / CVE-2023-23752 → 管理后台模板编辑 | Web-only 单 Flag；独立攻击端 E2E 已接入，等待真实 Flag 回读 |
 | Funnel | FTP、SSH、PostgreSQL 隧道 | 属于非 Web 服务链，单独标识其题库归类与目标 |
 
 ### 尚未充分验证（4 台）
@@ -133,9 +132,8 @@ This table is generated from the same state recorded in `catalog/web-curriculum.
 
 建议顺序：
 
-1. **Devvortex**：明确 Web-only 目标，不把原题 Linux 后半段强加进来。
-3. **Base**：补清楚认证与上传两部分的实际功能和题目目标。
-4. **Intense / Trick**：先处理复杂实现的基础工程与文档，不扩展新功能。
+1. **Base**：补清楚认证与上传两部分的实际功能和题目目标。
+2. **Intense / Trick**：先处理复杂实现的基础工程与文档，不扩展新功能。
 
 这只是 main 现有资产的处理顺序。每台必须由专属隔离攻击端 E2E 实际走完目标路径并读取精确 Flag；只有 main 对应提交的 E2E 成功后才算完成。执行细节见 [Lab Production Playbook](LAB_PRODUCTION_PLAYBOOK.md)。
 
