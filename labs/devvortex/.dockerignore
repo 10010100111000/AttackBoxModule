@@ -2,3 +2,8 @@
 *.pdf
 *.zip
 __pycache__
+README.md
+writeup.md
+exploit.py
+tests/
+flags/releases/

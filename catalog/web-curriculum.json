@@ -731,25 +731,28 @@
       "secondary_categories": [
         "auth_session"
       ],
-      "validated_skills": [],
-      "implemented_skills": [
-        "cms_vulnerability.information-disclosure",
-        "cms_vulnerability.versioned-cve"
+      "validated_skills": [
+        "information_disclosure.config-leak",
+        "information_disclosure.chain-credential"
       ],
-      "lab_ci_status": "partial",
+      "implemented_skills": [
+        "information_disclosure.config-leak",
+        "information_disclosure.chain-credential"
+      ],
+      "lab_ci_status": "full_chain_ci",
       "worker_status": "not_verified",
       "release_status": "not_assessed",
-      "evidence": "",
-      "note": "Joomla 4.2.6 信息泄露；真实 Apport Root 交互链未通过端到端验收",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/46016638156",
+      "note": "真实 Joomla 4.2.6 / CVE-2023-23752；独立 HTTP 攻击端完成匿名配置泄露、管理员认证、Cassiopeia 模板编辑、www-data 命令执行并读取精确随机 Web Flag。Web-only 单 Flag，不包含 SSH/Apport/Root。",
       "variant_profile": {
-        "technology": "Joomla 4.2.6",
-        "initial_discovery": "虚拟主机/公开接口",
-        "key_constraint_or_mechanism": "CVE 信息泄露",
-        "attack_path": "信息泄露→CMS后台→SSH，Apport Root 仍未完整验收",
-        "incremental_learning_value": "旧版本 CMS 真实实现",
-        "confidence": "from_repository_readme_or_existing_tests"
+        "technology": "Ubuntu 22.04, nginx, PHP 8.1-FPM, MariaDB, official Joomla 4.2.6",
+        "initial_discovery": "Host-header virtual hosts, Joomla administrator and version manifest",
+        "key_constraint_or_mechanism": "CVE-2023-23752 unauthenticated webservice configuration disclosure",
+        "attack_path": "vhost discovery -> Joomla version -> anonymous config disclosure -> admin login -> Cassiopeia template PHP editor -> www-data Web Flag",
+        "incremental_learning_value": "CMS version fingerprinting, unauthenticated configuration disclosure and authenticated template modification",
+        "confidence": "upstream_cve_and_joomla_source_verified_e2e_pending"
       },
-      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review",
+      "skill_mapping_stage": "real_joomla_cve_2023_23752_admin_template_editor_web_flag_e2e_verified",
       "manual_validation": {
         "status": "not_reviewed",
         "commit": null,
@@ -759,10 +762,10 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "pending",
-      "e2e_ci_workflow": null,
-      "e2e_ci_evidence": null,
-      "e2e_ci_commit": null
+      "e2e_ci_status": "passed",
+      "e2e_ci_workflow": ".github/workflows/devvortex-e2e.yml",
+      "e2e_ci_evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/46016638156",
+      "e2e_ci_commit": "a65e896cb673720609ef6131202415f458e3b53c"
     },
     {
       "id": "editorial",

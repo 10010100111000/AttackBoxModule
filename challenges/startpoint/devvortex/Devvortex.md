@@ -1,33 +1,24 @@
 ---
-summary: 某科技公司正在开发新的技术门户与内部管理系统。你需要通过虚拟主机枚举突破外围，并利用已知 CMS 缺陷与特权程序漏洞逐步提权夺取整机最高控制权。
-level: medium
+summary: 某科技公司正在开发新的技术门户。检查公开站点及其内容管理系统，了解应用暴露的信息，并取得 Web 服务的初始访问权限。
+level: intermediate
 lab: devvortex
 ---
 
 # 场景
 
-某科技公司正在开发新的技术门户与内部管理系统。你需要通过虚拟主机枚举突破外围，并利用已知 CMS 缺陷与特权程序漏洞逐步提权夺取整机最高控制权。
+某科技公司正在开发新的技术门户。公开站点与内容管理系统由不同的虚拟主机提供服务，管理员使用 CMS 管理网站内容。
+
+请从公开页面开始，检查目标的 HTTP 服务、站点结构和应用行为，逐步找出能够进入管理界面的线索。
 
 # 任务
 
-探测目标主机开放服务与虚拟主机配置，利用 CMS 历史安全漏洞获取系统初始立足点；搜集系统内部凭据横向移动，并利用本地提权漏洞获取系统最高控制权。
+评估目标 Web 应用的安全性，并取得 Web 服务账户权限范围内的 Flag。
 
 ```quiz
-title: 获取用户权限 (User Flag)
+title: 获取 Web Flag
 kind: flag
 prompt: |
-  通过 Host 头虚拟主机枚举发现开发站点，利用 Joomla 4.2.6 信息泄露缺陷获取数据库及后台管理员凭据。登录后台获取 WebShell 突破边界，并进一步提取账户凭据通过 SSH 登录目标主机，提交 `/home/logan/user.txt` 中的 Flag。
-answer: "DEVVORTEX{local_user_flag_demo}"
+  从公开技术门户开始进行枚举，利用应用中真实存在的安全缺陷获得 Web 服务执行上下文，并读取目标账户目录中的 Flag。
+answer: "TTP{aaaaaaaaaaaaaaaa}"
 match: trim
-hint: 枚举 dev.devvortex.htb 虚拟主机，审计 /api/index.php/v1/config/application 接口。
-```
-
-```quiz
-title: 获取最高权限 (Root Flag)
-kind: flag
-prompt: |
-  检查用户 logan 在主机上的 sudo 特权，利用未修复的 Apport 提权缺陷接管系统，读取 `/root/root.txt` 中的 Flag 并提交。
-answer: "DEVVORTEX{local_root_flag_demo}"
-match: trim
-hint: 检查 sudo -l 与 apport-cli 的版本及调用行为。
 ```

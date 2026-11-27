@@ -1,0 +1,110 @@
+name: Devvortex versioned Web Flag release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version; re-running the same version reuses its Flag."
+        required: true
+        default: "0.1.0"
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: devvortex-flag-release-${{ inputs.version }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+
+      - name: Generate or reuse versioned Flag
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          python3 scripts/generate_devvortex_release.py --version "$RELEASE_VERSION"
+          manifest="labs/devvortex/flags/releases/$RELEASE_VERSION.json"
+          before=$(sha256sum "$manifest" | cut -d' ' -f1)
+          python3 scripts/generate_devvortex_release.py --version "$RELEASE_VERSION"
+          after=$(sha256sum "$manifest" | cut -d' ' -f1)
+          test "$before" = "$after"
+
+      - name: Verify release Manifest, target seed and Challenge
+        id: release
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib, re
+          root = pathlib.Path(".")
+          version = os.environ["RELEASE_VERSION"]
+          manifest = json.loads((root / f"labs/devvortex/flags/releases/{version}.json").read_text())
+          flag = manifest["flag"]
+          assert manifest["version"] == version
+          assert re.fullmatch(r"TTP\{[a-z2-7]{16}\}", flag)
+          assert (root / "labs/devvortex/flags/user.txt").read_text().strip() == flag
+          challenge = (root / "challenges/startpoint/devvortex/Devvortex.md").read_text()
+          assert challenge.count(f'answer: "{flag}"') == 1
+          assert challenge.count("kind: flag") == 1 and "lab: devvortex" in challenge
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              output.write(f"expected={flag}\n")
+          print(f"::add-mask::{flag}")
+          PY
+
+      - name: Build real Joomla target
+        run: docker build --pull --progress=plain -t ttp-devvortex:release -f labs/devvortex/Dockerfile labs/devvortex
+
+      - name: Start target and run real HTTP exploit before release commit
+        env:
+          EXPECTED_FLAG: ${{ steps.release.outputs.expected }}
+        run: |
+          set -euo pipefail
+          docker network create --internal devvortex-release
+          cleanup() {
+            docker logs devvortex-target 2>/dev/null || true
+            docker rm -f devvortex-target 2>/dev/null || true
+            docker network rm devvortex-release 2>/dev/null || true
+            docker image rm ttp-devvortex:release 2>/dev/null || true
+          }
+          trap cleanup EXIT
+          docker run -d --name devvortex-target --network devvortex-release \
+            --network-alias devvortex.htb --network-alias dev.devvortex.htb \
+            --memory 1100m --cpus 2 --pids-limit 220 \
+            --security-opt no-new-privileges ttp-devvortex:release
+          ready=0
+          for attempt in $(seq 1 100); do
+            state=$(docker inspect -f '{{.State.Status}}' devvortex-target)
+            health=$(docker inspect -f '{{.State.Health.Status}}' devvortex-target)
+            if [ "$state" != running ] || [ "$health" = unhealthy ]; then docker logs devvortex-target; exit 1; fi
+            if [ "$health" = healthy ]; then ready=1; break; fi
+            sleep 3
+          done
+          test "$ready" = 1
+          docker run --rm --network devvortex-release \
+            -v "$GITHUB_WORKSPACE/labs/devvortex/exploit.py:/exploit.py:ro" \
+            -e EXPECTED_FLAG \
+            python:3.12-alpine python /exploit.py \
+              --url http://dev.devvortex.htb --expected-flag "$EXPECTED_FLAG"
+
+      - name: Commit verified release artifacts
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+          BRANCH_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "labs/devvortex/flags/releases/$RELEASE_VERSION.json" labs/devvortex/flags/user.txt challenges/startpoint/devvortex/Devvortex.md
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(devvortex): generate Web Flag for $RELEASE_VERSION"
+            git push origin "HEAD:$BRANCH_NAME"
+          fi

@@ -19,14 +19,15 @@
 | Bike | Handlebars 4.1.1 SSTI → command execution → one Web Flag | `passed` |
 | Precious | PDFKit 0.8.6 / CVE-2022-25765 → command execution as ruby → one Web Flag | `passed` |
 | GoodGames | SQLite login SQLi → weak MD5 recovery → reused admin credential → stored Jinja2 SSTI as augustus → one Web Flag | `passed` |
+| Devvortex | Joomla 4.2.6 CVE-2023-23752 → admin template editor → www-data → one Web Flag | `passed` |
 
 Do not reinterpret these as Worker, platform synchronization or production deployment acceptance. Those are explicitly outside this workflow.
 
 ### Next Lab
 
-**Devvortex** is next in the agreed main-branch order. Its scope is the existing Joomla 4.2.6 Web information-disclosure path. Do not automatically add the original machine's Linux privilege-escalation stage or a Root Flag. Inspect the current main code, source/writeup evidence, Challenge and CI before changing anything.
+**Base** is next in the agreed main-branch order. Devvortex has completed the Joomla 4.2.6 Web-only E2E path; do not re-open it unless a later regression is found. Inspect Base's current main code, source/writeup evidence, Challenge and CI before changing anything.
 
-After Devvortex, follow the order in `docs/EXISTING_WEB_LAB_RELEASE_INVENTORY.md`: Base, then Intense / Trick as their scope and readiness permit. Always re-read the live inventory because the order may change after a Lab is completed.
+After Base, follow the order in `docs/EXISTING_WEB_LAB_RELEASE_INVENTORY.md`: then evaluate Intense / Trick as their scope and readiness permit. Always re-read the live inventory because the order may change after a Lab is completed.
 
 ## 2. Non-negotiable user requirements
 
@@ -175,4 +176,4 @@ When continuing this project in a new conversation:
 6. Do not ask the user to repeat the requirements in this document.
 7. At the end, report only the meaningful result: what changed, E2E evidence, merge/main status, and the next Lab.
 
-**Current handoff at creation:** Bike, Precious and GoodGames are the three Labs recorded as E2E-passed. The next selected Lab is Devvortex. Re-check main before relying on this snapshot.
+**Current handoff at creation:** Bike, Precious, GoodGames and Devvortex are the four Labs recorded as E2E-passed. The next selected Lab is Base. Re-check main before relying on this snapshot.

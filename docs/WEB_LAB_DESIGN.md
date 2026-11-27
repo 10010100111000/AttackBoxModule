@@ -38,8 +38,8 @@
 
 以 main 提交 `bb3d62f3f8f96ded4eb34b16ba2561a4a1e0f678` 为本次盘点基准：
 
-- 当前目录有 **27 台 Lab**：20 台记录为 `full_chain_ci`、3 台为 `partial`、4 台为 `unverified`。
-- 端到端 CI：**Bike、Precious 与 GoodGames 3 台 passed、24 台 pending**；Precious 已通过真实 PDFKit 命令注入与精确 Flag 回读验收。
+- 当前目录有 **27 台 Lab**：21 台记录为 `full_chain_ci`、2 台为 `partial`、4 台为 `unverified`。
+- 端到端 CI：**Bike、Precious、GoodGames 与 Devvortex 4 台 passed、23 台 pending**；Precious 已通过真实 PDFKit 命令注入与精确 Flag 回读验收。
 - 其中 **10 台**保留 `.release-blocked` 标记；该字段与 CI 结果分开记录。
 - 技能目录仍为 **31 个专题 / 219 个细分目标**。
 - 滚动队列为 **35 项**：4 项 done、4 项 in_progress、27 项 planned。
@@ -262,7 +262,7 @@ Editorial 已对 SSRF 基本与内网 API 访问做了完整攻击链 CI，但**
 | bountyhunter | 中级 | XML 外部实体 | 真实外部实体 | 完整目标链 CI（非 Worker） |
 | cap | 中级 | 对象级授权与 IDOR | 越权获取其他人的网络流量 | 完整目标链 CI（非 Worker） |
 | cursed-stale-policy | 高级 | 跨站脚本 | 管理员浏览器 / CSP | 尚无完整验收 |
-| devvortex | 中级 | CMS / 应用组件漏洞 | CVE 信息泄露 | 局部/目标未全验收 |
+| devvortex | 中级 | CMS / 应用组件漏洞 | CVE-2023-23752 配置泄露 → Joomla 模板编辑 | Web-only 单 Flag，独立攻击端 E2E 已通过 |
 | editorial | 中级 | 服务端请求伪造 | 服务端 HTTP 请求到回环 API | 完整目标链 CI（非 Worker） |
 | goodgames | 中级 | SQL 注入 | SQLi 与存储模板上下文 | 局部/目标未全验收 |
 | nibbles | 初级 | 文件上传 | 真实原版上传文件处理 | 完整目标链 CI（非 Worker） |
@@ -493,7 +493,13 @@ Editorial 已对 SSRF 基本与内网 API 访问做了完整攻击链 CI，但**
 | 3：[HTB Alert](https://0xdf.gitlab.io/2025/03/22/htb-alert.html) | Markdown → 浏览器 XSS → 敏感文件读取 → SSH → Cron Root 的公开真实链 | **中级综合靶机**：跨用户浏览器行为与多阶段侦察 | 原站点源码未公开，重建时如实标明；需要管理员浏览器，Bot 运行资源单独测量 |
 | 可选：[OWASP DSVW](https://vwad.owasp.org/app/damn-small-vulnerable-web-dsvw/) | 少于 100 行 Python 的教学源码 | **初级微型专项**：XSS/DOM 入门 | 尽管极小，但界面直接展示漏洞，不符合偏好自然侦察的综合靶机要求，不能硬称真实产品 CVE |
 
-**选题顺序更新（2026-11-25）**：SQLi 分类下一台已选 HTB Intense，正在 `feat/web-intense-sqli-error-lwt-lfi` 开发分支进行 Web-only 重建。目标为 SQLite 条件错误 Oracle → 管理员 Secret → SHA-256 LWT 长度扩展 → 管理员日志路径遍历 → Web Flag。Inject 保留为后续独立 LFI / Spring Cloud Function CVE 候选，不是当前下一台。
+**历史选题记录（2026-11-25）**：当时曾将 HTB Intense 作为 SQLi 分类候选，目标为 SQLite 条件错误 Oracle → 管理员 Secret → SHA-256 LWT 长度扩展 → 管理员日志路径遍历 → Web Flag。该记录保留为历史规划，不覆盖后续已确认的 main 存量靶机优先顺序。
+
+## 当前逐台制作顺序（2026-11-27）
+
+当前按 main 存量清单逐台完成，不并行制作。已完成新标准 E2E 的是 Bike、Precious、GoodGames、Devvortex；下一台是 **Base**，之后再评估 Intense / Trick。Devvortex 的范围为 Joomla 4.2.6 / CVE-2023-23752 Web-only 单 Flag，不包含 SSH、Apport 或 Linux Root 阶段。
+
+执行细节与验收门槛以 [Lab Production Playbook](LAB_PRODUCTION_PLAYBOOK.md) 为准；状态与成功运行证据以 `catalog/web-curriculum.json` 为准。
 
 ## 平台 Flag 与管理员 Bot 责任边界
 
@@ -612,7 +618,7 @@ WonderCMS 3.4.2 **原版反射型属性 XSS 已通过真实 Chromium CI**。但�
 参考内容编写规范：`attackbox/docs/content-authoring.md`（另一个仓库）；本仓库已有 `challenges/startpoint/` 与 `labs/` 结构可作样例。
 
 
-## 2026-11-25 — Active SQLi composite: HTB Intense
+## 2026-11-25 — Historical SQLi composite candidate: HTB Intense
 
 **Selected for implementation:** [HTB Intense](https://www.hackthebox.com/machines/intense). The current inventory already contains UNION, Boolean/Time Blind, second-order, database FILE operations and WebSocket blind SQLi. Intense adds a distinct SQLite conditional-error oracle, followed by a cryptographic session-forgery step and authenticated path traversal.
 

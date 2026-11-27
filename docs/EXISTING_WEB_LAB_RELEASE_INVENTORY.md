@@ -10,11 +10,22 @@
 
 | main 中记录的 CI 状态 | 数量 | 含义 |
 |---|---:|---|
-| `full_chain_ci` | 20 | 保留了历史完整目标链 CI 证据；不代表当前 CI 会继续自动执行攻击链 |
-| `partial` | 3 | 已有部分真实功能或目标行为检查，仍有靶机内容/目标路径缺口 |
+| `full_chain_ci` | 21 | 保留历史完整目标链 CI 证据；新标准通过情况以 E2E 状态为准 |
+| `partial` | 2 | 已有部分真实功能或目标行为检查，仍有靶机内容/目标路径缺口 |
 | `unverified` | 4 | 尚无足够的靶机目标验证记录 |
 
 另有 **11 台**保留 `.release-blocked` 标记。该标记不是 CI 结果，也不等同于靶机代码不存在；未完成原因应以各自 README 和标记文件为准。
+
+### 最近更新：Devvortex — E2E 已通过
+
+Devvortex 已完成 Web-only 目标并通过独立攻击端验收。目标使用真实 Joomla 4.2.6，完整路径为虚拟主机与版本识别 → CVE-2023-23752 匿名配置泄露 → Joomla 管理员认证 → Cassiopeia 模板编辑 → 以 `www-data` 执行命令并读取单个 Web Flag。
+
+- [PR / 最新 E2E](https://github.com/10010100111000/AttackBoxModule/actions/runs/46016638156)：全部步骤通过，Flag 与当前 CI 随机答案精确一致
+- [题库一致性检查](https://github.com/10010100111000/AttackBoxModule/actions/runs/46015597031)：通过
+- [镜像构建与发布检查](https://github.com/10010100111000/AttackBoxModule/actions/runs/46015597183)：通过
+- Docker 镜像大小：约 **152.3 MB**
+
+已移除原题中不属于本平台范围的 SSH、Apport、Linux 用户切换和 Root Flag。该 Lab 的 `e2e_ci_status` 为 `passed`；合并后仍需核对 main 分支运行证据。
 
 ### 最近更新：Bike
 
@@ -51,7 +62,7 @@ This table is generated from the same state recorded in `catalog/web-curriculum.
 | `bountyhunter` | `full_chain_ci` | `not_assessed` |
 | `cap` | `full_chain_ci` | `not_assessed` |
 | `cursed-stale-policy` | `unverified` | `not_assessed` |
-| `devvortex` | `partial` | `not_assessed` |
+| `devvortex` | `full_chain_ci` | `not_assessed` |
 | `editorial` | `full_chain_ci` | `blocked_by_marker` |
 | `goodgames` | `full_chain_ci` | `not_assessed` |
 | `nibbles` | `full_chain_ci` | `not_assessed` |
@@ -88,6 +99,7 @@ This table is generated from the same state recorded in `catalog/web-curriculum.
 | Pebbles | ZoneMinder SQLi、数据库文件操作 | 历史依赖栈较复杂 |
 | Photobomb | ImageMagick 命令注入 | Sinatra / ImageMagick |
 | GoodGames | SQLite 登录 SQLi → 弱 MD5 凭据 → 存储型 Jinja2 SSTI | 独立攻击端读取随机 Web Flag；PR 与 main E2E 均通过 |
+| Devvortex | Joomla 4.2.6 / CVE-2023-23752 → Cassiopeia 模板编辑 | 独立攻击端通过匿名配置泄露、管理员认证、www-data 执行并读取随机 Web Flag；Web-only 单 Flag |
 | Shocker | Bash CGI Shellshock | 真实 GNU Bash 4.3 |
 | Union | MariaDB UNION / LOAD_FILE | 后续链涉及网络权限边界 |
 | Validation | 二阶 SQLi、MariaDB FILE | 真实 MariaDB 与 PHP |
@@ -100,12 +112,11 @@ This table is generated from the same state recorded in `catalog/web-curriculum.
 
 `full_chain_ci` 表示该 Lab 有完整目标链 CI 证据；旧 Lab 的历史证据不自动等同于当前统一 E2E 标准。每台是否通过新标准，以 `catalog/web-curriculum.json` 中的 `e2e_ci_status`、运行链接和提交 SHA 为准。Bike、Precious 与 GoodGames 均已按新标准通过独立攻击端验收。
 
-### 部分完成（3 台）
+### 部分完成（2 台）
 
 | Lab | 已有内容 | 仍需处理的靶机工作 |
 |---|---|---|
 | Alert | Markdown 存储型 XSS、真实 Chromium 管理员浏览器、内部文件读取 | Web Flag 目标路径仍需人工确认；有 `.release-blocked` |
-| Devvortex | Joomla 4.2.6 信息泄露 | 明确并完成 Web 专项目标；不要默认追加 Linux Root |
 | Funnel | FTP、SSH、PostgreSQL 隧道 | 属于非 Web 服务链，单独标识其题库归类与目标 |
 
 ### 尚未充分验证（4 台）
@@ -121,9 +132,8 @@ This table is generated from the same state recorded in `catalog/web-curriculum.
 
 建议顺序：
 
-1. **Devvortex**：明确 Web-only 目标，不把原题 Linux 后半段强加进来。
-3. **Base**：补清楚认证与上传两部分的实际功能和题目目标。
-4. **Intense / Trick**：先处理复杂实现的基础工程与文档，不扩展新功能。
+1. **Base**：补清楚认证与上传两部分的实际功能和题目目标。
+2. **Intense / Trick**：先处理复杂实现的基础工程与文档，不扩展新功能。
 
 这只是 main 现有资产的处理顺序。每台必须由专属隔离攻击端 E2E 实际走完目标路径并读取精确 Flag；只有 main 对应提交的 E2E 成功后才算完成。执行细节见 [Lab Production Playbook](LAB_PRODUCTION_PLAYBOOK.md)。
 
