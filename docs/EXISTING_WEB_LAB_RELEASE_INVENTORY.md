@@ -16,6 +16,15 @@
 
 另有 **11 台**保留 `.release-blocked` 标记。该标记不是 CI 结果，也不等同于靶机代码不存在；未完成原因应以各自 README 和标记文件为准。
 
+### 当前进行中：Trick — 独立 DNS/HTTP/SSH E2E 接入
+
+Trick 已有真实多服务实现与独立攻击脚本；本轮不重做服务，重点将现有 acceptance.py 接入隔离网络 CI，并使用随机双 Flag 验证 DNS → SQLi/FILE → nested PHP include → SSH → Fail2ban root action。`.release-blocked` 只保留 Worker/平台发布边界，不阻止本次 E2E。
+
+- E2E：`.github/workflows/trick-e2e.yml`（已接入，等待实际运行）
+- 版本化 Flag：`scripts/generate_trick_release.py`
+- Challenge：`challenges/integrated/trick/Trick.md`
+- 当前结构化状态：`configured`，尚无成功运行证据。
+
 ### 最近更新：Base — 完整双 Flag E2E 已通过
 
 Base 原有靶场实现未重做；这次为真实 PHP 7.2 / Apache / OpenSSH / sudo find 攻击链补齐独立攻击端与随机双 Flag。
@@ -153,7 +162,7 @@ This table is generated from the same state recorded in `catalog/web-curriculum.
 
 建议顺序：
 
-1. **Intense / Trick**：先处理复杂实现的基础工程与文档，不扩展新功能。
+1. **Intense**：先处理复杂实现的基础工程与文档，不扩展新功能。
 
 这只是 main 现有资产的处理顺序。每台必须由专属隔离攻击端 E2E 实际走完目标路径并读取精确 Flag；只有 main 对应提交的 E2E 成功后才算完成。执行细节见 [Lab Production Playbook](LAB_PRODUCTION_PLAYBOOK.md)。
 
