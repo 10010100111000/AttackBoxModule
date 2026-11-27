@@ -1,0 +1,147 @@
+name: Cursed Stale Policy real-browser E2E
+
+on:
+  pull_request:
+    paths:
+      - "labs/cursed-stale-policy/**"
+      - "challenges/startpoint/cursed-stale-policy/**"
+      - ".github/workflows/cursed-stale-policy.yml"
+  push:
+    branches: [main]
+    paths:
+      - "labs/cursed-stale-policy/**"
+      - "challenges/startpoint/cursed-stale-policy/**"
+      - ".github/workflows/cursed-stale-policy.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  csp-real-browser-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compile independent player and check default Flag answer
+        run: |
+          python3 -m py_compile labs/cursed-stale-policy/tests/attack.py
+          python3 - <<'PY'
+          from pathlib import Path
+          flag = Path("labs/cursed-stale-policy/flag.txt").read_text().strip()
+          challenge = Path("challenges/startpoint/cursed-stale-policy/cursed-stale-policy.md").read_text()
+          answer_line = next((line for line in challenge.splitlines() if line.startswith("answer:")), None)
+          if answer_line is None:
+              raise SystemExit("Challenge Flag answer is missing")
+          answer = answer_line.split(":", 1)[1].strip().strip('"').strip("'")
+          if flag != answer:
+              raise SystemExit("Default target Flag does not match Challenge answer")
+          print("PASS: default target Flag and Challenge answer match")
+          PY
+
+      - name: Build target image
+        run: docker build --pull --progress=plain -t ttp-cursed-stale-policy:ci -f labs/cursed-stale-policy/Dockerfile labs/cursed-stale-policy
+
+      - name: Generate two distinct per-instance Flags
+        id: flags
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import base64, secrets, os
+          def make_flag():
+              value = base64.b32encode(secrets.token_bytes(10)).decode().rstrip("=").lower()
+              return "TTP{" + value + "}"
+          first, second = make_flag(), make_flag()
+          while first == second:
+              second = make_flag()
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              for key, value in (("first", first), ("second", second)):
+                  print("::add-mask::" + value)
+                  output.write(key + "=" + value + "\n")
+          print("Generated two distinct 80-bit instance Flags; values are masked.")
+          PY
+
+      - name: Run two isolated real-browser attack chains
+        env:
+          FLAG_FIRST: ${{ steps.flags.outputs.first }}
+          FLAG_SECOND: ${{ steps.flags.outputs.second }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          cleanup() {
+            docker logs cursed-target-first 2>/dev/null || true
+            docker logs cursed-target-second 2>/dev/null || true
+            docker rm -f cursed-target-first cursed-target-second 2>/dev/null || true
+            docker network rm cursed-stale-policy-e2e 2>/dev/null || true
+          }
+          trap cleanup EXIT
+
+          docker network create --internal cursed-stale-policy-e2e
+
+          run_instance() {
+            local suffix="$1"
+            local flag="$2"
+            local name="cursed-target-$suffix"
+            echo "Starting clean Cursed Stale Policy instance $suffix"
+            docker run -d \
+              --name "$name" \
+              --network cursed-stale-policy-e2e \
+              --network-alias cursed-target \
+              --memory 1536m --cpus 2 --pids-limit 384 --shm-size 256m \
+              --cap-drop ALL --security-opt no-new-privileges \
+              -e CSP_ADMIN_FLAG="$flag" \
+              ttp-cursed-stale-policy:ci >/dev/null
+
+            local ready=0
+            for attempt in $(seq 1 90); do
+              local state health
+              state=$(docker inspect -f '{{.State.Status}}' "$name")
+              health=$(docker inspect -f '{{.State.Health.Status}}' "$name")
+              if [ "$state" != "running" ] || [ "$health" = "unhealthy" ]; then
+                docker logs "$name"
+                echo "Target failed before becoming healthy"
+                return 1
+              fi
+              if [ "$health" = "healthy" ]; then
+                ready=1
+                break
+              fi
+              sleep 2
+            done
+            test "$ready" = 1
+
+            local browser_ready=0
+            for attempt in $(seq 1 60); do
+              if docker logs "$name" 2>&1 | grep -q "Browser initialized in worker"; then
+                browser_ready=1
+                break
+              fi
+              sleep 1
+            done
+            if [ "$browser_ready" != 1 ]; then
+              docker logs "$name"
+              echo "Review browser did not become ready"
+              return 1
+            fi
+
+            docker run --rm \
+              --network cursed-stale-policy-e2e \
+              -v "$GITHUB_WORKSPACE/labs/cursed-stale-policy/tests/attack.py:/attack.py:ro" \
+              -e TARGET_URL=http://cursed-target:8000 \
+              -e EXPECTED_FLAG="$flag" \
+              python:3.12-alpine sh -c "pip install --no-cache-dir websocket-client==1.8.0 && python /attack.py"
+
+            docker stats --no-stream "$name" --format "Instance $suffix memory={{.MemUsage}} pids={{.PIDs}}"
+            docker rm -f "$name" >/dev/null
+            echo "Cursed Stale Policy instance $suffix: PASS"
+          }
+
+          run_instance first "$FLAG_FIRST"
+          run_instance second "$FLAG_SECOND"
+          test "$FLAG_FIRST" != "$FLAG_SECOND"
+          echo "PASS: two clean instances returned their own exact administrator Flags"
+
+      - name: Record image size
+        if: always()
+        run: docker image inspect ttp-cursed-stale-policy:ci --format='IMAGE_SIZE_BYTES={{.Size}}' || true
