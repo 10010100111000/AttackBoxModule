@@ -20,7 +20,7 @@
 
 Devvortex 已完成 Web-only 目标并通过独立攻击端验收。目标使用真实 Joomla 4.2.6，完整路径为虚拟主机与版本识别 → CVE-2023-23752 匿名配置泄露 → Joomla 管理员认证 → Cassiopeia 模板编辑 → 以 `www-data` 执行命令并读取单个 Web Flag。
 
-- [PR / 最新 E2E](https://github.com/10010100111000/AttackBoxModule/actions/runs/46016638156)：全部步骤通过，Flag 与当前 CI 随机答案精确一致
+- [PR / 最新 E2E](https://github.com/10010100111000/AttackBoxModule/actions/runs/46017292203)：全部步骤通过，Flag 与当前 CI 随机答案精确一致
 - [题库一致性检查](https://github.com/10010100111000/AttackBoxModule/actions/runs/46015597031)：通过
 - [镜像构建与发布检查](https://github.com/10010100111000/AttackBoxModule/actions/runs/46015597183)：通过
 - Docker 镜像大小：约 **152.3 MB**
