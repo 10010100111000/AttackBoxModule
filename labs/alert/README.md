@@ -35,6 +35,6 @@ The current Lab E2E gate is passed. The `.release-blocked` marker remains only f
 ## Observed CI results
 
 - [Full-chain two-instance Flag E2E PASS](https://github.com/10010100111000/AttackBoxModule/actions/runs/46047104236). The attacker is a separate container and performs all inputs over HTTP. The target-local browser is part of the target image, not Worker.
-- Latest image: **309,342,395 bytes** (~295 MiB); memory after browser proof was **136.6–137.1 MiB** with 57 PIDs (1.1 GiB limit). These are point-in-time readings, not measured peak memory.
+- Latest image: **309,342,409 bytes** (~295 MiB); memory after browser proof was **135.1–136.8 MiB** with 57 PIDs (1.1 GiB limit). These are point-in-time readings, not measured peak memory.
 - The acceptance runner uses `--cap-drop ALL` and adds only `SETUID`/`SETGID` so the entrypoint can drop to the separate `www-data` and `alertbot` service accounts; `no-new-privileges` remains enabled. No privileged Docker mode or mounted Docker socket.
 - Release block remains until an independent two-instance, rotated-Flag-to-goal test and Worker/Web grading integration are verified.
