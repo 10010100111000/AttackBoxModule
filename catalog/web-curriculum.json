@@ -742,7 +742,7 @@
       "lab_ci_status": "full_chain_ci",
       "worker_status": "not_verified",
       "release_status": "not_assessed",
-      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/46016320718",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/46016638156",
       "note": "真实 Joomla 4.2.6 / CVE-2023-23752；独立 HTTP 攻击端完成匿名配置泄露、管理员认证、Cassiopeia 模板编辑、www-data 命令执行并读取精确随机 Web Flag。Web-only 单 Flag，不包含 SSH/Apport/Root。",
       "variant_profile": {
         "technology": "Ubuntu 22.04, nginx, PHP 8.1-FPM, MariaDB, official Joomla 4.2.6",
@@ -764,8 +764,8 @@
       },
       "e2e_ci_status": "passed",
       "e2e_ci_workflow": ".github/workflows/devvortex-e2e.yml",
-      "e2e_ci_evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/46016320718",
-      "e2e_ci_commit": "bd7881f0f7f97a261921cba1e052755de09a13fc"
+      "e2e_ci_evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/46016638156",
+      "e2e_ci_commit": "a65e896cb673720609ef6131202415f458e3b53c"
     },
     {
       "id": "editorial",
