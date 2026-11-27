@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "updated_on": "2026-11-28",
-  "main_snapshot_commit": "5fcb2b48ea81033886c61bec500403930ad8318e",
+  "main_snapshot_commit": "1dc1ac417dcfdd9b23006aa79381cb9421710931",
   "purpose": "trytopwn Web 题库选题、覆盖率与验收状态的唯一结构化索引；每次新增靶机时维护本文件与 docs/WEB_ROADMAP.md",
   "difficulty_is_provisional": true,
   "statuses": {
@@ -445,11 +445,11 @@
         "xss.cross-user-action",
         "file_read.path-traversal"
       ],
-      "lab_ci_status": "partial",
+      "lab_ci_status": "full_chain_ci",
       "worker_status": "not_verified",
       "release_status": "blocked_by_marker",
       "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45474730425",
-      "note": "Real Chromium target-local admin opens shared Markdown following contact messages; independent attacker confirmed JS execution plus actual localhost-only PHP source read via ../ traversal. Not yet independently verified end-to-end target Web Flag extraction; Worker unverified; release blocked.",
+      "note": "Automated full-chain E2E passed on two clean instances with distinct random Flags. Independent HTTP attacker uploads stored Markdown XSS, submits the share link through the real Contact flow, target-local Chromium executes the script, and the loopback-only PHP reader traverses to the private Web Flag; the callback must match the exact instance Flag. Public direct access remains 403. Image 309,342,395 bytes; post-browser memory 136.6-137.1 MiB. Worker/platform grading remain separate and unverified.",
       "variant_profile": {
         "technology": "PHP 8.2 Alpine, Python-Markdown 3.7, instance-local headless Chromium",
         "initial_discovery": "Markdown upload and share plus contact form with administrator visits",
@@ -458,7 +458,7 @@
         "incremental_learning_value": "Stored XSS and loopback-only administrator browser capability with real filesystem traversal; distinct from reflected WonderCMS",
         "confidence": "real_browser_and_traversal_verified_flag_chain_pending"
       },
-      "skill_mapping_stage": "real_browser_traversal_ci_verified_flag_pending",
+      "skill_mapping_stage": "real_browser_stored_xss_cross_user_file_traversal_two_instance_e2e_verified",
       "manual_validation": {
         "status": "not_reviewed",
         "commit": null,
@@ -468,10 +468,10 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "pending",
-      "e2e_ci_workflow": null,
-      "e2e_ci_evidence": null,
-      "e2e_ci_commit": null
+      "e2e_ci_status": "passed",
+      "e2e_ci_workflow": ".github/workflows/alert.yml",
+      "e2e_ci_evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/46046059969",
+      "e2e_ci_commit": "1dc1ac417dcfdd9b23006aa79381cb9421710931"
     },
     {
       "id": "base",
@@ -1735,8 +1735,8 @@
       "required_skill_coverage": [
         "xss.stored"
       ],
-      "status": "in_progress",
-      "candidate_status": "in_progress",
+      "status": "done",
+      "candidate_status": "lab_ci_verified",
       "objective": "真实持久化输入 + 管理员浏览器访问，验证会话/权限边界而非 alert 字符串",
       "scope": "repeatable_skill_variant_requirement",
       "one_to_many_allowed": true,
@@ -1745,7 +1745,8 @@
         "headless"
       ],
       "selected_candidate": "alert",
-      "note": "Continue the existing Alert Lab in main. Real Chromium execution and loopback-only PHP traversal are verified, but the independent player has not yet retrieved the intended Web Flag. Headless remains an external alternative; do not create another Lab before resolving Alert."
+      "note": "Alert now passes current unified E2E: persistent Markdown XSS executes in genuine target-local admin Chromium, then reads the exact per-instance Web Flag through the loopback-only vulnerable PHP reader. Two clean instances with distinct random Flags passed.",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/46046059969"
     },
     {
       "id": "deserialize-component",
@@ -1870,8 +1871,8 @@
         "xss.blind",
         "xss.cross-user-action"
       ],
-      "status": "in_progress",
-      "candidate_status": "in_progress",
+      "status": "done",
+      "candidate_status": "lab_ci_verified",
       "scope": "repeatable_skill_variant_requirement",
       "one_to_many_allowed": true,
       "scenario_variant_focus": "真实管理员浏览器的异步执行与权限变化",
@@ -1880,7 +1881,8 @@
       ],
       "objective": "真实管理员浏览器的异步执行与权限变化",
       "selected_candidate": "alert",
-      "note": "Share the existing Alert Lab with xss-stored-admin; validate the real administrator-browser execution and intended cross-user impact as part of the same target. Headless remains an external alternative only if Alert cannot meet the blind-XSS objective. Alert's final Flag path is still pending."
+      "note": "Alert passes current unified E2E: Contact-triggered administrator Chromium opens the attacker-controlled stored Markdown link asynchronously; the script reads the private Web Flag and sends the exact value to an independent attacker callback. Two clean instances with distinct random Flags passed.",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/46046059969"
     },
     {
       "id": "sqli-union-alt-stack",
@@ -2462,13 +2464,13 @@
     "end_to_end_acceptance": "isolated_network_client_real_vulnerable_component_and_exact_flag"
   },
   "selection_policy": {
-    "preferred_start": "Continue with one existing pending Lab from main. Review Alert and Funnel as the remaining partial Labs; defer Trick until its multi-service scope and actual implementation are inspected.",
+    "preferred_start": "Alert has passed its full-chain E2E. Review the remaining pending Web Labs on main and select one bounded target after inspecting its actual source, objective and size.",
     "next_candidates": [
-      "alert",
-      "funnel",
+      "cursed-stale-policy",
+      "editorial",
       "trick"
     ],
-    "next_review": "These are existing main Labs, not new candidate projects. Choose one bounded target at a time. Alert has a verified browser-XSS/loopback traversal foothold but its final Web Flag path remains pending; Funnel is a non-Web FTP/SSH/PostgreSQL service chain; Trick is a larger DNS/PHP/MariaDB/Fail2ban reconstruction and should remain deferred until its scope is justified.",
-    "selection_reason": "Prioritize completing bounded existing main Labs and their actual target objectives before adding new projects. Do not reopen the six Labs already recorded as current unified E2E-passed."
+    "next_review": "Do not reopen Alert. Funnel is a non-Web FTP/SSH/PostgreSQL service chain and is outside the current Web-focused sequence unless explicitly requested. Cursed Stale Policy needs real browser evidence; Editorial has historical SSRF chain evidence but still needs current unified E2E; Trick is a larger DNS/PHP/MariaDB/Fail2ban reconstruction and should remain deferred until its scope is inspected. Choose only one.",
+    "selection_reason": "Continue completing existing main-branch Web Labs. Prefer the smallest meaningful unfinished target; do not add a new candidate while suitable existing Labs remain. Keep current E2E status separate from historical full_chain_ci and release markers."
   }
 }
