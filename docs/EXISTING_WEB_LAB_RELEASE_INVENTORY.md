@@ -35,6 +35,16 @@ Base 原有 PHP 7.2 / Apache / OpenSSH / sudo find 双 Flag 靶场已存在，�
 - 发布：`.github/workflows/base-release.yml`
 - 结构化状态：`configured`，成功运行证据尚未产生。
 
+### 当前进行中：Alert — 自动双实例 Flag E2E
+
+Alert 已有真实 Chromium Stored XSS、跨用户审阅和 Loopback 文件读取证明。本轮只补齐自动验收和 Flag 生命周期：
+
+- 每次 CI 生成一个随机版本 Flag，并同步目标 seed、manifest 与 Challenge answer
+- 第二个干净实例使用不同随机 Flag，证明两个实例分别返回自己的值
+- PR/push 自动运行独立 HTTP 攻击端，真实浏览器执行 XSS、读取 Loopback-only PHP 文件并回传精确 Flag
+- 不增加 SSH、Root 或 Worker 验收
+- 当前状态：configured，等待新工作流实际通过
+
 ### 最近更新：Intense — E2E 已完成
 
 Intense 已通过真实 Flask/SQLite Web-only 完整攻击链 E2E：访客登录 → SQLite 条件错误 oracle 提取管理员 secret → SHA-256 长度扩展伪造 LWT 管理员会话 → 日志路径遍历 → 精确随机 Web Flag。
