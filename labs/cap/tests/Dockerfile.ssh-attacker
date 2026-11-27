@@ -1,6 +1,9 @@
 FROM debian:bookworm-slim
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update \
- && apt-get install -y --no-install-recommends openssh-client sshpass \
+ && apt-get install -y --no-install-recommends openssh-client sshpass python3 ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 WORKDIR /tests
+COPY attack_path.py /tests/attack_path.py
+USER 65534:65534
+ENTRYPOINT ["python3", "/tests/attack_path.py"]
