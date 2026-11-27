@@ -1,0 +1,133 @@
+name: BountyHunter single-instance XXE and sudo eval E2E
+
+on:
+  pull_request:
+    paths:
+      - "labs/bountyhunter/**"
+      - "challenges/startpoint/bountyhunter/**"
+      - "challenges/file-security/bountyhunter/**"
+      - "challenges/linux-privilege-escalation/bountyhunter/**"
+      - ".github/workflows/bountyhunter-e2e.yml"
+  push:
+    branches: [main]
+    paths:
+      - "labs/bountyhunter/**"
+      - "challenges/startpoint/bountyhunter/**"
+      - "challenges/file-security/bountyhunter/**"
+      - "challenges/linux-privilege-escalation/bountyhunter/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bountyhunter-full-chain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check integrated and focused Challenge answers
+        run: |
+          python3 -m py_compile labs/bountyhunter/tests/attack_path.py
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          user = Path("labs/bountyhunter/flags/user.txt").read_text().strip()
+          root = Path("labs/bountyhunter/flags/root.txt").read_text().strip()
+          expected = {
+              "challenges/startpoint/bountyhunter/Bountyhunter.md": [user, root],
+              "challenges/file-security/bountyhunter/xxe-file-read.md": [user],
+              "challenges/linux-privilege-escalation/bountyhunter/skytrain-eval.md": [root],
+          }
+          for filename, answers_expected in expected.items():
+              path = Path(filename)
+              content = path.read_text()
+              answers = re.findall(r'(?m)^answer: "([^"]+)"$', content)
+              if answers != answers_expected:
+                  raise SystemExit(f"Challenge answer mismatch: {filename}")
+              if not re.search(r"(?m)^lab: bountyhunter$", content):
+                  raise SystemExit(f"Challenge does not reuse the BountyHunter Lab: {filename}")
+          print("PASS: integrated and focused Challenges share one Lab and match its Flag seeds")
+          PY
+
+      - name: Build authentic PHP/libxml and SSH target
+        run: docker build --pull --progress=plain -t ttp-bountyhunter:ci -f labs/bountyhunter/Dockerfile labs/bountyhunter
+
+      - name: Build separate non-root HTTP/SSH attacker
+        run: docker build --pull --progress=plain -t ttp-bountyhunter-attacker:ci -f labs/bountyhunter/tests/Dockerfile.attacker labs/bountyhunter/tests
+
+      - name: Generate one instance's User and Root Flags
+        id: flags
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import base64, secrets, os
+          def make_flag():
+              token = base64.b32encode(secrets.token_bytes(10)).decode().rstrip("=").lower()
+              return "TTP{" + token + "}"
+          user, root = make_flag(), make_flag()
+          while user == root:
+              root = make_flag()
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              for name, value in (("user", user), ("root", root)):
+                  print("::add-mask::" + value)
+                  output.write(name + "=" + value + "\n")
+          print("Generated one instance's distinct 80-bit User and Root Flags; values are masked.")
+          PY
+
+      - name: Run XXE to SSH to sudo eval Root path on one clean instance
+        env:
+          USER_FLAG: ${{ steps.flags.outputs.user }}
+          ROOT_FLAG: ${{ steps.flags.outputs.root }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          cleanup() {
+            docker logs bountyhunter-target 2>/dev/null || true
+            docker rm -f bountyhunter-target 2>/dev/null || true
+            docker network rm bountyhunter-e2e 2>/dev/null || true
+          }
+          trap cleanup EXIT
+          docker network create --internal bountyhunter-e2e
+
+          docker run -d \
+            --name bountyhunter-target \
+            --network bountyhunter-e2e \
+            --network-alias bountyhunter-target \
+            --memory 192m --cpus 1 --pids-limit 128 \
+            -e BOUNTYHUNTER_REQUIRE_PRIVATE_FLAGS=1 \
+            -e BOUNTYHUNTER_STATIC_USER_FLAG="$USER_FLAG" \
+            -e BOUNTYHUNTER_STATIC_ROOT_FLAG="$ROOT_FLAG" \
+            ttp-bountyhunter:ci >/dev/null
+
+          ready=0
+          for attempt in $(seq 1 60); do
+            state=$(docker inspect -f '{{.State.Status}}' bountyhunter-target)
+            health=$(docker inspect -f '{{.State.Health.Status}}' bountyhunter-target)
+            if [ "$state" != "running" ] || [ "$health" = "unhealthy" ]; then
+              docker logs bountyhunter-target
+              echo "BountyHunter failed before becoming healthy"
+              exit 1
+            fi
+            if [ "$health" = "healthy" ]; then
+              ready=1
+              break
+            fi
+            sleep 2
+          done
+          test "$ready" = 1
+
+          docker run --rm \
+            --network bountyhunter-e2e \
+            -e TARGET_URL=http://bountyhunter-target \
+            -e EXPECTED_USER_FLAG="$USER_FLAG" \
+            -e EXPECTED_ROOT_FLAG="$ROOT_FLAG" \
+            ttp-bountyhunter-attacker:ci
+
+          docker stats --no-stream bountyhunter-target --format "BountyHunter memory={{.MemUsage}} pids={{.PIDs}}"
+          echo "PASS: one fresh instance completed real XXE, SSH foothold, User Flag and sudo eval Root Flag"
+
+      - name: Record target image size
+        if: always()
+        run: docker image inspect ttp-bountyhunter:ci --format='IMAGE_SIZE_BYTES={{.Size}}' || true
