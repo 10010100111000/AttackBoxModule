@@ -163,7 +163,7 @@ This table is generated from the same state recorded in `catalog/web-curriculum.
 
 建议顺序：
 
-1. **下一项重新评估**：先检查剩余 partial main Labs（Alert、Funnel）是否能以较小改动完成完整 E2E；Trick 暂缓，因其多服务范围较大。
+1. **Alert**：现有真实 Chromium Stored XSS 与 Loopback 文件读取已验证；补齐自动双实例随机 Flag E2E、Challenge 答案同步和 main 证据。Funnel 属于 FTP/SSH/PostgreSQL service track，不作为下一台 Web Lab；Trick 暂缓，因其多服务范围较大。
 
 这只是 main 现有资产的处理顺序。每台必须由专属隔离攻击端 E2E 实际走完目标路径并读取精确 Flag；只有 main 对应提交的 E2E 成功后才算完成。执行细节见 [Lab Production Playbook](LAB_PRODUCTION_PLAYBOOK.md)。
 
