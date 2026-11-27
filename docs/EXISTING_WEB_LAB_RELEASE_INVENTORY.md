@@ -7,13 +7,13 @@
 ## 当前总览
 
 - **27 台 Lab**
-- 当前统一 E2E：11 台通过，16 台待完成
+- 当前统一 E2E：12 台通过，15 台待完成
 - 旧字段 `lab_ci_status`：25 台 `full_chain_ci`、1 台 `partial`、1 台 `unverified`
 - `.release-blocked` 标记：10 台。它与 E2E 状态独立，不能用来判断靶机是否制作完成。
 
 ### 已通过当前统一 E2E
 
-以下 11 台已经完成靶机攻击链的独立 CI 验收，不要重复制作或重新排入待办：
+以下 12 台已经完成靶机攻击链的独立 CI 验收，不要重复制作或重新排入待办：
 
 | Lab | 目标范围 | E2E 证据 |
 |---|---|---|
@@ -21,6 +21,7 @@
 | Editorial | SSRF → loopback API → SSH dev/prod → GitPython 3.1.29 → User/Root 双 Flag | [CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/46053249839) |
 | Nibbles | Nibbleblog 4.0.3 插件上传 → nibbler → sudo monitor.sh → User/Root | [CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/46061441923) |
 | Shocker | GNU Bash 4.3 Apache CGI Shellshock → shelly → sudo Perl → User/Root | [CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/46062735563) |
+| Bashed | 原版 phpbash → www-data → scriptmanager → root cron → User/Root | [CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/46064377547) |
 | Cursed Stale Policy | CSP nonce 重用 → Stored/Blind XSS → 管理员 Chromium → Web Flag | [CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/46051233295) |
 | Bike | Handlebars 4.1.1 SSTI → RCE → Web Flag | [CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/45899503806) |
 | Precious | PDFKit 0.8.6 命令注入 → ruby → Web Flag | [CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/45902207628) |
@@ -37,7 +38,6 @@
 
 | Lab | 当前 E2E | 备注 |
 |---|---|---|
-| Bashed | pending | 有历史完整链 CI 记录 |
 | Bountyhunter | pending | 有历史完整链 CI 记录 |
 | Cap | pending | 有历史完整链 CI 记录 |
 
@@ -65,7 +65,7 @@
 
 ## 下一步
 
-Shocker 已通过 main 单实例 E2E。下一台优先检查 main 上已有的 Bashed，先核对真实 phpbash、sudo 与 root cron 链，再决定是否需要补充 Challenge 复用；一次只做一台。Funnel 是非 Web 服务链，Trick 范围较大，暂不优先。
+Bashed 已通过 main 单实例 E2E。下一项从剩余 main Web Labs 中选择；优先检查 Bountyhunter 的真实 XXE 行为与现有实现，确认它能否用多个 Challenge 复用同一环境。一次只做一台。Funnel 是非 Web 服务链，Trick 范围较大，暂不优先。
 
 ## 文档入口
 
