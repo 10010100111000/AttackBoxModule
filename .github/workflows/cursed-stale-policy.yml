@@ -43,6 +43,9 @@ jobs:
       - name: Build target image
         run: docker build --pull --progress=plain -t ttp-cursed-stale-policy:ci -f labs/cursed-stale-policy/Dockerfile labs/cursed-stale-policy
 
+      - name: Build isolated HTTP/WebSocket player image
+        run: docker build --pull --progress=plain -t ttp-cursed-stale-policy-attacker:ci -f labs/cursed-stale-policy/tests/Dockerfile.attacker labs/cursed-stale-policy/tests
+
       - name: Generate two distinct per-instance Flags
         id: flags
         shell: bash
@@ -127,10 +130,9 @@ jobs:
 
             docker run --rm \
               --network cursed-stale-policy-e2e \
-              -v "$GITHUB_WORKSPACE/labs/cursed-stale-policy/tests/attack.py:/attack.py:ro" \
               -e TARGET_URL=http://cursed-target:8000 \
               -e EXPECTED_FLAG="$flag" \
-              python:3.12-alpine sh -c "pip install --no-cache-dir websocket-client==1.8.0 && python /attack.py"
+              ttp-cursed-stale-policy-attacker:ci
 
             docker stats --no-stream "$name" --format "Instance $suffix memory={{.MemUsage}} pids={{.PIDs}}"
             docker rm -f "$name" >/dev/null
