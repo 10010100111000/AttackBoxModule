@@ -10,19 +10,22 @@
 
 | main 中记录的 CI 状态 | 数量 | 含义 |
 |---|---:|---|
-| `full_chain_ci` | 20 | 保留历史完整目标链 CI 证据；新标准通过情况以 E2E 状态为准 |
-| `partial` | 3 | 已有部分真实功能或目标行为检查，仍有靶机内容/目标路径缺口 |
+| `full_chain_ci` | 21 | 保留历史完整目标链 CI 证据；新标准通过情况以 E2E 状态为准 |
+| `partial` | 2 | 已有部分真实功能或目标行为检查，仍有靶机内容/目标路径缺口 |
 | `unverified` | 4 | 尚无足够的靶机目标验证记录 |
 
 另有 **11 台**保留 `.release-blocked` 标记。该标记不是 CI 结果，也不等同于靶机代码不存在；未完成原因应以各自 README 和标记文件为准。
 
-### 最近更新：Devvortex（当前进行中）
+### 最近更新：Devvortex — E2E 已通过
 
-Devvortex 正在收敛为 Web-only：真实 Joomla 4.2.6 / CVE-2023-23752 配置泄露 → Joomla 管理员登录 → Cassiopeia 模板编辑 → `www-data` 单 Web Flag。原来混入的 SSH、Apport 和 Root Flag 不属于本平台这台靶机的验收范围。
+Devvortex 已完成 Web-only 目标并通过独立攻击端验收。目标使用真实 Joomla 4.2.6，完整路径为虚拟主机与版本识别 → CVE-2023-23752 匿名配置泄露 → Joomla 管理员认证 → Cassiopeia 模板编辑 → 以 `www-data` 执行命令并读取单个 Web Flag。
 
-- 独立攻击端工作流：`.github/workflows/devvortex-e2e.yml`（已接入，等待实际 CI 结果）
-- 版本化 Flag 工作流：`.github/workflows/devvortex-release.yml`
-- 当前状态：`configured`，尚未通过实际 E2E，不得标记完成。
+- [PR / 最新 E2E](https://github.com/10010100111000/AttackBoxModule/actions/runs/46015597083)：全部步骤通过，Flag 与当前 CI 随机答案精确一致
+- [题库一致性检查](https://github.com/10010100111000/AttackBoxModule/actions/runs/46015597031)：通过
+- [镜像构建与发布检查](https://github.com/10010100111000/AttackBoxModule/actions/runs/46015597183)：通过
+- Docker 镜像大小：约 **152.3 MB**
+
+已移除原题中不属于本平台范围的 SSH、Apport、Linux 用户切换和 Root Flag。该 Lab 的 `e2e_ci_status` 为 `passed`；合并后仍需核对 main 分支运行证据。
 
 ### 最近更新：Bike
 
@@ -59,7 +62,7 @@ This table is generated from the same state recorded in `catalog/web-curriculum.
 | `bountyhunter` | `full_chain_ci` | `not_assessed` |
 | `cap` | `full_chain_ci` | `not_assessed` |
 | `cursed-stale-policy` | `unverified` | `not_assessed` |
-| `devvortex` | `partial` | `not_assessed` |
+| `devvortex` | `full_chain_ci` | `not_assessed` |
 | `editorial` | `full_chain_ci` | `blocked_by_marker` |
 | `goodgames` | `full_chain_ci` | `not_assessed` |
 | `nibbles` | `full_chain_ci` | `not_assessed` |
@@ -108,7 +111,7 @@ This table is generated from the same state recorded in `catalog/web-curriculum.
 
 `full_chain_ci` 表示该 Lab 有完整目标链 CI 证据；旧 Lab 的历史证据不自动等同于当前统一 E2E 标准。每台是否通过新标准，以 `catalog/web-curriculum.json` 中的 `e2e_ci_status`、运行链接和提交 SHA 为准。Bike、Precious 与 GoodGames 均已按新标准通过独立攻击端验收。
 
-### 部分完成（3 台）
+### 部分完成（2 台）
 
 | Lab | 已有内容 | 仍需处理的靶机工作 |
 |---|---|---|
