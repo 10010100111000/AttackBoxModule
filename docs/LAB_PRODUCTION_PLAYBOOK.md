@@ -29,11 +29,23 @@ At the 2026-11-28 main snapshot, nine Labs have passed the current independent-a
 5. Follow the player's natural path: reconnaissance → normal browsing → observe requests/responses → discover clues → identify the component/version → exploit → retrieve the intended Flag. The player-facing Challenge must not reveal the vulnerability location or payload.
 6. Reuse an existing front end or upstream project where appropriate; do not needlessly rebuild a page that already exists. Keep backend behavior faithful to the intended source.
 7. Keep the scope appropriate to this platform: Linux Docker Labs. No Windows Labs, nested containers, container escape or host compromise. Do not force SSH/root stages onto a Web-only Lab.
-8. Use one or two Flags according to the actual intended objective. A Web-only foothold Lab normally has one Web Flag; only create a Root Flag when the Lab genuinely includes a real, intended Linux privilege-escalation stage.
+8. Use Flag count according to each Challenge's intended objective. A Web-only Challenge normally has one Web Flag; only add a Root Flag to a Challenge that genuinely tests a real Linux privilege-escalation stage. Multiple Challenges may reuse the same Lab image and may each have their own Flag.
 9. Keep images small: multi-stage builds where useful, minimal runtime packages, remove caches/build tools, use a non-root runtime user, healthchecks and resource limits.
 10. Include a clear `README.md` and a discovery-led `writeup.md` for the Lab. Keep filenames compatible with the existing AttackBox parser; use simple names without spaces.
 11. Do not ask the user to manually walk through the Lab or verify it. The Lab-specific GitHub Actions E2E must do this.
 12. Do not manage or validate Worker synchronization, platform deployment, user accounts, or production runtime. The user explicitly does not want those tasks mixed into Lab completion.
+
+### Challenge and Lab reuse
+
+A **Challenge is a learning/assessment unit; a Lab is the reusable runtime environment**. They are not one-to-one.
+
+- One Lab image/container may serve multiple Challenge Markdown files. Each Challenge links to the Lab through its `lab: <slug>` front matter.
+- Each Challenge should test a defined subset of skills and have its own objective and Flag answer(s). Different Challenges may use different Flags, or intentionally reuse a Flag when the learning design is cumulative.
+- A Challenge may combine several skills when the intended exercise is an integrated path. A separate focused Challenge may reuse the same Lab to isolate one part of that path.
+- Do not create another Docker image, copy of the vulnerable application, or near-duplicate Lab merely because a new Challenge targets a different skill.
+- Keep the Lab README and technical implementation evidence at the Lab level; keep learner-facing objectives and hints in each Challenge file. A Lab-level writeup may cover the full chain and link the relevant focused Challenges.
+
+CI should build the Lab image once and verify the relevant Challenge objectives against that same image where practical. A normal Lab E2E uses **one fresh instance** and checks the exact Flag(s) for the selected objective(s). Do not launch a second full instance merely to prove Flag randomness or isolation; only add multi-instance tests when the specific vulnerability or isolation requirement genuinely needs them.
 
 ## 3. Required implementation workflow
 
@@ -92,7 +104,7 @@ Do not leave static placeholder answers such as `HTB{replace_this...}` in a comp
 
 Every Lab needs a dedicated E2E workflow that:
 
-1. Generates a fresh CI Flag and checks target seed = manifest = Challenge answer.
+1. Generates the CI Flag value(s) for the selected Challenge objective(s) and checks target seed = manifest = every relevant Challenge answer.
 2. Builds the real target image.
 3. Starts the target with its actual runtime restrictions, healthcheck and resource limits.
 4. Starts a separate attacker container/process on an isolated temporary Docker network.
