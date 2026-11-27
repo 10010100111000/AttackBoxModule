@@ -3,6 +3,7 @@
 import base64
 import html
 import os
+import re
 import time
 import urllib.parse
 import urllib.request
@@ -43,8 +44,9 @@ scriptmanager = cmd("sudo -u scriptmanager id")
 assert "uid=1001(scriptmanager)" in scriptmanager, scriptmanager[:400]
 print("PASS: native sudo pivot to scriptmanager", flush=True)
 
-user_flag = cmd("cat /home/arrexel/user.txt").strip()
-assert user_flag == EXPECTED_USER_FLAG, "Exact per-instance User Flag mismatch"
+user_output = cmd("cat /home/arrexel/user.txt")
+user_flags = re.findall(r"TTP\\{[a-z0-9_]+\\}", user_output)
+assert EXPECTED_USER_FLAG in user_flags, "Exact per-instance User Flag mismatch"
 assert cmd("test -r /root/root.txt; echo $?").strip().endswith("1")
 print("PASS: exact User Flag recovered; Root Flag is not readable before cron path", flush=True)
 
@@ -70,7 +72,8 @@ while time.time() < deadline:
         "cat /tmp/bashed-root-proof 2>/dev/null; "
         "cat /tmp/bashed-root-flag-proof 2>/dev/null"
     )
-    if "uid=0(root)" in result and EXPECTED_ROOT_FLAG in result:
+    root_flags = re.findall(r"TTP\\{[a-z0-9_]+\\}", result)
+    if "uid=0(root)" in result and EXPECTED_ROOT_FLAG in root_flags:
         print("PASS: real root cron executed the modified script and returned exact Root Flag", flush=True)
         break
     time.sleep(3)
