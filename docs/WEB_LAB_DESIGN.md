@@ -38,7 +38,7 @@
 
 以 main 提交 `bb3d62f3f8f96ded4eb34b16ba2561a4a1e0f678` 为本次盘点基准：
 
-- 当前目录有 **27 台 Lab**：20 台记录为 `full_chain_ci`、3 台为 `partial`、4 台为 `unverified`。
+- 当前目录有 **27 台 Lab**：21 台记录为 `full_chain_ci`、2 台为 `partial`、4 台为 `unverified`。
 - 端到端 CI：**Bike、Precious、GoodGames 与 Devvortex 4 台 passed、23 台 pending**；Precious 已通过真实 PDFKit 命令注入与精确 Flag 回读验收。
 - 其中 **10 台**保留 `.release-blocked` 标记；该字段与 CI 结果分开记录。
 - 技能目录仍为 **31 个专题 / 219 个细分目标**。
@@ -262,7 +262,7 @@ Editorial 已对 SSRF 基本与内网 API 访问做了完整攻击链 CI，但**
 | bountyhunter | 中级 | XML 外部实体 | 真实外部实体 | 完整目标链 CI（非 Worker） |
 | cap | 中级 | 对象级授权与 IDOR | 越权获取其他人的网络流量 | 完整目标链 CI（非 Worker） |
 | cursed-stale-policy | 高级 | 跨站脚本 | 管理员浏览器 / CSP | 尚无完整验收 |
-| devvortex | 中级 | CMS / 应用组件漏洞 | CVE 信息泄露 | 局部/目标未全验收 |
+| devvortex | 中级 | CMS / 应用组件漏洞 | CVE-2023-23752 配置泄露 → Joomla 模板编辑 | Web-only 单 Flag，独立攻击端 E2E 已通过 |
 | editorial | 中级 | 服务端请求伪造 | 服务端 HTTP 请求到回环 API | 完整目标链 CI（非 Worker） |
 | goodgames | 中级 | SQL 注入 | SQLi 与存储模板上下文 | 局部/目标未全验收 |
 | nibbles | 初级 | 文件上传 | 真实原版上传文件处理 | 完整目标链 CI（非 Worker） |
@@ -497,7 +497,7 @@ Editorial 已对 SSRF 基本与内网 API 访问做了完整攻击链 CI，但**
 
 ## 当前逐台制作顺序（2026-11-27）
 
-当前按 main 存量清单逐台完成，不并行制作。已完成新标准 E2E 的是 Bike、Precious、GoodGames；当前正在处理 **Devvortex**，之后按现有清单处理 Base，再评估 Intense / Trick。Devvortex 的范围为 Joomla 4.2.6 / CVE-2023-23752 Web-only 单 Flag，不包含 SSH、Apport 或 Linux Root 阶段。
+当前按 main 存量清单逐台完成，不并行制作。已完成新标准 E2E 的是 Bike、Precious、GoodGames、Devvortex；下一台是 **Base**，之后再评估 Intense / Trick。Devvortex 的范围为 Joomla 4.2.6 / CVE-2023-23752 Web-only 单 Flag，不包含 SSH、Apport 或 Linux Root 阶段。
 
 执行细节与验收门槛以 [Lab Production Playbook](LAB_PRODUCTION_PLAYBOOK.md) 为准；状态与成功运行证据以 `catalog/web-curriculum.json` 为准。
 
