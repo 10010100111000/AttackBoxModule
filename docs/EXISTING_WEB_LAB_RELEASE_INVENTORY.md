@@ -1,7 +1,7 @@
 # main 分支现有靶机清单
 
 **快照日期：2026-11-27**  
-**基准提交：** `bb3d62f3f8f96ded4eb34b16ba2561a4a1e0f678`  
+**动态状态来源：** `catalog/web-curriculum.json`（本文件是人工可读快照；继续工作前以 main 最新版本为准）。  
 **范围：** 只盘点 `main` 已有的 Lab 代码、Challenge 内容、CI 证据与尚未完成的靶机本身。不管理 Worker、平台同步或生产发布流程。
 
 ## 总览
@@ -121,11 +121,11 @@ This table is generated from the same state recorded in `catalog/web-curriculum.
 
 建议顺序：
 
-2. **Devvortex**：明确 Web-only 目标，不把原题 Linux 后半段强加进来。
+1. **Devvortex**：明确 Web-only 目标，不把原题 Linux 后半段强加进来。
 3. **Base**：补清楚认证与上传两部分的实际功能和题目目标。
 4. **Intense / Trick**：先处理复杂实现的基础工程与文档，不扩展新功能。
 
-这只是 main 现有资产的处理顺序，不代表上述靶机已经全部通过人工漏洞验收。完成一台后，再按实际差异更新本清单和 `catalog/web-curriculum.json`。
+这只是 main 现有资产的处理顺序。每台必须由专属隔离攻击端 E2E 实际走完目标路径并读取精确 Flag；只有 main 对应提交的 E2E 成功后才算完成。执行细节见 [Lab Production Playbook](LAB_PRODUCTION_PLAYBOOK.md)。
 
 ## 维护规则
 
@@ -133,6 +133,7 @@ This table is generated from the same state recorded in `catalog/web-curriculum.
 - `catalog/web-competencies.json` 是技能分类和验收目标的唯一来源。
 - `labs/<slug>/README.md` 记录该 Lab 的真实组件版本、部署、功能和已知差异。
 - `challenges/` 存放玩家题面；适合的题目附带 `writeup.md`。
-- CI 只检查构建、启动、healthcheck 和普通功能，不添加自动攻击链、自动 Flag 提取或模拟漏洞。
-- 不因为 CI 普通功能通过就把漏洞利用路径标记为已人工验收。
+- 每台 Lab 必须有独立攻击端 E2E：真实漏洞利用、真实网络入口、精确 Flag 回读；普通 smoke 不等于 E2E。
+- E2E 禁止挂载靶机文件系统、Docker socket、`docker exec` 取 Flag 或模拟漏洞。
+- 不要求用户手动打靶；不做 Worker、平台同步或生产部署验收。
 - 暂停新增 Lab；优先完成以上 main 已有靶机。
