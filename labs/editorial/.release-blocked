@@ -1,9 +1,9 @@
-Release remains blocked.
+Release remains blocked for platform production integration, not for the Lab attack-chain implementation.
 
-Current policy (2026-11-25): CI only checks build, startup, health and ordinary smoke behavior.
-No automated exploitation, Flag-retrieval or privilege-chain CI is required.
-Historical CI evidence stays in the catalog; it does not become manual acceptance.
+The dedicated Lab E2E verifies the complete Web-to-Root path on two clean instances with distinct per-instance User and Root Flags. It covers server-side cover-preview SSRF to the loopback-only metadata API, real SSH access as dev, historical Git credential recovery, real SSH access as prod, the scoped sudo rule, vulnerable GitPython 3.1.29 execution, UID 0 proof and exact Root Flag retrieval.
 
-当前待验收事项：实际 Worker 下的用户/平台/宿主网络隔离、有效资源与并发限制、SSH 服务、最小 Capability、实例私密答案注入、Web 校验与重置失效尚需验收。
+Still outside this Lab E2E:
+- platform Worker lifecycle and per-user network isolation;
+- production scheduling, concurrency/resource policy and Web backend grading.
 
-需先补实际人工验收和平台证据，再经明确批准解除限制；不得将脆弱服务暴露到公网。
+Do not expose the target services to the public Internet. Do not remove this marker solely because the independent Lab E2E passes.
