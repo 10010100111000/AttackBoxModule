@@ -482,16 +482,19 @@
       "secondary_categories": [
         "file_upload"
       ],
-      "validated_skills": [],
+      "validated_skills": [
+        "auth_session.login-bypass",
+        "file_upload.unrestricted-upload"
+      ],
       "implemented_skills": [
         "auth_session.login-bypass",
         "file_upload.unrestricted-upload"
       ],
-      "lab_ci_status": "unverified",
+      "lab_ci_status": "full_chain_ci",
       "worker_status": "not_verified",
       "release_status": "not_assessed",
-      "evidence": "",
-      "note": "已有真实 PHP 7.2 / Apache / OpenSSH / sudo find 实现，不重做靶机；当前只接入独立 HTTP+SSH 攻击端，验证 Vim swap 线索→strcmp 数组绕过→PHP 上传→www-data→配置凭据复用→SSH john→User Flag→sudo find→Root Flag。",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/46022242878",
+      "note": "原有真实 PHP 7.2 / Apache / OpenSSH / sudo find 实现；独立 HTTP+SSH 攻击端完整通过：Vim swap 线索→strcmp 数组绕过→PHP 上传→www-data→配置凭据复用→SSH john→User Flag→sudo find→UID 0→Root Flag。随机双 Flag 与 manifest/Challenge 答案一致。",
       "variant_profile": {
         "technology": "PHP 7.2 Apache, OpenSSH, sudo, GNU find",
         "initial_discovery": "Apache /login directory listing and exposed Vim swap file",
@@ -500,7 +503,7 @@
         "incremental_learning_value": "PHP type juggling, file upload execution, credential reuse and sudo GTFOBins privilege escalation",
         "confidence": "source_and_original_writeup_reviewed_e2e_pending"
       },
-      "skill_mapping_stage": "real_php72_strcmp_array_bypass_unrestricted_upload_ssh_credential_reuse_sudo_find_e2e_pending",
+      "skill_mapping_stage": "real_php72_strcmp_array_bypass_unrestricted_upload_ssh_credential_reuse_sudo_find_e2e_verified",
       "manual_validation": {
         "status": "not_reviewed",
         "commit": null,
@@ -510,10 +513,10 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "configured",
+      "e2e_ci_status": "passed",
       "e2e_ci_workflow": ".github/workflows/base-e2e.yml",
-      "e2e_ci_evidence": null,
-      "e2e_ci_commit": null
+      "e2e_ci_evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/46022242878",
+      "e2e_ci_commit": "13b0302dcabf5a439966f5f049cd8da5825b9616"
     },
     {
       "id": "bashed",
