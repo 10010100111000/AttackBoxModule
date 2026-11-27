@@ -4,15 +4,8 @@ import bot from '../bot/bot.js';
 
 const redisPublisher = new Redis();
 
-(async () => {
-  try {
-    await bot.launchBrowser();
-    console.log('Browser initialized in worker.');
-  } catch (error) {
-    console.error('Error initializing browser in worker:', error);
-    process.exit(1);
-  }
-})();
+await bot.launchBrowser();
+console.log('Browser initialized in worker.');
 
 triggerXSSQueue.process(async (job) => {
   try {
