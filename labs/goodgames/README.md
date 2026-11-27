@@ -55,17 +55,7 @@ Then browse:
 
 ## Seeded lab data
 
-Main-site account:
-
-- Email: `admin@goodgames.htb`
-- Password hash in `main.user`: MD5 of `superadministrator`
-
-Internal administration login (the password is intended to be recovered from the dumped hash):
-
-- Username: `admin`
-- Password: `superadministrator`
-
-A second ordinary account is seeded to make the user table enumeration more realistic.
+Seeded accounts are created by `app/app.py`. The administrator password is stored as an MD5 digest in SQLite and is deliberately weak so the intended assessment can recover it offline. Do not disclose the plaintext credential in the player-facing challenge.
 
 ## Attack path to verify
 
@@ -80,7 +70,7 @@ A second ordinary account is seeded to make the user table enumeration more real
 
 ## Flag handling
 
-Edit `flags/user.txt` before building. Dockerfile copies it to `/home/augustus/user.txt` and sets owner `augustus:augustus` with mode `0400`. It is not stored in the Python source. Rebuild the image after changing the flag:
+CI and release builds use `scripts/generate_goodgames_release.py` to generate a random 80-bit Flag and synchronize the target file, version Manifest and Challenge answer. Dockerfile copies the generated `flags/user.txt` to `/home/augustus/user.txt` and sets owner `augustus:augustus` with mode `0400`. For a local disposable build, the checked-in seed can be used; production release should use a versioned generated Flag. Rebuild the image after changing the Flag:
 
 ```bash
 docker compose build --no-cache
@@ -88,6 +78,12 @@ docker compose up -d
 ```
 
 There is intentionally no `root.txt`: the container escape / host privilege-escalation stage was explicitly excluded from this version.
+
+## Independent exploit and Writeup
+
+- `exploit.py` independently performs the login SQL injection, recovers and cracks the weak MD5 password, authenticates to the internal administration virtual host, verifies stored Jinja2 evaluation, checks command execution as `augustus`, and reads the exact Web Flag.
+- `writeup.md` documents the reconnaissance-to-exploitation path.
+- `.github/workflows/goodgames-e2e.yml` runs this path from a separate attacker container on an isolated Docker network.
 
 ## Health check and logs
 
