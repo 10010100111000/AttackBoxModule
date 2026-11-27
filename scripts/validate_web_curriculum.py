@@ -116,43 +116,42 @@ def main() -> None:
     need(machine_ids == all_lab_dirs,
          f"machines and Dockerfile directories differ: {machine_ids ^ all_lab_dirs}")
 
-    # The human-readable inventory is checked against the structured catalog.
-    # This prevents stale machine counts, missing Labs, or outdated CI/release labels.
+    # Validate the concise human-readable inventory without requiring a duplicate
+    # per-machine CI index. The catalog remains the sole structured status source.
     inventory_path = ROOT / "docs/EXISTING_WEB_LAB_RELEASE_INVENTORY.md"
     need(inventory_path.is_file(), "missing current main Lab inventory")
     inventory = inventory_path.read_text(encoding="utf-8")
     need(f"**{len(machine_ids)} 台 Lab**" in inventory,
          "inventory Lab total does not match catalog")
+
     counts = Counter(machine["lab_ci_status"] for machine in catalog["machines"])
-    for status, count in counts.items():
-        pattern = rf"\| `{re.escape(status)}` \| {count} \|"
-        need(re.search(pattern, inventory) is not None,
-             f"inventory count for {status} does not match catalog ({count})")
-    index_header = "## CI machine index"
-    need(index_header in inventory, "inventory is missing the CI machine index")
-    index = inventory.split(index_header, 1)[1].split("\n## ", 1)[0]
-    row_pattern = re.compile(
-        r"^\| `([a-z0-9-]+)` \| `(full_chain_ci|partial|unverified)` "
-        r"\| `(blocked_by_marker|not_assessed)` \|$",
-        re.MULTILINE,
+    count_summary = (
+        f"- 旧字段 `lab_ci_status`：{counts['full_chain_ci']} 台 `full_chain_ci`、"
+        f"{counts['partial']} 台 `partial`、{counts['unverified']} 台 `unverified`"
     )
-    inventory_rows = {
-        lab_id: (ci_status, release_status)
-        for lab_id, ci_status, release_status in row_pattern.findall(index)
-    }
-    expected_rows = {
-        machine["id"]: (machine["lab_ci_status"], machine["release_status"])
-        for machine in catalog["machines"]
-    }
-    missing_rows = set(expected_rows) - set(inventory_rows)
-    extra_rows = set(inventory_rows) - set(expected_rows)
-    changed_rows = {
-        key for key in set(expected_rows) & set(inventory_rows)
-        if expected_rows[key] != inventory_rows[key]
-    }
-    need(not (missing_rows or extra_rows or changed_rows),
-         f"inventory machine index differs from catalog: missing={missing_rows}, "
-         f"extra={extra_rows}, changed={changed_rows}")
+    need(count_summary in inventory,
+         "inventory historical CI totals do not match catalog")
+
+    passed = [m for m in catalog["machines"] if m.get("e2e_ci_status") == "passed"]
+    pending = [m for m in catalog["machines"] if m.get("e2e_ci_status", "pending") != "passed"]
+    need(f"- 当前统一 E2E：{len(passed)} 台通过，{len(pending)} 台待完成" in inventory,
+         "inventory current E2E totals do not match catalog")
+
+    completed_section = inventory.split("### 已通过当前统一 E2E", 1)[1].split("\n## 其余 main Lab", 1)[0]
+    completed_rows = re.findall(r"^\\| ([^|]+) \\| .+ \\| \\[CI\\]\\(", completed_section, re.MULTILINE)
+    need(len(completed_rows) == len(passed),
+         "inventory completed-Lab list does not match catalog E2E passes")
+    for machine in passed:
+        evidence = machine.get("e2e_ci_evidence", "")
+        urls = evidence if isinstance(evidence, list) else str(evidence).split(";")
+        need(any(url.strip() and url.strip() in inventory for url in urls),
+             f"inventory is missing E2E evidence for {machine['id']}")
+
+    pending_section = inventory.split("## 其余 main Lab", 1)[1].split("\n## 状态定义", 1)[0]
+    pending_rows = re.findall(r"^\\| ([^|]+) \\| pending \\|", pending_section, re.MULTILINE)
+    need(len(pending_rows) == len(pending),
+         "inventory pending-Lab list does not match catalog")
+
     for machine in catalog["machines"]:
         marker_exists = (ROOT / machine["path"] / ".release-blocked").is_file()
         need(marker_exists == (machine["release_status"] == "blocked_by_marker"),
