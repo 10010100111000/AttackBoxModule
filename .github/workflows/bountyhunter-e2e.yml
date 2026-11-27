@@ -1,4 +1,4 @@
-name: BountyHunter single-instance XXE and sudo eval E2E
+name: BountyHunter single-instance XXE and Skytrain E2E
 
 on:
   pull_request:
@@ -36,8 +36,8 @@ jobs:
           user = Path("labs/bountyhunter/flags/user.txt").read_text().strip()
           root = Path("labs/bountyhunter/flags/root.txt").read_text().strip()
           expected = {
-              "challenges/startpoint/bountyhunter/Bountyhunter.md": [user, root],
-              "challenges/file-security/bountyhunter/xxe-file-read.md": [user],
+              "challenges/startpoint/bountyhunter/BountyHunter.md": [user, root],
+              "challenges/file-security/bountyhunter/xml-external-entity.md": [user],
               "challenges/linux-privilege-escalation/bountyhunter/skytrain-eval.md": [root],
           }
           for filename, answers_expected in expected.items():
@@ -51,10 +51,10 @@ jobs:
           print("PASS: integrated and focused Challenges share one Lab and match its Flag seeds")
           PY
 
-      - name: Build authentic PHP/libxml and SSH target
+      - name: Build BountyHunter target image
         run: docker build --pull --progress=plain -t ttp-bountyhunter:ci -f labs/bountyhunter/Dockerfile labs/bountyhunter
 
-      - name: Build separate non-root HTTP/SSH attacker
+      - name: Build separate non-root attacker
         run: docker build --pull --progress=plain -t ttp-bountyhunter-attacker:ci -f labs/bountyhunter/tests/Dockerfile.attacker labs/bountyhunter/tests
 
       - name: Generate one instance's User and Root Flags
@@ -76,7 +76,7 @@ jobs:
           print("Generated one instance's distinct 80-bit User and Root Flags; values are masked.")
           PY
 
-      - name: Run XXE to SSH to sudo eval Root path on one clean instance
+      - name: Run HTTP XXE to SSH to sudo Skytrain path on one instance
         env:
           USER_FLAG: ${{ steps.flags.outputs.user }}
           ROOT_FLAG: ${{ steps.flags.outputs.root }}
@@ -126,7 +126,7 @@ jobs:
             ttp-bountyhunter-attacker:ci
 
           docker stats --no-stream bountyhunter-target --format "BountyHunter memory={{.MemUsage}} pids={{.PIDs}}"
-          echo "PASS: one fresh instance completed real XXE, SSH foothold, User Flag and sudo eval Root Flag"
+          echo "PASS: one fresh instance completed real PHP XXE, SSH foothold and sudo Python eval Root path"
 
       - name: Record target image size
         if: always()

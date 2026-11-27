@@ -1,1 +1,1 @@
-TTP{bountyhunter_demo_root_replace_at_runtime}
+TTP{bountyhunter_root_default}

