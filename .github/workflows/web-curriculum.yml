@@ -17,6 +17,11 @@ on:
       - "scripts/generate_goodgames_release.py"
       - ".github/workflows/goodgames-e2e.yml"
       - ".github/workflows/goodgames-release.yml"
+      - "labs/devvortex/**"
+      - "challenges/startpoint/devvortex/**"
+      - "scripts/generate_devvortex_release.py"
+      - ".github/workflows/devvortex-e2e.yml"
+      - ".github/workflows/devvortex-release.yml"
       - "challenges/startpoint/bike/**"
       - ".github/workflows/bike.yml"
       - ".github/workflows/bike-release.yml"
@@ -41,6 +46,11 @@ on:
       - "scripts/generate_goodgames_release.py"
       - ".github/workflows/goodgames-e2e.yml"
       - ".github/workflows/goodgames-release.yml"
+      - "labs/devvortex/**"
+      - "challenges/startpoint/devvortex/**"
+      - "scripts/generate_devvortex_release.py"
+      - ".github/workflows/devvortex-e2e.yml"
+      - ".github/workflows/devvortex-release.yml"
   pull_request:
     paths:
       - "catalog/web-competencies.json"
@@ -106,6 +116,28 @@ jobs:
           assert challenge.count("kind: flag") == 1
           assert "lab: goodgames" in challenge
           print("GoodGames random Flag, stable manifest and Challenge answer: PASS")
+          PY
+
+      - name: Check Devvortex versioned Flag generator and Challenge answer consistency
+        run: |
+          set -euo pipefail
+          python3 scripts/generate_devvortex_release.py --version 0.0.0-ci
+          manifest=labs/devvortex/flags/releases/0.0.0-ci.json
+          before=$(sha256sum "$manifest" | cut -d' ' -f1)
+          python3 scripts/generate_devvortex_release.py --version 0.0.0-ci
+          after=$(sha256sum "$manifest" | cut -d' ' -f1)
+          test "$before" = "$after"
+          python3 - <<'PY'
+          import json, pathlib
+          manifest = json.loads(pathlib.Path("labs/devvortex/flags/releases/0.0.0-ci.json").read_text())
+          flag = manifest["flag"]
+          assert flag.startswith("TTP{") and flag.endswith("}") and len(flag) == 21
+          assert all(ch in "abcdefghijklmnopqrstuvwxyz234567" for ch in flag[4:-1])
+          assert pathlib.Path("labs/devvortex/flags/user.txt").read_text().strip() == flag
+          challenge = pathlib.Path("challenges/startpoint/devvortex/Devvortex.md").read_text()
+          assert challenge.count(f'answer: "{flag}"') == 1
+          assert challenge.count("kind: flag") == 1 and "lab: devvortex" in challenge
+          print("Devvortex random Flag, stable manifest and Challenge answer: PASS")
           PY
 
       - name: Check Cap Flag generator determinism and Challenge answer consistency
