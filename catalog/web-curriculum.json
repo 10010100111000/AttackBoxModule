@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "updated_on": "2026-11-28",
-  "main_snapshot_commit": "e671eb2c64ca85142f7b610b79a64c076a84e349",
+  "main_snapshot_commit": "29d273648eb269348259b29e9d4ee0b311c303b5",
   "purpose": "trytopwn Web 题库选题、覆盖率与验收状态的唯一结构化索引；每次新增靶机时维护本文件与 docs/WEB_ROADMAP.md",
   "difficulty_is_provisional": true,
   "statuses": {
@@ -799,8 +799,8 @@
       "lab_ci_status": "full_chain_ci",
       "worker_status": "not_verified",
       "release_status": "blocked_by_marker",
-      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45180593763",
-      "note": "独立 CI 验证 SSRF → dev/prod SSH → GitPython UID0/Root；Worker 发布仍被 .release-blocked 阻止",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/46053249839",
+      "note": "Dedicated independent-attacker E2E passed on two clean instances with four distinct random User/Root Flags. Verified public cover-preview SSRF to loopback-only Flask metadata API, SSH dev and exact User Flag, historical Git credential recovery, SSH prod, scoped sudo, real GitPython 3.1.29 remote transport, UID 0 proof and exact Root Flag. Image 87,773,952 bytes (~83.7 MiB); runtime 81.43-81.66 MiB, 12 PIDs. Platform Worker lifecycle and grading remain separate; .release-blocked remains.",
       "variant_profile": {
         "technology": "Flask, Nginx, OpenSSH, GitPython",
         "initial_discovery": "投稿封面 URL",
@@ -809,7 +809,7 @@
         "incremental_learning_value": "与 URL 校验绕过或 Blind SSRF 不同",
         "confidence": "from_repository_readme_or_existing_tests"
       },
-      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review",
+      "skill_mapping_stage": "two_instance_independent_ssrf_ssh_gitpython_root_e2e_verified",
       "manual_validation": {
         "status": "not_reviewed",
         "commit": null,
@@ -819,10 +819,10 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "pending",
-      "e2e_ci_workflow": null,
-      "e2e_ci_evidence": null,
-      "e2e_ci_commit": null
+      "e2e_ci_status": "passed",
+      "e2e_ci_workflow": ".github/workflows/editorial-e2e.yml",
+      "e2e_ci_evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/46053249839",
+      "e2e_ci_commit": "c6b20198c8e0310f489e3c0c9741320bdaab147c"
     },
     {
       "id": "goodgames",
