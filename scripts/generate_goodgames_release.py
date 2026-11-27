@@ -13,9 +13,9 @@ ROOT = Path(__file__).resolve().parents[1]
 FLAG_FILE = ROOT / "labs/goodgames/flags/user.txt"
 MANIFEST_DIR = ROOT / "labs/goodgames/flags/releases"
 CHALLENGE = ROOT / "challenges/startpoint/goodgames/GoodGames.md"
-VERSION_RE = re.compile(r"^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-[a-z0-9]+(?:[.-][a-z0-9]+)*)?$")
-FLAG_RE = re.compile(r"^TTP\\{[a-z2-7]{16}\\}$")
-ANSWER_RE = re.compile(r'(?m)^answer: "TTP\\{[^"]+\\}"$')
+VERSION_RE = re.compile(r"^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(?:-[a-z0-9]+(?:[.-][a-z0-9]+)*)?$")
+FLAG_RE = re.compile(r"^TTP\{[a-z2-7]{16}\}$")
+ANSWER_RE = re.compile(r'(?m)^answer: "TTP\{[^"]+\}"$')
 
 
 def new_flag() -> str:
@@ -41,11 +41,11 @@ def main() -> None:
     else:
         flag = new_flag()
         manifest = {"version": version, "format": "TTP{16-lowercase-base32}", "flag": flag}
-        manifest_path.write_text(json.dumps(manifest, indent=2) + "\\n", encoding="utf-8")
+        manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
         action = "generated"
 
     FLAG_FILE.parent.mkdir(parents=True, exist_ok=True)
-    FLAG_FILE.write_text(flag + "\\n", encoding="utf-8")
+    FLAG_FILE.write_text(flag + "\n", encoding="utf-8")
     challenge = CHALLENGE.read_text(encoding="utf-8")
     updated, count = ANSWER_RE.subn(f'answer: "{flag}"', challenge)
     if count != 1:
