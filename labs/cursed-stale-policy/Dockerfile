@@ -9,6 +9,18 @@ RUN npm config set registry https://registry.npmjs.org/ \
 COPY challenge/frontend ./
 RUN npm run build
 
+# Resolve backend dependencies in a disposable stage. Some upstream dependencies
+# are Git-based/native, so git and the toolchain must not leak into the runtime.
+FROM node:22-slim AS backend-deps
+WORKDIR /app/backend
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends git python3 make g++ \
+ && rm -rf /var/lib/apt/lists/*
+COPY challenge/backend/package.json ./
+RUN npm config set registry https://registry.npmjs.org/ \
+ && npm install --omit=dev --legacy-peer-deps --no-audit --no-fund --fetch-retries=5 --fetch-timeout=600000 \
+ && npm cache clean --force
+
 FROM node:22-slim AS runtime
 ENV NODE_ENV=production \
     PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
@@ -21,10 +33,7 @@ RUN apt-get update \
 
 WORKDIR /app/backend
 COPY challenge/backend/package.json ./
-RUN npm config set registry https://registry.npmjs.org/ \
- && npm install --omit=dev --legacy-peer-deps --no-audit --no-fund --fetch-retries=5 --fetch-timeout=600000 \
- && npm cache clean --force
-
+COPY --from=backend-deps /app/backend/node_modules ./node_modules
 COPY challenge/backend ./
 COPY --from=frontend-builder /app/backend/static/dist ./static/dist
 COPY config/supervisord.conf /etc/supervisord.conf
