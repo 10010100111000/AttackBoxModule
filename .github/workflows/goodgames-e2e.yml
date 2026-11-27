@@ -1,0 +1,114 @@
+name: GoodGames real SQLi and stored Jinja2 SSTI end-to-end acceptance
+
+on:
+  pull_request:
+    paths:
+      - "labs/goodgames/**"
+      - "challenges/startpoint/goodgames/**"
+      - "scripts/generate_goodgames_release.py"
+      - ".github/workflows/goodgames-e2e.yml"
+      - ".github/workflows/goodgames-release.yml"
+  push:
+    branches: [main]
+    paths:
+      - "labs/goodgames/**"
+      - "challenges/startpoint/goodgames/**"
+      - "scripts/generate_goodgames_release.py"
+      - ".github/workflows/goodgames-e2e.yml"
+      - ".github/workflows/goodgames-release.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  goodgames-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate a fresh random Flag for this CI instance
+        env:
+          RELEASE_VERSION: 0.0.0-ci.${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          python3 scripts/generate_goodgames_release.py --version "$RELEASE_VERSION"
+
+      - name: Verify target Flag and Challenge answer match
+        id: flag
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os, pathlib, re
+          flag = pathlib.Path("labs/goodgames/flags/user.txt").read_text().strip()
+          challenge = pathlib.Path("challenges/startpoint/goodgames/GoodGames.md").read_text()
+          answers = re.findall(r'(?m)^answer: "([^"]+)"$', challenge)
+          assert re.fullmatch(r"TTP\{[a-z2-7]{16}\}", flag)
+          assert answers == [flag], "target Flag and Challenge answer differ"
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              output.write(f"expected={flag}\n")
+          print(f"::add-mask::{flag}")
+          print("GoodGames random Flag and Challenge answer match: PASS")
+          PY
+
+      - name: Syntax-check independent player and release generator
+        run: python3 -m py_compile labs/goodgames/exploit.py scripts/generate_goodgames_release.py
+
+      - name: Build real Flask, SQLite and Volt target
+        run: docker build --pull --progress=plain -t ttp-goodgames:e2e -f labs/goodgames/Dockerfile labs/goodgames
+
+      - name: Start target on an isolated internal network
+        run: |
+          set -euo pipefail
+          docker network create --internal goodgames-e2e
+          docker run -d --name goodgames-target --network goodgames-e2e --network-alias goodgames.htb \
+            --read-only --tmpfs /tmp:rw,size=32m --tmpfs /data:rw,size=32m \
+            --memory 700m --cpus 2 --pids-limit 160 --cap-drop ALL \
+            --security-opt no-new-privileges ttp-goodgames:e2e
+          ready=0
+          for attempt in $(seq 1 45); do
+            state=$(docker inspect -f '{{.State.Status}}' goodgames-target)
+            health=$(docker inspect -f '{{.State.Health.Status}}' goodgames-target)
+            if [ "$state" != running ] || [ "$health" = unhealthy ]; then
+              docker logs goodgames-target
+              exit 1
+            fi
+            if [ "$health" = healthy ]; then ready=1; break; fi
+            sleep 2
+          done
+          test "$ready" = 1
+          docker image inspect ttp-goodgames:e2e --format 'IMAGE_SIZE_BYTES={{.Size}}'
+          docker stats --no-stream goodgames-target
+
+      - name: Run independent attacker through SQLi, hash recovery, admin login, SSTI and exact Flag
+        env:
+          EXPECTED_FLAG: ${{ steps.flag.outputs.expected }}
+        run: |
+          set -euo pipefail
+          docker run --rm --network goodgames-e2e \
+            -v "$GITHUB_WORKSPACE/labs/goodgames/exploit.py:/exploit.py:ro" \
+            -e EXPECTED_FLAG \
+            python:3.12-alpine python /exploit.py \
+              --url http://goodgames.htb:5000 \
+              --expected-flag "$EXPECTED_FLAG"
+
+      - name: Record acceptance scope
+        run: |
+          echo "PASS: SQL injection disclosed the administrator MD5 hash; the weak password was recovered and reused at the internal admin host." >> "$GITHUB_STEP_SUMMARY"
+          echo "PASS: stored Jinja2 SSTI executed as augustus and returned the exact random Web Flag." >> "$GITHUB_STEP_SUMMARY"
+          echo "The independent player used only HTTP over an internal Docker network; no target mount, Docker socket or docker exec was used." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Capture target diagnostics
+        if: always()
+        run: |
+          docker logs goodgames-target || true
+          docker image inspect ttp-goodgames:e2e --format='IMAGE_SIZE_BYTES={{.Size}}' || true
+          docker stats --no-stream goodgames-target || true
+
+      - name: Clean up isolated environment
+        if: always()
+        run: |
+          docker rm -f goodgames-target 2>/dev/null || true
+          docker network rm goodgames-e2e 2>/dev/null || true
+          docker image rm ttp-goodgames:e2e 2>/dev/null || true
