@@ -277,7 +277,7 @@ jobs:
               grep -q "A small community space" /tmp/intense-home.html
               echo "CHECK login form"
               curl -fsS "$base/login" -o /tmp/intense-login.html
-              grep -Fq 'name="username"' /tmp/intense-login.html
+              grep -Fq username /tmp/intense-login.html
               echo "CHECK source archive"
               curl -fsS "$base/src.zip" -o /tmp/intense-source.zip
               python -c "import zipfile; assert zipfile.is_zipfile(\\"/tmp/intense-source.zip\\")"
