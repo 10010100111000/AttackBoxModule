@@ -270,17 +270,24 @@ jobs:
           PY
           if [ "$LAB_SLUG" = "intense" ]; then
             docker exec "$test_container" sh -ec '
+              set -eux
               base="http://127.0.0.1:8080"
+              echo "CHECK homepage"
               curl -fsS "$base/" -o /tmp/intense-home.html
               grep -q "A small community space" /tmp/intense-home.html
+              echo "CHECK login form"
               curl -fsS "$base/login" -o /tmp/intense-login.html
               grep -Fq 'name="username"' /tmp/intense-login.html
+              echo "CHECK source archive"
               curl -fsS "$base/src.zip" -o /tmp/intense-source.zip
               python -c "import zipfile; assert zipfile.is_zipfile(\\"/tmp/intense-source.zip\\")"
+              echo "CHECK guest login"
               curl -fsS -c /tmp/intense-cookies -b /tmp/intense-cookies -d "username=guest&password=guest" "$base/postlogin" -o /tmp/intense-login-result.txt
               grep -Fq "OK" /tmp/intense-login-result.txt
+              echo "CHECK normal message submission"
               curl -fsS -b /tmp/intense-cookies -d "message=ordinary+community+message" "$base/submitmessage" -o /tmp/intense-submit-result.txt
               grep -Fq "OK" /tmp/intense-submit-result.txt
+              echo "CHECK guest admin denied"
               code=$(curl -s -o /dev/null -w "%{http_code}" -b /tmp/intense-cookies "$base/admin")
               test "$code" = "403"
             '
