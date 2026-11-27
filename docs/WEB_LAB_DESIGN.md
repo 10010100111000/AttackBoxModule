@@ -497,7 +497,7 @@ Editorial 已对 SSRF 基本与内网 API 访问做了完整攻击链 CI，但**
 
 ## 当前逐台制作顺序（2026-11-27）
 
-当前按 main 存量清单逐台完成，不并行制作。已完成新标准 E2E 的是 Bike、Precious、GoodGames、Devvortex、Base、Intense。Intense 的 Flask/SQLite Web-only 攻击链已通过独立攻击端验收。下一项先重新评估剩余 partial main Labs（Alert、Funnel），选择改动范围较小的一台；Trick 暂缓，因其多服务环境较大。Devvortex 的范围为 Joomla 4.2.6 / CVE-2023-23752 Web-only 单 Flag，不包含 SSH、Apport 或 Linux Root 阶段。
+当前按 main 存量清单逐台完成，不并行制作。已完成新标准 E2E 的是 Bike、Precious、GoodGames、Devvortex、Base、Intense。Intense 的 Flask/SQLite Web-only 攻击链已通过独立攻击端验收。下一台选择 **Alert**：现有真实 Chromium Stored XSS 与 Loopback 文件读取已验证，当前只需补齐自动双实例随机 Flag E2E 和 Challenge 同步。Funnel 属于 FTP/SSH/PostgreSQL service track，不作为下一台 Web Lab；Trick 暂缓，因其多服务环境较大。Devvortex 的范围为 Joomla 4.2.6 / CVE-2023-23752 Web-only 单 Flag，不包含 SSH、Apport 或 Linux Root 阶段。
 
 执行细节与验收门槛以 [Lab Production Playbook](LAB_PRODUCTION_PLAYBOOK.md) 为准；状态与成功运行证据以 `catalog/web-curriculum.json` 为准。
 
