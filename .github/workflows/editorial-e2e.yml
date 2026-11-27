@@ -1,0 +1,144 @@
+name: Editorial two-instance SSRF and GitPython E2E
+
+on:
+  pull_request:
+    paths:
+      - "labs/editorial/**"
+      - "challenges/startpoint/editorial/**"
+      - ".github/workflows/editorial-e2e.yml"
+  push:
+    branches: [main]
+    paths:
+      - "labs/editorial/**"
+      - "challenges/startpoint/editorial/**"
+      - ".github/workflows/editorial-e2e.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  editorial-full-chain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check default Flag answers and compile independent player
+        run: |
+          python3 -m py_compile labs/editorial/tests/smoke.py
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          challenge = Path("challenges/startpoint/editorial/editorial.md").read_text()
+          answers = re.findall(r'(?m)^answer: "([^"]+)"$', challenge)
+          user = Path("labs/editorial/flags/user.txt").read_text().strip()
+          root = Path("labs/editorial/flags/root.txt").read_text().strip()
+          if answers != [user, root]:
+              raise SystemExit("Default User/Root Flag seeds do not match the Challenge answers")
+          print("PASS: both default target Flags match the two Challenge answers")
+          PY
+
+      - name: Build target image
+        run: docker build --pull --progress=plain -t ttp-editorial:ci -f labs/editorial/Dockerfile labs/editorial
+
+      - name: Build independent attacker image
+        run: docker build --pull --progress=plain -t ttp-editorial-attacker:ci -f labs/editorial/tests/Dockerfile.attacker labs/editorial/tests
+
+      - name: Generate two distinct per-instance User and Root Flags
+        id: flags
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import base64, secrets, os
+          def make_flag():
+              token = base64.b32encode(secrets.token_bytes(10)).decode().rstrip("=").lower()
+              return "TTP{" + token + "}"
+          values = [make_flag() for _ in range(4)]
+          while len(set(values)) != 4:
+              values = [make_flag() for _ in range(4)]
+          names = ("user_first", "root_first", "user_second", "root_second")
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              for name, value in zip(names, values):
+                  print("::add-mask::" + value)
+                  output.write(name + "=" + value + "\n")
+          print("Generated four distinct 80-bit instance Flags; values are masked.")
+          PY
+
+      - name: Run full attack chain on two clean isolated instances
+        env:
+          USER_FIRST: ${{ steps.flags.outputs.user_first }}
+          ROOT_FIRST: ${{ steps.flags.outputs.root_first }}
+          USER_SECOND: ${{ steps.flags.outputs.user_second }}
+          ROOT_SECOND: ${{ steps.flags.outputs.root_second }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          cleanup() {
+            docker logs editorial-target-first 2>/dev/null || true
+            docker logs editorial-target-second 2>/dev/null || true
+            docker rm -f editorial-target-first editorial-target-second 2>/dev/null || true
+            docker network rm editorial-e2e 2>/dev/null || true
+          }
+          trap cleanup EXIT
+          docker network create --internal editorial-e2e
+
+          run_instance() {
+            local suffix="$1"
+            local user_flag="$2"
+            local root_flag="$3"
+            local name="editorial-target-$suffix"
+            echo "Starting clean Editorial instance $suffix"
+            docker run -d \
+              --name "$name" \
+              --network editorial-e2e \
+              --network-alias editorial-target \
+              --memory 512m --cpus 1 --pids-limit 192 --shm-size 64m \
+              --cap-drop ALL \
+              --cap-add CHOWN --cap-add SETUID --cap-add SETGID \
+              --cap-add NET_BIND_SERVICE --cap-add SYS_CHROOT \
+              --security-opt no-new-privileges \
+              -e EDITORIAL_REQUIRE_PRIVATE_FLAGS=1 \
+              -e EDITORIAL_STATIC_USER_FLAG="$user_flag" \
+              -e EDITORIAL_STATIC_ROOT_FLAG="$root_flag" \
+              ttp-editorial:ci >/dev/null
+
+            local ready=0
+            for attempt in $(seq 1 90); do
+              local state health
+              state=$(docker inspect -f '{{.State.Status}}' "$name")
+              health=$(docker inspect -f '{{.State.Health.Status}}' "$name")
+              if [ "$state" != "running" ] || [ "$health" = "unhealthy" ]; then
+                docker logs "$name"
+                echo "Editorial target failed before becoming healthy"
+                return 1
+              fi
+              if [ "$health" = "healthy" ]; then
+                ready=1
+                break
+              fi
+              sleep 2
+            done
+            test "$ready" = 1
+
+            docker run --rm \
+              --network editorial-e2e \
+              -e TARGET_HOST=editorial-target \
+              -e EXPECTED_USER_FLAG="$user_flag" \
+              -e EXPECTED_ROOT_FLAG="$root_flag" \
+              ttp-editorial-attacker:ci
+
+            docker stats --no-stream "$name" --format "Instance $suffix memory={{.MemUsage}} pids={{.PIDs}}"
+            docker rm -f "$name" >/dev/null
+            echo "Editorial instance $suffix: PASS"
+          }
+
+          run_instance first "$USER_FIRST" "$ROOT_FIRST"
+          run_instance second "$USER_SECOND" "$ROOT_SECOND"
+          test "$USER_FIRST" != "$USER_SECOND"
+          test "$ROOT_FIRST" != "$ROOT_SECOND"
+          echo "PASS: both clean instances returned their own exact User and Root Flags"
+
+      - name: Record target image size
+        if: always()
+        run: docker image inspect ttp-editorial:ci --format='IMAGE_SIZE_BYTES={{.Size}}' || true
