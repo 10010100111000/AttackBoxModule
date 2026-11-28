@@ -47,7 +47,7 @@
 | Union | pending | 有历史完整链 CI 记录 |
 | Validation | pending | 已补双阶段 Challenge 与 writeup；历史 CI 验证真实二阶 SQLi、FILE、PHP 与原生 su 组件行为；当前统一网络攻击者 E2E 仍 pending |
 | Funnel | pending | 部分实现；FTP / SSH / PostgreSQL 服务链，非 Web 主线 |
-| Django Debug XSS | pending | 有历史完整链 CI 记录；存在 release-blocked 标记 |
+| Django Debug XSS | pending | 已补 Harbor Registry Challenge 与 writeup；历史 Django 1.11.4 浏览器 XSS 完整链及 1.11.5 修复版负向对照通过；当前统一 E2E pending，release-blocked 保留 |
 | WonderCMS XSS | pending | 有历史完整链 CI 记录；存在 release-blocked 标记 |
 | Usage | pending | 有历史完整链 CI 记录；存在 release-blocked 标记 |
 | NodeBlog | pending | 有历史完整链 CI 记录；存在 release-blocked 标记 |
