@@ -22,7 +22,7 @@
 | Nibbles | Nibbleblog 4.0.3 插件上传 → nibbler → sudo monitor.sh → User/Root | [CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/46061441923) |
 | BountyHunter | PHP SimpleXML XXE → php://filter 配置读取 → SSH development → sudo Skytrain Python eval → User/Root | [CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/46066236397) |
 | Cap | Dashboard IDOR → real FTP PCAP → credential reuse → SSH → Python cap_setuid → User/Root | [CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/46066988029) |
-| Shocker | GNU Bash 4.3 Apache CGI Shellshock → shelly → sudo Perl → User/Root | [CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/46062735563) |
+| Shocker | CI-baked User/Root Flags → GNU Bash 4.3 Apache CGI Shellshock → shelly → sudo Perl → Root | [Release + E2E](https://github.com/10010100111000/AttackBoxModule/actions/runs/46171387248) |
 | Bashed | 原版 phpbash → www-data → scriptmanager → root cron → User/Root | [CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/46064377547) |
 | Cursed Stale Policy | CSP nonce 重用 → Stored/Blind XSS → 管理员 Chromium → Web Flag | [CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/46051233295) |
 | Bike | Handlebars 4.1.1 SSTI → RCE → Web Flag | [CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/45899503806) |
