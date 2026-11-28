@@ -20,7 +20,7 @@ title: Web foothold (User Flag)
 kind: flag
 prompt: |
   从 Daily Blogs 的账户功能开始调查，取得应用运行账户 dash 的权限并读取 /home/dash/user.txt。
-answer: "TTP{usage_demo_user_only}"
+answer: "TTP{aaaaaaaaaaaaaaaa}"
 match: trim
 hint: 先区分正常注册与密码恢复请求，比较不同输入条件下服务器响应的差异。
 ```
@@ -30,7 +30,7 @@ title: System privilege (Root Flag)
 kind: flag
 prompt: |
   从 dash 的权限继续调查，取得 xander 账户并利用其维护权限读取 /root/root.txt。
-answer: "TTP{usage_demo_root_only}"
+answer: "TTP{bbbbbbbbbbbbbbbb}"
 match: trim
 hint: 不要只检查 sudo 命令本身。注意它调用的归档工具如何解释传入的文件列表。
 ```

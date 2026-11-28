@@ -12,14 +12,14 @@ Daily Blogs 为用户提供密码恢复功能。用户提交邮箱后，页面�
 
 # 任务
 
-利用密码恢复流程中的数据库查询缺陷，恢复后台管理员账户所需的信息，并取得 Web 应用运行账户的 User Flag。
+利用密码恢复流程中的数据库查询缺陷，通过布尔/时间盲注提取管理员记录中的持久登录令牌，并提交数据库 Flag。
 
 ```quiz
 title: Blind Recovery
 kind: flag
 prompt: |
-  通过密码恢复流程中的真实数据库响应差异，完成 Web foothold 并提交 User Flag。
-answer: "TTP{usage_demo_user_only}"
+  通过密码恢复流程中的真实数据库响应差异，提取 admin_users.remember_token 并提交数据库 Flag。
+answer: "TTP{cccccccccccccccc}"
 match: trim
 hint: 同时观察布尔条件与响应时间，不要假设页面必须直接回显查询结果。
 ```

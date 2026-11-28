@@ -32,14 +32,14 @@ The original Usage application source was not published. The main Laravel applic
 
 ## Reusable Challenges
 
-This Lab is shared by four learner-facing Challenges; they all use the same Usage image and per-instance target:
+This Lab is shared by four learner-facing Challenges; they all use the same versioned Usage image and target:
 
 - [Usage](../../challenges/startpoint/usage/Usage.md): integrated User and Root path.
 - [Blind Recovery](../../challenges/sql-injection/11-usage/blind-recovery.md): focused boolean/time blind SQLi objective.
 - [Admin Avatar Upload](../../challenges/file-security/usage/admin-avatar-upload.md): focused Laravel-admin upload objective.
 - [7za Listfile](../../challenges/linux-privilege-escalation/usage/7za-listfile.md): focused xander-to-root privilege objective.
 
-The focused Challenges reuse the integrated Lab's User or Root Flag; they do not create separate target images or additional instances.
+The focused Admin Avatar Upload and 7za Listfile Challenges reuse the integrated Lab's User and Root Flags. Blind Recovery has its own Flag in the genuine Laravel-admin admin_users.remember_token field, which the player extracts through the vulnerable password-recovery SQLi. All four Challenges use one image and one target.
 
 Detailed discovery-led solution: [writeup.md](writeup.md).
 
@@ -74,25 +74,31 @@ The app database is `usage_blog`. It contains the normal Laravel `users` table a
 From repository root:
 
 ```sh
+# Generate/reuse the versioned release first, then build the baked image.
+python3 scripts/generate_usage_release.py --version 0.1.0
 docker build -f labs/usage/Dockerfile -t ttp-usage:dev labs/usage
 docker network create --internal usage-lab
 docker run -d --name usage-target --network usage-lab \
   --network-alias usage.htb --network-alias admin.usage.htb \
   --memory 768m --cpus 1 --pids-limit 256 \
-  -e USAGE_REQUIRE_PRIVATE_FLAGS=1 \
-  -e USAGE_STATIC_USER_FLAG='TTP{private_user_flag}' \
-  -e USAGE_STATIC_ROOT_FLAG='TTP{private_root_flag}' \
   ttp-usage:dev
 docker inspect -f '{{.State.Health.Status}}' usage-target
 ```
 
 Do not publish ports publicly. The platform's private target network should provide the two hostnames to the player's AttackBox. MySQL and Monit remain loopback-only.
 
-## Flag and reset
+## Versioned Flags and reset
 
-Worker passes `USAGE_STATIC_USER_FLAG` and `USAGE_STATIC_ROOT_FLAG` as opaque environment variables. The entrypoint writes them to `/home/dash/user.txt` (root:dash, 0640) and `/root/root.txt` (root:root, 0600). Web backend judges the static values; Worker only starts/stops the container.
+Usage uses the CI-baked release model; Worker does not inject Flag environment variables.
 
-No data volume is declared. Deleting the target container removes its MySQL database, uploaded files, SSH keys, session state, and generated system credentials. A new instance receives new Worker-supplied flags and fresh generated credentials.
+Each release Manifest contains three distinct values:
+- database_flag: seeded into the real Laravel-admin admin_users.remember_token column. The Blind Recovery Challenge obtains it through the public boolean/time SQLi oracle.
+- user_flag: copied to /home/dash/user.txt for the actual Web foothold / Linux user stage.
+- root_flag: copied to /root/root.txt for the real p7zip sudo privilege-escalation stage.
+
+The same versioned values are synchronized to the integrated Usage Challenge, Blind Recovery, Admin Avatar Upload and 7za Listfile Challenge answers. The Dockerfile copies the three seed files into the image. Container startup imports the database seed and initializes the two filesystem objectives; it never generates or rotates Flags. Rebuilding the same release version preserves the values. A new release version may generate a new set and updates the Challenge answers in the same release workflow.
+
+No data volume is declared. Deleting and recreating a container from the same image resets the database and filesystem to the same release's baked seed values. This is version-level static Flag behavior, not per-instance dynamic rotation.
 
 ## CI acceptance
 
@@ -100,12 +106,13 @@ The independent attacker container must prove:
 1. normal registration and password recovery work;
 2. boolean true/false responses differ;
 3. a MySQL `SLEEP()` condition produces a measurable timing difference;
-4. the actual bcrypt hash is extracted through blind SQLi and cracked offline;
-5. the actual Laravel-admin login and profile upload route accepts the polyglot;
-6. the uploaded PHP file executes as `dash`;
-7. the SSH private key is obtained through that shell and used to log in as dash;
-8. the Monit credential is reused for xander;
-9. real sudo p7zip 16.02 `@listfile` behavior discloses the protected Root Flag;
-10. a second fresh container has a different Flag pair and no prior state.
+4. the exact release Flag is extracted from the native `admin_users.remember_token` column through blind SQLi;
+5. the actual bcrypt hash is extracted through blind SQLi and cracked offline;
+6. the actual Laravel-admin login and profile upload route accepts the polyglot;
+7. the uploaded PHP file executes as `dash`;
+8. the SSH private key is obtained through that shell and used to log in as dash;
+9. the Monit credential is reused for xander;
+10. real sudo p7zip 16.02 `@listfile` behavior discloses the protected Root Flag;
+11. the exact User and Root Flags are retrieved from the same image release and match its version Manifest and Challenge answers.
 
 Acceptance requires real components, genuine vulnerability behavior and a verified end-to-end learning path, not identical private source code. A passing lab CI does not prove the real Worker deployment or platform answer configuration. Keep `.release-blocked` until those are separately checked.

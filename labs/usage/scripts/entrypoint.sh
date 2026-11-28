@@ -1,15 +1,17 @@
 #!/bin/bash
 set -euo pipefail
 
-if [[ "${USAGE_REQUIRE_PRIVATE_FLAGS:-1}" == "1" ]]; then
-  : "${USAGE_STATIC_USER_FLAG:?Worker must inject USAGE_STATIC_USER_FLAG}"
-  : "${USAGE_STATIC_ROOT_FLAG:?Worker must inject USAGE_STATIC_ROOT_FLAG}"
-fi
-USER_FLAG="${USAGE_STATIC_USER_FLAG:-TTP{usage_demo_user_only}}"
-ROOT_FLAG="${USAGE_STATIC_ROOT_FLAG:-TTP{usage_demo_root_only}}"
-[[ "$USER_FLAG" != "$ROOT_FLAG" ]] || { echo "User and Root flags must differ" >&2; exit 1; }
-# Keep instance answers out of all child-process environments.
-unset USAGE_STATIC_USER_FLAG USAGE_STATIC_ROOT_FLAG
+FLAG_DIR=/opt/usage/flags
+for flag_name in database user root; do
+  flag_path="$FLAG_DIR/$flag_name.txt"
+  [[ -s "$flag_path" ]] || { echo "[usage] missing baked $flag_name Flag: $flag_path" >&2; exit 1; }
+  flag_value="$(cat "$flag_path")"
+  [[ "$flag_value" =~ ^TTP\{[a-z2-7]{16}\}$ ]] || { echo "[usage] invalid baked $flag_name Flag format" >&2; exit 1; }
+done
+DATABASE_FLAG="$(cat "$FLAG_DIR/database.txt")"
+USER_FLAG="$(cat "$FLAG_DIR/user.txt")"
+ROOT_FLAG="$(cat "$FLAG_DIR/root.txt")"
+[[ "$DATABASE_FLAG" != "$USER_FLAG" && "$DATABASE_FLAG" != "$ROOT_FLAG" && "$USER_FLAG" != "$ROOT_FLAG" ]] || { echo "[usage] release Flags must be distinct" >&2; exit 1; }
 
 install -d -o mysql -g mysql -m 0750 /var/lib/mysql /var/run/mysqld
 install -d -o root -g root -m 0755 /run/usage /var/backups
@@ -149,7 +151,7 @@ chmod 0640 /home/dash/user.txt
 printf '%s\n' "$ROOT_FLAG" > /root/root.txt
 chown root:root /root/root.txt
 chmod 0600 /root/root.txt
-unset USER_FLAG ROOT_FLAG
+unset USER_FLAG ROOT_FLAG DATABASE_FLAG FLAG_DIR
 
 # The real p7zip 16.02 binary is invoked directly through sudo. No helper
 # binary or fake privilege-escalation result is inserted into the chain.

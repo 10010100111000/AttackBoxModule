@@ -19,6 +19,13 @@ on:
       - ".github/workflows/base-release.yml"
       - "labs/goodgames/**"
       - "challenges/startpoint/goodgames/**"
+      - "labs/usage/**"
+      - "challenges/startpoint/usage/**"
+      - "challenges/sql-injection/11-usage/**"
+      - "challenges/file-security/usage/**"
+      - "challenges/linux-privilege-escalation/usage/**"
+      - "scripts/generate_usage_release.py"
+      - ".github/workflows/usage-release.yml"
       - "scripts/generate_goodgames_release.py"
       - ".github/workflows/goodgames-e2e.yml"
       - ".github/workflows/goodgames-release.yml"
@@ -56,6 +63,13 @@ on:
       - "labs/nodeblog/**"
       - ".github/workflows/web-curriculum.yml"
       - "labs/**/Dockerfile"
+      - "labs/usage/**"
+      - "challenges/startpoint/usage/**"
+      - "challenges/sql-injection/11-usage/**"
+      - "challenges/file-security/usage/**"
+      - "challenges/linux-privilege-escalation/usage/**"
+      - "scripts/generate_usage_release.py"
+      - ".github/workflows/usage-release.yml"
       - "labs/goodgames/**"
       - "challenges/startpoint/goodgames/**"
       - "scripts/generate_goodgames_release.py"
@@ -136,6 +150,39 @@ jobs:
           assert challenge.count("kind: flag") == 1
           assert "lab: goodgames" in challenge
           print("GoodGames random Flag, stable manifest and Challenge answer: PASS")
+          PY
+
+      - name: Check Usage versioned database, User and Root Flag generator consistency
+        run: |
+          set -euo pipefail
+          python3 scripts/generate_usage_release.py --version 0.0.0-ci
+          manifest=labs/usage/flags/releases/0.0.0-ci.json
+          before=$(sha256sum "$manifest" | cut -d' ' -f1)
+          python3 scripts/generate_usage_release.py --version 0.0.0-ci
+          after=$(sha256sum "$manifest" | cut -d' ' -f1)
+          test "$before" = "$after"
+          python3 - <<'PY'
+          import json, pathlib, re
+          root = pathlib.Path(".")
+          manifest = json.loads((root / "labs/usage/flags/releases/0.0.0-ci.json").read_text())
+          flags = manifest["flags"]
+          assert set(flags) == {"database", "user", "root"}
+          assert len(set(flags.values())) == 3
+          for name, value in flags.items():
+              assert re.fullmatch(r"TTP\{[a-z2-7]{16}\}", value)
+              assert (root / f"labs/usage/flags/{name}.txt").read_text().strip() == value
+          checks = {
+              "challenges/sql-injection/11-usage/blind-recovery.md": [flags["database"]],
+              "challenges/startpoint/usage/Usage.md": [flags["user"], flags["root"]],
+              "challenges/file-security/usage/admin-avatar-upload.md": [flags["user"]],
+              "challenges/linux-privilege-escalation/usage/7za-listfile.md": [flags["root"]],
+          }
+          for filename, expected in checks.items():
+              text = (root / filename).read_text()
+              answers = re.findall(r'(?m)^answer: "([^"]+)"$', text)
+              assert answers == expected, filename
+              assert "lab: usage" in text
+          print("Usage database/User/Root Flag Manifest, target seeds and four Challenge mappings: PASS")
           PY
 
       - name: Check Devvortex versioned Flag generator and Challenge answer consistency
