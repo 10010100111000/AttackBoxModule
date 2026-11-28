@@ -169,7 +169,7 @@ jobs:
           assert set(flags) == {"database", "user", "root"}
           assert len(set(flags.values())) == 3
           for name, value in flags.items():
-              assert re.fullmatch(r"TTP\{[a-z2-7]{16}\\}", value)
+              assert re.fullmatch(r"TTP\{[a-z2-7]{16}\}", value)
               assert (root / f"labs/usage/flags/{name}.txt").read_text().strip() == value
           checks = {
               "challenges/sql-injection/11-usage/blind-recovery.md": [flags["database"]],
