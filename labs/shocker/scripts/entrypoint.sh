@@ -4,7 +4,7 @@ set -eu
 # User and Root Flags are baked into this versioned image by CI.
 # Runtime startup never generates, rotates or accepts Flag environment variables.
 for flag_file in /home/shelly/user.txt /root/root.txt; do
-  if [ ! -s "$flag_file" ] || ! grep -Eq '^TTP\\{[a-z2-7]{16}\\}$' "$flag_file"; then
+  if [ ! -s "$flag_file" ] || ! grep -Eq '^TTP\{[a-z2-7]{16}\}$' "$flag_file"; then
     echo "Shocker: missing or invalid baked Flag: $flag_file" >&2
     exit 1
   fi
