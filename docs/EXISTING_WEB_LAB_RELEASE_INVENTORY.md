@@ -7,7 +7,7 @@
 ## 当前总览
 
 - **27 台 Lab**
-- 当前统一 E2E：14 台通过，13 台待完成（其中 Photobomb 已配置工作流，等待首次运行）
+- 当前统一 E2E：15 台通过，11 台待完成，1 台失败（Photobomb 的 E2E harness 仍需修正）
 - 旧字段 `lab_ci_status`：24 台 `full_chain_ci`、2 台 `partial`、1 台 `unverified`
 - `.release-blocked` 标记：10 台。它与 E2E 状态独立，不能用来判断靶机是否制作完成。
 
@@ -31,6 +31,7 @@
 | Devvortex | Joomla 4.2.6 配置泄露 → 管理员模板编辑 → Web Flag | [CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/46017292203) |
 | Base | PHP 7.2 登录绕过 → 上传 → SSH → sudo find → User/Root 双 Flag | [CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/46022242878) |
 | Intense | SQLite 条件错误 SQLi → SHA-256 长度扩展 → 日志路径遍历 → Web Flag | [CI](https://github.com/10010100111000/AttackBoxModule/actions/runs/46028110921) |
+| Usage | 数据库 blind SQLi Flag → Laravel-admin 头像上传 → dash → SSH → xander → sudo 7za Root | [CI-baked release + E2E](https://github.com/10010100111000/AttackBoxModule/actions/runs/46166974469) |
 
 这里的“通过”只表示对应提交的靶机 E2E 已按真实网络攻击路径取回精确 Flag。它不代表 Worker、平台同步或生产部署验收；这些工作不属于本流程。
 
@@ -49,7 +50,7 @@
 | Funnel | pending | 部分实现；FTP / SSH / PostgreSQL 服务链，非 Web 主线 |
 | Django Debug XSS | pending | 已补 Harbor Registry Challenge 与 writeup；历史 Django 1.11.4 浏览器 XSS 完整链及 1.11.5 修复版负向对照通过；当前统一 E2E pending，release-blocked 保留 |
 | WonderCMS XSS | pending | 有历史完整链 CI 记录；存在 release-blocked 标记 |
-| Usage | pending | 已补综合双 Flag Challenge 与三个复用同一 Lab 的专项 Challenge；历史完整链 CI 证据保留；当前统一 E2E pending，release-blocked 保留 |
+
 | NodeBlog | pending | 有历史完整链 CI 记录；存在 release-blocked 标记 |
 | Zipping | pending | 有历史完整链 CI 记录；存在 release-blocked 标记，另有 ZIP symlink 目标争议 |
 | Soccer | pending | 有历史完整链 CI 记录；存在 release-blocked 标记 |
