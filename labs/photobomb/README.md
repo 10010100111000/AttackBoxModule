@@ -1,6 +1,6 @@
 # Photobomb — Sinatra / ImageMagick command injection (test lab)
 
-> Retired HTB machine reconstruction. Docker CI must pass before release. This is not an official HTB image.
+> Retired HTB machine reconstruction. Docker Existing historical full-chain CI evidence is retained; the newer single-instance E2E Root check has a documented test-harness cache collision and is not treated as evidence that the target exploit is broken. This is not an official HTB image.
 
 ## Player discovery path
 
@@ -31,7 +31,7 @@ The focused Challenges reuse the corresponding User or Root Flag from the integr
 
 ## Acceptance
 
-The dedicated .github/workflows/photobomb-e2e.yml workflow builds the target and a separate non-root attacker, then exercises one clean instance over an internal-only Docker network. The attacker checks the SSH banner, discovers the Basic Auth credentials from the real JavaScript, verifies normal ImageMagick conversion, proves command execution by retrieving the exact User Flag through the public static-file path, and exercises the real sudo cleanup script with a writable PATH entry to retrieve UID 0 proof and the exact Root Flag. It does not use docker exec or a target filesystem mount.
+The dedicated .github/workflows/photobomb-e2e.yml builds the target and a separate non-root attacker, then exercises one clean instance over an internal-only Docker network. The attacker verifies normal ImageMagick conversion and retrieves the exact User Flag through the real command-injection path. The current Root-stage check has a harness false negative: both injected requests use the same 300x200 output filename, so the second request hits the application's existing resized-image cache and never invokes system() again. The target's actual sudoers rule grants SETENV for /opt/cleanup.sh, the script invokes relative find, and its sourced /opt/.bashrc preserves PATH; source review confirms the intended PATH-hijack Root path is feasible. The failed E2E run therefore does not establish a target-side Root exploit failure. No docker exec or target filesystem mount is used.
 
 Resource target: **<= 140 MiB image, <= 192 MiB memory, <= 128 PIDs**. CI reports measured values; do not treat these targets as measurements.
 
