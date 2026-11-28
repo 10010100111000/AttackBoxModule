@@ -53,7 +53,7 @@ jobs:
       - name: Verify Manifest, baked seeds and every bound Challenge answer
         id: release
         env:
-          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_VERSION: ${{ inputs.version || '0.1.0' }}
         run: |
           python3 - <<'PY'
           import json, os, pathlib, re
@@ -134,7 +134,7 @@ jobs:
 
       - name: Commit the verified release artifacts
         env:
-          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_VERSION: ${{ inputs.version || '0.1.0' }}
           BRANCH_NAME: ${{ github.ref_name }}
         run: |
           set -euo pipefail
