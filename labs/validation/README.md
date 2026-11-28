@@ -2,6 +2,12 @@
 
 Independently reconstructed from the retired 2021 Hack The Box machine by IppSec. This is not an official HTB image and the original unpublished PHP sources are not reproduced verbatim. Apache/PHP, MariaDB, SQL injection, filesystem privileges and Linux user authentication are genuine.
 
+## Challenge and writeup
+
+The learner-facing Challenge is [Validation](../../challenges/sql-injection/10-validation/Validation.md). It contains two objectives using the same Lab instance: the User Flag at `/home/htb/user.txt` and the Root Flag at `/root/root.txt`. The detailed discovery-led solution is in [writeup.md](writeup.md).
+
+Production must inject both private Flag values through `VALIDATION_STATIC_USER_FLAG` and `VALIDATION_STATIC_ROOT_FLAG`, with `VALIDATION_REQUIRE_PRIVATE_FLAGS=1`; the Challenge answers must match those values. The repository should not be used as the source of production secrets.
+
 ## Player discovery progression
 
 1. Nmap shows web HTTP :80 and OpenSSH :22. The public web page is a normal UHC September Qualifiers registration form; the Country field is a browser dropdown.
@@ -40,7 +46,7 @@ No public host port, privileged mode, host network, or host mount:
 
 The root/database credential is randomized at each boot by default and written to the actual config.php file at runtime. It is not baked into a public image. You may set VALIDATION_DB_PASSWORD in CI or Worker for deterministic fixtures (10-64 alphanumeric, underscore or hyphen). For production, keep it generated and private to the instance. The two flags must be independently injected by the Worker and never included as production values in the image or Git history. The default demo filesystem is reset when the container is deleted and recreated with no volumes.
 
-CI tests actual PHP handling (no raw config.php served), prepared registration inserts, cookie and account view, real second-order UNION expression, MariaDB LOAD_FILE reading of an existing non-sensitive OS file, runtime PHP config disclosure via database, and native INTO OUTFILE writing of an ordinary text file into the real Apache document root. It also checks isolated containers and reset. These tests are not substitutes for an independent full local user-to-root end-to-end exploit verification.
+Historical CI tests actual PHP handling (no raw config.php served), prepared registration inserts, cookie and account view, real second-order UNION expression, MariaDB LOAD_FILE reading of an existing non-sensitive OS file, runtime PHP config disclosure via database, native INTO OUTFILE writing of an ordinary text file into the real Apache document root, and native `su` password authentication from the Apache identity. It also checks isolated containers and reset. These component checks are not a substitute for a current unified network-only user-to-root E2E run.
 
 ### Security
 
