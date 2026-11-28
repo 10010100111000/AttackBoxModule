@@ -13,8 +13,8 @@ ROOT = Path(__file__).resolve().parents[1]
 LAB = ROOT / "labs/usage"
 FLAG_DIR = LAB / "flags"
 MANIFEST_DIR = FLAG_DIR / "releases"
-VERSION_RE = re.compile(r"^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-[a-z0-9]+(?:[.-][a-z0-9]+)*)?$")
-FLAG_RE = re.compile(r"^TTP\\{[a-z2-7]{16}\\}$")
+VERSION_RE = re.compile(r"^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(?:-[a-z0-9]+(?:[.-][a-z0-9]+)*)?$")
+FLAG_RE = re.compile(r"^TTP\{[a-z2-7]{16}\}$")
 CHALLENGES = {
     "database": (ROOT / "challenges/sql-injection/11-usage/blind-recovery.md", 1),
     "user": (ROOT / "challenges/startpoint/usage/Usage.md", 1),
@@ -81,12 +81,12 @@ def main() -> None:
             "flags": flags,
         }
         validate_flags(flags)
-        manifest_path.write_text(json.dumps(manifest, indent=2) + "\\n", encoding="utf-8")
+        manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
         action = "generated"
 
     FLAG_DIR.mkdir(parents=True, exist_ok=True)
     for name, value in flags.items():
-        (FLAG_DIR / f"{name}.txt").write_text(value + "\\n", encoding="utf-8")
+        (FLAG_DIR / f"{name}.txt").write_text(value + "\n", encoding="utf-8")
 
     sync_answers(CHALLENGES["database"][0], [flags["database"]])
     sync_answers(CHALLENGES["user"][0], [flags["user"], flags["root"]])
