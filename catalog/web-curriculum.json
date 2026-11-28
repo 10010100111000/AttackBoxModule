@@ -1383,7 +1383,7 @@
       "worker_status": "not_verified",
       "release_status": "blocked_by_marker",
       "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45386437038",
-      "note": "HTB Usage-inspired single-container reconstruction. Real MySQL 8.0.46 + Laravel 10.18.0 + vulnerable Laravel-admin 1.8.19; main password-recovery source reconstructed from public writeups, not original private source. Root stage uses real p7zip 16.02 directly through sudo instead of the unavailable original usage_management helper; this difference is explicit.",
+      "note": "Usage 已补正式综合 Challenge（User/Root 双 Flag）及三个复用同一 Lab 的专项 Challenge：布尔/时间盲注、Laravel-admin 头像上传、p7zip 16.02 @listfile 提权。详细 writeup 已添加。历史完整链 CI 证据保留；当前统一 E2E 仍 pending；.release-blocked 保留，Worker 部署不在本 PR 范围。",
       "variant_profile": {
         "technology": "PHP 8.1, Laravel 10.18.0, MySQL 8.0.46, Laravel-admin 1.8.19, nginx, OpenSSH, Monit, p7zip 16.02",
         "initial_discovery": "Daily Blogs registration and password-recovery form; admin.usage.htb vhost",
@@ -1392,7 +1392,7 @@
         "incremental_learning_value": "First dedicated blind SQLi lab in the Web catalog; independently proves boolean and time oracles, then connects to an actual vulnerable upstream upload package and a real Linux privilege boundary",
         "confidence": "independent_full_chain_ci_verified"
       },
-      "skill_mapping_stage": "independent_full_chain_ci_verified",
+      "skill_mapping_stage": "reusable_integrated_and_focused_challenges_added_historical_ci_current_unified_e2e_pending",
       "manual_validation": {
         "status": "not_reviewed",
         "commit": null,
