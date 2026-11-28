@@ -32,14 +32,14 @@ The original Usage application source was not published. The main Laravel applic
 
 ## Reusable Challenges
 
-This Lab is shared by four learner-facing Challenges; they all use the same Usage image and per-instance target:
+This Lab is shared by four learner-facing Challenges; they all use the same versioned Usage image and target:
 
 - [Usage](../../challenges/startpoint/usage/Usage.md): integrated User and Root path.
 - [Blind Recovery](../../challenges/sql-injection/11-usage/blind-recovery.md): focused boolean/time blind SQLi objective.
 - [Admin Avatar Upload](../../challenges/file-security/usage/admin-avatar-upload.md): focused Laravel-admin upload objective.
 - [7za Listfile](../../challenges/linux-privilege-escalation/usage/7za-listfile.md): focused xander-to-root privilege objective.
 
-The focused Challenges reuse the integrated Lab's User or Root Flag; they do not create separate target images or additional instances.
+The focused Admin Avatar Upload and 7za Listfile Challenges reuse the integrated Lab's User and Root Flags. Blind Recovery has its own Flag in the genuine Laravel-admin admin_users.remember_token field, which the player extracts through the vulnerable password-recovery SQLi. All four Challenges use one image and one target.
 
 Detailed discovery-led solution: [writeup.md](writeup.md).
 
@@ -79,20 +79,24 @@ docker network create --internal usage-lab
 docker run -d --name usage-target --network usage-lab \
   --network-alias usage.htb --network-alias admin.usage.htb \
   --memory 768m --cpus 1 --pids-limit 256 \
-  -e USAGE_REQUIRE_PRIVATE_FLAGS=1 \
-  -e USAGE_STATIC_USER_FLAG='TTP{private_user_flag}' \
-  -e USAGE_STATIC_ROOT_FLAG='TTP{private_root_flag}' \
   ttp-usage:dev
 docker inspect -f '{{.State.Health.Status}}' usage-target
 ```
 
 Do not publish ports publicly. The platform's private target network should provide the two hostnames to the player's AttackBox. MySQL and Monit remain loopback-only.
 
-## Flag and reset
+## Versioned Flags and reset
 
-Worker passes `USAGE_STATIC_USER_FLAG` and `USAGE_STATIC_ROOT_FLAG` as opaque environment variables. The entrypoint writes them to `/home/dash/user.txt` (root:dash, 0640) and `/root/root.txt` (root:root, 0600). Web backend judges the static values; Worker only starts/stops the container.
+Usage uses the CI-baked release model; Worker does not inject Flag environment variables.
 
-No data volume is declared. Deleting the target container removes its MySQL database, uploaded files, SSH keys, session state, and generated system credentials. A new instance receives new Worker-supplied flags and fresh generated credentials.
+Each release Manifest contains three distinct values:
+- database_flag: seeded into the real Laravel-admin admin_users.remember_token column. The Blind Recovery Challenge obtains it through the public boolean/time SQLi oracle.
+- user_flag: copied to /home/dash/user.txt for the actual Web foothold / Linux user stage.
+- root_flag: copied to /root/root.txt for the real p7zip sudo privilege-escalation stage.
+
+The same versioned values are synchronized to the integrated Usage Challenge, Blind Recovery, Admin Avatar Upload and 7za Listfile Challenge answers. The Dockerfile copies the three seed files into the image. Container startup imports the database seed and initializes the two filesystem objectives; it never generates or rotates Flags. Rebuilding the same release version preserves the values. A new release version may generate a new set and updates the Challenge answers in the same release workflow.
+
+No data volume is declared. Deleting and recreating a container from the same image resets the database and filesystem to the same release's baked seed values. This is version-level static Flag behavior, not per-instance dynamic rotation.
 
 ## CI acceptance
 
