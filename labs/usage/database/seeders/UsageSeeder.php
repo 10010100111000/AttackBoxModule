@@ -20,11 +20,11 @@ class UsageSeeder extends Seeder
 
         $databaseFlagPath = '/opt/usage/flags/database.txt';
         if (!is_readable($databaseFlagPath)) {
-            throw new \\RuntimeException('Versioned database Flag seed is missing');
+            throw new \RuntimeException('Versioned database Flag seed is missing');
         }
         $databaseFlag = trim((string) file_get_contents($databaseFlagPath));
         if (!preg_match('/^TTP\\{[a-z2-7]{16}\\}$/', $databaseFlag)) {
-            throw new \\RuntimeException('Versioned database Flag seed has an invalid format');
+            throw new \RuntimeException('Versioned database Flag seed has an invalid format');
         }
 
         DB::table('admin_users')->where('username', 'admin')->update([
