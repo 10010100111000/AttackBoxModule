@@ -1383,7 +1383,7 @@
       "worker_status": "not_verified",
       "release_status": "blocked_by_marker",
       "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45386437038",
-      "note": "Usage 采用 CI 版本化 Flag：Blind Recovery 的 SQLi Flag 写入 Laravel-admin 原生 admin_users.remember_token；综合题与头像上传共用 User Flag 文件，7za 专项与综合题共用 Root Flag 文件。Worker 不注入 Flag。新增 usage-release workflow 将 Manifest、镜像数据与四道 Challenge 答案同版本同步；首次 release E2E 待运行。",
+      "note": "Usage 0.1.0 versioned Flag release and single-instance independent network E2E passed. Three distinct baked Flags match the Manifest and four Challenge answer mappings: database Flag extracted from Laravel-admin admin_users.remember_token via blind SQLi, User Flag from dash user file, Root Flag through real sudo p7zip 16.02 @listfile path. Verified boolean/time SQLi, bcrypt extraction/cracking, real Laravel-admin avatar upload to dash, SSH, Monit credential reuse to xander and Root Flag disclosure. Worker/platform deployment remains unverified; .release-blocked retained.",
       "variant_profile": {
         "technology": "PHP 8.1, Laravel 10.18.0, MySQL 8.0.46, Laravel-admin 1.8.19, nginx, OpenSSH, Monit, p7zip 16.02",
         "initial_discovery": "Daily Blogs registration and password-recovery form; admin.usage.htb vhost",
@@ -1392,7 +1392,7 @@
         "incremental_learning_value": "First dedicated blind SQLi lab in the Web catalog; independently proves boolean and time oracles, then connects to an actual vulnerable upstream upload package and a real Linux privilege boundary",
         "confidence": "independent_full_chain_ci_verified"
       },
-      "skill_mapping_stage": "ci_baked_versioned_database_user_root_flags_release_workflow_added_pending_first_run",
+      "skill_mapping_stage": "ci_baked_versioned_database_user_root_flags_full_chain_e2e_passed",
       "manual_validation": {
         "status": "not_reviewed",
         "commit": null,
@@ -1402,10 +1402,10 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "pending",
+      "e2e_ci_status": "passed",
       "e2e_ci_workflow": ".github/workflows/usage-release.yml",
-      "e2e_ci_evidence": null,
-      "e2e_ci_commit": null
+      "e2e_ci_evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/46166974469",
+      "e2e_ci_commit": "7eb10a455539a59cb19500240c4d4d475d49180f"
     },
     {
       "id": "nodeblog",
