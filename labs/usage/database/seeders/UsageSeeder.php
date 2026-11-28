@@ -18,9 +18,20 @@ class UsageSeeder extends Seeder
             throw new \RuntimeException('Admin hash fixture failed verification');
         }
 
+        $databaseFlagPath = '/opt/usage/flags/database.txt';
+        if (!is_readable($databaseFlagPath)) {
+            throw new \\RuntimeException('Versioned database Flag seed is missing');
+        }
+        $databaseFlag = trim((string) file_get_contents($databaseFlagPath));
+        if (!preg_match('/^TTP\\{[a-z2-7]{16}\\}$/', $databaseFlag)) {
+            throw new \\RuntimeException('Versioned database Flag seed has an invalid format');
+        }
+
         DB::table('admin_users')->where('username', 'admin')->update([
             'name' => 'Administrator',
             'password' => $adminHash,
+            // Laravel-admin's native persistent-login token column is the SQLi objective.
+            'remember_token' => $databaseFlag,
             'updated_at' => now(),
         ]);
 
