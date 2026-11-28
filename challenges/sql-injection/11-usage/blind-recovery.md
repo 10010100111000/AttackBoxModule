@@ -19,7 +19,7 @@ title: Blind Recovery
 kind: flag
 prompt: |
   通过密码恢复流程中的真实数据库响应差异，提取 admin_users.remember_token 并提交数据库 Flag。
-answer: "TTP{usage_database_seed_default}"
+answer: "TTP{cccccccccccccccc}"
 match: trim
 hint: 同时观察布尔条件与响应时间，不要假设页面必须直接回显查询结果。
 ```
