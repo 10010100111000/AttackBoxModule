@@ -1,0 +1,150 @@
+name: Usage versioned Flag release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Usage release version. Re-running the same version reuses its Flags."
+        required: true
+        default: "0.1.0"
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: usage-flag-release-${{ inputs.version }}
+  cancel-in-progress: false
+
+jobs:
+  generate-build-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+
+      - name: Generate or reuse the versioned Flag set
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          python3 scripts/generate_usage_release.py --version "$RELEASE_VERSION"
+          manifest="labs/usage/flags/releases/$RELEASE_VERSION.json"
+          before=$(sha256sum "$manifest" | cut -d' ' -f1)
+          python3 scripts/generate_usage_release.py --version "$RELEASE_VERSION"
+          after=$(sha256sum "$manifest" | cut -d' ' -f1)
+          test "$before" = "$after"
+          python3 -m py_compile scripts/generate_usage_release.py labs/usage/tests/attack_chain.py
+          echo "Versioned Flag generation and idempotency: PASS"
+
+      - name: Verify Manifest, baked seeds and every bound Challenge answer
+        id: release
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib, re
+          root = pathlib.Path(".")
+          version = os.environ["RELEASE_VERSION"]
+          manifest = json.loads((root / f"labs/usage/flags/releases/{version}.json").read_text())
+          flags = manifest["flags"]
+          assert manifest["version"] == version
+          assert set(flags) == {"database", "user", "root"}
+          assert len(set(flags.values())) == 3
+          for name, value in flags.items():
+              assert re.fullmatch(r"TTP\\{[a-z2-7]{16}\\}", value)
+              assert (root / f"labs/usage/flags/{name}.txt").read_text().strip() == value
+              print("::add-mask::" + value)
+          checks = {
+              "challenges/sql-injection/11-usage/blind-recovery.md": [flags["database"]],
+              "challenges/startpoint/usage/Usage.md": [flags["user"], flags["root"]],
+              "challenges/file-security/usage/admin-avatar-upload.md": [flags["user"]],
+              "challenges/linux-privilege-escalation/usage/7za-listfile.md": [flags["root"]],
+          }
+          for filename, expected in checks.items():
+              text = (root / filename).read_text()
+              answers = re.findall(r'(?m)^answer: "([^"]+)"$', text)
+              assert answers == expected, (filename, answers)
+              assert "lab: usage" in text
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              for name, value in flags.items():
+                  output.write(f"{name}={value}\\n")
+          print("Manifest = baked target seeds = all four Challenge answer mappings: PASS")
+          PY
+
+      - name: Build the Usage target and independent attacker
+        run: |
+          docker build --pull --progress=plain -t ttp-usage:release -f labs/usage/Dockerfile labs/usage
+          docker build --pull --progress=plain -t ttp-usage-attacker:release -f labs/usage/tests/Dockerfile.attacker labs/usage/tests
+          docker image inspect ttp-usage:release --format 'TARGET_IMAGE_BYTES={{.Size}}'
+
+      - name: Start one clean target and run the real independent attack chain
+        env:
+          EXPECTED_DB_FLAG: ${{ steps.release.outputs.database }}
+          EXPECTED_USER_FLAG: ${{ steps.release.outputs.user }}
+          EXPECTED_ROOT_FLAG: ${{ steps.release.outputs.root }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker network create --internal usage-release
+          cleanup() {
+            docker logs usage-target 2>/dev/null || true
+            docker rm -f usage-target usage-attacker 2>/dev/null || true
+            docker network rm usage-release 2>/dev/null || true
+            docker image rm ttp-usage:release ttp-usage-attacker:release 2>/dev/null || true
+          }
+          trap cleanup EXIT
+          docker run -d --name usage-target --network usage-release \\
+            --network-alias usage.htb --network-alias admin.usage.htb \\
+            --memory 768m --cpus 1 --pids-limit 256 \\
+            ttp-usage:release >/dev/null
+
+          ready=0
+          for attempt in $(seq 1 75); do
+            state=$(docker inspect -f '{{.State.Status}}' usage-target)
+            health=$(docker inspect -f '{{.State.Health.Status}}' usage-target)
+            if [ "$state" != running ] || [ "$health" = unhealthy ]; then
+              docker logs usage-target
+              exit 1
+            fi
+            if [ "$health" = healthy ]; then ready=1; break; fi
+            sleep 2
+          done
+          test "$ready" = 1
+          docker stats --no-stream usage-target
+
+          docker run --rm --name usage-attacker --network usage-release \\
+            -e EXPECTED_DB_FLAG -e EXPECTED_USER_FLAG -e EXPECTED_ROOT_FLAG \\
+            ttp-usage-attacker:release
+
+          echo "PASS: one baked Usage release completed database blind-SQLi Flag -> admin upload -> dash User Flag -> xander -> 7za Root Flag"
+
+      - name: Commit the verified release artifacts
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+          BRANCH_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \\
+            "labs/usage/flags/releases/$RELEASE_VERSION.json" \\
+            labs/usage/flags/database.txt labs/usage/flags/user.txt labs/usage/flags/root.txt \\
+            challenges/startpoint/usage/Usage.md \\
+            challenges/sql-injection/11-usage/blind-recovery.md \\
+            challenges/file-security/usage/admin-avatar-upload.md \\
+            challenges/linux-privilege-escalation/usage/7za-listfile.md
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(usage): release version $RELEASE_VERSION Flags"
+            git push origin "HEAD:$BRANCH_NAME"
+          else
+            echo "Release artifacts already match this version."
+          fi
+
+      - name: Summarize
+        run: |
+          echo "Three versioned Flags were baked into the target and retrieved through their intended paths." >> "$GITHUB_STEP_SUMMARY"
+          echo "Worker Flag injection is not used. Same-version rebuilds reuse the Manifest." >> "$GITHUB_STEP_SUMMARY"
