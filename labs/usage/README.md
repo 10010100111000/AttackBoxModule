@@ -106,12 +106,13 @@ The independent attacker container must prove:
 1. normal registration and password recovery work;
 2. boolean true/false responses differ;
 3. a MySQL `SLEEP()` condition produces a measurable timing difference;
-4. the actual bcrypt hash is extracted through blind SQLi and cracked offline;
-5. the actual Laravel-admin login and profile upload route accepts the polyglot;
-6. the uploaded PHP file executes as `dash`;
-7. the SSH private key is obtained through that shell and used to log in as dash;
-8. the Monit credential is reused for xander;
-9. real sudo p7zip 16.02 `@listfile` behavior discloses the protected Root Flag;
-10. a second fresh container has a different Flag pair and no prior state.
+4. the exact release Flag is extracted from the native `admin_users.remember_token` column through blind SQLi;
+5. the actual bcrypt hash is extracted through blind SQLi and cracked offline;
+6. the actual Laravel-admin login and profile upload route accepts the polyglot;
+7. the uploaded PHP file executes as `dash`;
+8. the SSH private key is obtained through that shell and used to log in as dash;
+9. the Monit credential is reused for xander;
+10. real sudo p7zip 16.02 `@listfile` behavior discloses the protected Root Flag;
+11. the exact User and Root Flags are retrieved from the same image release and match its version Manifest and Challenge answers.
 
 Acceptance requires real components, genuine vulnerability behavior and a verified end-to-end learning path, not identical private source code. A passing lab CI does not prove the real Worker deployment or platform answer configuration. Keep `.release-blocked` until those are separately checked.
