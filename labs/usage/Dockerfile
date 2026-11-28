@@ -25,6 +25,7 @@ COPY database/seeders/UsageSeeder.php /var/www/usage/database/seeders/UsageSeede
 COPY app/Admin/ /var/www/usage/app/Admin/
 RUN composer dump-autoload --no-dev --optimize \
  && php -l app/Http/Controllers/UsageController.php \
+ && php -l database/seeders/UsageSeeder.php \
  && php -l app/Admin/routes.php
 
 FROM oraclelinux:9-slim AS runtime
