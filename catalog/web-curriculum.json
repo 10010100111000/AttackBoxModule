@@ -1287,7 +1287,7 @@
       "worker_status": "not_verified",
       "release_status": "blocked_by_marker",
       "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45233000605",
-      "note": "Native PostgreSQL unique constraint -> real Django 1.11.4 DEBUG technical-500 reflected XSS (CVE-2017-12794) -> authenticated headless editor -> Flag callback. Historical full-chain CI and patched Django 1.11.5 negative control passed. The current unified e2e_ci_status remains pending.",
+      "note": "Harbor Registry Challenge 与 writeup 已补齐。真实 Django 1.11.4 DEBUG 技术错误页 XSS（CVE-2017-12794）、PostgreSQL 唯一约束异常、编辑审阅 bot 的真实 Chromium 会话与受保护 Flag 回调路径保留；历史 full-chain CI 和 Django 1.11.5 修复版负向对照通过。当前统一 E2E 仍 pending；.release-blocked 继续保留，不涉及本次 Challenge 文档集成。",
       "variant_profile": {
         "technology": "Django 1.11.4, Python, PostgreSQL",
         "initial_discovery": "Normal public registry form and repeated handle registration",
@@ -1296,7 +1296,7 @@
         "incremental_learning_value": "Contrasts WonderCMS admin-session XSS by exercising Django's framework error-page context without an admin bot",
         "confidence": "verified_by_independent_black_box_ci"
       },
-      "skill_mapping_stage": "historical_full_chain_ci_verified",
+      "skill_mapping_stage": "challenge_added_historical_browser_chain_ci_current_unified_e2e_pending",
       "manual_validation": {
         "status": "not_reviewed",
         "commit": null,
