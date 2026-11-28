@@ -7,8 +7,8 @@
 ## 当前总览
 
 - **27 台 Lab**
-- 当前统一 E2E：14 台通过，13 台待完成
-- 旧字段 `lab_ci_status`：25 台 `full_chain_ci`、1 台 `partial`、1 台 `unverified`
+- 当前统一 E2E：14 台通过，13 台待完成（其中 Photobomb 已配置工作流，等待首次运行）
+- 旧字段 `lab_ci_status`：24 台 `full_chain_ci`、2 台 `partial`、1 台 `unverified`
 - `.release-blocked` 标记：10 台。它与 E2E 状态独立，不能用来判断靶机是否制作完成。
 
 ### 已通过当前统一 E2E
@@ -41,9 +41,9 @@
 | Lab | 当前 E2E | 备注 |
 |---|---|---|
 
-| OpenAdmin | merged / partial | PR #65 已合并；真实 xajax → Jimmy → 内网应用 → Joanna/User 路径已由当前 CI 验证，Root 阶段因 Expect 测试脚本私钥路径不一致未完成验证。靶机已纳入 main，可进入平台集成；不宣称本次完整 E2E passed。 |
+| OpenAdmin | pending | PR #65 已合并；真实 xajax → Jimmy → 内网应用 → Joanna/User 路径已由当前 CI 验证，Root 阶段因 Expect 测试脚本私钥路径不一致未完成本次验证。靶机已纳入 main，不宣称本次完整 E2E passed。 |
 | Pebbles | pending | 有历史完整链 CI 记录 |
-| Photobomb | pending | 有历史完整链 CI 记录 |
+| Photobomb | pending | 历史 full-chain CI 证据保留；新增 E2E 的 Root 阶段因两次注入复用 300x200 输出文件名而命中应用缓存，属于测试脚本假阴性；源码审查确认 sudo SETENV + 相对 find 的 PATH 劫持链可行。Worker 未验收 |
 | Union | pending | 有历史完整链 CI 记录 |
 | Validation | pending | 有历史完整链 CI 记录 |
 | Funnel | pending | 部分实现；FTP / SSH / PostgreSQL 服务链，非 Web 主线 |

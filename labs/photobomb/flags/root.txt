@@ -1,1 +1,1 @@
-TTP{photobomb_demo_root_replace_before_publish}
+TTP{photobomb_root_default}
