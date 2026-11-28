@@ -43,7 +43,7 @@
 
 | OpenAdmin | pending | PR #65 已合并；真实 xajax → Jimmy → 内网应用 → Joanna/User 路径已由当前 CI 验证，Root 阶段因 Expect 测试脚本私钥路径不一致未完成本次验证。靶机已纳入 main，不宣称本次完整 E2E passed。 |
 | Pebbles | pending | 有历史完整链 CI 记录 |
-| Photobomb | pending | 已配置单实例独立攻击端 E2E，验证 ImageMagick 命令注入与 sudo PATH 劫持；等待首次 CI 运行 |
+| Photobomb | pending | 历史 full-chain CI 证据保留；新增 E2E 的 Root 阶段因两次注入复用 300x200 输出文件名而命中应用缓存，属于测试脚本假阴性；源码审查确认 sudo SETENV + 相对 find 的 PATH 劫持链可行。Worker 未验收 |
 | Union | pending | 有历史完整链 CI 记录 |
 | Validation | pending | 有历史完整链 CI 记录 |
 | Funnel | pending | 部分实现；FTP / SSH / PostgreSQL 服务链，非 Web 主线 |
