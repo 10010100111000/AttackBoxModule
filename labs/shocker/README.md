@@ -31,7 +31,7 @@ The image keeps the original vulnerable Bash binary and Apache CGI behavior. It 
 
 ## Flags
 
-Default files are development seeds only: /home/shelly/user.txt and /root/root.txt. For an isolated instance, inject SHOCKER_STATIC_USER_FLAG, SHOCKER_STATIC_ROOT_FLAG and SHOCKER_REQUIRE_PRIVATE_FLAGS=1. The entrypoint writes the values with deliberate ownership/permissions and removes the variables before launching the services.
+User and Root Flags are versioned CI release artifacts baked into the image at /home/shelly/user.txt and /root/root.txt. The entrypoint only validates ownership, format and permissions; it does not accept Flag environment variables or generate new values. Rebuilding the same version preserves the same pair; a new release version rotates both Flags and synchronizes the three Challenge answers.
 
 ## Challenge reuse
 
@@ -45,6 +45,6 @@ The focused Challenges intentionally reuse the same User or Root Flag as the cor
 
 ## Automated acceptance
 
-The dedicated workflow .github/workflows/shocker-e2e.yml builds the target and a separate non-root HTTP attacker, then runs the complete Shellshock -> User Flag -> sudo Perl -> Root Flag path against one clean instance on an internal-only Docker network. The CI creates one random User Flag and one random Root Flag for that run and checks their exact values through the real CGI exploit. It does not start a second target instance.
+The dedicated workflow .github/workflows/shocker-e2e.yml generates or reuses a versioned User/Root Manifest, verifies all three Challenge answer mappings, builds the target and a separate non-root HTTP attacker, then runs the complete Shellshock -> User Flag -> sudo Perl -> Root Flag path against one clean instance on an internal-only Docker network. The target receives no Flag environment variables. On main, verified release artifacts are committed automatically; PR runs use a temporary CI version and do not commit.
 
 The Lab E2E is separate from Worker lifecycle, platform scheduling and backend grading.

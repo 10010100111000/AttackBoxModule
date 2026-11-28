@@ -1,4 +1,4 @@
-name: Shocker single-instance Shellshock and sudo E2E
+name: Shocker versioned Flag release and Shellshock E2E
 
 on:
   pull_request:
@@ -7,6 +7,7 @@ on:
       - "challenges/startpoint/shocker/**"
       - "challenges/command-injection/shocker/**"
       - "challenges/linux-privilege-escalation/shocker/**"
+      - "scripts/generate_shocker_release.py"
       - ".github/workflows/shocker-e2e.yml"
   push:
     branches: [main]
@@ -15,67 +16,94 @@ on:
       - "challenges/startpoint/shocker/**"
       - "challenges/command-injection/shocker/**"
       - "challenges/linux-privilege-escalation/shocker/**"
+      - "scripts/generate_shocker_release.py"
       - ".github/workflows/shocker-e2e.yml"
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Shocker release version. Re-running the same version reuses its Flags."
+        required: true
+        default: "0.1.0"
+        type: string
 
 permissions:
-  contents: read
+  contents: write
+
+concurrency:
+  group: shocker-flag-release-${{ inputs.version || (github.event_name == 'pull_request' && '0.0.0-ci' || '0.1.0') }}
+  cancel-in-progress: false
 
 jobs:
   shocker-full-chain:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+          fetch-depth: 0
 
-      - name: Check integrated and focused Challenge answers
+      - name: Generate or reuse the versioned User and Root Flags
+        id: release
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_VERSION: ${{ inputs.version }}
         run: |
-          python3 -m py_compile labs/shocker/tests/attack_path.py
-          python3 - <<'PY'
-          import re
-          from pathlib import Path
-          user = Path("labs/shocker/flags/user.txt").read_text().strip()
-          root = Path("labs/shocker/flags/root.txt").read_text().strip()
-          expected = {
-              "challenges/startpoint/shocker/Shocker.md": [user, root],
-              "challenges/command-injection/shocker/cgi-shellshock.md": [user],
-              "challenges/linux-privilege-escalation/shocker/sudo-perl.md": [root],
-          }
-          for filename, answers_expected in expected.items():
-              path = Path(filename)
-              content = path.read_text()
-              answers = re.findall(r'(?m)^answer: "([^"]+)"$', content)
-              if answers != answers_expected:
-                  raise SystemExit(f"Challenge answer mismatch: {filename}")
-              if not re.search(r"(?m)^lab: shocker$", content):
-                  raise SystemExit(f"Challenge does not reuse the Shocker Lab: {filename}")
-          print("PASS: integrated and focused Challenges share one Lab and match its Flag seeds")
-          PY
+          set -euo pipefail
+          if [ "$EVENT_NAME" = pull_request ]; then
+            RELEASE_VERSION=0.0.0-ci
+          else
+            RELEASE_VERSION="${INPUT_VERSION:-0.1.0}"
+          fi
+          python3 scripts/generate_shocker_release.py --version "$RELEASE_VERSION"
+          manifest="labs/shocker/flags/releases/$RELEASE_VERSION.json"
+          before=$(sha256sum "$manifest" | cut -d' ' -f1)
+          python3 scripts/generate_shocker_release.py --version "$RELEASE_VERSION"
+          after=$(sha256sum "$manifest" | cut -d' ' -f1)
+          test "$before" = "$after"
+          python3 -m py_compile scripts/generate_shocker_release.py labs/shocker/tests/attack_path.py
+          echo "version=$RELEASE_VERSION" >> "$GITHUB_OUTPUT"
+          echo "Shocker versioned Flag generation and same-version idempotency: PASS"
 
-      - name: Build authentic Bash 4.3 and Apache CGI target
-        run: docker build --pull --progress=plain -t ttp-shocker:ci -f labs/shocker/Dockerfile labs/shocker
-
-      - name: Build separate non-root HTTP attacker
-        run: docker build --pull --progress=plain -t ttp-shocker-attacker:ci -f labs/shocker/tests/Dockerfile.attacker labs/shocker/tests
-
-      - name: Generate one instance's User and Root Flags
+      - name: Verify Manifest, image seeds and all three Challenge answer mappings
         id: flags
-        shell: bash
+        env:
+          RELEASE_VERSION: ${{ steps.release.outputs.version }}
         run: |
           python3 - <<'PY'
-          import base64, secrets, os
-          def make_flag():
-              token = base64.b32encode(secrets.token_bytes(10)).decode().rstrip("=").lower()
-              return "TTP{" + token + "}"
-          user, root = make_flag(), make_flag()
-          while user == root:
-              root = make_flag()
+          import json, os, pathlib, re
+          root = pathlib.Path(".")
+          version = os.environ["RELEASE_VERSION"]
+          manifest = json.loads((root / f"labs/shocker/flags/releases/{version}.json").read_text())
+          flags = manifest["flags"]
+          assert manifest["version"] == version
+          assert set(flags) == {"user", "root"}
+          assert len(set(flags.values())) == 2
+          for name, value in flags.items():
+              assert re.fullmatch(r"TTP\{[a-z2-7]{16}\}", value)
+              assert (root / f"labs/shocker/flags/{name}.txt").read_text().strip() == value
+              print("::add-mask::" + value)
+          checks = {
+              "challenges/startpoint/shocker/Shocker.md": [flags["user"], flags["root"]],
+              "challenges/command-injection/shocker/cgi-shellshock.md": [flags["user"]],
+              "challenges/linux-privilege-escalation/shocker/sudo-perl.md": [flags["root"]],
+          }
+          for filename, expected in checks.items():
+              content = (root / filename).read_text()
+              answers = re.findall(r'(?m)^answer: "([^"]+)"$', content)
+              assert answers == expected, (filename, answers)
+              assert "lab: shocker" in content
           with open(os.environ["GITHUB_OUTPUT"], "a") as output:
-              for name, value in (("user", user), ("root", root)):
-                  print("::add-mask::" + value)
-                  output.write(name + "=" + value + "\n")
-          print("Generated one instance's distinct 80-bit User and Root Flags; values are masked.")
+              for name, value in flags.items():
+                  output.write(f"{name}={value}\n")
+          print("Manifest = baked image seeds = all three Challenge mappings: PASS")
           PY
+
+      - name: Build authentic Bash 4.3 target and separate non-root attacker
+        run: |
+          docker build --pull --progress=plain -t ttp-shocker:ci -f labs/shocker/Dockerfile labs/shocker
+          docker build --pull --progress=plain -t ttp-shocker-attacker:ci -f labs/shocker/tests/Dockerfile.attacker labs/shocker/tests
+          docker image inspect ttp-shocker:ci --format 'TARGET_IMAGE_BYTES={{.Size}}'
 
       - name: Run complete Shellshock to Root path on one clean instance
         env:
@@ -97,24 +125,18 @@ jobs:
             --network shocker-e2e \
             --network-alias shocker-target \
             --memory 96m --cpus 1 --pids-limit 96 \
-            -e SHOCKER_REQUIRE_PRIVATE_FLAGS=1 \
-            -e SHOCKER_STATIC_USER_FLAG="$USER_FLAG" \
-            -e SHOCKER_STATIC_ROOT_FLAG="$ROOT_FLAG" \
             ttp-shocker:ci >/dev/null
 
           ready=0
           for attempt in $(seq 1 60); do
             state=$(docker inspect -f '{{.State.Status}}' shocker-target)
             health=$(docker inspect -f '{{.State.Health.Status}}' shocker-target)
-            if [ "$state" != "running" ] || [ "$health" = "unhealthy" ]; then
+            if [ "$state" != running ] || [ "$health" = unhealthy ]; then
               docker logs shocker-target
               echo "Shocker failed before becoming healthy"
               exit 1
             fi
-            if [ "$health" = "healthy" ]; then
-              ready=1
-              break
-            fi
+            if [ "$health" = healthy ]; then ready=1; break; fi
             sleep 2
           done
           test "$ready" = 1
@@ -127,8 +149,31 @@ jobs:
             ttp-shocker-attacker:ci
 
           docker stats --no-stream shocker-target --format "Shocker memory={{.MemUsage}} pids={{.PIDs}}"
-          echo "PASS: one fresh instance completed Shellshock, User Flag and sudo Perl Root Flag"
+          echo "PASS: one baked Shocker image completed Shellshock -> User Flag -> sudo Perl -> Root Flag"
 
-      - name: Record target image size
-        if: always()
-        run: docker image inspect ttp-shocker:ci --format='IMAGE_SIZE_BYTES={{.Size}}' || true
+      - name: Commit verified release artifacts
+        if: github.event_name != 'pull_request'
+        env:
+          RELEASE_VERSION: ${{ steps.release.outputs.version }}
+          BRANCH_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            "labs/shocker/flags/releases/$RELEASE_VERSION.json" \
+            labs/shocker/flags/user.txt labs/shocker/flags/root.txt \
+            challenges/startpoint/shocker/Shocker.md \
+            challenges/command-injection/shocker/cgi-shellshock.md \
+            challenges/linux-privilege-escalation/shocker/sudo-perl.md
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(shocker): release version $RELEASE_VERSION Flags"
+            git push origin "HEAD:$BRANCH_NAME"
+          else
+            echo "Release artifacts already match this version."
+          fi
+
+      - name: Summarize
+        run: |
+          echo "The versioned User/Root Flags were baked into the target image and retrieved through the genuine Shellshock and sudo Perl path." >> "$GITHUB_STEP_SUMMARY"
+          echo "Same-version runs reuse the Manifest; runtime startup and Worker do not inject Flags." >> "$GITHUB_STEP_SUMMARY"
