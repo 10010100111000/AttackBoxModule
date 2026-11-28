@@ -1,6 +1,6 @@
 # PG Pebbles — original-stack Docker reconstruction
 
-> **Original exploit chain CI-validated; not an official OffSec image.** The initial reconstruction has been merged into main; the smaller multi-stage image is being reviewed separately in PR #3. Successful GitHub CI does not prove the live Worker deployment, realistic multi-user load or that all unintended shortcuts have been eliminated.
+> **Original exploit chain CI-validated; not an official OffSec image.** The optimized multi-stage image from PR #3 is already merged into main. Historical GitHub CI proves the original ZoneMinder SQLi, database file write and UDF execution path in isolated Docker; it does not prove live Worker deployment or sustained multi-user capacity.
 
 ## Design objective
 
@@ -16,6 +16,12 @@ Do not put SQLi on the public login page. Preserve original reconnaissance: the 
 | 3306 | MySQL 5.7 on `127.0.0.1` | Original dangerous database privilege boundary |
 
 Source packages come from the Ubuntu 16.04 historical archive; ZoneMinder is pinned to **`1.29.0+dfsg-1ubuntu2`**. Tomcat is downloaded from the Apache archive with a pinned SHA-512. The Ubuntu package supplies the genuine ZoneMinder HTML/CSS/JS and `web/ajax/log.php`.
+
+## Challenge
+
+The Lab has one learner-facing Challenge: [Camera Database](../../challenges/sql-injection/08-camera-database/pebbles.md). Pebbles has one original final target, `/root/proof.txt`; no separate User Flag stage is invented. The Challenge answer must match the private static Root Flag injected at runtime. The repository value is a public demo seed only.
+
+Detailed discovery and exploitation notes are in [writeup.md](writeup.md).
 
 ## Build and local testing
 
@@ -127,7 +133,8 @@ The real Java 8/Tomcat and ZoneMinder/MySQL components were not removed just to 
 
 - Real upstream ZoneMinder `limit` SQL concatenation: **source verified**.
 - PHP entry page: **local HTTP tests passed**.
-- Docker build, runtime, real ZoneMinder SQLi → PHP and UDF Root: **passed in both the original-stack CI and the three-stage size-comparison CI**; retest final promoted Dockerfile before merging PR #3.
-- Attacker-side reconnaissance, independent instance reset and private static Flag provisioning: **passed in GitHub CI**; real Worker remains unverified.
+- Docker build, runtime, real ZoneMinder SQLi → PHP and UDF Root: **passed in the original-stack CI and the three-stage size-comparison CI**.
+- Attacker-side reconnaissance, independent instance reset and private static Flag provisioning: **historical CI evidence exists**; this Lab has not yet been migrated to the current unified E2E workflow.
+- Real Worker deployment and sustained concurrent-user capacity: **not verified and outside this Lab-content task**.
 
-**Do not register or publish until all tests pass.**
+Do not describe the historical CI as a current unified E2E pass. Keep the current `e2e_ci_status` pending until a current-standard attacker workflow is actually run. Production answers must use the private runtime Flag override, not the demo seed.

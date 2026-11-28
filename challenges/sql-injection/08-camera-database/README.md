@@ -1,6 +1,6 @@
 # PG Pebbles — 原题复现研究
 
-> 状态：**已查到原版软件源码与完整 Writeup；尚未构建、验证或上线。**
+> 状态：**Lab 已在 main 实现，历史原版漏洞链 CI 通过；正式 Challenge 已添加。当前统一 E2E 状态仍为 pending。**
 
 - 核心技术：**ZoneMinder 1.29.0 的真实 SQL 注入**，MySQL 数据库文件写入、PHP 执行以及 UDF 权限。
 - 起点：扫描得到多个真实端口，浏览后找到 3305 端口 Apache 默认页面；需要枚举目录才能发现 `/zm/`。
@@ -12,4 +12,4 @@
 
 **研究、来源、未解决的差异和实际验收清单：** [labs/pebbles/RECONSTRUCTION.md](../../../labs/pebbles/RECONSTRUCTION.md)。
 
-正式挑战正文与镜像都尚未创建。只有拿到原版旧软件并在 Docker 中跑通实际 SQLi、文件写入和 UDF 链后才能标记完成。
+正式 Challenge 正文见 [pebbles.md](pebbles.md)，实现与解题过程见 [Lab README](../../../labs/pebbles/README.md)、[RECONSTRUCTION](../../../labs/pebbles/RECONSTRUCTION.md) 和 [writeup](../../../labs/pebbles/writeup.md)。本目录文件保留为选题与原题来源研究记录。
