@@ -1026,7 +1026,7 @@
       "worker_status": "not_verified",
       "release_status": "not_assessed",
       "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45073735570",
-      "note": "Sinatra / ImageMagick 的真实 system() 命令拼接与 sudo SETENV PATH 劫持。新增三道 Challenge 共用一个 Lab；独立非 root attacker 的单实例 E2E 已配置，验证普通图片转换、通过命令注入取得 wizard User Flag，以及通过真实 cleanup.sh / PATH 劫持取得 UID 0 和 Root Flag。等待首次 CI 运行。",
+      "note": "Photobomb 已完成实现：真实 Sinatra system() / ImageMagick 命令注入与 sudo SETENV + 相对 find 的 PATH 劫持链均在真实组件中。现有历史 full-chain CI 证据保留。新增的单实例攻击端 E2E 对 User 和 Root 请求复用了相同 300x200 输出文件名，导致第二次请求命中 resized_images 缓存、system() 未执行；这是测试脚本假阴性，不是 Root 漏洞失败。源码审查确认 sudo/PATH 提权路径可行。当前 Worker 未验收。",
       "variant_profile": {
         "technology": "Ruby Sinatra, ImageMagick",
         "initial_discovery": "图片格式参数",
@@ -1035,7 +1035,7 @@
         "incremental_learning_value": "文件处理输入面的命令注入",
         "confidence": "from_repository_readme_or_existing_tests"
       },
-      "skill_mapping_stage": "single_instance_network_attacker_workflow_configured",
+      "skill_mapping_stage": "full_chain_implemented_ci_harness_false_negative_cached_conversion_output",
       "manual_validation": {
         "status": "not_reviewed",
         "commit": null,
@@ -1045,10 +1045,11 @@
         "evidence": [],
         "failure_reason": null
       },
-      "e2e_ci_status": "configured",
+      "e2e_ci_status": "failed",
       "e2e_ci_workflow": ".github/workflows/photobomb-e2e.yml",
-      "e2e_ci_evidence": null,
-      "e2e_ci_commit": null
+      "e2e_ci_evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/46087591670",
+      "e2e_ci_commit": "cb5297fc988fb47656e8d17b2c4daee1a6521fae",
+      "e2e_ci_failure_reason": "CI harness false negative: attack_path.py submit() hardcodes dimensions=300x200 for every request. The User-stage injection creates resized_images/<photo>_300x200.jpg; the subsequent Root-stage request uses the same output filename, so Sinatra's `unless File.exists?` cache skips system() entirely and never executes the sudo/PATH payload. The target-side sudoers grants wizard NOPASSWD: SETENV /opt/cleanup.sh, cleanup.sh invokes relative `find`, and /opt/.bashrc preserves the supplied PATH. Source review confirms the intended Root path is feasible; this failed run does not demonstrate a target-side exploit failure. The workflow was not rerun."
     },
     {
       "id": "precious",
