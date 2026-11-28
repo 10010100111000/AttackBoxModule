@@ -19,7 +19,7 @@ title: Admin Avatar Upload
 kind: flag
 prompt: |
   调查管理员头像上传功能，利用真实文件处理缺陷取得 dash 的执行权限并提交 User Flag。
-answer: "TTP{aaaaaaaaaaaaaaaa}"
+answer: "TTP{ylvdllgpxmtr72a5}"
 match: trim
 hint: 检查上传字段所使用的组件版本、实际保存路径，以及服务器对上传文件的处理方式。
 ```

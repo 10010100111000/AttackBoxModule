@@ -19,7 +19,7 @@ title: Archive Maintenance
 kind: flag
 prompt: |
   审计 xander 的 sudo 归档命令，利用真实 p7zip 16.02 的文件列表处理行为读取 /root/root.txt 并提交 Root Flag。
-answer: "TTP{bbbbbbbbbbbbbbbb}"
+answer: "TTP{xwzjtwluo47hecaf}"
 match: trim
 hint: 重点研究 7za 对以特殊前缀开头的文件列表参数的处理方式。
 ```
