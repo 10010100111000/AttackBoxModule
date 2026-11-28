@@ -41,7 +41,7 @@
 | Lab | 当前 E2E | 备注 |
 |---|---|---|
 
-| OpenAdmin | pending | PR #65 已合并；真实 xajax → Jimmy → 内网应用 → Joanna/User 路径已由当前 CI 验证，Root 阶段因 Expect 测试脚本私钥路径不一致未完成本次验证。靶机已纳入 main，不宣称本次完整 E2E passed。 |
+| OpenAdmin | pending | 已补完整 writeup；当前 CI 验证至 Joanna/User Flag。Root 阶段 Expect 脚本硬编码私钥路径，忽略攻击端传入的临时路径；按决定不重跑 E2E。源码审查支持 nano Root 路径可行，但当前统一 E2E 不标记 passed。 |
 | Pebbles | pending | 已补 Camera Database Challenge 与 writeup；历史原版整栈 SQLi / INTO OUTFILE / PHP / UDF Root CI 通过；当前统一 E2E 仍 pending，且原题仅有 Root Flag |
 | Photobomb | pending | 历史 full-chain CI 证据保留；新增 E2E 的 Root 阶段因两次注入复用 300x200 输出文件名而命中应用缓存，属于测试脚本假阴性；源码审查确认 sudo SETENV + 相对 find 的 PATH 劫持链可行。Worker 未验收 |
 | Union | pending | 有历史完整链 CI 记录 |
