@@ -380,17 +380,18 @@ XSS 候选与研究状态统一记录在 catalog，不在此处重复列出具�
 | 部件 | 负责什么 | 不负责什么 | 依据 |
 | --- | --- | --- | --- |
 | **Web 后端** | 持有题目与阶段答案，接受用户的 Flag 提交，比较答案并记录完成状态 | 不替代靶机内部真实漏洞，也不模拟漏洞利用 | `attackbox/web/server/api/challenges/[id]/attempt.post.ts`; `web/server/services/challenges.ts:attemptChallenge()`; `web/server/db/schema/challenges.ts:challengeStages.flag` |
-| **Worker** | 镜像准备、实例启动/停止、资源限制、专用网络与容器生命周期；把收到的部署变量作为不透明环境变量转交给容器（如有配置） | **不进行 Flag 判题，不维护 XSS Bot，不决定什么时候“漏洞利用成功”** | `attackbox/worker/node/target_starts.go`; `worker/node/targets/model.go`; `worker/node/targets/engine.go` |
-| **靶机容器** | 原版服务、真实漏洞、玩家通过漏洞发现或获取的 Flag（静态或实例级由题目自身处理） | 不在 Worker 中执行漏洞逻辑/判题 | 各 `labs/<name>/` 的原始版本、服务与验收逻辑 |
+| **Worker** | 按 Challenge 绑定关系准备并启动指定镜像，管理实例生命周期、资源限制和专用网络 | **不生成 Flag、不注入 Flag、不同步 Challenge 答案、不判题、不维护 XSS Bot** | `attackbox/worker/node/target_starts.go`; `worker/node/targets/model.go`; `worker/node/targets/engine.go` |
+| **靶机镜像/容器** | 在镜像构建时包含该发布版本的 Flag；entrypoint 初始化服务时将 Flag 放入符合漏洞目标的自然位置（数据库记录、业务字段、页面内容或文件） | 不在 Worker 中生成或轮换 Flag；不承担平台判题 | 各 `labs/<name>/` 的 Flag 生成器、镜像构建与初始化逻辑 |
 
 #### Flag 的推荐闭环
 
-1. 题目配置明确一枚或多枚标准答案；**Web 后端**保存/校验提交的答案。
-2. **Worker**只按 Web 发来的参数启动隔离靶机，若传入 Flag 环境变量也只是透明转交，**不解析 Flag、不参与正确性判定**。
-3. 玩家通过真实漏洞从**靶机**取得对应 Flag；可直接在浏览器看到、通过文件读取、授权接口、程序响应、终端访问或跨浏览器交互获取。
-4. 玩家把 Flag 输入平台的提交框，Web 后端完成判断。
+1. **CI 发布流程**为一个明确的 Lab 发布版本生成一组随机 Flag，并生成该版本的确定性 Manifest。相同版本重建时复用相同值；新发布版本才重新生成。
+2. 发布流程将同一组 Flag 同步到两个产物：靶机镜像中的目标数据，以及绑定该 Lab 的 Challenge `quiz.answer`。镜像与 Challenge 必须来自同一次版本化发布，不能分别手工填写。
+3. Flag 在镜像构建时写入适合漏洞目标的自然位置；容器启动只初始化服务/数据库，不重新随机生成 Flag。容器重启或同版本重建后，Flag 与平台答案仍一致。
+4. **Worker**只根据 Challenge 绑定关系启动指定镜像并管理生命周期，不生成、不注入、不轮换、不同步 Flag，也不负责判题。
+5. 玩家通过真实漏洞从靶机取得 Flag，提交到平台；**Web 后端**使用与镜像同版本的 Challenge 答案完成判断。
 
-**关于动态 Flag：** 当前 `challengeStages.flag` 是 Web 后端的静态阶段答案字段，不能因为靶机支持实例启动时注入变量，就宣称已经实现“每个实例自动轮换且服务器端同步判题”。如果某题真的启用实例级动态值，必须先明确 **Web 后端**如何维护正确答案与实例生命周期的关联；Worker 仍只转交 opaque 变量、调度实例，不承担判题。
+当前 trytopwn 的默认发布模型是**版本级静态 Flag、镜像内置、Challenge 同步**，不是 Worker 注入或每次实例启动动态生成。除非另行设计并实现 Web 后端与实例生命周期关联的动态判题协议，否则不得把实例级动态 Flag 当作现有能力。
 
 #### Web Flag 的位置：优先融入真实业务数据，不要求本地文件
 
@@ -418,7 +419,7 @@ XSS 候选与研究状态统一记录在 catalog，不在此处重复列出具�
 3. 可以在真实应用的种子数据中增加专用记录/字段，或在初始化时将 CI 生成的随机 Flag 写入已有数据模型。不得为显示 Flag 新增伪造漏洞接口、模拟解析器或与应用无关的“取 Flag”端点。
 4. Flag 不必严格防止从其他真实漏洞路径提前获得。优先保证预期解题路径真实、题目描述准确、答案与靶机数据一致；不要为了防绕题增加不必要的权限系统或架构复杂度。
 5. 同一 Lab 的多道 Challenge 可以复用同一枚 Flag，也可以使用不同 Flag。后续综合题可以重复前置 Flag，数量按学习目标决定。
-6. 静态 Flag 由 CI/发布版本生成器与靶机种子数据、Challenge Markdown 答案保持同源；同一版本重建必须复用同一组值。Web 后端负责判题，Worker 不负责生成或校验 Flag。
+6. 版本级 Flag 由 CI/发布版本生成器统一生成，并在同一次发布中同步到镜像目标数据、版本 Manifest 和 Challenge Markdown 答案；同一版本重建必须复用同一组值。Worker 不接收 Flag 注入配置，也不负责生成、同步或校验 Flag；Web 后端只使用已同步的 Challenge 答案判题。
 7. 只有当题目本身考察路径遍历、LFI、XXE 文件读取或命令执行后的文件读取时，才把本地文件作为主要 Flag 位置。不能因为传统 HTB Machine 常用 `user.txt` 就把这个习惯强加给纯 Web 题。
 
 #### XSS 靶机选择：不要强加 Bot
@@ -445,6 +446,7 @@ WonderCMS 3.4.2 **原版反射型属性 XSS 已通过真实 Chromium CI**。但�
 
 每台靶机 PR 都说明：
 1. Flag 在**靶机里**如何通过目标漏洞自然可获得（至少有玩家路线）。
-2. Web 后端里哪一个阶段保存对应答案；静态 vs 实例级答案是否与现有判题实现匹配。
-3. Worker 只负责启动/停止、网络和容器，任何 Flag/Bot/题型特有逻辑都必须在靶机或明确的 Web 业务层中。
-4. 外部独立玩家环境完整验证所声明的 Flag 获取路径，而不是从测试员的管理员登录捷径读取。
+2. CI 如何生成该发布版本的 Flag，并将同一个值同步到镜像目标数据、Manifest 与 `quiz.answer`。
+3. Flag 是否在镜像构建时写入自然业务位置；容器启动时是否避免重新随机生成。
+4. Worker 只负责镜像绑定、启动/停止、网络和容器生命周期，不承担 Flag 注入、生成或同步。
+5. 外部独立玩家环境完整验证所声明的 Flag 获取路径，而不是从测试员的管理员登录捷径读取。

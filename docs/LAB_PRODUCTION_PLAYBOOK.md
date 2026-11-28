@@ -81,22 +81,29 @@ The Challenge should describe the scenario and objective, not give away the vuln
 - Preserve genuine source components and versions; pin dependencies.
 - Keep the original application behavior and visual assets where appropriate.
 - Ensure the intended vulnerability is reachable through the normal exposed interface.
-- Keep Flag files outside application source code; copy/inject them into the target with deliberate ownership and permissions.
+- Store the Flag at the natural target of the vulnerability: an existing database/business record, protected page/API response, application data, uploaded object or filesystem path as appropriate. Do not force every Flag into a local file. CI must bake the generated release value into the image at that location.
 - Add a standalone `exploit.py` or equivalent independent player only when useful for the real intended route.
 - Write a complete `writeup.md` that starts with reconnaissance and normal behavior, then explains discovery, exploitation, Flag retrieval, root cause and remediation.
 - Do not put the answer or payload in the player-facing Challenge.
 
-### D. Random Flag and release consistency
+### D. CI-baked Flag and release consistency
 
-For Labs using generated Flags:
+The default trytopwn release model is **one versioned Flag set baked into the target image and synchronized to the bound Challenge**. Worker does not inject or generate Flags.
 
-- Generate a cryptographically random Flag per CI instance/version.
-- Keep a same-version manifest deterministic: re-running the same version must reuse the same Flag.
-- A new release version may rotate the Flag.
-- Synchronize exactly the same value across the target seed, release manifest and Challenge answer.
-- Validate Flag format, number of quiz answers, `kind: flag`, and `lab:` metadata.
-- Mask the Flag in CI logs. Never print secrets unnecessarily.
-- The release workflow must build the target and run the same real network-only exploit to retrieve the exact Flag **before** committing release artifacts.
+For each Lab release version:
+
+- The CI/release generator creates cryptographically random Flag value(s) once for that version.
+- Store the values in a versioned Manifest. Re-running or rebuilding the same version must reuse the same values; only a new release version may rotate them.
+- During image build, place each Flag in the natural location required by the vulnerability and learning objective: database seed/business row, protected page data, application configuration, or a file when file access is actually the intended skill.
+- Synchronize the exact same value(s) from that Manifest to every relevant Challenge `quiz.answer`. A focused Challenge may reuse the integrated Challenge's Flag when it intentionally tests the same stage.
+- Build and publish the target image and Challenge metadata as one release unit. Do not independently hand-edit the image seed and Challenge answer.
+- Container startup initializes services and imports the baked data; it must not generate a new Flag on every start. Restarting an instance or rebuilding the same release must preserve answer consistency.
+- Mask generated Flag values in CI logs. Do not print secrets unnecessarily.
+- The release workflow must build the target and run the real network-only exploit to retrieve the exact baked Flag **before** committing/publishing release artifacts.
+
+Worker only receives the image binding and manages container lifecycle, resource limits and networking. It does not receive Flag environment variables, generate or rotate Flags, synchronize Challenge answers, or judge submissions.
+
+A future per-instance dynamic-Flag model would require an explicit Web-backend protocol associating each running instance with its expected answer. That is not the current architecture and must not be implemented by silently adding Worker-side Flag injection.
 
 Do not leave static placeholder answers such as `HTB{replace_this...}` in a completed Challenge.
 
@@ -104,7 +111,7 @@ Do not leave static placeholder answers such as `HTB{replace_this...}` in a comp
 
 Every Lab needs a dedicated E2E workflow that:
 
-1. Generates the CI Flag value(s) for the selected Challenge objective(s) and checks target seed = manifest = every relevant Challenge answer.
+1. Loads the selected release version's deterministic Flag Manifest and checks baked target data = manifest = every relevant Challenge answer. A disposable test-only Flag may be used for isolated test runs, but it must not be confused with the published release answer.
 2. Builds the real target image.
 3. Starts the target with its actual runtime restrictions, healthcheck and resource limits.
 4. Starts a separate attacker container/process on an isolated temporary Docker network.
