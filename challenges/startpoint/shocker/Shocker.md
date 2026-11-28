@@ -22,7 +22,7 @@ title: 获取用户权限 (User Flag)
 kind: flag
 prompt: |
   从公开网站和正常请求开始调查，取得后台脚本运行账户的执行权限，并提交 User Flag。
-answer: "TTP{shockeruseraaaaa}"
+answer: "TTP{g3fqu7mopyf6k3fl}"
 match: trim
 hint: 留意 Web 服务将哪些请求信息传递给后台脚本解释器。
 ~~~
@@ -32,7 +32,7 @@ title: 系统特权提升 (Root Flag)
 kind: flag
 prompt: |
   从普通系统账户继续审计本机管理权限，取得 root 权限并提交 Root Flag。
-answer: "TTP{shockerrootaaaaa}"
+answer: "TTP{52pixevt4yc2rhwz}"
 match: trim
 hint: 检查当前账户被允许以更高权限执行的程序，以及这些程序的实际用途。
 ~~~

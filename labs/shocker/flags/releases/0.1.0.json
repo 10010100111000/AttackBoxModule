@@ -1,0 +1,8 @@
+{
+  "version": "0.1.0",
+  "format": "TTP{16-lowercase-base32}",
+  "flags": {
+    "user": "TTP{g3fqu7mopyf6k3fl}",
+    "root": "TTP{52pixevt4yc2rhwz}"
+  }
+}

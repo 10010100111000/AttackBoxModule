@@ -19,7 +19,7 @@ title: CGI Environment
 kind: flag
 prompt: |
   调查 Web 请求到后台脚本的执行过程，证明请求环境信息能够影响脚本解释器的行为，并取得对应 Flag。
-answer: "TTP{shockeruseraaaaa}"
+answer: "TTP{g3fqu7mopyf6k3fl}"
 match: trim
 hint: 从正常 CGI 请求与脚本使用的解释器开始检查。
 ~~~

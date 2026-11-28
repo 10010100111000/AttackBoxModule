@@ -19,7 +19,7 @@ title: Perl Maintenance
 kind: flag
 prompt: |
   审计当前账户的 sudo 权限，利用实际授权的程序取得 root 权限并提交 Flag。
-answer: "TTP{shockerrootaaaaa}"
+answer: "TTP{52pixevt4yc2rhwz}"
 match: trim
 hint: 不要只检查允许执行的命令名称，还要检查该程序本身能做什么。
 ~~~
