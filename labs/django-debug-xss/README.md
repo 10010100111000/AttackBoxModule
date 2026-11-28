@@ -13,7 +13,7 @@
 
 ## Challenge and writeup
 
-The learner-facing Challenge is [Harbor Registry](../../challenges/xss/harbor-registry/HarborRegistry.md). It uses this one Lab image and one Web Flag. The discovery-led solution is in [writeup.md](writeup.md).
+The learner-facing Challenge is [Harbor Lights](../../challenges/xss/harbor-registry/Harbor-Lights.md). It uses this one Lab image and one Web Flag. The discovery-led solution is in the existing [Challenge writeup](../../challenges/xss/harbor-registry/writeup.md).
 
 ## Player experience
 
