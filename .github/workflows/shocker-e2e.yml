@@ -80,7 +80,7 @@ jobs:
           assert set(flags) == {"user", "root"}
           assert len(set(flags.values())) == 2
           for name, value in flags.items():
-              assert re.fullmatch(r"TTP\\{[a-z2-7]{16}\\}", value)
+              assert re.fullmatch(r"TTP\{[a-z2-7]{16}\}", value)
               assert (root / f"labs/shocker/flags/{name}.txt").read_text().strip() == value
               print("::add-mask::" + value)
           checks = {
@@ -95,7 +95,7 @@ jobs:
               assert "lab: shocker" in content
           with open(os.environ["GITHUB_OUTPUT"], "a") as output:
               for name, value in flags.items():
-                  output.write(f"{name}={value}\\n")
+                  output.write(f"{name}={value}\n")
           print("Manifest = baked image seeds = all three Challenge mappings: PASS")
           PY
 
@@ -120,11 +120,11 @@ jobs:
           trap cleanup EXIT
           docker network create --internal shocker-e2e
 
-          docker run -d \\
-            --name shocker-target \\
-            --network shocker-e2e \\
-            --network-alias shocker-target \\
-            --memory 96m --cpus 1 --pids-limit 96 \\
+          docker run -d \
+            --name shocker-target \
+            --network shocker-e2e \
+            --network-alias shocker-target \
+            --memory 96m --cpus 1 --pids-limit 96 \
             ttp-shocker:ci >/dev/null
 
           ready=0
@@ -141,11 +141,11 @@ jobs:
           done
           test "$ready" = 1
 
-          docker run --rm \\
-            --network shocker-e2e \\
-            -e TARGET_URL=http://shocker-target \\
-            -e EXPECTED_USER_FLAG="$USER_FLAG" \\
-            -e EXPECTED_ROOT_FLAG="$ROOT_FLAG" \\
+          docker run --rm \
+            --network shocker-e2e \
+            -e TARGET_URL=http://shocker-target \
+            -e EXPECTED_USER_FLAG="$USER_FLAG" \
+            -e EXPECTED_ROOT_FLAG="$ROOT_FLAG" \
             ttp-shocker-attacker:ci
 
           docker stats --no-stream shocker-target --format "Shocker memory={{.MemUsage}} pids={{.PIDs}}"
@@ -160,11 +160,11 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add \\
-            "labs/shocker/flags/releases/$RELEASE_VERSION.json" \\
-            labs/shocker/flags/user.txt labs/shocker/flags/root.txt \\
-            challenges/startpoint/shocker/Shocker.md \\
-            challenges/command-injection/shocker/cgi-shellshock.md \\
+          git add \
+            "labs/shocker/flags/releases/$RELEASE_VERSION.json" \
+            labs/shocker/flags/user.txt labs/shocker/flags/root.txt \
+            challenges/startpoint/shocker/Shocker.md \
+            challenges/command-injection/shocker/cgi-shellshock.md \
             challenges/linux-privilege-escalation/shocker/sudo-perl.md
           if ! git diff --cached --quiet; then
             git commit -m "chore(shocker): release version $RELEASE_VERSION Flags"
