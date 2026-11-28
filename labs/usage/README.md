@@ -74,6 +74,8 @@ The app database is `usage_blog`. It contains the normal Laravel `users` table a
 From repository root:
 
 ```sh
+# Generate/reuse the versioned release first, then build the baked image.
+python3 scripts/generate_usage_release.py --version 0.1.0
 docker build -f labs/usage/Dockerfile -t ttp-usage:dev labs/usage
 docker network create --internal usage-lab
 docker run -d --name usage-target --network usage-lab \
