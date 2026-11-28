@@ -16,9 +16,13 @@
 
 对 `POST /forget-password` 的 `email` 参数进行受控比较，观察真/假条件造成的响应差异。进一步比较包含 MySQL `SLEEP()` 条件的请求，确认时间型响应差异。
 
-应用使用真实 Laravel 查询路径与 MySQL 数据库，不使用模拟 SQL 解析器。通过布尔和时间信号恢复后台管理员账户的 bcrypt 密码哈希，并在本地离线进行密码恢复。
+应用使用真实 Laravel 查询路径与 MySQL 数据库，不使用模拟 SQL 解析器。通过布尔和时间信号恢复后台管理员账户的真实 remember_token。该字段是 Laravel-admin 原生持久登录令牌，本版本将 Blind Recovery 的 Flag 作为该管理员记录的持久登录令牌；同时继续提取 bcrypt 密码哈希并在本地离线进行密码恢复。数据库 Flag 不通过额外的伪造接口返回。
 
-## 3. 登录真实 Laravel-admin 后台
+## 3. 取得数据库 Flag 并登录真实 Laravel-admin 后台
+
+将提取出的 admin_users.remember_token 与 Blind Recovery Challenge 的答案比较，即完成 SQLi 专项目标。随后使用恢复的 bcrypt 密码登录真实后台，继续完整链。该字段来自 Laravel-admin 上游迁移定义的原生 remember token 列，而不是额外创建的 flag 表。
+
+
 
 使用恢复的管理员凭据访问 `admin.usage.htb/auth/login`。后台由真实 `encore/laravel-admin 1.8.19` 软件包提供，而不是自制的仿冒上传页面。
 
