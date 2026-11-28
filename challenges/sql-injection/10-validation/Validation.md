@@ -15,7 +15,7 @@ lab: validation
 1. 调查注册与账户页面之间的数据流，利用真实的二阶 SQL 注入取得 Web 应用执行权限，读取 User Flag。
 2. 继续检查应用配置与系统身份验证之间的关系，取得 root 权限并读取 Root Flag。
 
-~~~quiz
+```quiz
 title: Web foothold (User Flag)
 kind: flag
 prompt: |
@@ -23,9 +23,9 @@ prompt: |
 answer: "TTP{validation_user_default}"
 match: trim
 hint: 注册请求本身并不是直接注入点。重点观察账户页面如何再次使用已保存的国家字段。
-~~~
+```
 
-~~~quiz
+```quiz
 title: Native authentication (Root Flag)
 kind: flag
 prompt: |
@@ -33,4 +33,4 @@ prompt: |
 answer: "TTP{validation_root_default}"
 match: trim
 hint: 数据库文件读取能力不只可以查看普通系统文件，也可以检查 PHP 运行时配置。注意配置中的凭据是否在其他身份验证边界被重复使用。
-~~~
+```
