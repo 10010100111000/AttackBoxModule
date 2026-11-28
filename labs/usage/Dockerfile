@@ -49,6 +49,7 @@ RUN microdnf module enable -y php:8.1 \
  && useradd -r -u 1001 -g xander -m -s /bin/bash xander \
  && usermod -aG xander dash
 COPY --from=app-build /var/www/usage /var/www/usage
+COPY flags/database.txt flags/user.txt flags/root.txt /opt/usage/flags/
 COPY config/nginx.conf /etc/nginx/nginx.conf
 COPY config/php-fpm.conf /etc/php-fpm.d/www.conf
 COPY config/mysql.cnf /etc/my.cnf.d/usage.cnf
@@ -57,7 +58,8 @@ COPY scripts/entrypoint.sh /usr/local/bin/usage-entrypoint
 COPY scripts/healthcheck.sh /usr/local/bin/usage-healthcheck
 COPY LICENSE-NOTICES.md /usr/share/doc/usage/LICENSE-NOTICES.md
 RUN set -eux; \
-    mkdir -p /var/www/usage/public/uploads/images /var/www/usage/storage /var/www/usage/bootstrap/cache \
+    mkdir -p /var/www/usage/public/uploads/images /var/www/usage/storage /var/www/usage/bootstrap/cache /opt/usage/flags; \
+    chown -R root:root /opt/usage/flags; chmod 0444 /opt/usage/flags/*.txt; \
              /home/dash/.ssh /var/backups /run/sshd /run/php-fpm /run/nginx; \
     chown -R root:xander /var/www/usage; \
     chmod -R 0755 /var/www/usage; \
