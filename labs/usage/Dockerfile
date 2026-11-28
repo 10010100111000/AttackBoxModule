@@ -58,9 +58,9 @@ COPY scripts/entrypoint.sh /usr/local/bin/usage-entrypoint
 COPY scripts/healthcheck.sh /usr/local/bin/usage-healthcheck
 COPY LICENSE-NOTICES.md /usr/share/doc/usage/LICENSE-NOTICES.md
 RUN set -eux; \
-    mkdir -p /var/www/usage/public/uploads/images /var/www/usage/storage /var/www/usage/bootstrap/cache /opt/usage/flags; \
+    mkdir -p /var/www/usage/public/uploads/images /var/www/usage/storage /var/www/usage/bootstrap/cache \
+             /opt/usage/flags /home/dash/.ssh /var/backups /run/sshd /run/php-fpm /run/nginx; \
     chown -R root:root /opt/usage/flags; chmod 0444 /opt/usage/flags/*.txt; \
-             /home/dash/.ssh /var/backups /run/sshd /run/php-fpm /run/nginx; \
     chown -R root:xander /var/www/usage; \
     chmod -R 0755 /var/www/usage; \
     chown -R dash:xander /var/www/usage/storage /var/www/usage/bootstrap/cache /var/www/usage/public/uploads; \
