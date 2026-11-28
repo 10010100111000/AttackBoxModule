@@ -1205,7 +1205,7 @@
       "worker_status": "not_verified",
       "release_status": "not_assessed",
       "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/45166657712",
-      "note": "真实二阶 SQLi → MariaDB FILE → PHP → Unix su Root",
+      "note": "Validation 已补正式双阶段 Challenge 与 writeup。真实二阶 SQLi（参数化 INSERT 后在账户页不安全 SELECT）、MariaDB LOAD_FILE/INTO OUTFILE、PHP-FPM 执行、配置凭据复用及原生 su Root 均由真实组件实现。历史 CI 已验证各组件行为，但没有当前统一标准的独立网络攻击者完整链 E2E；e2e_ci_status 保持 pending。生产必须注入 VALIDATION_STATIC_USER_FLAG / VALIDATION_STATIC_ROOT_FLAG 并令答案一致。",
       "variant_profile": {
         "technology": "PHP, MariaDB",
         "initial_discovery": "先提交国家字段、后面 Cookie 引用",
@@ -1214,7 +1214,7 @@
         "incremental_learning_value": "二阶与普通即时 UNION 的时间/状态不同",
         "confidence": "from_repository_readme_or_existing_tests"
       },
-      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review",
+      "skill_mapping_stage": "challenge_added_historical_component_ci_current_unified_e2e_pending",
       "manual_validation": {
         "status": "not_reviewed",
         "commit": null,
