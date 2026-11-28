@@ -30,6 +30,19 @@ The original Usage application source was not published. The main Laravel applic
 - Laravel-admin advisory / CVE-2023-24249: https://github.com/advisories/GHSA-58rr-37rr-r6h5
 - Vulnerable Laravel-admin source commit: https://github.com/z-song/laravel-admin/commit/6c292ebb5efa886fa4776d86e975180608505946
 
+## Reusable Challenges
+
+This Lab is shared by four learner-facing Challenges; they all use the same Usage image and per-instance target:
+
+- [Usage](../../challenges/startpoint/usage/Usage.md): integrated User and Root path.
+- [Blind Recovery](../../challenges/sql-injection/11-usage/blind-recovery.md): focused boolean/time blind SQLi objective.
+- [Admin Avatar Upload](../../challenges/file-security/usage/admin-avatar-upload.md): focused Laravel-admin upload objective.
+- [7za Listfile](../../challenges/linux-privilege-escalation/usage/7za-listfile.md): focused xander-to-root privilege objective.
+
+The focused Challenges reuse the integrated Lab's User or Root Flag; they do not create separate target images or additional instances.
+
+Detailed discovery-led solution: [writeup.md](writeup.md).
+
 ## Player discovery path
 
 1. Add the target IP to `/etc/hosts` as `usage.htb` and `admin.usage.htb`.
