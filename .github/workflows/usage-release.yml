@@ -55,7 +55,7 @@ jobs:
           assert set(flags) == {"database", "user", "root"}
           assert len(set(flags.values())) == 3
           for name, value in flags.items():
-              assert re.fullmatch(r"TTP\\{[a-z2-7]{16}\\}", value)
+              assert re.fullmatch(r"TTP\{[a-z2-7]{16}\}", value)
               assert (root / f"labs/usage/flags/{name}.txt").read_text().strip() == value
               print("::add-mask::" + value)
           checks = {
@@ -71,7 +71,7 @@ jobs:
               assert "lab: usage" in text
           with open(os.environ["GITHUB_OUTPUT"], "a") as output:
               for name, value in flags.items():
-                  output.write(f"{name}={value}\\n")
+                  output.write(f"{name}={value}\n")
           print("Manifest = baked target seeds = all four Challenge answer mappings: PASS")
           PY
 
@@ -97,9 +97,9 @@ jobs:
             docker image rm ttp-usage:release ttp-usage-attacker:release 2>/dev/null || true
           }
           trap cleanup EXIT
-          docker run -d --name usage-target --network usage-release \\
-            --network-alias usage.htb --network-alias admin.usage.htb \\
-            --memory 768m --cpus 1 --pids-limit 256 \\
+          docker run -d --name usage-target --network usage-release \
+            --network-alias usage.htb --network-alias admin.usage.htb \
+            --memory 768m --cpus 1 --pids-limit 256 \
             ttp-usage:release >/dev/null
 
           ready=0
@@ -116,8 +116,8 @@ jobs:
           test "$ready" = 1
           docker stats --no-stream usage-target
 
-          docker run --rm --name usage-attacker --network usage-release \\
-            -e EXPECTED_DB_FLAG -e EXPECTED_USER_FLAG -e EXPECTED_ROOT_FLAG \\
+          docker run --rm --name usage-attacker --network usage-release \
+            -e EXPECTED_DB_FLAG -e EXPECTED_USER_FLAG -e EXPECTED_ROOT_FLAG \
             ttp-usage-attacker:release
 
           echo "PASS: one baked Usage release completed database blind-SQLi Flag -> admin upload -> dash User Flag -> xander -> 7za Root Flag"
@@ -130,12 +130,12 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add \\
-            "labs/usage/flags/releases/$RELEASE_VERSION.json" \\
-            labs/usage/flags/database.txt labs/usage/flags/user.txt labs/usage/flags/root.txt \\
-            challenges/startpoint/usage/Usage.md \\
-            challenges/sql-injection/11-usage/blind-recovery.md \\
-            challenges/file-security/usage/admin-avatar-upload.md \\
+          git add \
+            "labs/usage/flags/releases/$RELEASE_VERSION.json" \
+            labs/usage/flags/database.txt labs/usage/flags/user.txt labs/usage/flags/root.txt \
+            challenges/startpoint/usage/Usage.md \
+            challenges/sql-injection/11-usage/blind-recovery.md \
+            challenges/file-security/usage/admin-avatar-upload.md \
             challenges/linux-privilege-escalation/usage/7za-listfile.md
           if ! git diff --cached --quiet; then
             git commit -m "chore(usage): release version $RELEASE_VERSION Flags"
