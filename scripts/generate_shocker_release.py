@@ -12,8 +12,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 FLAG_DIR = ROOT / "labs/shocker/flags"
 MANIFEST_DIR = FLAG_DIR / "releases"
-VERSION_RE = re.compile(r"^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-[a-z0-9]+(?:[.-][a-z0-9]+)*)?$")
-FLAG_RE = re.compile(r"^TTP\\{[a-z2-7]{16}\\}$")
+VERSION_RE = re.compile(r"^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(?:-[a-z0-9]+(?:[.-][a-z0-9]+)*)?$")
+FLAG_RE = re.compile(r"^TTP\{[a-z2-7]{16}\}$")
 CHALLENGES = {
     "integrated": (ROOT / "challenges/startpoint/shocker/Shocker.md", ["user", "root"]),
     "shellshock": (ROOT / "challenges/command-injection/shocker/cgi-shellshock.md", ["user"]),
@@ -76,12 +76,12 @@ def main() -> None:
             "flags": flags,
         }
         validate_flags(flags)
-        manifest_path.write_text(json.dumps(manifest, indent=2) + "\\n", encoding="utf-8")
+        manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
         action = "generated"
 
     FLAG_DIR.mkdir(parents=True, exist_ok=True)
     for name, value in flags.items():
-        (FLAG_DIR / f"{name}.txt").write_text(value + "\\n", encoding="utf-8")
+        (FLAG_DIR / f"{name}.txt").write_text(value + "\n", encoding="utf-8")
 
     for challenge_name, (path, names) in CHALLENGES.items():
         sync_answers(path, [flags[name] for name in names])
