@@ -980,8 +980,8 @@
       "lab_ci_status": "full_chain_ci",
       "worker_status": "not_verified",
       "release_status": "not_assessed",
-      "evidence": ".github/workflows/pebbles-full.yml",
-      "note": "原版 ZoneMinder SQLi、FILE/UDF、Root；复杂历史栈，注意 CI 与 Worker 各自验收",
+      "evidence": "https://github.com/10010100111000/AttackBoxModule/actions/runs/44943603262",
+      "note": "PG Pebbles 已有真实 ZoneMinder 1.29.0 / MySQL 5.7 原版服务、SQLi → INTO OUTFILE → PHP → MySQL UDF → 容器 Root 实现；历史原版整栈 CI 与优化镜像 CI 通过。已补正式 Camera Database Challenge 和 writeup。原题只有 /root/proof.txt 最终 Flag，不虚构 User Flag。CI UDF helper 曾由测试 harness 通过 docker cp 预置到临时容器；玩家路径需通过已取得的 www-data 命令执行能力从攻击者 HTTP 服务传入真实 UDF 库，再经 SQLi 写入 plugin_dir。当前统一 E2E 仍 pending；Worker 不在本任务范围。",
       "variant_profile": {
         "technology": "ZoneMinder 1.29, MySQL, Tomcat",
         "initial_discovery": "目录枚举发现 CMS",
@@ -990,7 +990,7 @@
         "incremental_learning_value": "历史版本栈与普通 UNION 不同",
         "confidence": "from_repository_readme_or_existing_tests"
       },
-      "skill_mapping_stage": "legacy_association_needs_skill_specific_test_review",
+      "skill_mapping_stage": "challenge_added_historical_full_chain_ci_current_unified_e2e_pending",
       "manual_validation": {
         "status": "not_reviewed",
         "commit": null,
