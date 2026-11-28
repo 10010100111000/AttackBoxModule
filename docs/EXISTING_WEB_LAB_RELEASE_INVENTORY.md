@@ -45,7 +45,7 @@
 | Pebbles | pending | 已补 Camera Database Challenge 与 writeup；历史原版整栈 SQLi / INTO OUTFILE / PHP / UDF Root CI 通过；当前统一 E2E 仍 pending，且原题仅有 Root Flag |
 | Photobomb | pending | 历史 full-chain CI 证据保留；新增 E2E 的 Root 阶段因两次注入复用 300x200 输出文件名而命中应用缓存，属于测试脚本假阴性；源码审查确认 sudo SETENV + 相对 find 的 PATH 劫持链可行。Worker 未验收 |
 | Union | pending | 有历史完整链 CI 记录 |
-| Validation | pending | 有历史完整链 CI 记录 |
+| Validation | pending | 已补双阶段 Challenge 与 writeup；历史 CI 验证真实二阶 SQLi、FILE、PHP 与原生 su 组件行为；当前统一网络攻击者 E2E 仍 pending |
 | Funnel | pending | 部分实现；FTP / SSH / PostgreSQL 服务链，非 Web 主线 |
 | Django Debug XSS | pending | 有历史完整链 CI 记录；存在 release-blocked 标记 |
 | WonderCMS XSS | pending | 有历史完整链 CI 记录；存在 release-blocked 标记 |
