@@ -11,6 +11,10 @@
 - The app creates a genuine PostgreSQL unique-constraint exception on duplicate registration using `User.objects.create(username=request.GET['username'])`.
 - Adaptation from Vulhub: the model's `max_length` increases from 32 to 512 for a realistic standalone proof-to-Flag JavaScript chain. The backend remains a native PostgreSQL unique constraint and Django's original debug page; **no artificial XSS echo endpoint or simulated traceback is used**.
 
+## Challenge and writeup
+
+The learner-facing Challenge is [Harbor Registry](../../challenges/xss/harbor-registry/HarborRegistry.md). It uses this one Lab image and one Web Flag. The discovery-led solution is in [writeup.md](writeup.md).
+
 ## Player experience
 
 A public community registry provides profile registration and a separate editorial submissions page. Players enumerate pages, observe that usernames are unique, explore unexpected registration errors, and submit profile URLs for review. This is not a standalone alert-box proof.
