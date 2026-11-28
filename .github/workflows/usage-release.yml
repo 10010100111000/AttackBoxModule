@@ -1,6 +1,16 @@
 name: Usage versioned Flag release
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - "labs/usage/Dockerfile"
+      - "labs/usage/app/**"
+      - "labs/usage/database/**"
+      - "labs/usage/scripts/**"
+      - "labs/usage/tests/**"
+      - "scripts/generate_usage_release.py"
+      - ".github/workflows/usage-release.yml"
   workflow_dispatch:
     inputs:
       version:
@@ -13,7 +23,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: usage-flag-release-${{ inputs.version }}
+  group: usage-flag-release-${{ inputs.version || '0.1.0' }}
   cancel-in-progress: false
 
 jobs:
@@ -28,7 +38,7 @@ jobs:
 
       - name: Generate or reuse the versioned Flag set
         env:
-          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_VERSION: ${{ inputs.version || '0.1.0' }}
         run: |
           set -euo pipefail
           python3 scripts/generate_usage_release.py --version "$RELEASE_VERSION"
